@@ -29,13 +29,13 @@ const severityClasses: Record<AlertSeverity, string> = {
     urgent: "border-red-200 bg-red-50 text-red-900",
 };
 
-export async function AlertBanner({ props }: { props: Record<string, unknown> }) {
+export async function AlertBanner({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = alertBannerPropsSchema.safeParse(props);
     const { heading, activeOnly, limit } = parsed.success
         ? parsed.data
         : { heading: undefined, activeOnly: true, limit: 3 };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getAlerts({ activeOnly });
 
     if (!result.ok) {

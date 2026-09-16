@@ -9,13 +9,13 @@ export const wasteCalendarPropsSchema = z.object({
     limit: z.number().default(10)
 });
 
-export const wasteCalendarFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const wasteCalendarFields: PropField<Extract<keyof z.infer<typeof wasteCalendarPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "district", label: "Bezirk", control: "text" },
     { key: "limit", label: "Anzahl", control: "number" }
 ];
 
-export const wasteCalendarDefinition: ComponentDefinition = {
+export const wasteCalendarDefinition: ComponentDefinition<z.infer<typeof wasteCalendarPropsSchema>> = {
     type: "wasteCalendar",
     label: "Abfuhrkalender",
     category: "civic",
@@ -29,4 +29,7 @@ export const wasteCalendarDefinition: ComponentDefinition = {
     propsSchema: wasteCalendarPropsSchema,
     fields: wasteCalendarFields,
     
+
+    municipalFields: ["heading"],
+    municipallyEditable: true,
 };

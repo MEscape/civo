@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { undo, redo } from "@/modules/builder/application/document-slice";
 import { setMode, setViewport } from "@/modules/builder/application/ui-slice";
@@ -43,7 +43,7 @@ export function BuilderToolbar({ website, page }: BuilderToolbarProps) {
     const canUndo = useAppSelector(selectCanUndo);
     const canRedo = useAppSelector(selectCanRedo);
 
-    const handleSave = useCallback(() => {
+    const handleSave = () => {
         dispatch(saveStarted());
         const config = { type: "page" as const, children: draftChildren };
         savePageConfigAction(page.id, website.id, config).then((result) => {
@@ -53,7 +53,7 @@ export function BuilderToolbar({ website, page }: BuilderToolbarProps) {
             }
             dispatch(saveSucceeded());
         });
-    }, [dispatch, draftChildren, page.id, website.id]);
+    };
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {

@@ -7,9 +7,9 @@ export const tabsPropsSchema = z.object({
     tabs: z.array(z.object({ label: z.string(), body: z.string() })).default([]),
 });
 
-export const tabsFields: PropField[] = [];
+export const tabsFields: PropField<Extract<keyof z.infer<typeof tabsPropsSchema>, string>>[] = [];
 
-export const tabsDefinition: ComponentDefinition = {
+export const tabsDefinition: ComponentDefinition<z.infer<typeof tabsPropsSchema>> = {
     type: "tabs",
     label: "Tabs",
     category: "content",
@@ -25,4 +25,7 @@ export const tabsDefinition: ComponentDefinition = {
     propsSchema: tabsPropsSchema,
     fields: tabsFields,
     
+
+    municipalFields: ["tabs"],
+    municipallyEditable: true,
 };

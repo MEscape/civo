@@ -12,7 +12,11 @@ import { renderPageNodes } from "@/modules/component-platform/infrastructure/ren
  * render path stays server-compatible. It receives already-validated
  * config (see pageService.getValidatedConfig); it does not re-validate
  * here, to keep this component a pure rendering concern.
+ *
+ * `websiteId` (spec §22) is passed through to every rendered component so
+ * data-aware ones (NewsGrid, EventsGrid, ...) resolve this website's own
+ * configured data source rather than a single hardcoded global provider.
  */
-export function PageRenderer({ config }: { config: PageConfig }) {
-    return <>{renderPageNodes(config.children)}</>;
+export function PageRenderer({ config, websiteId }: { config: PageConfig; websiteId?: string }) {
+    return <>{renderPageNodes(config.children, false, websiteId)}</>;
 }

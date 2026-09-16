@@ -15,12 +15,12 @@ export const metricTablePropsSchema = z.object({
     category: z.enum(["sustainability", "mobility", "energy", "other"]).optional()
 });
 
-export const metricTableFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "category", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
+export const metricTableFields: PropField<Extract<keyof z.infer<typeof metricTablePropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "category", group: "content", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
 ];
 
-export const metricTableDefinition: ComponentDefinition = {
+export const metricTableDefinition: ComponentDefinition<z.infer<typeof metricTablePropsSchema>> = {
     type: "metricTable",
     label: "Metrik-Tabelle",
     category: "smartcity",
@@ -34,4 +34,7 @@ export const metricTableDefinition: ComponentDefinition = {
     propsSchema: metricTablePropsSchema,
     fields: metricTableFields,
     
+
+    municipalFields: ["heading", "category"],
+    municipallyEditable: true,
 };

@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadPage, undo, redo, selectNode, removeNodeAction } from "@/modules/builder/application/document-slice";
 import { selectIsDirty, selectSelectedNodeId, selectBuilderMode, selectViewport, selectDraftChildren } from "@/modules/builder/application/builder-selectors";
 import type { PageNode } from "@/modules/builder/domain/page-node";
+import type { EditorMode } from "@/modules/builder/domain/editor-capabilities";
+import { setEditorMode } from "@/modules/builder/application/ui-slice";
 import { ComponentPalette } from "@/modules/builder/components/component-palette";
 import { BuilderCanvas } from "@/modules/builder/components/builder-canvas";
 import { PropertiesPanel } from "@/modules/builder/components/properties-panel";
 import { PreviewCanvas } from "@/modules/builder/components/preview-canvas";
+import { useCanvasDnd } from "@/modules/builder/components/use-canvas-dnd";
+import { useDropHandler } from "@/modules/builder/components/use-drop-handler";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { BuilderToolbar } from "./builder-toolbar";
 
@@ -16,13 +20,19 @@ type BuilderShellProps = {
     website: { id: string; name: string; theme: WebsiteTheme };
     page: { id: string; title: string };
     initialChildren: PageNode[];
+    /**
+     * The editor capability mode for this session. Defaults to "internal".
+     * Municipality-editor routes pass "municipality" here so the Redux
+     * store is seeded correctly before any child component reads it.
+     */
+    editorMode?: EditorMode;
 };
 
 /**
  * The builder shell. Connects keyboard shortcuts, warning on unload,
  * and sets up the three-column layout wrapping the core canvas.
  */
-export function BuilderShell({ website, page, initialChildren }: BuilderShellProps) {
+export function BuilderShell({ website, page, initialChildren, editorMode = "internal" }: BuilderShellProps) {
     const dispatch = useAppDispatch();
     const draftChildren = useAppSelector(selectDraftChildren);
     const isDirty = useAppSelector(selectIsDirty);
@@ -30,10 +40,16 @@ export function BuilderShell({ website, page, initialChildren }: BuilderShellPro
     const mode = useAppSelector(selectBuilderMode);
     const viewport = useAppSelector(selectViewport);
 
-    useEffect(() => {
+    const canvasContainerRef = useRef<HTMLDivElement>(null);
+    const handleDrop = useDropHandler(draftChildren, (id) => dispatch(selectNode(id)));
+    const dnd = useCanvasDnd(draftChildren, canvasContainerRef, handleDrop);
+
+    const initializedForPageRef = useRef<string | null>(null);
+    if (initializedForPageRef.current !== page.id) {
         dispatch(loadPage({ pageId: page.id, children: initialChildren }));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page.id]);
+        dispatch(setEditorMode(editorMode));
+        initializedForPageRef.current = page.id;
+    }
 
     // Warn on navigation away with unsaved changes
     useEffect(() => {
@@ -99,12 +115,18 @@ export function BuilderShell({ website, page, initialChildren }: BuilderShellPro
                         nodes={draftChildren}
                         viewport={viewport}
                         theme={website.theme}
+                        websiteId={website.id}
                     />
                 </div>
             ) : (
                 <div className="grid min-h-0 flex-1 grid-cols-[240px_1fr_300px]">
                     <aside className="overflow-y-auto border-r border-[var(--civo-color-border)] bg-[var(--civo-color-surface)]">
-                        <ComponentPalette />
+                        <ComponentPalette
+                            onBeginDrag={dnd.beginPaletteDrag}
+                            onDragPosition={dnd.updatePaletteDragPosition}
+                            onDragEnd={dnd.endDrag}
+                            onDragCancel={dnd.cancelDrag}
+                        />
                     </aside>
 
                     <main className="overflow-y-auto bg-[var(--civo-color-background)] p-6">
@@ -114,6 +136,9 @@ export function BuilderShell({ website, page, initialChildren }: BuilderShellPro
                             onSelect={(id) => dispatch(selectNode(id))}
                             viewport={viewport}
                             theme={website.theme}
+                            containerRef={canvasContainerRef}
+                            dnd={dnd}
+                            websiteId={website.id}
                         />
                     </main>
 

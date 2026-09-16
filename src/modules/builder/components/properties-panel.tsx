@@ -1,30 +1,46 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectSelectedNode, selectSelectedNodeAncestors } from "@/modules/builder/application/builder-selectors";
+import { selectSelectedNode, selectSelectedNodeAncestors, selectEditorMode } from "@/modules/builder/application/builder-selectors";
 import { updateNodePropsAction, commitPropsHistory, selectNode } from "@/modules/builder/application/document-slice";
 import { getComponentDefinition } from "@/modules/component-platform/domain";
 import { PropertyControl, PropertyField } from "@/modules/builder/components/property-controls";
 import { ChevronRight } from "@/components/ui/icons";
+import type { PropField } from "@/modules/component-platform/domain/types";
+import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
+
+const groupLabels = {
+    content: "Inhalt",
+    appearance: "Darstellung",
+} as const;
 
 /**
- * Properties panel (Phase 2 spec §17–19). Schema-driven: for the
- * selected node, reads `componentDefinition.fields` (the PropField
- * descriptors declared alongside each component's Zod schema — see
- * schemas/component-props-schema.ts) and renders exactly the controls
- * that component intentionally supports. Never exposes arbitrary CSS,
- * className, style, or HTML (spec §17) — a component that declares no
- * fields simply shows no editable properties.
+ * Properties panel (Phase 2 spec §17–19; Phase 3 spec §25, §36–39).
+ *
+ * Schema-driven: reads `componentDefinition.fields` (PropField descriptors)
+ * and renders exactly the controls that component intentionally supports.
+ * Never exposes arbitrary CSS, className, style, or HTML — a component
+ * that declares no fields shows no editable properties.
+ *
+ * In "municipality" editorMode, only the fields listed in
+ * `definition.municipalFields` are shown (spec §36). These are keyed by
+ * field.key and resolved from the same `definition.fields` array — no
+ * duplicate descriptor is needed. Components that don't declare
+ * `municipalFields` are content-only in municipality mode (no panel UI).
+ *
+ * Fields are rendered in groups ("Inhalt" / "Darstellung") when any field
+ * has a `group` assigned (spec §25). Fields without a group fall into an
+ * ungrouped section, preserving full backward-compat with Phase 2
+ * definitions that predate the group concept.
  *
  * Property edits dispatch `updateNodePropsAction` on every keystroke
- * (fast local state, no server round-trip — spec §20) but only commit a
- * history entry via `commitPropsHistory` on blur/discrete-choice, so
- * typing a full sentence is one undo step, not one per character (spec
- * §23).
+ * (fast local state) but only commit a history entry on blur/discrete-
+ * choice (spec §23).
  */
 export function PropertiesPanel() {
     const node = useAppSelector(selectSelectedNode);
     const ancestors = useAppSelector(selectSelectedNodeAncestors);
+    const editorMode = useAppSelector(selectEditorMode);
 
     if (!node) {
         return (
@@ -38,6 +54,22 @@ export function PropertiesPanel() {
 
     const definition = getComponentDefinition(node.type);
 
+    // Resolve which fields to show based on editor mode
+    let fields: PropField[] = [];
+    if (definition) {
+        if (editorMode === "municipality") {
+            // Municipality mode: only show explicitly allow-listed fields
+            const allowed = new Set(definition.municipalFields ?? []);
+            fields = definition.fields.filter((f) => allowed.has(f.key));
+        } else {
+            // Internal mode: all fields
+            fields = definition.fields;
+        }
+    }
+
+    const showVisibilityToggle =
+        hasCapability(editorMode, "toggleVisibility") && !!node;
+
     return (
         <div className="p-4">
             {ancestors.length > 0 && <Breadcrumb ancestors={ancestors} currentLabel={definition?.label ?? node.type} />}
@@ -49,17 +81,83 @@ export function PropertiesPanel() {
                 {definition?.label ?? node.type}
             </p>
 
-            {definition && definition.fields.length > 0 ? (
-                <div className="flex flex-col gap-4">
-                    {definition.fields.map((field) => (
-                        <FieldRow key={field.key} nodeId={node.id} field={field} value={node.props[field.key]} />
-                    ))}
-                </div>
+            {showVisibilityToggle && <VisibilityToggle nodeId={node.id} visible={node.props.visible !== false} />}
+
+            {fields.length > 0 ? (
+                <GroupedFields nodeId={node.id} fields={fields} props={node.props} />
             ) : (
                 <p className="text-sm text-[var(--civo-color-text-muted)]">
                     Diese Komponente hat keine bearbeitbaren Eigenschaften.
                 </p>
             )}
+        </div>
+    );
+}
+
+/**
+ * Renders fields grouped by their `group` attribute. Fields without a group
+ * are rendered first in an ungrouped cluster. Groups appear in
+ * content → appearance order so data configuration is always at the top.
+ */
+function GroupedFields({
+    nodeId,
+    fields,
+    props,
+}: {
+    nodeId: string;
+    fields: PropField[];
+    props: Record<string, unknown>;
+}) {
+    const ungrouped = fields.filter((f) => !f.group);
+    const content = fields.filter((f) => f.group === "content");
+    const appearance = fields.filter((f) => f.group === "appearance");
+
+    const hasGroups = content.length > 0 || appearance.length > 0;
+
+    return (
+        <div className="flex flex-col gap-6">
+            {ungrouped.length > 0 && (
+                <FieldList nodeId={nodeId} fields={ungrouped} props={props} />
+            )}
+            {hasGroups && content.length > 0 && (
+                <FieldGroup label={groupLabels.content}>
+                    <FieldList nodeId={nodeId} fields={content} props={props} />
+                </FieldGroup>
+            )}
+            {hasGroups && appearance.length > 0 && (
+                <FieldGroup label={groupLabels.appearance}>
+                    <FieldList nodeId={nodeId} fields={appearance} props={props} />
+                </FieldGroup>
+            )}
+        </div>
+    );
+}
+
+function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
+    return (
+        <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--civo-color-text-muted)]">
+                {label}
+            </p>
+            <div className="flex flex-col gap-4">{children}</div>
+        </div>
+    );
+}
+
+function FieldList({
+    nodeId,
+    fields,
+    props,
+}: {
+    nodeId: string;
+    fields: PropField[];
+    props: Record<string, unknown>;
+}) {
+    return (
+        <div className="flex flex-col gap-4">
+            {fields.map((field) => (
+                <FieldRow key={field.key} nodeId={nodeId} field={field} value={props[field.key]} />
+            ))}
         </div>
     );
 }
@@ -70,7 +168,7 @@ function FieldRow({
     value,
 }: {
     nodeId: string;
-    field: import("@/modules/component-platform/domain/types").PropField;
+    field: PropField;
     value: unknown;
 }) {
     const dispatch = useAppDispatch();
@@ -84,6 +182,30 @@ function FieldRow({
                 onCommit={() => dispatch(commitPropsHistory())}
             />
         </PropertyField>
+    );
+}
+
+/**
+ * Visibility toggle — allows the municipality editor to hide/show a
+ * component without deleting it (spec §41). Rendered above the field list
+ * so it's always reachable regardless of how many fields a component has.
+ */
+function VisibilityToggle({ nodeId, visible }: { nodeId: string; visible: boolean }) {
+    const dispatch = useAppDispatch();
+    return (
+        <label className="mb-4 flex cursor-pointer items-center gap-2 text-sm">
+            <input
+                type="checkbox"
+                checked={visible}
+                onChange={(e) => {
+                    dispatch(updateNodePropsAction({ nodeId, props: { visible: e.target.checked } }));
+                    dispatch(commitPropsHistory());
+                }}
+                className="h-4 w-4 rounded accent-[var(--civo-color-accent)]"
+                id={`visibility-${nodeId}`}
+            />
+            <span className="text-[var(--civo-color-text)]">Sichtbar</span>
+        </label>
     );
 }
 

@@ -22,13 +22,13 @@ const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 
  * grid of divs, per spec §27's guidance to use library primitives over
  * rebuilding them.
  */
-export async function MetricTable({ props }: { props: Record<string, unknown> }) {
+export async function MetricTable({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = metricTablePropsSchema.safeParse(props);
     const { heading, category } = parsed.success
         ? parsed.data
         : { heading: "Kennzahlen im Überblick", category: undefined };
 
-    const provider = getSmartCityDataProvider();
+    const provider = await getSmartCityDataProvider(websiteId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {

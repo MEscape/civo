@@ -10,12 +10,12 @@ export const serviceGridPropsSchema = z.object({
     columns: gridColumnsSchema.default(3),
 });
 
-export const serviceGridFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const serviceGridFields: PropField<Extract<keyof z.infer<typeof serviceGridPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "columns", label: "Spalten", control: "columns" },
 ];
 
-export const serviceGridDefinition: ComponentDefinition = {
+export const serviceGridDefinition: ComponentDefinition<z.infer<typeof serviceGridPropsSchema>> = {
     type: "serviceGrid",
     label: "Online-Leistungen",
     category: "civic",
@@ -29,4 +29,7 @@ export const serviceGridDefinition: ComponentDefinition = {
     propsSchema: serviceGridPropsSchema,
     fields: serviceGridFields,
     
+
+    municipalFields: ["heading"],
+    municipallyEditable: true,
 };

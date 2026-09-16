@@ -8,7 +8,7 @@ export const sectionPropsSchema = z.object({
     tone: z.enum(["default", "muted"]).default("default"),
 });
 
-export const sectionFields: PropField[] = [
+export const sectionFields: PropField<Extract<keyof z.infer<typeof sectionPropsSchema>, string>>[] = [
     {
         key: "spacing",
         label: "Abstand",
@@ -30,7 +30,7 @@ export const sectionFields: PropField[] = [
     },
 ];
 
-export const sectionDefinition: ComponentDefinition = {
+export const sectionDefinition: ComponentDefinition<z.infer<typeof sectionPropsSchema>> = {
     type: "section",
     label: "Section",
     category: "layout",
@@ -43,5 +43,8 @@ export const sectionDefinition: ComponentDefinition = {
     }),
     propsSchema: sectionPropsSchema,
     fields: sectionFields,
-    
+
+
+    municipalFields: [],
+    municipallyEditable: false,
 };

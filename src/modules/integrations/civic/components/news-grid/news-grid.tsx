@@ -12,13 +12,13 @@ import { logger } from "@/lib/logger/logger";
  * the mock provider, a future REST adapter, or a database query is
  * invisible here.
  */
-export async function NewsGrid({ props }: { props: Record<string, unknown> }) {
+export async function NewsGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = newsGridPropsSchema.safeParse(props);
     const { heading, columns, limit, category } = parsed.success
         ? parsed.data
         : { heading: "Aktuelles", columns: 3 as const, limit: 6, category: undefined };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getNews({ limit, category });
 
     if (!result.ok) {

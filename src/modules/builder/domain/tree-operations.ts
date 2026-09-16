@@ -223,6 +223,46 @@ export function moveNode(
     return insertNode(withoutNode, location.node, target);
 }
 
+/**
+ * Resolves a `{ targetNodeId, position }` drop description (see
+ * drop-placement.ts) into the concrete `{ parentId, index }` that
+ * `moveNode`/`insertNode` expect.
+ *
+ * The index is computed against the CURRENT (pre-move) sibling order,
+ * which `insertNode` on its own would apply to the ARRAY AFTER the
+ * active node has already been spliced out (moveNode does remove-then-
+ * insert). When moving a node earlier within the very same siblings
+ * array, that removal shifts every subsequent sibling's index down by
+ * one — so a target that came after the active node's OLD position needs
+ * its resolved index adjusted down by one to still land in the same
+ * visual spot. Kept as a pure function here (not inline in the DnD hook
+ * or the Redux slice) so this off-by-one is tested once, not re-derived
+ * ad hoc at every call site.
+ */
+export function resolveMoveIndex(
+    nodes: PageNode[],
+    activeNodeId: string,
+    target: { parentId: string | null; targetNodeId: string; position: "before" | "after" }
+): number {
+    const activeLocation = locateNode(nodes, activeNodeId);
+    const targetSiblings = target.parentId === null ? nodes : (locateNode(nodes, target.parentId)?.node.children ?? []);
+
+    const targetIndex = targetSiblings.findIndex((n) => n.id === target.targetNodeId);
+    if (targetIndex === -1) return targetSiblings.length;
+
+    let resolvedIndex = target.position === "before" ? targetIndex : targetIndex + 1;
+
+    const movingWithinSameParent = activeLocation && activeLocation.parentId === target.parentId;
+    if (movingWithinSameParent && activeLocation!.index < targetIndex) {
+        // The active node's own removal shifts everything after it left by
+        // one, including the target — compensate so the drop lands exactly
+        // where the indicator was shown, not one slot further along.
+        resolvedIndex -= 1;
+    }
+
+    return resolvedIndex;
+}
+
 /** True if `candidateId` identifies a node anywhere within `node`'s own subtree. */
 function isDescendant(node: PageNode, candidateId: string): boolean {
     if (!node.children) return false;

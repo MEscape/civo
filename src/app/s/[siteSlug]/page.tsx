@@ -39,7 +39,7 @@ export default async function PublicWebsitePage({
 
     return (
         <ThemeProvider theme={theme}>
-            <PageRenderer config={configResult.data} />
+            <PageRenderer config={configResult.data} websiteId={websiteResult.data.id} />
         </ThemeProvider>
     );
 }

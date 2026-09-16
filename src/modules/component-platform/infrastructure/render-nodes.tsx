@@ -14,28 +14,51 @@ import { componentMap } from "./registry";
  *
  * Components in the registry receive `props` always, and `children` only
  * when the node actually has any — this keeps leaf components' existing
- * `{ props }`-only signatures valid without a change.
+ * `{ props }`-only signatures valid without a change. `websiteId` is
+ * threaded through unconditionally (Phase 3 spec §22) so data-aware
+ * components can resolve the correct per-website data source without
+ * every non-data component needing to opt in.
  */
-export function renderPageNodes(nodes: PageNode[], editMode = false) {
+export function renderPageNodes(nodes: PageNode[], editMode = false, websiteId?: string) {
     return nodes.map((node) => (
-        <PageNodeRenderer key={node.id} node={node} editMode={editMode} />
+        <PageNodeRenderer key={node.id} node={node} editMode={editMode} websiteId={websiteId} />
     ));
 }
 
-export function PageNodeRenderer({ node, editMode = false }: { node: PageNode; editMode?: boolean }) {
+export function PageNodeRenderer({
+                                     node,
+                                     editMode = false,
+                                     websiteId,
+                                 }: {
+    node: PageNode;
+    editMode?: boolean;
+    websiteId?: string;
+}) {
+    // Respect the `visible` prop (spec §41): hidden nodes are suppressed on
+    // the public render path. In edit mode we still render them (dimmed) so
+    // the editor can toggle visibility back on — suppressing in edit mode
+    // would make a hidden component unreachable in the UI.
+    const isHidden = node.props.visible === false;
+    if (isHidden && !editMode) return null;
+
     let rendered: React.ReactNode;
 
     if (!isRegisteredComponentType(node.type)) {
         rendered = <UnknownComponentPlaceholder type={node.type} />;
     } else {
         const Component = componentMap[node.type] as ComponentType<PageComponentProps>;
-        rendered = createElement(Component, { props: node.props, editMode }, node.children as never);
+        rendered = createElement(Component, { props: node.props, editMode, websiteId }, node.children as never);
     }
 
     if (!editMode) return rendered;
 
     return (
-        <div data-civo-node-id={node.id} data-civo-node-type={node.type}>
+        <div
+            data-civo-node-id={node.id}
+            data-civo-node-type={node.type}
+            style={isHidden ? { opacity: 0.35, pointerEvents: "none" } : undefined}
+            aria-hidden={isHidden ? true : undefined}
+        >
             {rendered}
         </div>
     );

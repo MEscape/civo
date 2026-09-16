@@ -27,12 +27,18 @@ export type CanvasRenderResult =
  * what that error message is asking for, and avoids the client needing
  * to invoke `dangerouslySetInnerHTML`, so async Server Components work
  * correctly without a second manually-invoked renderer.
+ *
+ * `websiteId` (spec §30–31) is passed through so data-aware components
+ * preview against THIS website's configured data source (falling back to
+ * demo/mock data when none is configured — see the civic/smartcity
+ * provider resolvers) rather than a single global provider, keeping the
+ * builder preview and the public render path consistent.
  */
-export async function renderCanvasAction(config: unknown): Promise<CanvasRenderResult> {
+export async function renderCanvasAction(config: unknown, websiteId?: string): Promise<CanvasRenderResult> {
     const parsed = pageConfigSchema.safeParse(config);
     if (!parsed.success) {
         return { ok: false, message: "Die aktuelle Seitenkonfiguration ist ungültig." };
     }
 
-    return { ok: true, node: renderPageNodes(parsed.data.children, true) };
+    return { ok: true, node: renderPageNodes(parsed.data.children, true, websiteId) };
 }

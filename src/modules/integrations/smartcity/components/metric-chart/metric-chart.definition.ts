@@ -15,12 +15,12 @@ export const metricChartPropsSchema = z.object({
     category: z.enum(["sustainability", "mobility", "energy", "other"]).optional(),
 });
 
-export const metricChartFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "category", label: "Kategorie", control: "select", options: smartCityCategoryOptions },
+export const metricChartFields: PropField<Extract<keyof z.infer<typeof metricChartPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "category", group: "content", label: "Kategorie", control: "select", options: smartCityCategoryOptions },
 ];
 
-export const metricChartDefinition: ComponentDefinition = {
+export const metricChartDefinition: ComponentDefinition<z.infer<typeof metricChartPropsSchema>> = {
     type: "metricChart",
     label: "Diagramm (Basis)",
     category: "smartcity",
@@ -34,4 +34,7 @@ export const metricChartDefinition: ComponentDefinition = {
     propsSchema: metricChartPropsSchema,
     fields: metricChartFields,
     
+
+    municipalFields: ["heading", "category"],
+    municipallyEditable: true,
 };

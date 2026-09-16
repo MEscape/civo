@@ -7,11 +7,11 @@ export const councilBlockPropsSchema = z.object({
     heading: z.string().default("Gemeinderat & Ausschüsse")
 });
 
-export const councilBlockFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" }
+export const councilBlockFields: PropField<Extract<keyof z.infer<typeof councilBlockPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" }
 ];
 
-export const councilBlockDefinition: ComponentDefinition = {
+export const councilBlockDefinition: ComponentDefinition<z.infer<typeof councilBlockPropsSchema>> = {
     type: "councilBlock",
     label: "Gemeinderat",
     category: "civic",
@@ -25,4 +25,7 @@ export const councilBlockDefinition: ComponentDefinition = {
     propsSchema: councilBlockPropsSchema,
     fields: councilBlockFields,
     
+
+    municipalFields: ["heading"],
+    municipallyEditable: true,
 };

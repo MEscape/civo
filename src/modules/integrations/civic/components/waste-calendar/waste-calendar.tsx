@@ -37,13 +37,13 @@ const wasteBadgeVariant: Record<WasteType, "default" | "muted" | "warning"> = {
  * type-specific visual distinction (color-coded badges, as residents
  * expect from real Abfuhrkalender apps/flyers).
  */
-export async function WasteCalendar({ props }: { props: Record<string, unknown> }) {
+export async function WasteCalendar({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = wasteCalendarPropsSchema.safeParse(props);
     const { heading, district, limit } = parsed.success
         ? parsed.data
         : { heading: "Abfuhrkalender", district: undefined, limit: 10 };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getWasteCollectionEntries({ district, from: new Date() });
 
     if (!result.ok) {

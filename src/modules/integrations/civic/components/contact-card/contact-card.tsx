@@ -5,11 +5,11 @@ import { Section, Container, Grid, SectionHeading } from "@/modules/builder/comp
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 
-export async function ContactCard({ props }: { props: Record<string, unknown> }) {
+export async function ContactCard({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = contactCardPropsSchema.safeParse(props);
     const { heading } = parsed.success ? parsed.data : { heading: "Kontakt" };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getContacts();
 
     if (!result.ok) {

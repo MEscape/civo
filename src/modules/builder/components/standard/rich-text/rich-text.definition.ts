@@ -8,12 +8,12 @@ export const richTextPropsSchema = z.object({
     body: z.string().default(""),
 });
 
-export const richTextFields: PropField[] = [
+export const richTextFields: PropField<Extract<keyof z.infer<typeof richTextPropsSchema>, string>>[] = [
     { key: "heading", label: "Überschrift", control: "text" },
     { key: "body", label: "Text", control: "textarea" },
 ];
 
-export const richTextDefinition: ComponentDefinition = {
+export const richTextDefinition: ComponentDefinition<z.infer<typeof richTextPropsSchema>> = {
     type: "richText",
     label: "Text",
     category: "content",
@@ -27,4 +27,7 @@ export const richTextDefinition: ComponentDefinition = {
     propsSchema: richTextPropsSchema,
     fields: richTextFields,
     
+
+    municipalFields: ["body"],
+    municipallyEditable: true,
 };

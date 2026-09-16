@@ -89,4 +89,10 @@ model DataSource {
 
   // Relations
   website   Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  // One row per (website, name) — e.g. a website has at most one row named
+  // "civic-primary". Required by dataSourceRepository.upsert, which relies
+  // on this constraint to update the existing configured source for a
+  // dataset instead of creating a duplicate on every save.
+  @@unique([websiteId, name])
 }

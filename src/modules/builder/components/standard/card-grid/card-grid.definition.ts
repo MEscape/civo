@@ -17,12 +17,12 @@ export const cardGridPropsSchema = z.object({
         .default([]),
 });
 
-export const cardGridFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const cardGridFields: PropField<Extract<keyof z.infer<typeof cardGridPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "columns", label: "Spalten", control: "columns" },
 ];
 
-export const cardGridDefinition: ComponentDefinition = {
+export const cardGridDefinition: ComponentDefinition<z.infer<typeof cardGridPropsSchema>> = {
     type: "cardGrid",
     label: "Karten-Raster",
     category: "content",
@@ -43,4 +43,7 @@ export const cardGridDefinition: ComponentDefinition = {
     propsSchema: cardGridPropsSchema,
     fields: cardGridFields,
     
+
+    municipalFields: ["heading", "cards"],
+    municipallyEditable: true,
 };

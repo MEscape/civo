@@ -8,12 +8,12 @@ export const metricDonutPropsSchema = z.object({
     metricId: z.string().optional()
 });
 
-export const metricDonutFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "metricId", label: "Metrik-ID", control: "text" }
+export const metricDonutFields: PropField<Extract<keyof z.infer<typeof metricDonutPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "metricId", group: "content", label: "Metrik-ID", control: "text" }
 ];
 
-export const metricDonutDefinition: ComponentDefinition = {
+export const metricDonutDefinition: ComponentDefinition<z.infer<typeof metricDonutPropsSchema>> = {
     type: "metricDonut",
     label: "Donut-Diagramm",
     category: "smartcity",
@@ -27,4 +27,7 @@ export const metricDonutDefinition: ComponentDefinition = {
     propsSchema: metricDonutPropsSchema,
     fields: metricDonutFields,
     
+
+    municipalFields: ["heading", "metricId"],
+    municipallyEditable: true,
 };

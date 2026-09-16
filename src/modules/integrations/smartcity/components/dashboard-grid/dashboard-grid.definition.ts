@@ -15,12 +15,12 @@ export const dashboardGridPropsSchema = z.object({
     category: z.enum(["sustainability", "mobility", "energy", "other"]).optional()
 });
 
-export const dashboardGridFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "category", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
+export const dashboardGridFields: PropField<Extract<keyof z.infer<typeof dashboardGridPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "category", group: "content", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
 ];
 
-export const dashboardGridDefinition: ComponentDefinition = {
+export const dashboardGridDefinition: ComponentDefinition<z.infer<typeof dashboardGridPropsSchema>> = {
     type: "dashboardGrid",
     label: "Dashboard-Raster",
     category: "smartcity",
@@ -34,4 +34,7 @@ export const dashboardGridDefinition: ComponentDefinition = {
     propsSchema: dashboardGridPropsSchema,
     fields: dashboardGridFields,
     
+
+    municipalFields: ["heading", "category"],
+    municipallyEditable: true,
 };

@@ -9,13 +9,13 @@ export const alertBannerPropsSchema = z.object({
     limit: z.number().default(3),
 });
 
-export const alertBannerFields: PropField[] = [
+export const alertBannerFields: PropField<Extract<keyof z.infer<typeof alertBannerPropsSchema>, string>>[] = [
     { key: "heading", label: "Überschrift", control: "text" },
     { key: "activeOnly", label: "Nur Aktive", control: "switch" },
     { key: "limit", label: "Anzahl", control: "number" }
 ];
 
-export const alertBannerDefinition: ComponentDefinition = {
+export const alertBannerDefinition: ComponentDefinition<z.infer<typeof alertBannerPropsSchema>> = {
     type: "alertBanner",
     label: "Bekanntmachungen",
     category: "civic",
@@ -29,4 +29,7 @@ export const alertBannerDefinition: ComponentDefinition = {
     propsSchema: alertBannerPropsSchema,
     fields: alertBannerFields,
     
+
+    municipalFields: ["heading", "limit"],
+    municipallyEditable: true,
 };

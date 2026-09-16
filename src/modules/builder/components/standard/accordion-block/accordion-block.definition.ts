@@ -8,11 +8,11 @@ export const accordionPropsSchema = z.object({
     items: z.array(z.object({ question: z.string(), answer: z.string() })).default([]),
 });
 
-export const accordionFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" }
+export const accordionFields: PropField<Extract<keyof z.infer<typeof accordionPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" }
 ];
 
-export const accordionDefinition: ComponentDefinition = {
+export const accordionDefinition: ComponentDefinition<z.infer<typeof accordionPropsSchema>> = {
     type: "accordion",
     label: "Akkordeon",
     category: "content",
@@ -29,4 +29,7 @@ export const accordionDefinition: ComponentDefinition = {
     propsSchema: accordionPropsSchema,
     fields: accordionFields,
     
+
+    municipalFields: ["heading", "items"],
+    municipallyEditable: true,
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
 
 export type NodeRect = { top: number; left: number; width: number; height: number };
 
@@ -36,23 +36,20 @@ export function useCanvasHitTesting(
     const [selectedRect, setSelectedRect] = useState<NodeRect | null>(null);
     const [hoveredRect, setHoveredRect] = useState<NodeRect | null>(null);
 
-    const measure = useCallback(
-        (nodeId: string | null): NodeRect | null => {
-            const container = containerRef.current;
-            if (!container || !nodeId) return null;
-            const target = container.querySelector(`[data-civo-node-id="${cssEscape(nodeId)}"]`);
-            if (!target) return null;
-            const targetRect = target.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            return {
-                top: targetRect.top - containerRect.top + container.scrollTop,
-                left: targetRect.left - containerRect.left + container.scrollLeft,
-                width: targetRect.width,
-                height: targetRect.height,
-            };
-        },
-        [containerRef]
-    );
+    const measure = (nodeId: string | null): NodeRect | null => {
+        const container = containerRef.current;
+        if (!container || !nodeId) return null;
+        const target = container.querySelector(`[data-civo-node-id="${cssEscape(nodeId)}"]`);
+        if (!target) return null;
+        const targetRect = target.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        return {
+            top: targetRect.top - containerRect.top + container.scrollTop,
+            left: targetRect.left - containerRect.left + container.scrollLeft,
+            width: targetRect.width,
+            height: targetRect.height,
+        };
+    };
 
     useEffect(() => {
         const container = containerRef.current;

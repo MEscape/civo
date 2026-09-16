@@ -9,13 +9,13 @@ export const heroPropsSchema = z.object({
     imageUrl: z.string().url().optional(),
 });
 
-export const heroFields: PropField[] = [
-    { key: "title", label: "Titel", control: "text" },
-    { key: "subtitle", label: "Untertitel", control: "textarea" },
-    { key: "imageUrl", label: "Bild-URL", control: "text", placeholder: "https://..." },
+export const heroFields: PropField<Extract<keyof z.infer<typeof heroPropsSchema>, string>>[] = [
+    { key: "title", label: "Titel", control: "text", group: "content" },
+    { key: "subtitle", label: "Untertitel", control: "textarea", group: "content" },
+    { key: "imageUrl", label: "Bild-URL", control: "text", placeholder: "https://...", group: "appearance" },
 ];
 
-export const heroDefinition: ComponentDefinition = {
+export const heroDefinition: ComponentDefinition<z.infer<typeof heroPropsSchema>> = {
     type: "hero",
     label: "Hero",
     category: "content",
@@ -28,5 +28,8 @@ export const heroDefinition: ComponentDefinition = {
     }),
     propsSchema: heroPropsSchema,
     fields: heroFields,
-    
+    // Municipality admins can edit the page's hero title and subtitle
+    // but not swap in a different image (that's a brand/design decision).
+    municipalFields: ["title", "subtitle"],
+    municipallyEditable: true,
 };

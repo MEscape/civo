@@ -9,6 +9,7 @@ type PreviewCanvasProps = {
     nodes: PageNode[];
     viewport: "desktop" | "tablet" | "mobile";
     theme?: WebsiteTheme;
+    websiteId?: string;
 };
 
 const viewportWidths: Record<PreviewCanvasProps["viewport"], string> = {
@@ -27,8 +28,8 @@ const viewportWidths: Record<PreviewCanvasProps["viewport"], string> = {
  * share render-nodes.tsx / the component registry, and this one shares
  * the exact same renderCanvasAction Server Action as the canvas).
  */
-export function PreviewCanvas({ nodes, viewport, theme }: PreviewCanvasProps) {
-    const { node, isRendering, error } = useCanvasRender(nodes);
+export function PreviewCanvas({ nodes, viewport, theme, websiteId }: PreviewCanvasProps) {
+    const { node, isRendering, error } = useCanvasRender(nodes, websiteId);
 
     if (nodes.length === 0) {
         return (

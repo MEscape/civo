@@ -10,14 +10,14 @@ export const serviceFinderPropsSchema = z.object({
     initialCategory: z.string().optional(),
 });
 
-export const serviceFinderFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const serviceFinderFields: PropField<Extract<keyof z.infer<typeof serviceFinderPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "description", label: "Beschreibung", control: "textarea" },
-    { key: "placeholder", label: "Platzhalter", control: "text" },
+    { key: "placeholder", group: "content", label: "Platzhalter", control: "text" },
     { key: "initialCategory", label: "Start-Kategorie", control: "text" }
 ];
 
-export const serviceFinderDefinition: ComponentDefinition = {
+export const serviceFinderDefinition: ComponentDefinition<z.infer<typeof serviceFinderPropsSchema>> = {
     type: "serviceFinder",
     label: "Leistungs-Suche",
     category: "civic",
@@ -31,4 +31,7 @@ export const serviceFinderDefinition: ComponentDefinition = {
     propsSchema: serviceFinderPropsSchema,
     fields: serviceFinderFields,
     
+
+    municipalFields: ["heading", "placeholder"],
+    municipallyEditable: true,
 };

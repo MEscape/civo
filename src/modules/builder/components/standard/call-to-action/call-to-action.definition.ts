@@ -10,14 +10,14 @@ export const callToActionPropsSchema = z.object({
     href: z.string().default("#"),
 });
 
-export const callToActionFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const callToActionFields: PropField<Extract<keyof z.infer<typeof callToActionPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "body", label: "Text", control: "textarea" },
     { key: "buttonLabel", label: "Button-Beschriftung", control: "text" },
     { key: "href", label: "Link-Ziel", control: "text", placeholder: "/leistungen" },
 ];
 
-export const callToActionDefinition: ComponentDefinition = {
+export const callToActionDefinition: ComponentDefinition<z.infer<typeof callToActionPropsSchema>> = {
     type: "callToAction",
     label: "Call-to-Action",
     category: "content",
@@ -31,4 +31,7 @@ export const callToActionDefinition: ComponentDefinition = {
     propsSchema: callToActionPropsSchema,
     fields: callToActionFields,
     
+
+    municipalFields: ["heading", "body", "buttonLabel", "href"],
+    municipallyEditable: true,
 };

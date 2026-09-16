@@ -16,13 +16,8 @@ const geistMono = Geist_Mono({
 /**
  * Root layout.
  *
- * Deliberately does NOT use next/font/google. The design system's
- * typefaces (Source Serif 4, Inter) are declared as CSS custom
- * properties in globals.css with system-font fallbacks, so the app
- * renders correctly even in offline/restricted-network environments and
- * a real self-hosted font strategy can be dropped in later (next/font/
- * local or a <link> to a self-hosted font file) without touching layout
- * structure.
+ * Uses next/font/google to load Geist and Geist Mono as the primary
+ * typefaces for the application.
  */
 export const metadata: Metadata = {
     title: "Civo — Municipal & Smart City Website Builder",

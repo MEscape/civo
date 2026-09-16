@@ -12,14 +12,14 @@ export const newsGridPropsSchema = z.object({
     category: z.string().optional(),
 });
 
-export const newsGridFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "columns", label: "Spalten", control: "columns" },
-    { key: "limit", label: "Anzahl", control: "number" },
-    { key: "category", label: "Kategorie", control: "text", placeholder: "z. B. Mobilität" },
+export const newsGridFields: PropField<Extract<keyof z.infer<typeof newsGridPropsSchema>, string>>[] = [
+    { key: "heading", label: "Überschrift", control: "text", group: "content" },
+    { key: "limit", label: "Anzahl", control: "number", group: "content" },
+    { key: "category", label: "Kategorie", control: "text", placeholder: "z. B. Mobilität", group: "content" },
+    { key: "columns", label: "Spalten", control: "columns", group: "appearance" },
 ];
 
-export const newsGridDefinition: ComponentDefinition = {
+export const newsGridDefinition: ComponentDefinition<z.infer<typeof newsGridPropsSchema>> = {
     type: "newsGrid",
     label: "Aktuelles",
     category: "civic",
@@ -32,5 +32,8 @@ export const newsGridDefinition: ComponentDefinition = {
     }),
     propsSchema: newsGridPropsSchema,
     fields: newsGridFields,
-    
+    // Municipality admins can set the heading and filter by category;
+    // they cannot change the column count (that's the designer's layout).
+    municipalFields: ["heading", "limit", "category"],
+    municipallyEditable: true,
 };

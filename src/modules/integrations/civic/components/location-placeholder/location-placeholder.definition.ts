@@ -8,12 +8,12 @@ export const locationPlaceholderPropsSchema = z.object({
     address: z.string().optional(),
 });
 
-export const locationPlaceholderFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "address", label: "Adresse", control: "text" },
+export const locationPlaceholderFields: PropField<Extract<keyof z.infer<typeof locationPlaceholderPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "address", group: "content", label: "Adresse", control: "text" },
 ];
 
-export const locationPlaceholderDefinition: ComponentDefinition = {
+export const locationPlaceholderDefinition: ComponentDefinition<z.infer<typeof locationPlaceholderPropsSchema>> = {
     type: "locationPlaceholder",
     label: "Anfahrt",
     category: "civic",
@@ -27,4 +27,7 @@ export const locationPlaceholderDefinition: ComponentDefinition = {
     propsSchema: locationPlaceholderPropsSchema,
     fields: locationPlaceholderFields,
     
+
+    municipalFields: ["heading", "address"],
+    municipallyEditable: true,
 };

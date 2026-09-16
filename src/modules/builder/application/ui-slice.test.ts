@@ -3,6 +3,7 @@ import reducer, {
     hoverNode,
     setMode,
     setViewport,
+    setEditorMode,
     type UiState,
 } from "@/modules/builder/application/ui-slice";
 import { loadPage } from "@/modules/builder/application/document-slice";
@@ -11,6 +12,7 @@ const initialState: UiState = {
     hoveredNodeId: null,
     mode: "select",
     viewport: "desktop",
+    editorMode: "internal",
 };
 
 describe("ui slice", () => {
@@ -42,5 +44,10 @@ describe("ui slice", () => {
 
         const actual = reducer(stateWithHover, loadPage({ pageId: "page-1", children: [] }));
         expect(actual.hoveredNodeId).toBeNull();
+    });
+
+    it("should handle setEditorMode", () => {
+        const actual = reducer(initialState, setEditorMode("municipality"));
+        expect(actual.editorMode).toBe("municipality");
     });
 });

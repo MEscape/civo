@@ -8,12 +8,12 @@ export const metricGaugePropsSchema = z.object({
     metricId: z.string().optional()
 });
 
-export const metricGaugeFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "metricId", label: "Metrik-ID", control: "text" }
+export const metricGaugeFields: PropField<Extract<keyof z.infer<typeof metricGaugePropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "metricId", group: "content", label: "Metrik-ID", control: "text" }
 ];
 
-export const metricGaugeDefinition: ComponentDefinition = {
+export const metricGaugeDefinition: ComponentDefinition<z.infer<typeof metricGaugePropsSchema>> = {
     type: "metricGauge",
     label: "Tacho-Diagramm (Gauge)",
     category: "smartcity",
@@ -27,4 +27,7 @@ export const metricGaugeDefinition: ComponentDefinition = {
     propsSchema: metricGaugePropsSchema,
     fields: metricGaugeFields,
     
+
+    municipalFields: ["heading", "metricId"],
+    municipallyEditable: true,
 };

@@ -13,13 +13,13 @@ import { ServiceFinderClient } from "./service-finder-client";
  * to just the interactive list (spec §14), while the data-fetching stays
  * server-side and provider-abstracted like every other civic component.
  */
-export async function ServiceFinder({ props }: { props: Record<string, unknown> }) {
+export async function ServiceFinder({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = serviceFinderPropsSchema.safeParse(props);
     const { heading, description, placeholder, initialCategory } = parsed.success
         ? parsed.data
         : { heading: "Leistungen finden", description: undefined, placeholder: "Leistung suchen…", initialCategory: undefined };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getServiceDetails();
 
     if (!result.ok) {

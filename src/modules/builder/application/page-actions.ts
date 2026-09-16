@@ -21,7 +21,13 @@ export async function savePageConfigAction(
     const result = await pageService.saveConfig(pageId, config);
     if (result.ok) {
         revalidatePath(`/websites/${websiteId}/builder`);
-        revalidatePath(`/${websiteId}`);
+        // The public route is /s/[siteSlug] (src/app/s/[siteSlug]/page.tsx),
+        // which despite its folder name is actually keyed by the
+        // website's id, not a slug — see that route's own data fetch.
+        // The previous `revalidatePath(`/${websiteId}`)` targeted a path
+        // that was never rendered by any route, so a save never actually
+        // invalidated the public page's cache (spec §48).
+        revalidatePath(`/s/${websiteId}`);
     }
     return toActionResult(result);
 }

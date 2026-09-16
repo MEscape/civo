@@ -42,21 +42,27 @@ export default async function WebsitesPage() {
             {result.ok && result.data.length > 0 && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {result.data.map((website) => (
-                        <Link key={website.id} href={`/websites/${website.id}/builder`}>
-                            <Card className="h-full transition-colors hover:border-[var(--civo-color-primary)]">
-                                <CardHeader>
-                                    <CardTitle>{website.name}</CardTitle>
-                                    <CardDescription>
-                                        {website.description || `/${website.slug}`}
-                                    </CardDescription>
-                                    {website.templateKey && (
-                                        <p className="mt-3 inline-block w-fit rounded-full bg-[var(--civo-color-background)] px-2.5 py-1 text-xs text-[var(--civo-color-text-muted)]">
-                                            {website.templateKey}
-                                        </p>
-                                    )}
-                                </CardHeader>
-                            </Card>
-                        </Link>
+                        <Card key={website.id} className="h-full">
+                            <CardHeader>
+                                <CardTitle>{website.name}</CardTitle>
+                                <CardDescription>
+                                    {website.description || `/${website.slug}`}
+                                </CardDescription>
+                                {website.templateKey && (
+                                    <p className="mt-2 inline-block w-fit rounded-full bg-[var(--civo-color-background)] px-2.5 py-1 text-xs text-[var(--civo-color-text-muted)]">
+                                        {website.templateKey}
+                                    </p>
+                                )}
+                                <div className="mt-4 flex items-center gap-2">
+                                    <Button asChild size="sm" variant="outline">
+                                        <Link href={`/websites/${website.id}/builder`}>Builder</Link>
+                                    </Button>
+                                    <Button asChild size="sm" variant="outline">
+                                        <Link href={`/websites/${website.id}/municipality-editor`}>Gemeindeverwaltung</Link>
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                        </Card>
                     ))}
                 </div>
             )}

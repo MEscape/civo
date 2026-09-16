@@ -7,13 +7,13 @@ import { logger } from "@/lib/logger/logger";
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "short" });
 const timeFormatter = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
 
-export async function EventsGrid({ props }: { props: Record<string, unknown> }) {
+export async function EventsGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = eventsGridPropsSchema.safeParse(props);
     const { heading, columns, limit, category } = parsed.success
         ? parsed.data
         : { heading: "Termine", columns: 3 as const, limit: 6, category: undefined };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getEvents({ limit, category });
 
     if (!result.ok) {

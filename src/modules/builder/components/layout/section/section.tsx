@@ -29,10 +29,12 @@ export function SectionNode({
                                 props,
                                 children,
                                 editMode = false,
+                                websiteId,
                             }: {
     props: Record<string, unknown>;
     children?: PageNode[];
     editMode?: boolean;
+    websiteId?: string;
 }) {
     const parsed = sectionPropsSchema.safeParse(props);
     const { spacing, tone } = parsed.success
@@ -57,7 +59,7 @@ export function SectionNode({
                         </div>
                     )
                 ) : (
-                    renderPageNodes(children, editMode)
+                    renderPageNodes(children, editMode, websiteId)
                 )}
             </Container>
         </SectionPrimitive>

@@ -14,13 +14,13 @@ const dateFormatter = new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: 
  * Internally still just calls the same provider methods newsGrid/
  * eventsGrid use — no new data-fetching logic, just a different layout.
  */
-export async function NewsAndEventsSplit({ props }: { props: Record<string, unknown> }) {
+export async function NewsAndEventsSplit({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = newsAndEventsSplitPropsSchema.safeParse(props);
     const { heading, newsLimit, eventsLimit } = parsed.success
         ? parsed.data
         : { heading: "Aktuelles & Termine", newsLimit: 4, eventsLimit: 4 };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     // Fetch both in parallel
     const [newsResult, eventsResult] = await Promise.all([
         provider.getNews({ limit: newsLimit }),

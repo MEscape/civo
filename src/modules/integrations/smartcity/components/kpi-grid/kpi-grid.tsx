@@ -14,13 +14,13 @@ const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp
 
 const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 
-export async function KpiGrid({ props }: { props: Record<string, unknown> }) {
+export async function KpiGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = kpiGridPropsSchema.safeParse(props);
     const { heading, columns, category } = parsed.success
         ? parsed.data
         : { heading: "Stadt in Zahlen", columns: 3 as const, category: undefined };
 
-    const provider = getSmartCityDataProvider();
+    const provider = await getSmartCityDataProvider(websiteId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {

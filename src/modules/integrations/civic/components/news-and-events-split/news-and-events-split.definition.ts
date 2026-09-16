@@ -9,13 +9,13 @@ export const newsAndEventsSplitPropsSchema = z.object({
     eventsLimit: z.number().default(4)
 });
 
-export const newsAndEventsSplitFields: PropField[] = [
+export const newsAndEventsSplitFields: PropField<Extract<keyof z.infer<typeof newsAndEventsSplitPropsSchema>, string>>[] = [
     { key: "heading", label: "Überschrift", control: "text" },
     { key: "newsLimit", label: "Anzahl Aktuelles", control: "number" },
     { key: "eventsLimit", label: "Anzahl Termine", control: "number" }
 ];
 
-export const newsAndEventsSplitDefinition: ComponentDefinition = {
+export const newsAndEventsSplitDefinition: ComponentDefinition<z.infer<typeof newsAndEventsSplitPropsSchema>> = {
     type: "newsAndEventsSplit",
     label: "News & Events Split",
     category: "civic",
@@ -29,4 +29,7 @@ export const newsAndEventsSplitDefinition: ComponentDefinition = {
     propsSchema: newsAndEventsSplitPropsSchema,
     fields: newsAndEventsSplitFields,
     
+
+    municipalFields: ["heading", "newsLimit", "eventsLimit"],
+    municipallyEditable: true,
 };

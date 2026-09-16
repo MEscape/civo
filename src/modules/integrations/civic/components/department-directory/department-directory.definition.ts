@@ -10,12 +10,12 @@ export const departmentDirectoryPropsSchema = z.object({
     columns: gridColumnsSchema.default(2)
 });
 
-export const departmentDirectoryFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const departmentDirectoryFields: PropField<Extract<keyof z.infer<typeof departmentDirectoryPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "columns", label: "Spalten", control: "columns" }
 ];
 
-export const departmentDirectoryDefinition: ComponentDefinition = {
+export const departmentDirectoryDefinition: ComponentDefinition<z.infer<typeof departmentDirectoryPropsSchema>> = {
     type: "departmentDirectory",
     label: "Ämter-Verzeichnis",
     category: "civic",
@@ -29,4 +29,7 @@ export const departmentDirectoryDefinition: ComponentDefinition = {
     propsSchema: departmentDirectoryPropsSchema,
     fields: departmentDirectoryFields,
     
+
+    municipalFields: ["heading"],
+    municipallyEditable: true,
 };

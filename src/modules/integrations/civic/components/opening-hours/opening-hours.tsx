@@ -15,11 +15,11 @@ const dayLabels: Record<OpeningHoursEntry["day"], string> = {
     sun: "Sonntag",
 };
 
-export async function OpeningHours({ props }: { props: Record<string, unknown> }) {
+export async function OpeningHours({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = openingHoursPropsSchema.safeParse(props);
     const { heading } = parsed.success ? parsed.data : { heading: "Öffnungszeiten" };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getOpeningHours();
 
     if (!result.ok) {

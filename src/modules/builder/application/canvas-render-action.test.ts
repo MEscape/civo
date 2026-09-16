@@ -25,6 +25,6 @@ describe("canvas render action", () => {
         if (result.ok) {
             expect(result.node).toBe("MOCK_NODE");
         }
-        expect(renderPageNodes).toHaveBeenCalledWith(mockConfig.children, true);
+        expect(renderPageNodes).toHaveBeenCalledWith(mockConfig.children, true, undefined);
     });
 });

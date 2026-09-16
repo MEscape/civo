@@ -12,11 +12,11 @@ import { logger } from "@/lib/logger/logger";
  * hand-assembly. Renders each CouncilBody as its own card with a member
  * list, matching the Card chrome used everywhere else.
  */
-export async function CouncilBlock({ props }: { props: Record<string, unknown> }) {
+export async function CouncilBlock({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = councilBlockPropsSchema.safeParse(props);
     const { heading } = parsed.success ? parsed.data : { heading: "Gemeinderat & Ausschüsse" };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getCouncilBodies();
 
     if (!result.ok) {

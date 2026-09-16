@@ -7,13 +7,13 @@ import { logger } from "@/lib/logger/logger";
 
 const FALLBACK_ICON = "arrow-right" as const;
 
-export async function ServiceGrid({ props }: { props: Record<string, unknown> }) {
+export async function ServiceGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = serviceGridPropsSchema.safeParse(props);
     const { heading, columns } = parsed.success
         ? parsed.data
         : { heading: "Online-Leistungen", columns: 3 as const };
 
-    const provider = getCivicDataProvider();
+    const provider = await getCivicDataProvider(websiteId);
     const result = await provider.getServices();
 
     if (!result.ok) {

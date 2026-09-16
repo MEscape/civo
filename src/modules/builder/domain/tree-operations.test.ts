@@ -10,6 +10,7 @@ import {
     duplicateNode,
     moveNode,
     generateNodeId,
+    resolveMoveIndex,
 } from "@/modules/builder/domain/tree-operations";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 
@@ -272,5 +273,81 @@ describe("moveNode", () => {
         const tree = makeTree();
         const result = moveNode(tree, "nope", { parentId: null });
         expect(result).toEqual(tree);
+    });
+});
+
+describe("resolveMoveIndex", () => {
+    it("resolves 'before' a target at the root level", () => {
+        const tree = makeTree(); // [hero-1, section-1]
+        const index = resolveMoveIndex(tree, "section-1", {
+            parentId: null,
+            targetNodeId: "hero-1",
+            position: "before",
+        });
+        expect(index).toBe(0);
+        // Applying it should put section-1 first, exactly where the
+        // "before hero-1" drop indicator pointed.
+        const result = moveNode(tree, "section-1", { parentId: null, index });
+        expect(result.map((n) => n.id)).toEqual(["section-1", "hero-1"]);
+    });
+
+    it("resolves 'after' a target at the root level", () => {
+        const tree = makeTree(); // [hero-1, section-1]
+        const index = resolveMoveIndex(tree, "hero-1", {
+            parentId: null,
+            targetNodeId: "section-1",
+            position: "after",
+        });
+        const result = moveNode(tree, "hero-1", { parentId: null, index });
+        expect(result.map((n) => n.id)).toEqual(["section-1", "hero-1"]);
+    });
+
+    it("compensates for the active node's own removal when reordering forward within the same parent", () => {
+        // [news-1, events-1] inside section-1 — drag news-1 to "after events-1".
+        const tree = makeTree();
+        const index = resolveMoveIndex(tree, "news-1", {
+            parentId: "section-1",
+            targetNodeId: "events-1",
+            position: "after",
+        });
+        const result = moveNode(tree, "news-1", { parentId: "section-1", index });
+        const section = findNode(result, "section-1");
+        expect(section?.children?.map((n) => n.id)).toEqual(["events-1", "news-1"]);
+    });
+
+    it("does not need compensation when reordering backward within the same parent", () => {
+        // [news-1, events-1] — drag events-1 to "before news-1".
+        const tree = makeTree();
+        const index = resolveMoveIndex(tree, "events-1", {
+            parentId: "section-1",
+            targetNodeId: "news-1",
+            position: "before",
+        });
+        const result = moveNode(tree, "events-1", { parentId: "section-1", index });
+        const section = findNode(result, "section-1");
+        expect(section?.children?.map((n) => n.id)).toEqual(["events-1", "news-1"]);
+    });
+
+    it("does not compensate when moving into a different parent", () => {
+        const tree = makeTree();
+        const index = resolveMoveIndex(tree, "hero-1", {
+            parentId: "section-1",
+            targetNodeId: "news-1",
+            position: "before",
+        });
+        expect(index).toBe(0);
+        const result = moveNode(tree, "hero-1", { parentId: "section-1", index });
+        const section = findNode(result, "section-1");
+        expect(section?.children?.map((n) => n.id)).toEqual(["hero-1", "news-1", "events-1"]);
+    });
+
+    it("falls back to appending at the end when the target id is not found", () => {
+        const tree = makeTree();
+        const index = resolveMoveIndex(tree, "hero-1", {
+            parentId: null,
+            targetNodeId: "does-not-exist",
+            position: "after",
+        });
+        expect(index).toBe(tree.length);
     });
 });

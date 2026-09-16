@@ -17,13 +17,13 @@ export const kpiGridPropsSchema = z.object({
     category: z.enum(["sustainability", "mobility", "energy", "other"]).optional(),
 });
 
-export const kpiGridFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
+export const kpiGridFields: PropField<Extract<keyof z.infer<typeof kpiGridPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "columns", label: "Spalten", control: "columns" },
-    { key: "category", label: "Kategorie", control: "select", options: smartCityCategoryOptions },
+    { key: "category", group: "content", label: "Kategorie", control: "select", options: smartCityCategoryOptions },
 ];
 
-export const kpiGridDefinition: ComponentDefinition = {
+export const kpiGridDefinition: ComponentDefinition<z.infer<typeof kpiGridPropsSchema>> = {
     type: "kpiGrid",
     label: "KPI Raster",
     category: "smartcity",
@@ -37,4 +37,7 @@ export const kpiGridDefinition: ComponentDefinition = {
     propsSchema: kpiGridPropsSchema,
     fields: kpiGridFields,
     
+
+    municipalFields: ["heading", "category"],
+    municipallyEditable: true,
 };

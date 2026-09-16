@@ -16,13 +16,13 @@ export const metricTrendChartPropsSchema = z.object({
     category: z.enum(["sustainability", "mobility", "energy", "other"]).optional()
 });
 
-export const metricTrendChartFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "metricId", label: "Metrik-ID", control: "text" },
-    { key: "category", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
+export const metricTrendChartFields: PropField<Extract<keyof z.infer<typeof metricTrendChartPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" },
+    { key: "metricId", group: "content", label: "Metrik-ID", control: "text" },
+    { key: "category", group: "content", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
 ];
 
-export const metricTrendChartDefinition: ComponentDefinition = {
+export const metricTrendChartDefinition: ComponentDefinition<z.infer<typeof metricTrendChartPropsSchema>> = {
     type: "metricTrendChart",
     label: "Trend-Diagramm",
     category: "smartcity",
@@ -36,4 +36,7 @@ export const metricTrendChartDefinition: ComponentDefinition = {
     propsSchema: metricTrendChartPropsSchema,
     fields: metricTrendChartFields,
     
+
+    municipalFields: ["heading", "metricId", "category"],
+    municipallyEditable: true,
 };

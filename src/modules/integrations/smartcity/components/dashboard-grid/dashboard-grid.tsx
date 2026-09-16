@@ -24,13 +24,13 @@ const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 
  * Reuses the same client chart leaves as the standalone components
  * (TrendChartClient, DonutChartClient) — no duplicated charting logic.
  */
-export async function DashboardGrid({ props }: { props: Record<string, unknown> }) {
+export async function DashboardGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = dashboardGridPropsSchema.safeParse(props);
     const { heading, category } = parsed.success
         ? parsed.data
         : { heading: "Smart-City-Dashboard", category: undefined };
 
-    const provider = getSmartCityDataProvider();
+    const provider = await getSmartCityDataProvider(websiteId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {

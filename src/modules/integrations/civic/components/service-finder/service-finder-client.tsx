@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import * as Icons from "lucide-react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -32,12 +32,9 @@ export function ServiceFinderClient({
     const [query, setQuery] = useState("");
     const [category, setCategory] = useState(initialCategory ?? "");
 
-    const categories = useMemo(
-        () => Array.from(new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c)))),
-        [services]
-    );
+    const categories = Array.from(new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c))));
 
-    const filtered = useMemo(() => {
+    const filtered = (() => {
         const q = query.trim().toLowerCase();
         return services.filter((service) => {
             const matchesCategory = category ? service.category === category : true;
@@ -48,7 +45,7 @@ export function ServiceFinderClient({
                 : true;
             return matchesCategory && matchesQuery;
         });
-    }, [services, query, category]);
+    })();
 
     return (
         <div className="flex flex-col gap-6">

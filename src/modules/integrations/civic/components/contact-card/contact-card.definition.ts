@@ -7,11 +7,11 @@ export const contactCardPropsSchema = z.object({
     heading: z.string().default("Kontakt"),
 });
 
-export const contactCardFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" }
+export const contactCardFields: PropField<Extract<keyof z.infer<typeof contactCardPropsSchema>, string>>[] = [
+    { key: "heading", label: "Überschrift", control: "text", group: "content" }
 ];
 
-export const contactCardDefinition: ComponentDefinition = {
+export const contactCardDefinition: ComponentDefinition<z.infer<typeof contactCardPropsSchema>> = {
     type: "contactCard",
     label: "Kontakte",
     category: "civic",
@@ -24,5 +24,6 @@ export const contactCardDefinition: ComponentDefinition = {
     }),
     propsSchema: contactCardPropsSchema,
     fields: contactCardFields,
-    
+    municipalFields: ["heading"],
+    municipallyEditable: true,
 };

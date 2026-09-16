@@ -11,11 +11,11 @@ import { DonutChartClient } from "./donut-chart-client";
  * no explicit metricId is given, matching metricTrendChart's fallback
  * pattern for consistency.
  */
-export async function MetricDonut({ props }: { props: Record<string, unknown> }) {
+export async function MetricDonut({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = metricDonutPropsSchema.safeParse(props);
     const { heading, metricId } = parsed.success ? parsed.data : { heading: "Verteilung", metricId: undefined };
 
-    const provider = getSmartCityDataProvider();
+    const provider = await getSmartCityDataProvider(websiteId);
     const result = await provider.getMetrics({});
 
     if (!result.ok) {

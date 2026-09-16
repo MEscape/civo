@@ -11,6 +11,7 @@ export const selectSaveError = (state: RootState) => state.saveState.saveError;
 export const selectBuilderMode = (state: RootState) => state.ui.mode;
 export const selectViewport = (state: RootState) => state.ui.viewport;
 export const selectBuilderPageId = (state: RootState) => state.document.pageId;
+export const selectEditorMode = (state: RootState) => state.ui.editorMode;
 
 export const selectCanUndo = (state: RootState) => state.document.history.past.length > 0;
 export const selectCanRedo = (state: RootState) => state.document.history.future.length > 0;

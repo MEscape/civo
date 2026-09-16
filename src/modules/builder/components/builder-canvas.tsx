@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-    DndContext,
-    closestCenter,
-    PointerSensor,
-    KeyboardSensor,
-    useSensor,
-    useSensors,
-    type DragEndEvent,
-} from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { useEffect, useState, type RefObject } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { removeNodeAction, duplicateNodeAction, moveNodeAction } from "@/modules/builder/application/document-slice";
-import { getComponentDefinition, canInsertChild } from "@/modules/component-platform/domain";
+import { getComponentDefinition } from "@/modules/component-platform/domain";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import { locateNode } from "@/modules/builder/domain/tree-operations";
+import { flattenTree } from "@/modules/builder/domain/drop-placement";
 import { useCanvasRender } from "./use-canvas-render";
 import { useCanvasHitTesting } from "./use-canvas-hit-testing";
-import { SortableNodeHandle } from "./sortable-node-handle";
+import type { useCanvasDnd } from "./use-canvas-dnd";
+import { CanvasDragHandles } from "./canvas-drag-handles";
+import { DropIndicator } from "./drop-indicator";
 import { ThemeProvider } from "@/modules/website/components/theme-provider";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { CanvasNodeActions } from "./canvas-node-actions";
@@ -31,6 +24,9 @@ type BuilderCanvasProps = {
     onSelect: (id: string | null) => void;
     viewport: "desktop" | "tablet" | "mobile";
     theme?: WebsiteTheme;
+    containerRef: RefObject<HTMLDivElement | null>;
+    dnd: ReturnType<typeof useCanvasDnd>;
+    websiteId?: string;
 };
 
 const viewportWidths: Record<BuilderCanvasProps["viewport"], string> = {
@@ -40,31 +36,29 @@ const viewportWidths: Record<BuilderCanvasProps["viewport"], string> = {
 };
 
 /**
- * Flattens the tree depth-first into a list of every node along with its
- * parent id, so the invisible sortable layer can represent drop targets
- * at ANY nesting level — not just the root — which is what makes
- * dropping a component INTO a Section possible (spec §13). Order matches
- * render order, which is what dnd-kit's sortable strategy expects.
+ * The builder canvas (Phase 3 spec §5–16).
+ *
+ * Drag-and-drop is wired directly to the real, server-rendered DOM (every
+ * node in edit mode carries `data-civo-node-id` — see render-nodes.tsx)
+ * via `useCanvasDnd`, rather than a separate dnd-kit-owned sortable tree.
+ * The previous implementation built such a parallel tree entirely inside
+ * an `.sr-only` container that was never actually visible or reachable by
+ * pointer interaction — see the removed sortable-node-handle.tsx, whose
+ * own comment admitted as much. Selection/hover hit-testing
+ * (useCanvasHitTesting) already solved "map a click on real markup back
+ * to a node id"; useCanvasDnd reuses the exact same `data-civo-node-id`
+ * delegation technique for drag interactions.
+ *
+ * `dnd` and `containerRef` are owned by BuilderShell (not this
+ * component) because the component palette — a sibling, not a
+ * descendant — also needs to drive the same drag session when starting a
+ * drag from a palette item (spec §10).
  */
-type FlatNode = { node: PageNode; parentId: string | null };
-
-function flattenTree(nodes: PageNode[], parentId: string | null = null): FlatNode[] {
-    const result: FlatNode[] = [];
-    for (const node of nodes) {
-        result.push({ node, parentId });
-        if (node.children) {
-            result.push(...flattenTree(node.children, node.id));
-        }
-    }
-    return result;
-}
-
-export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme }: BuilderCanvasProps) {
+export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme, containerRef, dnd, websiteId }: BuilderCanvasProps) {
     const dispatch = useAppDispatch();
-    const containerRef = useRef<HTMLDivElement>(null);
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
-    const { node, isRendering, error } = useCanvasRender(nodes);
+    const { node, isRendering, error } = useCanvasRender(nodes, websiteId);
     const { measure, selectedRect, setSelectedRect, hoveredRect, setHoveredRect } = useCanvasHitTesting(
         containerRef,
         {
@@ -81,42 +75,10 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
         setHoveredRect(hoveredNodeId && hoveredNodeId !== selectedNodeId ? measure(hoveredNodeId) : null);
     }, [hoveredNodeId, selectedNodeId, node, measure, setHoveredRect]);
 
-    const sensors = useSensors(
-        useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-    );
+    const { activeSource, dropIndicatorRect, keyboardActive, handleGripKeyDown } = dnd;
 
-    const flatNodes = flattenTree(nodes);
-
-    function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
-
-        const activeId = String(active.id);
-        const overId = String(over.id);
-
-        const activeEntry = flatNodes.find((entry) => entry.node.id === activeId);
-        const overEntry = flatNodes.find((entry) => entry.node.id === overId);
-        if (!activeEntry || !overEntry) return;
-
-        const targetParentId = overEntry.parentId;
-        const activeType = activeEntry.node.type;
-
-        if (!canInsertChild(targetParentId, activeType)) {
-            return;
-        }
-
-        const targetSiblings =
-            targetParentId === null ? nodes : (locateNode(nodes, targetParentId)?.node.children ?? []);
-        const targetIndex = targetSiblings.findIndex((n) => n.id === overId);
-        if (targetIndex === -1) return;
-
-        dispatch(moveNodeAction({ nodeId: activeId, parentId: targetParentId, index: targetIndex }));
-    }
-
-    const selectedDefinition = selectedNodeId
-        ? getComponentDefinition(flatNodes.find((entry) => entry.node.id === selectedNodeId)?.node.type ?? "")
-        : undefined;
+    const flatNodesForHandles = flattenTree(nodes);
+    const selectedDefinition = selectedNodeId ? tryFindDefinition(nodes, selectedNodeId) : undefined;
 
     if (nodes.length === 0) {
         return <CanvasEmptyState />;
@@ -125,28 +87,12 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
     return (
         <div className="mx-auto transition-[max-width] duration-150" style={{ maxWidth: viewportWidths[viewport] }}>
             <div className="civo-canvas rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-background)]">
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={flatNodes.map((entry) => entry.node.id)} strategy={verticalListSortingStrategy}>
-                        <div className="sr-only">
-                            {flatNodes.map(({ node: pageNode }) => (
-                                <SortableNodeHandle
-                                    key={pageNode.id}
-                                    id={pageNode.id}
-                                    label={getComponentDefinition(pageNode.type)?.label ?? pageNode.type}
-                                />
-                            ))}
-                        </div>
-                    </SortableContext>
-                </DndContext>
-
-                <div ref={containerRef} className="civo-canvas-content">
-                    {theme ? (
-                        <ThemeProvider theme={theme}>
-                            {node}
-                        </ThemeProvider>
-                    ) : (
-                        node
-                    )}
+                <div
+                    ref={containerRef}
+                    className="civo-canvas-content"
+                    data-civo-dragging={activeSource ? "true" : "false"}
+                >
+                    {theme ? <ThemeProvider theme={theme}>{node}</ThemeProvider> : node}
                 </div>
 
                 <div className="civo-canvas-overlay">
@@ -204,6 +150,17 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
                             </div>
                         </div>
                     )}
+
+                    <CanvasDragHandles
+                        flatNodes={flatNodesForHandles}
+                        getRect={(nodeId) => measure(nodeId)}
+                        getLabel={(type) => getComponentDefinition(type)?.label ?? type}
+                        activeNodeId={activeSource?.kind === "node" ? activeSource.nodeId : null}
+                        keyboardActive={keyboardActive}
+                        onKeyDown={handleGripKeyDown}
+                    />
+
+                    <DropIndicator rect={dropIndicatorRect} />
                 </div>
             </div>
 
@@ -213,4 +170,10 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
             {error && <p className="mt-3 text-center text-xs text-red-700">{error}</p>}
         </div>
     );
+}
+
+function tryFindDefinition(nodes: PageNode[], nodeId: string) {
+    const location = locateNode(nodes, nodeId);
+    if (!location) return undefined;
+    return getComponentDefinition(location.node.type);
 }

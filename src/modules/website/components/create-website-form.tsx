@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,11 +39,7 @@ export function CreateWebsiteForm() {
     const currentName = useWatch({ control: form.control, name: "name" });
     const currentTemplateKey = useWatch({ control: form.control, name: "templateKey" });
 
-    useEffect(() => {
-        if (!slugEdited && currentName) {
-            form.setValue("slug", slugify(currentName), { shouldValidate: true });
-        }
-    }, [currentName, slugEdited, form]);
+
 
     function onSubmit(data: CreateWebsiteInput) {
         setError(null);
@@ -64,7 +60,13 @@ export function CreateWebsiteForm() {
                 <Input
                     id="name"
                     placeholder="Stadt Musterstadt"
-                    {...form.register("name")}
+                    {...form.register("name", {
+                        onChange: (e) => {
+                            if (!slugEdited) {
+                                form.setValue("slug", slugify(e.target.value), { shouldValidate: true });
+                            }
+                        }
+                    })}
                 />
                 {form.formState.errors.name && (
                     <p className="text-sm text-red-700">{form.formState.errors.name.message}</p>

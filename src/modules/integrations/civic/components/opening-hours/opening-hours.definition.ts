@@ -7,11 +7,11 @@ export const openingHoursPropsSchema = z.object({
     heading: z.string().default("Öffnungszeiten"),
 });
 
-export const openingHoursFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" }
+export const openingHoursFields: PropField<Extract<keyof z.infer<typeof openingHoursPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" }
 ];
 
-export const openingHoursDefinition: ComponentDefinition = {
+export const openingHoursDefinition: ComponentDefinition<z.infer<typeof openingHoursPropsSchema>> = {
     type: "openingHours",
     label: "Öffnungszeiten",
     category: "civic",
@@ -25,4 +25,7 @@ export const openingHoursDefinition: ComponentDefinition = {
     propsSchema: openingHoursPropsSchema,
     fields: openingHoursFields,
     
+
+    municipalFields: ["heading"],
+    municipallyEditable: true,
 };

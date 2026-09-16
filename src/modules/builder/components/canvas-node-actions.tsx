@@ -2,11 +2,11 @@ import { Copy, Trash2, ChevronUp, ChevronDown } from "@/components/ui/icons";
 
 /** Contextual actions for the selected node (spec §36). */
 export function CanvasNodeActions({
-    onDelete,
-    onDuplicate,
-    onMoveUp,
-    onMoveDown,
-}: {
+                                      onDelete,
+                                      onDuplicate,
+                                      onMoveUp,
+                                      onMoveDown,
+                                  }: {
     onDelete: () => void;
     onDuplicate: () => void;
     onMoveUp: () => void;

@@ -6,11 +6,11 @@ import { GaugeChartClient } from "./gauge-chart-client";
 
 const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 
-export async function MetricGauge({ props }: { props: Record<string, unknown> }) {
+export async function MetricGauge({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = metricGaugePropsSchema.safeParse(props);
     const { heading, metricId } = parsed.success ? parsed.data : { heading: undefined, metricId: undefined };
 
-    const provider = getSmartCityDataProvider();
+    const provider = await getSmartCityDataProvider(websiteId);
     const result = await provider.getMetrics({});
 
     if (!result.ok) {

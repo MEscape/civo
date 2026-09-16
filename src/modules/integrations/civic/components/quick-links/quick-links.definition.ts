@@ -8,11 +8,11 @@ export const quickLinksPropsSchema = z.object({
     links: z.array(z.object({ label: z.string(), href: z.string() })).default([]),
 });
 
-export const quickLinksFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" }
+export const quickLinksFields: PropField<Extract<keyof z.infer<typeof quickLinksPropsSchema>, string>>[] = [
+    { key: "heading", group: "content", label: "Überschrift", control: "text" }
 ];
 
-export const quickLinksDefinition: ComponentDefinition = {
+export const quickLinksDefinition: ComponentDefinition<z.infer<typeof quickLinksPropsSchema>> = {
     type: "quickLinks",
     label: "Schnellzugriff",
     category: "civic",
@@ -26,4 +26,7 @@ export const quickLinksDefinition: ComponentDefinition = {
     propsSchema: quickLinksPropsSchema,
     fields: quickLinksFields,
     
+
+    municipalFields: ["heading", "links"],
+    municipallyEditable: true,
 };

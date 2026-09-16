@@ -12,14 +12,14 @@ export const eventsGridPropsSchema = z.object({
     category: z.string().optional(),
 });
 
-export const eventsGridFields: PropField[] = [
-    { key: "heading", label: "Überschrift", control: "text" },
-    { key: "columns", label: "Spalten", control: "columns" },
-    { key: "limit", label: "Anzahl", control: "number" },
-    { key: "category", label: "Kategorie", control: "text", placeholder: "z. B. Markt" },
+export const eventsGridFields: PropField<Extract<keyof z.infer<typeof eventsGridPropsSchema>, string>>[] = [
+    { key: "heading", label: "Überschrift", control: "text", group: "content" },
+    { key: "limit", label: "Anzahl", control: "number", group: "content" },
+    { key: "category", label: "Kategorie", control: "text", placeholder: "z. B. Markt", group: "content" },
+    { key: "columns", label: "Spalten", control: "columns", group: "appearance" },
 ];
 
-export const eventsGridDefinition: ComponentDefinition = {
+export const eventsGridDefinition: ComponentDefinition<z.infer<typeof eventsGridPropsSchema>> = {
     type: "eventsGrid",
     label: "Veranstaltungen",
     category: "civic",
@@ -32,5 +32,6 @@ export const eventsGridDefinition: ComponentDefinition = {
     }),
     propsSchema: eventsGridPropsSchema,
     fields: eventsGridFields,
-    
+    municipalFields: ["heading", "limit", "category"],
+    municipallyEditable: true,
 };
