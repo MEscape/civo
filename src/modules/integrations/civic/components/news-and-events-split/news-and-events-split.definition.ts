@@ -1,0 +1,32 @@
+import { z } from "zod";
+import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
+import { generateNodeId } from "@/modules/builder/domain/tree-operations";
+
+
+export const newsAndEventsSplitPropsSchema = z.object({
+    heading: z.string().default("Aktuelles & Termine"),
+    newsLimit: z.number().default(4),
+    eventsLimit: z.number().default(4)
+});
+
+export const newsAndEventsSplitFields: PropField[] = [
+    { key: "heading", label: "Überschrift", control: "text" },
+    { key: "newsLimit", label: "Anzahl Aktuelles", control: "number" },
+    { key: "eventsLimit", label: "Anzahl Termine", control: "number" }
+];
+
+export const newsAndEventsSplitDefinition: ComponentDefinition = {
+    type: "newsAndEventsSplit",
+    label: "News & Events Split",
+    category: "civic",
+    description: "Aktuelles und Termine nebeneinander.",
+    canHaveChildren: false,
+    createDefaultNode: () => ({
+        id: generateNodeId("newsAndEventsSplit"),
+        type: "newsAndEventsSplit",
+        props: { heading: "Aktuelles & Termine", newsLimit: 4, eventsLimit: 4 },
+    }),
+    propsSchema: newsAndEventsSplitPropsSchema,
+    fields: newsAndEventsSplitFields,
+    
+};

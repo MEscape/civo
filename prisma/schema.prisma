@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PageConfigStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum DataSourceKind {
+  MOCK
+  REST
+  GRAPHQL
+}
+
+model Theme {
+  id             String   @id @default(uuid())
+  primaryColor   String   @default("#0F172A")
+  secondaryColor String   @default("#1E293B")
+  accentColor    String   @default("#3B82F6")
+  headingFont    String   @default("Inter")
+  bodyFont       String   @default("Inter")
+  radius         String   @default("8px")
+  spacingScale   String   @default("1")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  websites       Website[]
+}
+
+model Website {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  templateKey String?
+  themeId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  theme       Theme?   @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  pages       Page[]
+  dataSources DataSource[]
+}
+
+model Page {
+  id        String   @id @default(uuid())
+  websiteId String
+  path      String
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  website   Website      @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  configs   PageConfig[]
+
+  // Optional: Ensures path unique constraint per website
+  @@unique([websiteId, path])
+}
+
+model PageConfig {
+  id        String           @id @default(uuid())
+  pageId    String
+  content   Json             // Maps to 'unknown' in JS/TS
+  status    PageConfigStatus @default(DRAFT)
+  version   Int              @default(1)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  page      Page             @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model DataSource {
+  id        String         @id @default(uuid())
+  websiteId String
+  name      String
+  kind      DataSourceKind
+  config    Json           // Maps to 'unknown' in JS/TS
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relations
+  website   Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+}

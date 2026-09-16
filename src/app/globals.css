@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
+/*
+ * Civo design tokens.
+ *
+ * Two layers:
+ *   1. Static platform tokens (fonts loaded, base scale, neutral grays) —
+ *      these never change per-website.
+ *   2. Per-website theme tokens (--civo-color-*, --civo-font-*,
+ *      --civo-radius, --civo-section-spacing) — these are set inline by
+ *      the theme provider from stored Theme data (see
+ *      src/domain/website/theme.ts) and have defaults here so components
+ *      render sensibly even before a theme loads.
+ *
+ * No component ever writes raw hex/px values — everything routes through
+ * these variables, which is what makes per-website theming possible
+ * without touching component code.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --civo-color-primary: #1f3a34;
+    --civo-color-primary-foreground: #ffffff;
+    --civo-color-secondary: #7a8b85;
+    --civo-color-secondary-foreground: #ffffff;
+    --civo-color-accent: #c9782f;
+    --civo-color-accent-foreground: #ffffff;
+
+    --civo-color-background: #f6f4ee;
+    --civo-color-surface: #ffffff;
+    --civo-color-text: #2e2a24;
+    --civo-color-text-muted: #5b564c;
+    --civo-color-border: #e4e0d5;
+
+    --civo-font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    --civo-font-body: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+    --civo-radius: 6px;
+    --civo-section-spacing: 4rem;
+
+    --background: var(--civo-color-background);
+    --foreground: var(--civo-color-text);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--civo-font-body);
+    --font-serif: var(--civo-font-heading);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--civo-color-background);
+    color: var(--civo-color-text);
+    font-family: var(--civo-font-body);
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--civo-font-heading);
+}
+
+/* Visible focus states everywhere — accessibility is not optional. */
+:focus-visible {
+    outline: 2px solid var(--civo-color-accent);
+    outline-offset: 2px;
+}
+
+@keyframes accordion-down {
+    from {
+        height: 0;
+    }
+    to {
+        height: var(--radix-accordion-content-height);
+    }
+}
+
+@keyframes accordion-up {
+    from {
+        height: var(--radix-accordion-content-height);
+    }
+    to {
+        height: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

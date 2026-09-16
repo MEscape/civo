@@ -1,0 +1,56 @@
+"use client";
+
+import * as React from "react";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { ChevronDown } from "@/components/ui/icons";
+import { cn } from "@/lib/utils/cn";
+
+export const Accordion = AccordionPrimitive.Root;
+
+export function AccordionItem({
+    className,
+    ...props
+}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
+    return (
+        <AccordionPrimitive.Item
+            className={cn("border-b border-[var(--civo-color-border)]", className)}
+            {...props}
+        />
+    );
+}
+
+export function AccordionTrigger({
+    className,
+    children,
+    ...props
+}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+    return (
+        <AccordionPrimitive.Header className="flex">
+            <AccordionPrimitive.Trigger
+                className={cn(
+                    "flex flex-1 items-center justify-between py-4 text-left text-base font-medium text-[var(--civo-color-text)] transition-transform [&[data-state=open]>svg]:rotate-180",
+                    className
+                )}
+                {...props}
+            >
+                {children}
+                <ChevronDown className="h-4 w-4 shrink-0 text-[var(--civo-color-secondary)] transition-transform duration-200" />
+            </AccordionPrimitive.Trigger>
+        </AccordionPrimitive.Header>
+    );
+}
+
+export function AccordionContent({
+    className,
+    children,
+    ...props
+}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+    return (
+        <AccordionPrimitive.Content
+            className="overflow-hidden text-sm text-[var(--civo-color-text-muted)] data-[state=closed]:animate-[accordion-up_200ms_ease-out] data-[state=open]:animate-[accordion-down_200ms_ease-out]"
+            {...props}
+        >
+            <div className={cn("pb-4", className)}>{children}</div>
+        </AccordionPrimitive.Content>
+    );
+}

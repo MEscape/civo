@@ -1,0 +1,26 @@
+services:
+  # -----------------------------
+  # PostgreSQL
+  # -----------------------------
+  postgres:
+    image: postgres:latest
+    container_name: civo-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: civo
+      POSTGRES_PASSWORD: civo
+      POSTGRES_DB: civo
+      TZ: UTC
+      PGTZ: UTC
+    volumes:
+      - civo-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civo -d civo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  civo-postgres-data:

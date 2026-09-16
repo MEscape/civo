@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Theme" ALTER COLUMN "primaryColor" SET DEFAULT '#0F172A',
+ALTER COLUMN "secondaryColor" SET DEFAULT '#1E293B',
+ALTER COLUMN "accentColor" SET DEFAULT '#3B82F6',
+ALTER COLUMN "headingFont" SET DEFAULT 'Inter',
+ALTER COLUMN "bodyFont" SET DEFAULT 'Inter',
+ALTER COLUMN "radius" SET DEFAULT '8px',
+ALTER COLUMN "spacingScale" SET DEFAULT '1';
