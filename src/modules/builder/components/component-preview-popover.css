@@ -1,0 +1,102 @@
+/**
+ * Styles for the component palette's hover-preview popover. Scoped under
+ * .civo-preview-popover, mirroring builder-canvas.css's convention of a
+ * plain, globally-scoped stylesheet for pieces that need precise
+ * positioning Tailwind alone doesn't conveniently express — here, an
+ * absolutely-positioned flyout anchored to whichever palette row is
+ * hovered, plus a scaled-down "thumbnail" rendering of the real
+ * component so a full-width Hero/Section doesn't overflow a small card.
+ */
+
+.civo-preview-popover {
+    position: absolute;
+    left: calc(100% + 10px);
+    z-index: 30;
+    width: 360px;
+    height: 250px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--civo-radius, 6px);
+    border: 1px solid var(--civo-color-border, #e2ddd3);
+    background: var(--civo-color-surface, #fff);
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    animation: civo-preview-in 100ms ease-out;
+}
+
+@keyframes civo-preview-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .civo-preview-popover {
+        animation: none;
+    }
+}
+
+.civo-preview-popover__header {
+    flex: none;
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--civo-color-border, #e2ddd3);
+}
+
+.civo-preview-popover__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--civo-color-text, #1f2420);
+}
+
+.civo-preview-popover__description {
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    color: var(--civo-color-text-muted, #7a8b85);
+    line-height: 1.4;
+}
+
+.civo-preview-popover__stage {
+    flex: 1;
+    overflow: hidden;
+    background: var(--civo-color-background, #f6f3ec);
+}
+
+/*
+ * The live render is produced at its natural (full page) width, then
+ * scaled down to fit the popover's stage — the same trick design tools
+ * use for component thumbnails, and simpler than trying to maintain a
+ * parallel "compact" variant of every component. `--civo-preview-scale`
+ * and `--civo-preview-height` are set inline by ComponentPreviewPopover
+ * once it has measured the unscaled content (see that file): the outer
+ * wrapper is given the POST-scale height explicitly because `transform`
+ * does not itself shrink an element's layout box, which would otherwise
+ * leave a tall empty gap below the visibly-scaled content.
+ */
+.civo-preview-popover__scale-outer {
+    height: var(--civo-preview-height, auto);
+}
+
+.civo-preview-popover__scale {
+    width: 900px;
+    transform: scale(var(--civo-preview-scale, 0.4));
+    transform-origin: top left;
+}
+
+.civo-preview-popover__status {
+    display: flex;
+    height: 100%;
+    min-height: 160px;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--civo-color-text-muted, #7a8b85);
+}

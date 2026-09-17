@@ -187,6 +187,19 @@ export const musterstadtSmartCityMetrics: SmartCityMetric[] = [
         category: "sustainability",
         trend: "up",
         changePercent: 3.1,
+        series: [
+            { date: "2023-01", value: 12.1 },
+            { date: "2023-04", value: 14.5 },
+            { date: "2023-07", value: 16.2 },
+            { date: "2023-10", value: 17.8 },
+            { date: "2024-01", value: 18.4 },
+        ],
+        breakdown: [
+            { label: "Verkehr", value: 45 },
+            { label: "Gebäude", value: 35 },
+            { label: "Industrie", value: 20 },
+        ],
+        target: 25,
     },
     {
         id: "kpi-2",

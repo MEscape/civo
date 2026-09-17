@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { type ComponentCategory } from "@/modules/component-platform/domain";
 import { getAllComponentDefinitions } from "@/modules/component-platform/domain/registry";
@@ -19,11 +19,16 @@ const categories: ComponentCategory[] = ["layout", "content", "civic", "smartcit
 
 const DRAG_ACTIVATION_DISTANCE = 4;
 
+import type { WebsiteTheme } from "@/modules/website/domain/theme";
+import { ComponentPreviewPopover } from "./component-preview-popover";
+
 type ComponentPaletteProps = {
     onBeginDrag: (componentType: string, label: string) => void;
     onDragPosition: (clientX: number, clientY: number) => void;
     onDragEnd: () => void;
     onDragCancel: () => void;
+    websiteId?: string;
+    theme?: WebsiteTheme;
 };
 
 /**
@@ -47,12 +52,13 @@ type ComponentPaletteProps = {
  * resolution and completion, exactly as they do for in-canvas node
  * drags.
  */
-export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDragCancel }: ComponentPaletteProps) {
+export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDragCancel, websiteId, theme }: ComponentPaletteProps) {
     const dispatch = useAppDispatch();
     const editorMode = useAppSelector(selectEditorMode);
     const canEditStructure = hasCapability(editorMode, "editStructure");
     const pointerDownRef = useRef<{ x: number; y: number; type: string; label: string } | null>(null);
     const draggingRef = useRef(false);
+    const [hoverState, setHoverState] = useState<{ type: string; rect: DOMRect } | null>(null);
 
     // In municipality mode, only show components the municipality admin is
     // allowed to replace/insert (spec §37). In internal mode, the full
@@ -74,6 +80,7 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                 const dy = moveEvent.clientY - start.y;
                 if (Math.hypot(dx, dy) < DRAG_ACTIVATION_DISTANCE) return;
                 draggingRef.current = true;
+                setHoverState(null);
                 onBeginDrag(start.type, start.label);
             }
             onDragPosition(moveEvent.clientX, moveEvent.clientY);
@@ -84,7 +91,14 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                 onDragEnd();
             }
             pointerDownRef.current = null;
-            draggingRef.current = false;
+
+            // Delay resetting draggingRef so the subsequent native 'click' event 
+            // (which the browser fires if the drop happens on the same button) 
+            // still sees it as true and correctly ignores it.
+            setTimeout(() => {
+                draggingRef.current = false;
+            }, 0);
+
             window.removeEventListener("pointermove", handleMove);
             window.removeEventListener("pointerup", handleUp);
             window.removeEventListener("pointercancel", handleCancel);
@@ -93,7 +107,11 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
         function handleCancel() {
             if (draggingRef.current) onDragCancel();
             pointerDownRef.current = null;
-            draggingRef.current = false;
+
+            setTimeout(() => {
+                draggingRef.current = false;
+            }, 0);
+
             window.removeEventListener("pointermove", handleMove);
             window.removeEventListener("pointerup", handleUp);
             window.removeEventListener("pointercancel", handleCancel);
@@ -136,8 +154,12 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                                     type="button"
                                     onPointerDown={canEditStructure ? (event) => handlePointerDown(event, item.type, item.label) : undefined}
                                     onClick={() => handleClick(item.type)}
+                                    onPointerEnter={(e) => {
+                                        if (draggingRef.current) return;
+                                        setHoverState({ type: item.type, rect: e.currentTarget.getBoundingClientRect() });
+                                    }}
+                                    onPointerLeave={() => setHoverState(null)}
                                     className="cursor-grab rounded-[calc(var(--civo-radius)_-_2px)] px-2.5 py-2 text-left text-sm text-[var(--civo-color-text)] hover:bg-[var(--civo-color-background)] focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)]"
-                                    title={`${item.description} — klicken zum Hinzufügen${canEditStructure ? ", oder in eine Section ziehen" : ""}.`}
                                 >
                                     {item.label}
                                 </button>
@@ -146,6 +168,12 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                     </div>
                 );
             })}
+            <ComponentPreviewPopover
+                hoveredType={hoverState?.type ?? null}
+                anchorRect={hoverState?.rect ?? null}
+                websiteId={websiteId}
+                theme={theme}
+            />
         </div>
     );
 }

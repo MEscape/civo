@@ -149,6 +149,8 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
                             onDragPosition={dnd.updatePaletteDragPosition}
                             onDragEnd={dnd.endDrag}
                             onDragCancel={dnd.cancelDrag}
+                            websiteId={website.id}
+                            theme={website.theme}
                         />
                     </aside>
 
