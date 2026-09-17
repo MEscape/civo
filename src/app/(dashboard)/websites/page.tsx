@@ -17,7 +17,7 @@ export default async function WebsitesPage() {
                         Websites
                     </h1>
                     <p className="mt-1 text-sm text-[var(--civo-color-text-muted)]">
-                        Municipal, smart-city, and Verein websites managed on this platform.
+                        Kommunale, Smart-City und Vereins-Websites, die auf dieser Plattform verwaltet werden.
                     </p>
                 </div>
                 <Button asChild>
@@ -27,14 +27,14 @@ export default async function WebsitesPage() {
 
             {!result.ok && (
                 <div className="rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] p-6 text-sm text-[var(--civo-color-text-muted)]">
-                    Websites could not be loaded. Make sure the database is running and migrated (see README).
+                    Websites konnten nicht geladen werden. Stellen Sie sicher, dass die Datenbank läuft und migriert wurde (siehe README).
                 </div>
             )}
 
             {result.ok && result.data.length === 0 && (
                 <div className="rounded-[var(--civo-radius)] border border-dashed border-[var(--civo-color-border)] p-10 text-center">
                     <p className="text-sm text-[var(--civo-color-text-muted)]">
-                        No websites yet. Create the first one to get started.
+                        Noch keine Websites vorhanden. Erstellen Sie die erste, um zu beginnen.
                     </p>
                 </div>
             )}

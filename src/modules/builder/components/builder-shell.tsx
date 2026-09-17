@@ -144,17 +144,19 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
                     />
                 </div>
             ) : (
-                <div className="grid min-h-0 flex-1 grid-cols-[240px_1fr_300px]">
-                    <aside className="overflow-y-auto border-r border-[var(--civo-color-border)] bg-[var(--civo-color-surface)]">
-                        <ComponentPalette
-                            onBeginDrag={dnd.beginPaletteDrag}
-                            onDragPosition={dnd.updatePaletteDragPosition}
-                            onDragEnd={dnd.endDrag}
-                            onDragCancel={dnd.cancelDrag}
-                            websiteId={website.id}
-                            theme={website.theme}
-                        />
-                    </aside>
+                <div className={`grid min-h-0 flex-1 ${canEditStructure ? "grid-cols-[240px_1fr_300px]" : "grid-cols-[1fr_300px]"}`}>
+                    {canEditStructure && (
+                        <aside className="overflow-y-auto border-r border-[var(--civo-color-border)] bg-[var(--civo-color-surface)]">
+                            <ComponentPalette
+                                onBeginDrag={dnd.beginPaletteDrag}
+                                onDragPosition={dnd.updatePaletteDragPosition}
+                                onDragEnd={dnd.endDrag}
+                                onDragCancel={dnd.cancelDrag}
+                                websiteId={website.id}
+                                theme={website.theme}
+                            />
+                        </aside>
+                    )}
 
                     <main className="overflow-y-auto bg-[var(--civo-color-background)] p-6">
                         <BuilderCanvas

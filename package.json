@@ -14,11 +14,8 @@
     "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

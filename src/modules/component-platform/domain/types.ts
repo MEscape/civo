@@ -69,7 +69,7 @@ export type PageComponentProps = {
  * Takes an optional generic TProps so that fields and municipalFields
  * can be strictly typed to only allow valid keys of the component's props.
  */
-export type ComponentDefinition<TProps extends Record<string, unknown> = Record<string, unknown>> = {
+export type ComponentDefinition<TProps extends Record<string, unknown> = any> = {
     type: string; // The registered component type string (e.g. "hero")
     label: string;
     category: ComponentCategory;
@@ -79,7 +79,7 @@ export type ComponentDefinition<TProps extends Record<string, unknown> = Record<
     createDefaultNode: () => PageNode;
     propsSchema: ZodType;
     /** All editable fields — shown in the internal builder. */
-    fields: PropField<Extract<keyof TProps, string>>[];
+    fields: readonly PropField<Extract<keyof TProps, string>>[];
     /**
      * Subset of `fields` that municipality admins are allowed to edit
      * (spec §36, §39). When absent, municipality mode shows no editable
@@ -87,7 +87,7 @@ export type ComponentDefinition<TProps extends Record<string, unknown> = Record<
      * Keys must match field keys in `fields`; the panel resolves them by
      * key to avoid duplicating field descriptors.
      */
-    municipalFields?: Extract<keyof TProps, string>[];
+    municipalFields?: readonly Extract<keyof TProps, string>[];
     /**
      * Whether this component can appear in the municipality editor's
      * restricted component palette (spec §37).

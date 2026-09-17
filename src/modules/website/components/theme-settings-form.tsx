@@ -82,7 +82,13 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
                             <div className="space-y-1.5">
                                 <Label htmlFor="primaryColor">Primär</Label>
                                 <div className="flex gap-2">
-                                    <Input id="primaryColor-color" type="color" className="w-12 p-1 h-9 cursor-pointer" {...form.register("primaryColor")} />
+                                    <Input 
+                                        id="primaryColor-color" 
+                                        type="color" 
+                                        className="w-12 p-1 h-9 cursor-pointer" 
+                                        value={formValues.primaryColor ?? initialTheme.colors.primary}
+                                        onChange={(e) => form.setValue("primaryColor", e.target.value, { shouldValidate: true, shouldDirty: true })} 
+                                    />
                                     <Input {...form.register("primaryColor")} className="flex-1" />
                                 </div>
                                 {form.formState.errors.primaryColor && <p className="text-xs text-red-700">{form.formState.errors.primaryColor.message}</p>}
@@ -90,7 +96,13 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
                             <div className="space-y-1.5">
                                 <Label htmlFor="secondaryColor">Sekundär</Label>
                                 <div className="flex gap-2">
-                                    <Input id="secondaryColor-color" type="color" className="w-12 p-1 h-9 cursor-pointer" {...form.register("secondaryColor")} />
+                                    <Input 
+                                        id="secondaryColor-color" 
+                                        type="color" 
+                                        className="w-12 p-1 h-9 cursor-pointer" 
+                                        value={formValues.secondaryColor ?? initialTheme.colors.secondary}
+                                        onChange={(e) => form.setValue("secondaryColor", e.target.value, { shouldValidate: true, shouldDirty: true })} 
+                                    />
                                     <Input {...form.register("secondaryColor")} className="flex-1" />
                                 </div>
                                 {form.formState.errors.secondaryColor && <p className="text-xs text-red-700">{form.formState.errors.secondaryColor.message}</p>}
@@ -98,7 +110,13 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
                             <div className="space-y-1.5">
                                 <Label htmlFor="accentColor">Akzent</Label>
                                 <div className="flex gap-2">
-                                    <Input id="accentColor-color" type="color" className="w-12 p-1 h-9 cursor-pointer" {...form.register("accentColor")} />
+                                    <Input 
+                                        id="accentColor-color" 
+                                        type="color" 
+                                        className="w-12 p-1 h-9 cursor-pointer" 
+                                        value={formValues.accentColor ?? initialTheme.colors.accent}
+                                        onChange={(e) => form.setValue("accentColor", e.target.value, { shouldValidate: true, shouldDirty: true })} 
+                                    />
                                     <Input {...form.register("accentColor")} className="flex-1" />
                                 </div>
                                 {form.formState.errors.accentColor && <p className="text-xs text-red-700">{form.formState.errors.accentColor.message}</p>}

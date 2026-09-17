@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { undo, redo } from "@/modules/builder/application/document-slice";
 import { setMode, setViewport } from "@/modules/builder/application/ui-slice";
 import { saveStarted, saveSucceeded, saveFailed } from "@/modules/builder/application/save-state-slice";
+import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
 import {
     selectDraftChildren,
     selectIsDirty,
@@ -15,10 +16,11 @@ import {
     selectViewport,
     selectCanUndo,
     selectCanRedo,
+    selectEditorMode,
 } from "@/modules/builder/application/builder-selectors";
 import { savePageConfigAction } from "@/modules/builder/application/page-actions";
 import { Button } from "@/components/ui/button";
-import { Undo2, Redo2, Eye, Pencil, Monitor, Tablet, Smartphone } from "@/components/ui/icons";
+import { Undo2, Redo2, Eye, Pencil, Monitor, Tablet, Smartphone, Settings } from "@/components/ui/icons";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { cn } from "@/lib/utils/cn";
 
@@ -44,6 +46,9 @@ export function BuilderToolbar({ website, page }: BuilderToolbarProps) {
     const viewport = useAppSelector(selectViewport);
     const canUndo = useAppSelector(selectCanUndo);
     const canRedo = useAppSelector(selectCanRedo);
+    const editorMode = useAppSelector(selectEditorMode);
+
+    const canManageTheme = hasCapability(editorMode, "manageTheme");
 
     const handleSave = () => {
         dispatch(saveStarted());
@@ -150,12 +155,22 @@ export function BuilderToolbar({ website, page }: BuilderToolbarProps) {
                 </Button>
 
                 <Link
-                    href={`/${website.id}`}
+                    href={`/s/${website.id}`}
                     target="_blank"
                     className="text-sm text-[var(--civo-color-text-muted)] hover:underline"
                 >
                     Öffentliche Seite
                 </Link>
+
+                {canManageTheme && (
+                    <Link
+                        href={`/websites/${website.id}/settings`}
+                        className="flex items-center gap-1.5 text-sm text-[var(--civo-color-text-muted)] hover:text-[var(--civo-color-text)]"
+                    >
+                        <Settings className="h-4 w-4" />
+                        Einstellungen
+                    </Link>
+                )}
 
                 <SaveIndicator status={saveStatus} error={saveError} isDirty={isDirty} />
 

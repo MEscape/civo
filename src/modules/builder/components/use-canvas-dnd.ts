@@ -296,7 +296,7 @@ export function useCanvasDnd(
             window.removeEventListener("pointerup", handlePointerUp);
             window.removeEventListener("pointercancel", handlePointerCancel);
         };
-    }, [containerRef]);
+    }, [containerRef, enabled]);
 
     /**
      * Keyboard drag entry point (spec §12: keyboard-accessible movement).

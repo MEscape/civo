@@ -55,7 +55,7 @@ export function PropertiesPanel() {
     const definition = getComponentDefinition(node.type);
 
     // Resolve which fields to show based on editor mode
-    let fields: PropField[] = [];
+    let fields: readonly PropField[] = [];
     if (definition) {
         if (editorMode === "municipality") {
             // Municipality mode: only show explicitly allow-listed fields
@@ -105,7 +105,7 @@ function GroupedFields({
     props,
 }: {
     nodeId: string;
-    fields: PropField[];
+    fields: readonly PropField[];
     props: Record<string, unknown>;
 }) {
     const ungrouped = fields.filter((f) => !f.group);
@@ -150,7 +150,7 @@ function FieldList({
     props,
 }: {
     nodeId: string;
-    fields: PropField[];
+    fields: readonly PropField[];
     props: Record<string, unknown>;
 }) {
     return (
