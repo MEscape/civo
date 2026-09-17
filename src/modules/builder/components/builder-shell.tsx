@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadPage, undo, redo, selectNode, removeNodeAction } from "@/modules/builder/application/document-slice";
 import { selectIsDirty, selectSelectedNodeId, selectBuilderMode, selectViewport, selectDraftChildren, selectBuilderPageId } from "@/modules/builder/application/builder-selectors";
 import type { PageNode } from "@/modules/builder/domain/page-node";
-import type { EditorMode } from "@/modules/builder/domain/editor-capabilities";
+import { type EditorMode, hasCapability } from "@/modules/builder/domain/editor-capabilities";
 import { setEditorMode } from "@/modules/builder/application/ui-slice";
 import { ComponentPalette } from "@/modules/builder/components/component-palette";
 import { BuilderCanvas } from "@/modules/builder/components/builder-canvas";
@@ -44,7 +44,8 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
 
     const canvasContainerRef = useRef<HTMLDivElement>(null);
     const handleDrop = useDropHandler(draftChildren, (id) => dispatch(selectNode(id)));
-    const dnd = useCanvasDnd(draftChildren, canvasContainerRef, handleDrop);
+    const canEditStructure = hasCapability(editorMode, "editStructure");
+    const dnd = useCanvasDnd(draftChildren, canvasContainerRef, handleDrop, canEditStructure);
 
     // Load this page's document into Redux whenever the page identity
     // changes. Reads the currently-loaded pageId from the store itself

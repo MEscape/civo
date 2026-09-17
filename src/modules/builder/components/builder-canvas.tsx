@@ -16,6 +16,9 @@ import { ThemeProvider } from "@/modules/website/components/theme-provider";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { CanvasNodeActions } from "./canvas-node-actions";
 import { CanvasEmptyState } from "./canvas-empty-state";
+import { useAppSelector } from "@/store/hooks";
+import { selectEditorMode } from "@/modules/builder/application/builder-selectors";
+import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
 import "./builder-canvas.css";
 
 type BuilderCanvasProps = {
@@ -56,6 +59,8 @@ const viewportWidths: Record<BuilderCanvasProps["viewport"], string> = {
  */
 export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme, containerRef, dnd, websiteId }: BuilderCanvasProps) {
     const dispatch = useAppDispatch();
+    const editorMode = useAppSelector(selectEditorMode);
+    const canEditStructure = hasCapability(editorMode, "editStructure");
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
     const { node, isRendering, error } = useCanvasRender(nodes, websiteId);
@@ -155,46 +160,50 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
                         >
                             <div className="civo-canvas-label">
                                 <span>{selectedDefinition?.label ?? "Komponente"}</span>
-                                <CanvasNodeActions
-                                    onDelete={() => dispatch(removeNodeAction(selectedNodeId))}
-                                    onDuplicate={() => dispatch(duplicateNodeAction(selectedNodeId))}
-                                    onMoveUp={() => {
-                                        const location = locateNode(nodes, selectedNodeId);
-                                        if (location && location.index > 0) {
-                                            dispatch(
-                                                moveNodeAction({
-                                                    nodeId: selectedNodeId,
-                                                    parentId: location.parentId,
-                                                    index: location.index - 1,
-                                                })
-                                            );
-                                        }
-                                    }}
-                                    onMoveDown={() => {
-                                        const location = locateNode(nodes, selectedNodeId);
-                                        if (location && location.index < location.siblings.length - 1) {
-                                            dispatch(
-                                                moveNodeAction({
-                                                    nodeId: selectedNodeId,
-                                                    parentId: location.parentId,
-                                                    index: location.index + 1,
-                                                })
-                                            );
-                                        }
-                                    }}
-                                />
+                                {canEditStructure && (
+                                    <CanvasNodeActions
+                                        onDelete={() => dispatch(removeNodeAction(selectedNodeId))}
+                                        onDuplicate={() => dispatch(duplicateNodeAction(selectedNodeId))}
+                                        onMoveUp={() => {
+                                            const location = locateNode(nodes, selectedNodeId);
+                                            if (location && location.index > 0) {
+                                                dispatch(
+                                                    moveNodeAction({
+                                                        nodeId: selectedNodeId,
+                                                        parentId: location.parentId,
+                                                        index: location.index - 1,
+                                                    })
+                                                );
+                                            }
+                                        }}
+                                        onMoveDown={() => {
+                                            const location = locateNode(nodes, selectedNodeId);
+                                            if (location && location.index < location.siblings.length - 1) {
+                                                dispatch(
+                                                    moveNodeAction({
+                                                        nodeId: selectedNodeId,
+                                                        parentId: location.parentId,
+                                                        index: location.index + 1,
+                                                    })
+                                                );
+                                            }
+                                        }}
+                                    />
+                                )}
                             </div>
                         </div>
                     )}
 
-                    <CanvasDragHandles
-                        flatNodes={flatNodesForHandles}
-                        getRect={(nodeId) => measure(nodeId)}
-                        getLabel={(type) => getComponentDefinition(type)?.label ?? type}
-                        activeNodeId={activeSource?.kind === "node" ? activeSource.nodeId : null}
-                        keyboardActive={keyboardActive}
-                        onKeyDown={handleGripKeyDown}
-                    />
+                    {canEditStructure && (
+                        <CanvasDragHandles
+                            flatNodes={flatNodesForHandles}
+                            getRect={(nodeId) => measure(nodeId)}
+                            getLabel={(type) => getComponentDefinition(type)?.label ?? type}
+                            activeNodeId={activeSource?.kind === "node" ? activeSource.nodeId : null}
+                            keyboardActive={keyboardActive}
+                            onKeyDown={handleGripKeyDown}
+                        />
+                    )}
 
                     <DropIndicator rect={dropIndicatorRect} />
                 </div>

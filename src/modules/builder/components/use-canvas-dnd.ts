@@ -70,7 +70,8 @@ function measureAllNodeRects(container: HTMLElement): Map<string, Rect> {
 export function useCanvasDnd(
     nodes: PageNode[],
     containerRef: RefObject<HTMLDivElement | null>,
-    onDrop: (source: DragSource, target: DropTarget) => void
+    onDrop: (source: DragSource, target: DropTarget) => void,
+    enabled: boolean = true
 ) {
     const [activeSource, setActiveSource] = useState<DragSource | null>(null);
     const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
@@ -102,7 +103,14 @@ export function useCanvasDnd(
         if (!container) return null;
 
         const elementAtPoint = document.elementFromPoint(clientX, clientY);
-        const nodeEl = elementAtPoint?.closest("[data-civo-node-id]") as HTMLElement | null;
+        
+        // If the pointer has left the entire canvas wrapper (e.g., dragged over the sidebar or out of the browser window),
+        // we should not have a valid drop target.
+        if (!elementAtPoint || !container.parentElement?.contains(elementAtPoint)) {
+            return null;
+        }
+
+        const nodeEl = elementAtPoint.closest("[data-civo-node-id]") as HTMLElement | null;
 
         if (!nodeEl) {
             // Pointer is over empty canvas background/padding, not any
@@ -183,6 +191,7 @@ export function useCanvasDnd(
     };
 
     const beginDrag = (source: DragSource) => {
+        if (!enabled) return;
         const container = containerRef.current;
         if (container) rectsRef.current = measureAllNodeRects(container);
         activeSourceRef.current = source;
@@ -228,6 +237,8 @@ export function useCanvasDnd(
     });
 
     useEffect(() => {
+        if (!enabled) return;
+        
         const container = containerRef.current;
         if (!container) return;
 
