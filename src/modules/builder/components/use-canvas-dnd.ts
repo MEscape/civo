@@ -110,7 +110,16 @@ export function useCanvasDnd(
             // "append after the last root-level node" so dropping into
             // the whitespace below the last section still works.
             const lastRoot = [...flatNodes].reverse().find((entry) => entry.parentId === null);
-            if (!lastRoot) return null;
+            if (!lastRoot) {
+                // If there are no root nodes at all (empty canvas), dropping anywhere
+                // means inserting at the very beginning (index 0) of the root level.
+                return {
+                    targetNodeId: "__root__",
+                    parentId: null,
+                    position: "inside",
+                    index: 0,
+                } as unknown as DropTarget;
+            }
             if (source.kind === "node" && lastRoot.node.id === source.nodeId) return null;
             const activeId = source.kind === "node" ? source.nodeId : "__new-component__";
             return resolveDropTarget(nodes, activeId, resolveActiveType(source), lastRoot, "after");

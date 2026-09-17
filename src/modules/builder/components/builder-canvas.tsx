@@ -105,8 +105,8 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
     const selectedDefinition = selectedNodeId ? tryFindDefinition(nodes, selectedNodeId) : undefined;
     const hoveredDefinition = hoveredNodeId ? tryFindDefinition(nodes, hoveredNodeId) : undefined;
 
-    if (nodes.length === 0) {
-        return <CanvasEmptyState />;
+    if (nodes.length === 0 && !isRendering) {
+        // We still need to render the canvas shell so the empty state is a valid drop target
     }
 
     return (
@@ -118,7 +118,13 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
                     data-civo-dragging={activeSource ? "true" : "false"}
                     {...handlers}
                 >
-                    {theme ? <ThemeProvider theme={theme}>{node}</ThemeProvider> : node}
+                    {nodes.length === 0 ? (
+                        <CanvasEmptyState />
+                    ) : theme ? (
+                        <ThemeProvider theme={theme}>{node}</ThemeProvider>
+                    ) : (
+                        node
+                    )}
                 </div>
 
                 <div className="civo-canvas-overlay">

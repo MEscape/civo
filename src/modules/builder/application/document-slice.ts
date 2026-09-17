@@ -6,6 +6,7 @@ import {
     updateNodeProps as updateNodePropsInTree,
     duplicateNode as duplicateNodeInTree,
     moveNode as moveNodeInTree,
+    locateNode,
 } from "@/modules/builder/domain/tree-operations";
 
 type HistoryEntry = {
@@ -66,12 +67,28 @@ const documentSlice = createSlice({
             pushHistory(state, { children, selectedNodeId: node.id });
         },
         removeNodeAction(state, action: PayloadAction<string>) {
+            let nextSelectedId = state.history.present.selectedNodeId;
+
+            // If we are deleting the currently selected node, find a logical fallback
+            if (nextSelectedId === action.payload) {
+                const location = locateNode(state.history.present.children, action.payload);
+                if (location) {
+                    if (location.index < location.siblings.length - 1) {
+                        nextSelectedId = location.siblings[location.index + 1].id;
+                    } else if (location.index > 0) {
+                        nextSelectedId = location.siblings[location.index - 1].id;
+                    } else if (location.parentId) {
+                        nextSelectedId = location.parentId;
+                    } else {
+                        nextSelectedId = null;
+                    }
+                } else {
+                    nextSelectedId = null;
+                }
+            }
+
             const children = removeNodeFromTree(state.history.present.children, action.payload);
-            const selectedNodeId =
-                state.history.present.selectedNodeId === action.payload
-                    ? null
-                    : state.history.present.selectedNodeId;
-            pushHistory(state, { children, selectedNodeId });
+            pushHistory(state, { children, selectedNodeId: nextSelectedId });
         },
         duplicateNodeAction(state, action: PayloadAction<string>) {
             const result = duplicateNodeInTree(state.history.present.children, action.payload);
