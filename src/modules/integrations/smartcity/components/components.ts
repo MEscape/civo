@@ -8,7 +8,7 @@ import { metricGaugeDefinition } from "./metric-gauge/metric-gauge.definition";
 import { metricTableDefinition } from "./metric-table/metric-table.definition";
 import { dashboardGridDefinition } from "./dashboard-grid/dashboard-grid.definition";
 
-export const smartcityComponents: ComponentDefinition[] = [
+export const smartcityComponents: ComponentDefinition<any>[] = [
     kpiGridDefinition,
     metricChartDefinition,
     metricTrendChartDefinition,
