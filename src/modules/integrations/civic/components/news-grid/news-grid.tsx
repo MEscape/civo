@@ -1,13 +1,13 @@
 import { newsGridPropsSchema } from "./news-grid.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, Grid, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 
 /**
  * NewsGrid — a canonical example of the "components never see the
  * external schema" principle (spec §4). This component only knows about
- * `NewsItem` (src/domain/content/content-types.ts) and the
+ * `NewsItem` (src/modules/content/domain/civic-types.ts) and the
  * MunicipalityDataProvider interface. Whether that data originated from
  * the mock provider, a future REST adapter, or a database query is
  * invisible here.

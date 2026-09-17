@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { undo, redo } from "@/modules/builder/application/document-slice";
 import { setMode, setViewport } from "@/modules/builder/application/ui-slice";
@@ -55,17 +57,30 @@ export function BuilderToolbar({ website, page }: BuilderToolbarProps) {
         });
     };
 
+    // Keep a ref to the latest handleSave so the keydown listener below
+    // can always call the current version (closing over up-to-date
+    // draftChildren/page/website) without needing to re-subscribe the
+    // window listener on every render — handleSave is redefined each
+    // render, but this effect's own dependency array stays empty and
+    // the listener is attached exactly once per mount. The ref is
+    // updated from its own effect (not during render) since React
+    // Compiler disallows ref writes in the render body.
+    const handleSaveRef = useRef(handleSave);
+    useEffect(() => {
+        handleSaveRef.current = handleSave;
+    });
+
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             const meta = event.metaKey || event.ctrlKey;
             if (meta && event.key.toLowerCase() === "s") {
                 event.preventDefault();
-                handleSave();
+                handleSaveRef.current();
             }
         }
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [handleSave]);
+    }, []);
 
     return (
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] px-4">
@@ -153,12 +168,12 @@ export function BuilderToolbar({ website, page }: BuilderToolbarProps) {
 }
 
 function IconToggle({
-    icon,
-    label,
-    active,
-    disabled,
-    onClick,
-}: {
+                        icon,
+                        label,
+                        active,
+                        disabled,
+                        onClick,
+                    }: {
     icon: React.ReactNode;
     label: string;
     active?: boolean;
@@ -185,10 +200,10 @@ function IconToggle({
 }
 
 function SaveIndicator({
-    status,
-    error,
-    isDirty,
-}: {
+                           status,
+                           error,
+                           isDirty,
+                       }: {
     status: string;
     error: string | null;
     isDirty: boolean;

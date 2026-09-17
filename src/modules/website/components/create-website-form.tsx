@@ -36,7 +36,6 @@ export function CreateWebsiteForm() {
         },
     });
 
-    const currentName = useWatch({ control: form.control, name: "name" });
     const currentTemplateKey = useWatch({ control: form.control, name: "templateKey" });
 
 

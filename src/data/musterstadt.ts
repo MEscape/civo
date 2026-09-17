@@ -3,14 +3,14 @@ import type {
     CivicEvent,
     Service,
     Contact,
-    SmartCityMetric,
     OpeningHoursEntry,
     ServiceDetail,
     CouncilBody,
     WasteCollectionEntry,
     Alert,
     Department,
-} from "@/modules/content/domain/content-types";
+} from "@/modules/content/domain/civic-types";
+import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 
 /**
  * Realistic demo content for the fictional municipality "Musterstadt".
@@ -239,6 +239,9 @@ export const musterstadtServiceDetails: ServiceDetail[] = [
     { id: "sd-1", title: "Personalausweis beantragen", href: "/services/ausweis", category: "Ausweise", icon: "CreditCard", department: "Bürgerbüro" },
     { id: "sd-2", title: "Wohnsitz ummelden", href: "/services/ummelden", category: "Meldewesen", icon: "Home", department: "Bürgerbüro" },
     { id: "sd-3", title: "Hundeanmeldung", href: "/services/hund", category: "Steuern", icon: "Dog", department: "Kämmerei" },
+    { id: "sd-4", title: "Baugenehmigung", href: "/services/bau", category: "Bauen & Wohnen", icon: "Hammer", department: "Bauamt" },
+    { id: "sd-5", title: "Gewerbe anmelden", href: "/services/gewerbe", category: "Wirtschaft", icon: "Briefcase", department: "Gewerbeamt" },
+    { id: "sd-6", title: "Elterngeld beantragen", href: "/services/elterngeld", category: "Familie", icon: "Baby", department: "Jugendamt" },
 ];
 
 export const musterstadtCouncilBodies: CouncilBody[] = [
@@ -248,7 +251,18 @@ export const musterstadtCouncilBodies: CouncilBody[] = [
         description: "Oberstes Organ der Stadt",
         members: [
             { id: "m-1", name: "Erika Musterfrau", role: "Vorsitzende", party: "CDU" },
-            { id: "m-2", name: "Max Mustermann", party: "SPD" }
+            { id: "m-2", name: "Max Mustermann", party: "SPD" },
+            { id: "m-3", name: "Julia Sommer", party: "Grüne" },
+            { id: "m-4", name: "Thomas Winter", party: "FDP" }
+        ]
+    },
+    {
+        id: "cb-2",
+        name: "Bauausschuss",
+        description: "Zuständig für Stadtentwicklung und Bauanträge",
+        members: [
+            { id: "m-5", name: "Heinrich Weber", role: "Vorsitzender", party: "SPD" },
+            { id: "m-6", name: "Sarah Meyer", party: "CDU" }
         ]
     }
 ];
@@ -258,6 +272,9 @@ export const musterstadtWasteEntries: WasteCollectionEntry[] = [
     { id: "w-2", date: new Date(Date.now() + 86400000 * 2), wasteType: "biomuell", district: "Bezirk Nord" },
     { id: "w-3", date: new Date(Date.now() + 86400000 * 4), wasteType: "papier", district: "Alle Bezirke" },
     { id: "w-4", date: new Date(Date.now() + 86400000 * 7), wasteType: "gelberSack", district: "Bezirk Süd" },
+    { id: "w-5", date: new Date(Date.now() + 86400000 * 9), wasteType: "restmuell", district: "Bezirk Nord" },
+    { id: "w-6", date: new Date(Date.now() + 86400000 * 11), wasteType: "biomuell", district: "Bezirk Mitte" },
+    { id: "w-7", date: new Date(Date.now() + 86400000 * 14), wasteType: "gelberSack", district: "Bezirk Nord" },
 ];
 
 export const musterstadtAlerts: Alert[] = [
@@ -273,8 +290,26 @@ export const musterstadtDepartments: Department[] = [
         description: "Ihre erste Anlaufstelle für Ausweise und Meldewesen",
         href: "/aemter/buergerbuero",
         contacts: [
-            { id: "c-1", name: "Petra Schmitz", email: "p.schmitz@musterstadt.de" },
-            { id: "c-2", name: "Klaus Wagner", email: "k.wagner@musterstadt.de" }
+            { id: "c-1", name: "Petra Schmitz", email: "p.schmitz@musterstadt.de", phone: "07541 123-100" },
+            { id: "c-2", name: "Klaus Wagner", email: "k.wagner@musterstadt.de", phone: "07541 123-101" }
+        ]
+    },
+    {
+        id: "d-2",
+        name: "Bauamt",
+        description: "Ansprechpartner für Bauanträge, Bebauungspläne und Stadtentwicklung",
+        href: "/aemter/bauamt",
+        contacts: [
+            { id: "c-3", name: "Sabine Müller", email: "bauamt@musterstadt.de", phone: "07541 123-200" }
+        ]
+    },
+    {
+        id: "d-3",
+        name: "Standesamt",
+        description: "Geburten, Eheschließungen, Sterbefälle",
+        href: "/aemter/standesamt",
+        contacts: [
+            { id: "c-4", name: "Michael Schmidt", email: "standesamt@musterstadt.de", phone: "07541 123-300" }
         ]
     }
 ];

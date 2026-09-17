@@ -1,5 +1,5 @@
 import { richTextPropsSchema } from "./rich-text.definition";
-import { Section, Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container } from "@/components/layout/layout-primitives";
 
 export function RichText({ props }: { props: Record<string, unknown> }) {
     const parsed = richTextPropsSchema.safeParse(props);

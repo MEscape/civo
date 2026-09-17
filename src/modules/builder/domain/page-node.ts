@@ -1,6 +1,3 @@
-import { z } from "zod";
-import { isRegisteredComponentType } from "@/modules/component-platform/domain";
-
 /**
  * PageNode — the JSON/configuration-based representation of a page.
  *

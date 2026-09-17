@@ -1,5 +1,5 @@
 import { callToActionPropsSchema } from "./call-to-action.definition";
-import { Section, Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container } from "@/components/layout/layout-primitives";
 import { Button } from "@/components/ui/button";
 
 export function CallToAction({ props }: { props: Record<string, unknown> }) {

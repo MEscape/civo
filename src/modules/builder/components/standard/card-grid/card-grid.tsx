@@ -1,5 +1,5 @@
 import { cardGridPropsSchema } from "./card-grid.definition";
-import { Section, Container, Grid, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export function CardGrid({ props }: { props: Record<string, unknown> }) {

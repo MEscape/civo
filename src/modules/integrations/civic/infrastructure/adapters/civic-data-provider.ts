@@ -11,7 +11,7 @@ import type {
     WasteCollectionEntry,
     Alert,
     Department,
-} from "@/modules/content/domain/content-types";
+} from "@/modules/content/domain/civic-types";
 
 /**
  * The abstraction every civic-content-consuming component is built against.

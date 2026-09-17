@@ -1,10 +1,10 @@
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "@/components/ui/icons";
 import { metricTablePropsSchema } from "./metric-table.definition";
 import { getSmartCityDataProvider } from "@/modules/integrations/smartcity/infrastructure/adapters";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { logger } from "@/lib/logger/logger";
-import type { SmartCityMetric } from "@/modules/content/domain/content-types";
+import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 
 const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
     up: TrendingUp,

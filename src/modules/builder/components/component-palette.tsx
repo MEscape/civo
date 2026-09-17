@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { componentDefinitions, type ComponentCategory } from "@/modules/component-platform/domain";
+import { type ComponentCategory } from "@/modules/component-platform/domain";
+import { getAllComponentDefinitions } from "@/modules/component-platform/domain/registry";
 import { insertNodeAction } from "@/modules/builder/application/document-slice";
 import { selectEditorMode } from "@/modules/builder/application/builder-selectors";
 import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
@@ -57,8 +58,8 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
     // allowed to replace/insert (spec §37). In internal mode, the full
     // palette is shown and drag-to-insert is available.
     const visibleDefinitions = editorMode === "municipality"
-        ? componentDefinitions.filter((d) => d.municipallyEditable)
-        : componentDefinitions;
+        ? getAllComponentDefinitions().filter((d) => d.municipallyEditable)
+        : getAllComponentDefinitions();
 
     function handlePointerDown(event: React.PointerEvent, type: string, label: string) {
         if (event.button !== 0) return;
@@ -110,7 +111,7 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
         // called preventDefault, but pointer events don't automatically
         // do that, so we gate on draggingRef instead).
         if (draggingRef.current) return;
-        const definition = componentDefinitions.find((def) => def.type === type);
+        const definition = getAllComponentDefinitions().find((def) => def.type === type);
         if (!definition) return;
         dispatch(insertNodeAction({ node: definition.createDefaultNode(), parentId: null }));
     }
@@ -135,7 +136,7 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                                     type="button"
                                     onPointerDown={canEditStructure ? (event) => handlePointerDown(event, item.type, item.label) : undefined}
                                     onClick={() => handleClick(item.type)}
-                                    className="cursor-grab rounded-[calc(var(--civo-radius)_-_2px)] px-2.5 py-2 text-left text-sm text-[var(--civo-color-text)] hover:bg-[var(--civo-color-background)] focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)] active:cursor-grabbing"
+                                    className="cursor-grab rounded-[calc(var(--civo-radius)_-_2px)] px-2.5 py-2 text-left text-sm text-[var(--civo-color-text)] hover:bg-[var(--civo-color-background)] focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)]"
                                     title={`${item.description} — klicken zum Hinzufügen${canEditStructure ? ", oder in eine Section ziehen" : ""}.`}
                                 >
                                     {item.label}

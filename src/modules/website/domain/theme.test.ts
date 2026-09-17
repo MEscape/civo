@@ -27,14 +27,14 @@ describe("toDomainTheme", () => {
             primaryColor: "#111111",
             secondaryColor: "#222222",
             accentColor: "#333333",
-            headingFont: "Playfair Display",
-            bodyFont: "Roboto",
+            headingFont: "DM Sans",
+            bodyFont: "DM Sans",
             radius: "lg",
             spacingScale: "spacious",
         };
         expect(toDomainTheme(raw)).toEqual({
             colors: { primary: "#111111", secondary: "#222222", accent: "#333333" },
-            typography: { headingFont: "Playfair Display", bodyFont: "Roboto" },
+            typography: { headingFont: "DM Sans", bodyFont: "DM Sans" },
             radius: "lg",
             spacingScale: "spacious",
         });
@@ -46,7 +46,7 @@ describe("toDomainTheme", () => {
             secondaryColor: "#222222",
             accentColor: null,
             headingFont: null,
-            bodyFont: "Roboto",
+            bodyFont: "DM Sans",
             radius: null,
             spacingScale: null,
         };
@@ -55,7 +55,7 @@ describe("toDomainTheme", () => {
         expect(result.colors.secondary).toBe("#222222");
         expect(result.colors.accent).toBe(defaultTheme.colors.accent);
         expect(result.typography.headingFont).toBe(defaultTheme.typography.headingFont);
-        expect(result.typography.bodyFont).toBe("Roboto");
+        expect(result.typography.bodyFont).toBe("DM Sans");
         expect(result.radius).toBe(defaultTheme.radius);
         expect(result.spacingScale).toBe(defaultTheme.spacingScale);
     });
@@ -101,10 +101,21 @@ describe("themeToCssVariables", () => {
         expect(vars["--civo-color-accent"]).toBe(defaultTheme.colors.accent);
     });
 
-    it("wraps font names in quotes with a sane fallback stack", () => {
+    it("resolves font names to their loaded CSS variable with a sane fallback stack", () => {
         const vars = themeToCssVariables(defaultTheme);
-        expect(vars["--civo-font-heading"]).toBe('"Source Serif 4", ui-serif, Georgia, serif');
-        expect(vars["--civo-font-body"]).toBe('"Inter", ui-sans-serif, system-ui, sans-serif');
+        expect(vars["--civo-font-heading"]).toBe("var(--font-source-serif), ui-serif, Georgia, serif");
+        expect(vars["--civo-font-body"]).toBe("var(--font-inter), ui-sans-serif, system-ui, sans-serif");
+    });
+
+    it("falls back to the default font variable for an unrecognized/legacy font name", () => {
+        // e.g. a theme row saved before a font was removed from
+        // AVAILABLE_HEADING_FONTS/AVAILABLE_BODY_FONTS.
+        const vars = themeToCssVariables({
+            ...defaultTheme,
+            typography: { headingFont: "Playfair Display", bodyFont: "Roboto" },
+        });
+        expect(vars["--civo-font-heading"]).toBe("var(--font-source-serif), ui-serif, Georgia, serif");
+        expect(vars["--civo-font-body"]).toBe("var(--font-inter), ui-sans-serif, system-ui, sans-serif");
     });
 
     it("maps every radius enum value to a concrete pixel value", () => {

@@ -30,8 +30,8 @@
     --civo-color-text-muted: #5b564c;
     --civo-color-border: #e4e0d5;
 
-    --civo-font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-    --civo-font-body: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    --civo-font-heading: var(--font-source-serif), ui-serif, Georgia, serif;
+    --civo-font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
     --civo-radius: 6px;
     --civo-section-spacing: 4rem;

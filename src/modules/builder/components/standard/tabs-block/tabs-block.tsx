@@ -1,5 +1,5 @@
 import { tabsPropsSchema } from "./tabs-block.definition";
-import { Section, Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container } from "@/components/layout/layout-primitives";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export function TabsBlock({ props }: { props: Record<string, unknown> }) {

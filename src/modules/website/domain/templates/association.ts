@@ -11,19 +11,39 @@ export const associationTemplate: WebsiteTemplate = {
                 title: "Willkommen bei unserem Verein",
                 subtitle: "Gemeinsam aktiv seit vielen Jahren",
             }),
-            createNodeFromDefault("richText", makeId("assoc-richtext", 2), {
-                heading: "Über uns",
-                body: "Hier steht eine kurze Vorstellung des Vereins, seiner Geschichte und seiner Ziele.",
-            }),
-            createNodeFromDefault("newsGrid", makeId("assoc-news", 3), {
-                columns: 3, limit: 3, heading: "Neuigkeiten",
-            }),
-            createNodeFromDefault("eventsGrid", makeId("assoc-events", 4), {
-                columns: 3, limit: 3, heading: "Termine",
-            }),
-            createNodeFromDefault("contactCard", makeId("assoc-contact", 5), {
-                heading: "Kontakt",
-            }),
+            {
+                ...createNodeFromDefault("section", makeId("assoc-section-1", 10), { tone: "default" }),
+                children: [
+                    createNodeFromDefault("richText", makeId("assoc-richtext", 2), {
+                        heading: "Über uns",
+                        body: "Hier steht eine kurze Vorstellung des Vereins, seiner Geschichte und seiner Ziele.",
+                    }),
+                    createNodeFromDefault("quickLinks", makeId("assoc-links", 11), {
+                        heading: "Wichtige Links",
+                    }),
+                ],
+            },
+            {
+                ...createNodeFromDefault("section", makeId("assoc-section-2", 20), { tone: "muted" }),
+                children: [
+                    createNodeFromDefault("newsAndEventsSplit", makeId("assoc-news-events", 3), {
+                        heading: "Aktuelles & Termine",
+                        newsLimit: 3,
+                        eventsLimit: 3,
+                    }),
+                ],
+            },
+            {
+                ...createNodeFromDefault("section", makeId("assoc-section-3", 30), { tone: "default" }),
+                children: [
+                    createNodeFromDefault("contactCard", makeId("assoc-contact", 5), {
+                        heading: "Kontakt",
+                    }),
+                    createNodeFromDefault("openingHours", makeId("assoc-hours", 6), {
+                        heading: "Öffnungszeiten Vereinsheim",
+                    }),
+                ],
+            },
         ];
         return { type: "page", children };
     },

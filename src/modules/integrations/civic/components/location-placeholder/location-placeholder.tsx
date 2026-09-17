@@ -1,6 +1,6 @@
 import { MapPin } from "@/components/ui/icons";
 import { locationPlaceholderPropsSchema } from "./location-placeholder.definition";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 
 /**
  * A deliberate placeholder, not a real map integration (spec §7:

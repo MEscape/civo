@@ -1,24 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import * as Icons from "lucide-react";
-import { Search } from "lucide-react";
+import { DynamicIcon } from "@/components/ui/dynamic-icon";
+import { Search } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { ServiceDetail } from "@/modules/content/domain/content-types";
-
-const FALLBACK_ICON = "ArrowRight" as const;
-
-function resolveIcon(name?: string) {
-    if (!name) return Icons[FALLBACK_ICON];
-    const pascal = name
-        .split(/[-_]/)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join("");
-    const Icon = (Icons as unknown as Record<string, Icons.LucideIcon>)[pascal];
-    return Icon ?? Icons[FALLBACK_ICON];
-}
+import type { ServiceDetail } from "@/modules/content/domain/civic-types";
 
 export function ServiceFinderClient({
                                         services,
@@ -100,7 +88,6 @@ export function ServiceFinderClient({
             ) : (
                 <ul className="flex flex-col divide-y divide-[var(--civo-color-border)]">
                     {filtered.map((service) => {
-                        const Icon = resolveIcon(service.icon);
                         return (
                             <li key={service.id}>
                                 <a
@@ -108,7 +95,7 @@ export function ServiceFinderClient({
                                     className="group flex items-start gap-4 py-4 hover:bg-[var(--civo-color-surface)]"
                                 >
                                     <Card className="flex h-10 w-10 shrink-0 items-center justify-center border-0 bg-[var(--civo-color-surface)]">
-                                        <Icon className="h-5 w-5 text-[var(--civo-color-primary)]" aria-hidden="true" />
+                                        <DynamicIcon name={service.icon} fallback="arrow-right" className="h-5 w-5 text-[var(--civo-color-primary)]" aria-hidden="true" />
                                     </Card>
                                     <CardContent className="flex-1 p-0">
                                         <p className="text-sm font-medium text-[var(--civo-color-text)] group-hover:text-[var(--civo-color-primary)]">

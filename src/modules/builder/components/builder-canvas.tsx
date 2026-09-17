@@ -59,7 +59,7 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
     const { node, isRendering, error } = useCanvasRender(nodes, websiteId);
-    const { measure, selectedRect, setSelectedRect, hoveredRect, setHoveredRect } = useCanvasHitTesting(
+    const { measure, selectedRect, setSelectedRect, hoveredRect, setHoveredRect, handlers } = useCanvasHitTesting(
         containerRef,
         {
             onSelect,
@@ -69,16 +69,41 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
 
     useEffect(() => {
         setSelectedRect(measure(selectedNodeId));
-    }, [selectedNodeId, node, measure, setSelectedRect]);
+    }, [selectedNodeId, node, viewport, measure, setSelectedRect]);
 
     useEffect(() => {
         setHoveredRect(hoveredNodeId && hoveredNodeId !== selectedNodeId ? measure(hoveredNodeId) : null);
-    }, [hoveredNodeId, selectedNodeId, node, measure, setHoveredRect]);
+    }, [hoveredNodeId, selectedNodeId, node, viewport, measure, setHoveredRect]);
+
+    // The viewport switcher (desktop/tablet/mobile) animates the canvas's
+    // max-width over 150ms (see the outer div's `transition-[max-width]`
+    // below), so the two effects above — which re-measure the instant
+    // `viewport` changes — capture the selection/hover overlay's rect
+    // before the resize animation has actually finished, leaving the
+    // overlay box at a stale position/size relative to the now-resized
+    // content. Re-measuring again on `transitionend` catches the final,
+    // settled geometry. Listened on the same element `measure` reads
+    // from (containerRef), which sits inside the transitioning ancestor
+    // so the bubbling `transitionend` event still reaches it.
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        function handleTransitionEnd(event: TransitionEvent) {
+            if (event.propertyName !== "max-width") return;
+            setSelectedRect(measure(selectedNodeId));
+            setHoveredRect(hoveredNodeId && hoveredNodeId !== selectedNodeId ? measure(hoveredNodeId) : null);
+        }
+
+        container.addEventListener("transitionend", handleTransitionEnd);
+        return () => container.removeEventListener("transitionend", handleTransitionEnd);
+    }, [containerRef, selectedNodeId, hoveredNodeId, measure, setSelectedRect, setHoveredRect]);
 
     const { activeSource, dropIndicatorRect, keyboardActive, handleGripKeyDown } = dnd;
 
     const flatNodesForHandles = flattenTree(nodes);
     const selectedDefinition = selectedNodeId ? tryFindDefinition(nodes, selectedNodeId) : undefined;
+    const hoveredDefinition = hoveredNodeId ? tryFindDefinition(nodes, hoveredNodeId) : undefined;
 
     if (nodes.length === 0) {
         return <CanvasEmptyState />;
@@ -91,12 +116,13 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
                     ref={containerRef}
                     className="civo-canvas-content"
                     data-civo-dragging={activeSource ? "true" : "false"}
+                    {...handlers}
                 >
                     {theme ? <ThemeProvider theme={theme}>{node}</ThemeProvider> : node}
                 </div>
 
                 <div className="civo-canvas-overlay">
-                    {hoveredRect && (
+                    {hoveredRect && hoveredNodeId && (
                         <div
                             className="civo-canvas-outline civo-canvas-outline--hover"
                             style={{
@@ -105,7 +131,11 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
                                 width: hoveredRect.width,
                                 height: hoveredRect.height,
                             }}
-                        />
+                        >
+                            <div className="civo-canvas-label civo-canvas-label--hover">
+                                <span>{hoveredDefinition?.label ?? "Komponente"}</span>
+                            </div>
+                        </div>
                     )}
                     {selectedRect && selectedNodeId && (
                         <div

@@ -11,15 +11,33 @@ export const smartCityTemplate: WebsiteTemplate = {
                 title: "Musterstadt Smart City",
                 subtitle: "Daten und Fortschritt für eine lebenswerte Stadt",
             }),
-            createNodeFromDefault("kpiGrid", makeId("smartcity-kpis", 2), {
-                columns: 3, heading: "Stadt in Zahlen",
-            }),
-            createNodeFromDefault("newsGrid", makeId("smartcity-news", 3), {
-                columns: 3, limit: 3, heading: "Aktuelles",
-            }),
-            createNodeFromDefault("eventsGrid", makeId("smartcity-events", 4), {
-                columns: 3, limit: 3, heading: "Termine",
-            }),
+            {
+                ...createNodeFromDefault("section", makeId("smartcity-section-1", 10), { tone: "default" }),
+                children: [
+                    createNodeFromDefault("dashboardGrid", makeId("smartcity-dashboard", 2), {
+                        heading: "Stadt in Zahlen",
+                    }),
+                ],
+            },
+            {
+                ...createNodeFromDefault("section", makeId("smartcity-section-2", 20), { tone: "muted" }),
+                children: [
+                    createNodeFromDefault("kpiGrid", makeId("smartcity-kpis", 3), {
+                        columns: 3, heading: "Aktuelle Kennzahlen",
+                    }),
+                    createNodeFromDefault("metricTrendChart", makeId("smartcity-trend", 4), {
+                        heading: "Entwicklung",
+                    }),
+                ],
+            },
+            {
+                ...createNodeFromDefault("section", makeId("smartcity-section-3", 30), { tone: "default" }),
+                children: [
+                    createNodeFromDefault("newsGrid", makeId("smartcity-news", 5), {
+                        columns: 3, limit: 3, heading: "Aktuelle Projekte",
+                    }),
+                ],
+            },
         ];
         return { type: "page", children };
     },

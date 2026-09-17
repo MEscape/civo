@@ -1,6 +1,6 @@
 import { ArrowRight } from "@/components/ui/icons";
 import { quickLinksPropsSchema } from "./quick-links.definition";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 
 export function QuickLinks({ props }: { props: Record<string, unknown> }) {
     const parsed = quickLinksPropsSchema.safeParse(props);

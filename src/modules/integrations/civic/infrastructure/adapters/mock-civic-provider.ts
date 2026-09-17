@@ -28,7 +28,7 @@ import {
     musterstadtAlerts,
     musterstadtDepartments,
 } from "@/data/musterstadt";
-import type { NewsItem } from "@/modules/content/domain/content-types";
+import type { NewsItem } from "@/modules/content/domain/civic-types";
 
 /**
  * Local/mock implementation of CivicDataProvider.

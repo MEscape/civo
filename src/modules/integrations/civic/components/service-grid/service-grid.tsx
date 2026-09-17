@@ -1,6 +1,6 @@
 import { serviceGridPropsSchema } from "./service-grid.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, Grid, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardContent } from "@/components/ui/card";
 import { DynamicIcon } from "@/components/ui/dynamic-icon";
 import { logger } from "@/lib/logger/logger";

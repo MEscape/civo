@@ -39,26 +39,46 @@ export const defaultTheme: WebsiteTheme = {
 };
 
 /**
- * The curated set of Google Fonts available for selection in the theme
- * editor. Keeping this list in the domain layer makes it the single
- * source of truth — the settings form, any future API, and tests all
- * import from here rather than duplicating string literals.
+ * The curated set of self-hosted fonts available for selection in the
+ * theme editor. Keeping this list in the domain layer makes it the
+ * single source of truth — the settings form, any future API, and tests
+ * all import from here rather than duplicating string literals.
+ *
+ * Every name listed here MUST have a matching entry in
+ * `FONT_VARIABLE_BY_FAMILY` below, which is what actually connects a
+ * selected family to a loaded `next/font/local` CSS variable — see
+ * `src/lib/fonts/local-fonts.ts`.
  */
 export const AVAILABLE_HEADING_FONTS = [
     "Source Serif 4",
-    "Playfair Display",
     "Inter",
-    "Roboto",
+    "DM Sans",
+    "Geist",
 ] as const;
 
 export const AVAILABLE_BODY_FONTS = [
     "Inter",
-    "Roboto",
-    "Open Sans",
+    "DM Sans",
+    "Geist",
 ] as const;
 
 export type AvailableHeadingFont = (typeof AVAILABLE_HEADING_FONTS)[number];
 export type AvailableBodyFont = (typeof AVAILABLE_BODY_FONTS)[number];
+
+/**
+ * Maps a selectable font family name to the CSS custom property that
+ * `next/font/local` generated for it (see `src/lib/fonts/local-fonts.ts`).
+ * This is the ONLY place that translates a stored/user-facing font name
+ * into an actual loaded typeface — `themeToCssVariables` never embeds a
+ * bare font-family string, which is what guarantees a selected font is
+ * always backed by a font file this deployment actually serves.
+ */
+export const FONT_VARIABLE_BY_FAMILY: Record<AvailableHeadingFont | AvailableBodyFont, string> = {
+    "Source Serif 4": "var(--font-source-serif)",
+    "Inter": "var(--font-inter)",
+    "DM Sans": "var(--font-dm-sans)",
+    "Geist": "var(--font-geist-sans)",
+};
 
 const radiusValues: Record<ThemeRadius, string> = {
     none: "0px",
@@ -117,18 +137,34 @@ export function toDomainTheme(rawTheme: RawThemeRow | null | undefined): Website
 }
 
 /**
+ * Resolves a stored font family name to its loaded CSS variable,
+ * falling back to the body-font stack if the name isn't (or is no
+ * longer) one of the self-hosted families — e.g. legacy theme rows
+ * saved before a font was removed from `AVAILABLE_*_FONTS`.
+ */
+function resolveFontVariable(familyName: string, fallback: keyof typeof FONT_VARIABLE_BY_FAMILY): string {
+    return FONT_VARIABLE_BY_FAMILY[familyName as AvailableHeadingFont | AvailableBodyFont] ?? FONT_VARIABLE_BY_FAMILY[fallback];
+}
+
+/**
  * Converts a WebsiteTheme into CSS custom properties. This is the ONLY
  * bridge between stored theme data and rendered styling — there is no
  * path anywhere in the application that injects raw/arbitrary CSS from
  * stored data (spec §9, §34).
+ *
+ * Fonts resolve to `var(--font-*)` references produced by the
+ * self-hosted `next/font/local` loaders (see
+ * `src/lib/fonts/local-fonts.ts`) rather than bare family-name strings,
+ * so a selected theme font is always backed by a font file this
+ * deployment actually serves — never a request to an external font CDN.
  */
 export function themeToCssVariables(theme: WebsiteTheme): Record<string, string> {
     return {
         "--civo-color-primary": theme.colors.primary,
         "--civo-color-secondary": theme.colors.secondary,
         "--civo-color-accent": theme.colors.accent,
-        "--civo-font-heading": `"${theme.typography.headingFont}", ui-serif, Georgia, serif`,
-        "--civo-font-body": `"${theme.typography.bodyFont}", ui-sans-serif, system-ui, sans-serif`,
+        "--civo-font-heading": `${resolveFontVariable(theme.typography.headingFont, "Source Serif 4")}, ui-serif, Georgia, serif`,
+        "--civo-font-body": `${resolveFontVariable(theme.typography.bodyFont, "Inter")}, ui-sans-serif, system-ui, sans-serif`,
         "--civo-radius": radiusValues[theme.radius],
         "--civo-section-spacing": spacingSectionValues[theme.spacingScale],
     };

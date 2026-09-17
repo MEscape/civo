@@ -203,6 +203,21 @@ export function useCanvasDnd(
 
     // --- Pointer-driven drag, delegated on the container (mirrors
     // useCanvasHitTesting's delegation pattern) ---
+    //
+    // beginDrag/computeDropTargetAtPoint/updateIndicatorForTarget/endDrag/
+    // cancelDrag are all redefined every render (they close over `nodes`/
+    // `flatNodes`/state), so listing them as this effect's dependencies
+    // would tear down and re-attach the window pointer listeners on every
+    // render. Instead, a single ref holds the latest versions — updated
+    // from its own effect each render (never during the render body,
+    // which React Compiler disallows) — and the pointer effect below
+    // reads through it, so it can mount its listeners exactly once while
+    // still always acting on up-to-date drag/drop logic.
+    const latestHandlers = useRef({ beginDrag, computeDropTargetAtPoint, updateIndicatorForTarget, endDrag, cancelDrag });
+    useEffect(() => {
+        latestHandlers.current = { beginDrag, computeDropTargetAtPoint, updateIndicatorForTarget, endDrag, cancelDrag };
+    });
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -228,25 +243,25 @@ export function useCanvasDnd(
                 const dy = event.clientY - pointerDownAt.y;
                 if (Math.hypot(dx, dy) < POINTER_ACTIVATION_DISTANCE) return;
                 dragStarted = true;
-                beginDrag({ kind: "node", nodeId: pointerDownAt.nodeId });
+                latestHandlers.current.beginDrag({ kind: "node", nodeId: pointerDownAt.nodeId });
             }
 
             const source = activeSourceRef.current;
             if (!source) return;
-            const target = computeDropTargetAtPoint(source, event.clientX, event.clientY);
-            updateIndicatorForTarget(target);
+            const target = latestHandlers.current.computeDropTargetAtPoint(source, event.clientX, event.clientY);
+            latestHandlers.current.updateIndicatorForTarget(target);
         }
 
         function handlePointerUp() {
             if (dragStarted) {
-                endDrag();
+                latestHandlers.current.endDrag();
             }
             pointerDownAt = null;
             dragStarted = false;
         }
 
         function handlePointerCancel() {
-            if (dragStarted) cancelDrag();
+            if (dragStarted) latestHandlers.current.cancelDrag();
             pointerDownAt = null;
             dragStarted = false;
         }
@@ -261,7 +276,7 @@ export function useCanvasDnd(
             window.removeEventListener("pointerup", handlePointerUp);
             window.removeEventListener("pointercancel", handlePointerCancel);
         };
-    }, [containerRef, beginDrag, computeDropTargetAtPoint, updateIndicatorForTarget, endDrag, cancelDrag]);
+    }, [containerRef]);
 
     /**
      * Keyboard drag entry point (spec §12: keyboard-accessible movement).

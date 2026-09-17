@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadPage, undo, redo, selectNode, removeNodeAction } from "@/modules/builder/application/document-slice";
-import { selectIsDirty, selectSelectedNodeId, selectBuilderMode, selectViewport, selectDraftChildren } from "@/modules/builder/application/builder-selectors";
+import { selectIsDirty, selectSelectedNodeId, selectBuilderMode, selectViewport, selectDraftChildren, selectBuilderPageId } from "@/modules/builder/application/builder-selectors";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import type { EditorMode } from "@/modules/builder/domain/editor-capabilities";
 import { setEditorMode } from "@/modules/builder/application/ui-slice";
@@ -15,6 +15,8 @@ import { useCanvasDnd } from "@/modules/builder/components/use-canvas-dnd";
 import { useDropHandler } from "@/modules/builder/components/use-drop-handler";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { BuilderToolbar } from "./builder-toolbar";
+import { DragOverlayCursor } from "./drag-overlay-cursor";
+import "@/modules/component-platform/infrastructure/definitions";
 
 type BuilderShellProps = {
     website: { id: string; name: string; theme: WebsiteTheme };
@@ -44,12 +46,32 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
     const handleDrop = useDropHandler(draftChildren, (id) => dispatch(selectNode(id)));
     const dnd = useCanvasDnd(draftChildren, canvasContainerRef, handleDrop);
 
-    const initializedForPageRef = useRef<string | null>(null);
-    if (initializedForPageRef.current !== page.id) {
+    // Load this page's document into Redux whenever the page identity
+    // changes. Reads the currently-loaded pageId from the store itself
+    // (rather than a local ref mirroring the same fact) so there is one
+    // source of truth, and dispatches from an effect rather than during
+    // render — dispatching a store update while rendering is not safe
+    // under React Compiler / concurrent rendering, since a render can be
+    // retried or discarded and the dispatch must not fire more than once
+    // for the same actual page load.
+    const loadedPageId = useAppSelector(selectBuilderPageId);
+    useEffect(() => {
+        if (loadedPageId === page.id) return;
         dispatch(loadPage({ pageId: page.id, children: initialChildren }));
         dispatch(setEditorMode(editorMode));
-        initializedForPageRef.current = page.id;
-    }
+        // initialChildren/editorMode intentionally excluded: this effect
+        // must only re-run when the page identity itself changes, not on
+        // every render where a new initialChildren array reference is
+        // passed in from the server-loaded prop.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch, loadedPageId, page.id]);
+
+    // True for the single render between navigating to a new page and
+    // this effect's dispatch(loadPage(...)) landing in the store. Used
+    // below to avoid ever painting the PREVIOUS page's nodes under the
+    // new page's toolbar/chrome — the flash the old ref-during-render
+    // approach was written to avoid, without dispatching during render.
+    const isSwitchingPage = loadedPageId !== page.id;
 
     // Warn on navigation away with unsaved changes
     useEffect(() => {
@@ -72,8 +94,9 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
         function handleKeyDown(event: KeyboardEvent) {
             const meta = event.metaKey || event.ctrlKey;
 
-            // Save shortcut is handled in Toolbar? Wait, no, we need it here, or we can move it to Toolbar.
-            // Let's just keep undo/redo/escape/delete here since they interact with document state.
+            // The save shortcut (Cmd/Ctrl+S) is handled in BuilderToolbar,
+            // which owns save state. This effect only handles shortcuts that
+            // interact with document state directly: undo/redo/escape/delete.
             if (isEditableTarget(event.target)) return; // never hijack text editing
 
             if (meta && event.key.toLowerCase() === "z" && event.shiftKey) {
@@ -112,7 +135,7 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
             {mode === "preview" ? (
                 <div className="flex-1 overflow-y-auto bg-[var(--civo-color-background)]">
                     <PreviewCanvas
-                        nodes={draftChildren}
+                        nodes={isSwitchingPage ? [] : draftChildren}
                         viewport={viewport}
                         theme={website.theme}
                         websiteId={website.id}
@@ -131,7 +154,7 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
 
                     <main className="overflow-y-auto bg-[var(--civo-color-background)] p-6">
                         <BuilderCanvas
-                            nodes={draftChildren}
+                            nodes={isSwitchingPage ? [] : draftChildren}
                             selectedNodeId={selectedNodeId}
                             onSelect={(id) => dispatch(selectNode(id))}
                             viewport={viewport}
@@ -147,6 +170,9 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
                     </aside>
                 </div>
             )}
+            
+            {/* Renders globally on top of the UI during drag operations */}
+            <DragOverlayCursor activeSource={dnd.activeSource} nodes={draftChildren} />
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import { councilBlockPropsSchema } from "./council-block.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger/logger";

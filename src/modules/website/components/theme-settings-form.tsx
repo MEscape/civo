@@ -40,14 +40,14 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
     const formValues = useWatch({ control: form.control });
 
     const previewTheme: WebsiteTheme = {
-        colors: { 
-            primary: formValues.primaryColor ?? initialTheme.colors.primary, 
-            secondary: formValues.secondaryColor ?? initialTheme.colors.secondary, 
-            accent: formValues.accentColor ?? initialTheme.colors.accent 
+        colors: {
+            primary: formValues.primaryColor ?? initialTheme.colors.primary,
+            secondary: formValues.secondaryColor ?? initialTheme.colors.secondary,
+            accent: formValues.accentColor ?? initialTheme.colors.accent
         },
-        typography: { 
-            headingFont: formValues.headingFont ?? initialTheme.typography.headingFont, 
-            bodyFont: formValues.bodyFont ?? initialTheme.typography.bodyFont 
+        typography: {
+            headingFont: formValues.headingFont ?? initialTheme.typography.headingFont,
+            bodyFont: formValues.bodyFont ?? initialTheme.typography.bodyFont
         },
         radius: (formValues.radius as ThemeRadius) ?? initialTheme.radius,
         spacingScale: (formValues.spacingScale as ThemeSpacingScale) ?? initialTheme.spacingScale,

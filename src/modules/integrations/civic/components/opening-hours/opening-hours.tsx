@@ -1,9 +1,9 @@
 import { openingHoursPropsSchema } from "./opening-hours.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardContent } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
-import type { OpeningHoursEntry } from "@/modules/content/domain/content-types";
+import type { OpeningHoursEntry } from "@/modules/content/domain/civic-types";
 
 const dayLabels: Record<OpeningHoursEntry["day"], string> = {
     mon: "Montag",

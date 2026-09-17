@@ -8,6 +8,11 @@ import {
 } from "@/modules/builder/domain/drop-placement";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 
+// Note: resolveDropTarget's internal canInsertChild checks depend on the
+// component-platform registry being populated with real types like
+// "hero"/"section" — see vitest.setup.ts, which registers them globally
+// for every test run (this domain/** file cannot do so itself).
+
 function makeTree(): PageNode[] {
     return [
         { id: "hero-1", type: "hero", props: {} },

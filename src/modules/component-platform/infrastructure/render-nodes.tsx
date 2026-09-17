@@ -2,6 +2,15 @@ import React, { createElement, type ComponentType } from "react";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import { type PageComponentProps, isRegisteredComponentType } from "@/modules/component-platform/domain";
 import { componentMap } from "./registry";
+// Side-effect import: registers every feature module's component
+// definitions into the domain registry (see that file's own comment on
+// why this aggregation cannot live in domain/**). This file is the
+// platform's single rendering entry point — every page render and every
+// isRegisteredComponentType/getComponentDefinition call anywhere in the
+// app is downstream of it — so importing it here, once, guarantees the
+// registry is populated before anything can query it, without relying on
+// import-order side effects scattered across multiple entry points.
+import "./definitions";
 
 /**
  * Shared node → component resolution, used by both the top-level

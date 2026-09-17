@@ -1,4 +1,4 @@
-import { Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Container } from "@/components/layout/layout-primitives";
 import { CreateWebsiteForm } from "@/modules/website/components/create-website-form";
 
 export default function NewWebsitePage() {

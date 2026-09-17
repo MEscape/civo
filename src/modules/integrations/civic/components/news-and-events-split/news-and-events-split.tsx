@@ -1,6 +1,6 @@
 import { newsAndEventsSplitPropsSchema } from "./news-and-events-split.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 

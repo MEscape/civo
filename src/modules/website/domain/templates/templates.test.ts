@@ -3,6 +3,11 @@ import { getTemplate, listTemplates } from "./index";
 import { pageConfigSchema } from "@/modules/builder/domain/page-schema";
 import { collectNodeIds } from "@/modules/builder/domain/page-node";
 
+// Note: generateHomePageConfig() depends on the component-platform
+// registry being populated (getComponentDefinition) — see
+// vitest.setup.ts, which registers real component types globally for
+// every test run (this domain/** file cannot do so itself).
+
 describe("templates", () => {
     it("lists all three MVP templates", () => {
         const templates = listTemplates();

@@ -1,102 +1,128 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
+import { z } from "zod";
+import type { ComponentDefinition } from "./types";
 import {
-    componentDefinitions,
+    componentDefinitionRegistry,
+    registerComponentDefinitions,
+    isRegisteredComponentType,
     getComponentDefinition,
     tryGetComponentDefinition,
     canInsertChild,
-    isRegisteredComponentType,
+} from "./registry";
 
-} from "@/modules/component-platform/domain";
+/**
+ * Pure registry-mechanics tests: registration, duplicate detection,
+ * lookup, and child-insertion rules, using small fabricated definitions
+ * rather than the platform's real components. This is what lets these
+ * tests live in `domain/**` without depending on
+ * `infrastructure/definitions.ts` (which only exists to aggregate real,
+ * UI-coupled feature-module definitions — see that file's comment).
+ * End-to-end coverage of the real, fully-assembled registry lives in
+ * `infrastructure/definitions.test.ts`.
+ */
 
-describe("componentDefinitions", () => {
-    it("every definition's createDefaultNode produces props that pass its own schema", () => {
-        for (const definition of componentDefinitions) {
-            const node = definition.createDefaultNode();
-            const result = definition.propsSchema.safeParse(node.props);
-            expect(result.success, `${definition.type} default props should be valid`).toBe(true);
-        }
+function makeDefinition(overrides: Partial<ComponentDefinition> = {}): ComponentDefinition {
+    return {
+        type: "testLeaf",
+        label: "Test Leaf",
+        category: "content",
+        description: "A fabricated leaf component for registry tests.",
+        canHaveChildren: false,
+        createDefaultNode: () => ({ id: "test-1", type: "testLeaf", props: {} }),
+        propsSchema: z.object({}),
+        fields: [],
+        ...overrides,
+    };
+}
+
+describe("registerComponentDefinitions", () => {
+    beforeEach(() => {
+        componentDefinitionRegistry.clear();
     });
 
-    it("every definition's createDefaultNode produces a node whose type matches the registry key", () => {
-        for (const definition of componentDefinitions) {
-            const node = definition.createDefaultNode();
-            expect(node.type).toBe(definition.type);
-        }
+    it("registers a definition and makes it queryable", () => {
+        const def = makeDefinition({ type: "widgetA" });
+        registerComponentDefinitions([def]);
+        expect(isRegisteredComponentType("widgetA")).toBe(true);
+        expect(getComponentDefinition("widgetA")).toBe(def);
     });
 
-    it("createDefaultNode generates a fresh id on every call", () => {
-        const definition = getComponentDefinition("hero")!;
-        const first = definition.createDefaultNode();
-        const second = definition.createDefaultNode();
-        expect(first.id).not.toBe(second.id);
+    it("registers multiple batches from different calls without conflict", () => {
+        registerComponentDefinitions([makeDefinition({ type: "widgetA" })]);
+        registerComponentDefinitions([makeDefinition({ type: "widgetB" })]);
+        expect(isRegisteredComponentType("widgetA")).toBe(true);
+        expect(isRegisteredComponentType("widgetB")).toBe(true);
     });
 
-    it("rejects invalid props for a schema with constraints (newsGrid.limit out of range)", () => {
-        const definition = getComponentDefinition("newsGrid")!;
-        const result = definition.propsSchema.safeParse({ columns: 3, limit: 999 });
-        expect(result.success).toBe(false);
+    it("throws when two DIFFERENT definitions share a type string", () => {
+        registerComponentDefinitions([makeDefinition({ type: "widgetA" })]);
+        expect(() =>
+            registerComponentDefinitions([makeDefinition({ type: "widgetA", label: "Different" })])
+        ).toThrow(/Duplicate component type/);
     });
 
-    it("accepts partial props and fills in defaults", () => {
-        const definition = getComponentDefinition("newsGrid")!;
-        const result = definition.propsSchema.safeParse({});
-        expect(result.success).toBe(true);
-        if (result.success) {
-            const data = result.data as { columns: number; heading: string };
-            expect(data.columns).toBe(3);
-            expect(data.heading).toBe("Aktuelles");
-        }
-    });
-
-
-
-    it("has no duplicate type strings across all definitions", () => {
-        const types = componentDefinitions.map((d) => d.type);
-        expect(new Set(types).size).toBe(types.length);
+    it("is idempotent when the exact same definition object is registered twice", () => {
+        const def = makeDefinition({ type: "widgetA" });
+        registerComponentDefinitions([def]);
+        expect(() => registerComponentDefinitions([def])).not.toThrow();
     });
 });
 
-describe("isRegisteredComponentType", () => {
-    it("returns true for a known type", () => {
-        expect(isRegisteredComponentType("hero")).toBe(true);
+describe("getComponentDefinition", () => {
+    beforeEach(() => {
+        componentDefinitionRegistry.clear();
     });
 
-    it("returns false for an unknown type", () => {
-        expect(isRegisteredComponentType("totally-made-up")).toBe(false);
+    it("throws for an unknown type (structural error, not a user-facing one)", () => {
+        expect(() => getComponentDefinition("nope")).toThrow(/Unknown component type/);
     });
 });
 
 describe("tryGetComponentDefinition", () => {
-    it("returns the definition for a known type", () => {
-        expect(tryGetComponentDefinition("hero")?.type).toBe("hero");
+    beforeEach(() => {
+        componentDefinitionRegistry.clear();
     });
 
-    it("returns undefined (does not throw) for an unknown type", () => {
-        expect(tryGetComponentDefinition("totally-made-up")).toBeUndefined();
+    it("returns undefined instead of throwing for an unknown type", () => {
+        expect(tryGetComponentDefinition("nope")).toBeUndefined();
     });
 });
 
 describe("canInsertChild", () => {
+    beforeEach(() => {
+        componentDefinitionRegistry.clear();
+        registerComponentDefinitions([
+            makeDefinition({ type: "container", canHaveChildren: true }),
+            makeDefinition({ type: "restrictedContainer", canHaveChildren: true, acceptsChildTypes: ["leafA"] }),
+            makeDefinition({ type: "leafA", canHaveChildren: false }),
+            makeDefinition({ type: "leafB", canHaveChildren: false }),
+        ]);
+    });
+
     it("allows any registered type at the root (null parent)", () => {
-        expect(canInsertChild(null, "hero")).toBe(true);
-        expect(canInsertChild(null, "newsGrid")).toBe(true);
+        expect(canInsertChild(null, "leafA")).toBe(true);
     });
 
     it("rejects an unregistered child type anywhere", () => {
-        expect(canInsertChild(null, "not-a-real-type")).toBe(false);
-        expect(canInsertChild("section", "not-a-real-type")).toBe(false);
+        expect(canInsertChild(null, "unregistered")).toBe(false);
+        expect(canInsertChild("container", "unregistered")).toBe(false);
     });
 
-    it("allows inserting into a container type (section)", () => {
-        expect(canInsertChild("section", "hero")).toBe(true);
-        expect(canInsertChild("section", "newsGrid")).toBe(true);
+    it("rejects an unregistered parent type", () => {
+        expect(canInsertChild("unregistered", "leafA")).toBe(false);
     });
 
-    it("rejects inserting into a non-container type (hero cannot have children)", () => {
-        expect(canInsertChild("hero", "richText")).toBe(false);
+    it("rejects inserting into a parent that cannot have children", () => {
+        expect(canInsertChild("leafA", "leafB")).toBe(false);
     });
 
-    it("rejects inserting into an unknown parent type", () => {
-        expect(canInsertChild("not-a-real-type", "hero")).toBe(false);
+    it("allows any registered child when the parent has no acceptsChildTypes restriction", () => {
+        expect(canInsertChild("container", "leafA")).toBe(true);
+        expect(canInsertChild("container", "leafB")).toBe(true);
+    });
+
+    it("restricts to acceptsChildTypes when the parent declares it", () => {
+        expect(canInsertChild("restrictedContainer", "leafA")).toBe(true);
+        expect(canInsertChild("restrictedContainer", "leafB")).toBe(false);
     });
 });

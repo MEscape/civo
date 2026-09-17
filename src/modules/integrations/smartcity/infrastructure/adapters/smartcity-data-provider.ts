@@ -1,6 +1,6 @@
 import type { Result } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
-import type { SmartCityMetric } from "@/modules/content/domain/content-types";
+import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 
 /**
  * The abstraction every SmartCity-content-consuming component is built against.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useState, useCallback, type RefObject } from "react";
 
 export type NodeRect = { top: number; left: number; width: number; height: number };
 
@@ -36,7 +36,7 @@ export function useCanvasHitTesting(
     const [selectedRect, setSelectedRect] = useState<NodeRect | null>(null);
     const [hoveredRect, setHoveredRect] = useState<NodeRect | null>(null);
 
-    const measure = (nodeId: string | null): NodeRect | null => {
+    const measure = useCallback((nodeId: string | null): NodeRect | null => {
         const container = containerRef.current;
         if (!container || !nodeId) return null;
         const target = container.querySelector(`[data-civo-node-id="${cssEscape(nodeId)}"]`);
@@ -49,39 +49,35 @@ export function useCanvasHitTesting(
             width: targetRect.width,
             height: targetRect.height,
         };
-    };
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        function handleClick(event: MouseEvent) {
-            const nodeId = findNodeId(event.target as Element);
-            options.onSelect(nodeId);
-            event.preventDefault();
-        }
-
-        function handleMouseOver(event: MouseEvent) {
-            const nodeId = findNodeId(event.target as Element);
-            options.onHover(nodeId);
-        }
-
-        function handleMouseOut() {
-            options.onHover(null);
-        }
-
-        container.addEventListener("click", handleClick, true);
-        container.addEventListener("mouseover", handleMouseOver);
-        container.addEventListener("mouseout", handleMouseOut);
-        return () => {
-            container.removeEventListener("click", handleClick, true);
-            container.removeEventListener("mouseover", handleMouseOver);
-            container.removeEventListener("mouseout", handleMouseOut);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [containerRef]);
 
-    return { measure, selectedRect, setSelectedRect, hoveredRect, setHoveredRect };
+    const handleClick = (event: React.MouseEvent) => {
+        const nodeId = findNodeId(event.target as Element);
+        options.onSelect(nodeId);
+        event.preventDefault();
+    };
+
+    const handleMouseOver = (event: React.MouseEvent) => {
+        const nodeId = findNodeId(event.target as Element);
+        options.onHover(nodeId);
+    };
+
+    const handleMouseOut = () => {
+        options.onHover(null);
+    };
+
+    return { 
+        measure, 
+        selectedRect, 
+        setSelectedRect, 
+        hoveredRect, 
+        setHoveredRect,
+        handlers: {
+            onClickCapture: handleClick,
+            onMouseOver: handleMouseOver,
+            onMouseOut: handleMouseOut
+        }
+    };
 }
 
 function cssEscape(value: string): string {

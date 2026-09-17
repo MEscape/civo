@@ -1,9 +1,9 @@
-import { AlertTriangle, Info, AlertOctagon } from "lucide-react";
+import { AlertTriangle, Info, AlertOctagon } from "@/components/ui/icons";
 import { alertBannerPropsSchema } from "./alert-banner.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Container } from "@/components/layout/layout-primitives";
 import { logger } from "@/lib/logger/logger";
-import type { AlertSeverity } from "@/modules/content/domain/content-types";
+import type { AlertSeverity } from "@/modules/content/domain/civic-types";
 
 /**
  * AlertBanner — official notices / Bekanntmachungen (spec: civic

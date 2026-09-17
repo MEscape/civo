@@ -1,5 +1,5 @@
 import { accordionPropsSchema } from "./accordion-block.definition";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 export function AccordionBlock({ props }: { props: Record<string, unknown> }) {

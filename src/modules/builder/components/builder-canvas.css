@@ -62,6 +62,12 @@
     pointer-events: auto;
 }
 
+.civo-canvas-label--hover {
+    background: var(--civo-color-secondary, #7a8b85);
+    opacity: 0.8;
+    pointer-events: none; /* Let clicks pass through to select the node */
+}
+
 @media (prefers-reduced-motion: reduce) {
     .civo-canvas-outline {
         transition: none;

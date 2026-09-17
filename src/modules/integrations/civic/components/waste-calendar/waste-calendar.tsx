@@ -1,11 +1,11 @@
-import { Trash2 } from "lucide-react";
+import { Trash2 } from "@/components/ui/icons";
 import { wasteCalendarPropsSchema } from "./waste-calendar.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger/logger";
-import type { WasteType } from "@/modules/content/domain/content-types";
+import type { WasteType } from "@/modules/content/domain/civic-types";
 
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "short" });
 

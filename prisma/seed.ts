@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { getTemplate } from "../src/modules/website/domain/templates";
 import { pageConfigSchema } from "../src/modules/builder/domain/page-schema";
+import "../src/modules/component-platform/infrastructure/definitions";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -97,6 +98,20 @@ async function main() {
             secondaryColor: "#8C4A4A",
             accentColor: "#F2A900", // Yellow
             radius: "lg",
+        },
+    });
+
+    await seedWebsite({
+        name: "Landkreis Musterland",
+        slug: "landkreis-musterland",
+        description: "A secondary municipal demo for a regional county.",
+        templateKey: "municipal",
+        theme: {
+            primaryColor: "#2E572D", // Green
+            secondaryColor: "#4B754A",
+            accentColor: "#F39C12", // Amber
+            radius: "sm",
+            spacingScale: "spacious",
         },
     });
 

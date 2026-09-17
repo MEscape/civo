@@ -6,7 +6,7 @@ import { AppErrors } from "@/lib/errors/app-error";
 import { logger } from "@/lib/logger/logger";
 import { smartCityMetricListSchema } from "@/modules/content/domain/content-schema";
 import { musterstadtSmartCityMetrics } from "@/data/musterstadt";
-import type { SmartCityMetric } from "@/modules/content/domain/content-types";
+import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 
 /**
  * Local/mock implementation of SmartCityDataProvider.

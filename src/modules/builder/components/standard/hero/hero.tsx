@@ -1,5 +1,5 @@
 import { heroPropsSchema } from "./hero.definition";
-import { Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Container } from "@/components/layout/layout-primitives";
 
 export function Hero({ props }: { props: Record<string, unknown> }) {
     const parsed = heroPropsSchema.safeParse(props);

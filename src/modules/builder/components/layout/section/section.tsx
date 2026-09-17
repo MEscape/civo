@@ -1,5 +1,5 @@
 import { sectionPropsSchema } from "./section.definition";
-import { Section as SectionPrimitive, Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Section as SectionPrimitive, Container } from "@/components/layout/layout-primitives";
 import { renderPageNodes } from "@/modules/component-platform/infrastructure/render-nodes";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 

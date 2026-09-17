@@ -1,11 +1,10 @@
-import type { ComponentDefinition } from "./types";
+import type { ComponentDefinition } from "../domain/types";
+import { registerComponentDefinitions } from "../domain/registry";
 
-/* eslint-disable boundaries/dependencies */
 import { layoutComponents } from "@/modules/builder/components/layout/components";
 import { contentComponents } from "@/modules/builder/components/standard/components";
 import { civicComponents } from "@/modules/integrations/civic/components/components";
 import { smartcityComponents } from "@/modules/integrations/smartcity/components/components";
-/* eslint-enable boundaries/dependencies */
 
 /**
  * The unified list of all available components.
@@ -18,3 +17,6 @@ export const componentDefinitions: ComponentDefinition[] = [
     ...civicComponents,
     ...smartcityComponents,
 ];
+
+// Trigger registration as a side effect of importing this file
+registerComponentDefinitions(componentDefinitions);

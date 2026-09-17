@@ -1,6 +1,6 @@
 import { serviceFinderPropsSchema } from "./service-finder.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { logger } from "@/lib/logger/logger";
 import { ServiceFinderClient } from "./service-finder-client";
 

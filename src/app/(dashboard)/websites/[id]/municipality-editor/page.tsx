@@ -4,6 +4,7 @@ import { pageService } from "@/modules/builder/infrastructure/page-service";
 import { BuilderStoreProvider } from "@/modules/builder/application/builder-store-provider";
 import { BuilderShell } from "@/modules/builder/components/builder-shell";
 import { toDomainTheme } from "@/modules/website/domain/theme";
+import "@/modules/component-platform/infrastructure/registry";
 
 /**
  * Municipality editor route (Phase 3 spec §35–41).

@@ -65,11 +65,11 @@ export type PageComponentProps = {
 
 /**
  * Full component metadata.
- * 
+ *
  * Takes an optional generic TProps so that fields and municipalFields
  * can be strictly typed to only allow valid keys of the component's props.
  */
-export type ComponentDefinition<TProps extends Record<string, unknown> = any> = {
+export type ComponentDefinition<TProps extends Record<string, unknown> = Record<string, unknown>> = {
     type: string; // The registered component type string (e.g. "hero")
     label: string;
     category: ComponentCategory;

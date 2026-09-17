@@ -2,7 +2,7 @@ import Link from "next/link";
 import { websiteService } from "@/modules/website/infrastructure/website-service";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Container } from "@/modules/builder/components/layout/layout-primitives";
+import { Container } from "@/components/layout/layout-primitives";
 
 export const dynamic = "force-dynamic"; // dashboard always reflects latest DB state
 
@@ -42,8 +42,8 @@ export default async function WebsitesPage() {
             {result.ok && result.data.length > 0 && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {result.data.map((website) => (
-                        <Card key={website.id} className="h-full">
-                            <CardHeader>
+                        <Card key={website.id} className="h-full flex-1 flex flex-col">
+                            <CardHeader className="flex-1 flex flex-col">
                                 <CardTitle>{website.name}</CardTitle>
                                 <CardDescription>
                                     {website.description || `/${website.slug}`}
@@ -53,7 +53,7 @@ export default async function WebsitesPage() {
                                         {website.templateKey}
                                     </p>
                                 )}
-                                <div className="mt-4 flex items-center gap-2">
+                                <div className="mt-auto pt-4 flex items-center gap-2">
                                     <Button asChild size="sm" variant="outline">
                                         <Link href={`/websites/${website.id}/builder`}>Builder</Link>
                                     </Button>

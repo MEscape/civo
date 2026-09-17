@@ -1,7 +1,7 @@
 import { Mail, Phone } from "@/components/ui/icons";
 import { contactCardPropsSchema } from "./contact-card.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
-import { Section, Container, Grid, SectionHeading } from "@/modules/builder/components/layout/layout-primitives";
+import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 

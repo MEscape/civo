@@ -18,7 +18,7 @@ export function ThemeProvider({
 }) {
     const style = themeToCssVariables(theme) as React.CSSProperties;
     return (
-        <div style={style} className="min-h-screen bg-[var(--civo-color-background)]">
+        <div style={{ ...style, fontFamily: "var(--civo-font-body)" }} className="min-h-screen bg-[var(--civo-color-background)]">
             {children}
         </div>
     );

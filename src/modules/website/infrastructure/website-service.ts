@@ -15,6 +15,16 @@ import {
 } from "@/modules/website/domain/website-schema";
 import { pageConfigSchema } from "@/modules/builder/domain/page-schema";
 import { getTemplate } from "@/modules/website/domain/templates";
+// Side-effect import: registers every feature module's component
+// definitions into the component-platform domain registry before
+// getTemplate()'s createDefaultNode() calls can look any of them up.
+// Needed here because template instantiation is a server-side entry
+// point that never renders through component-platform's render-nodes.tsx
+// (see that file's own comment on why it carries this same import) — a
+// newly-created website's initial pages are built directly from
+// templates, not rendered, until the user opens the builder or visits
+// the public site.
+import "@/modules/component-platform/infrastructure/definitions";
 
 /**
  * Service/domain layer for Website operations.
