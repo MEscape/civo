@@ -58,13 +58,14 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
     useEffect(() => {
         if (loadedPageId === page.id) return;
         dispatch(loadPage({ pageId: page.id, children: initialChildren }));
-        dispatch(setEditorMode(editorMode));
-        // initialChildren/editorMode intentionally excluded: this effect
-        // must only re-run when the page identity itself changes, not on
-        // every render where a new initialChildren array reference is
-        // passed in from the server-loaded prop.
+        // initialChildren intentionally excluded: this effect
+        // must only re-run when the page identity itself changes.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch, loadedPageId, page.id]);
+
+    useEffect(() => {
+        dispatch(setEditorMode(editorMode));
+    }, [dispatch, editorMode]);
 
     // True for the single render between navigating to a new page and
     // this effect's dispatch(loadPage(...)) landing in the store. Used
