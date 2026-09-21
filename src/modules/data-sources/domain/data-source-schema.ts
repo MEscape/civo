@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
+import { err, ok, type Result } from "@/lib/result/result";
 
 /**
  * A website's configured data source (Phase 3 spec §22–23).
@@ -6,60 +8,127 @@ import { z } from "zod";
  * Mirrors the Prisma `DataSource` model 1:1 — this module is the only
  * place that model's `kind`/`config` are interpreted. `kind` decides
  * which provider implementation a website's civic/smart-city components
- * resolve to; `config` is a small, kind-specific settings blob (e.g. a
- * REST base URL once a real adapter exists), never raw credentials (spec
- * §60 — secrets belong in server-only environment configuration, never in
- * a JSON column a website-management UI could end up echoing back).
+ * resolve to; `config` is a small, kind-specific settings blob.
  *
- * Intentionally NOT a generic "map any external API's fields to our
- * canonical model" engine (spec §23, §52) — each `kind` gets its own
- * fixed, small config shape below, and a brand-new external API means
- * writing a new adapter + a new `kind`, not configuring one.
+ * Credentials are never stored in `config`. Secrets belong in server-only
+ * environment configuration.
  */
-export const dataSourceKindSchema = z.enum(["MOCK", "REST", "GRAPHQL"]);
+
+export const dataSourceKindSchema = z.enum([
+    "MOCK",
+    "REST",
+    "GRAPHQL",
+]);
+
 export type DataSourceKind = z.infer<typeof dataSourceKindSchema>;
 
 /** Which canonical dataset family a DataSource applies to. */
-export const dataSourceDatasetSchema = z.enum(["civic", "smartcity"]);
-export type DataSourceDataset = z.infer<typeof dataSourceDatasetSchema>;
+export const dataSourceDatasetSchema = z.enum([
+    "civic",
+    "smartcity",
+]);
+
+export type DataSourceDataset = z.infer<
+    typeof dataSourceDatasetSchema
+>;
 
 /**
- * Config shape for kind: "MOCK" — intentionally empty. The mock provider
- * needs no configuration; this schema exists so `MOCK` is validated the
- * same way every other kind is, rather than being a special case.
+ * Config shape for kind: "MOCK".
+ *
+ * The mock provider needs no configuration. The schema is intentionally
+ * strict so MOCK is validated the same way as every other kind.
  */
-export const mockDataSourceConfigSchema = z.object({}).strict();
+export const mockDataSourceConfigSchema = z
+    .object({})
+    .strict();
 
 /**
- * Config shape for kind: "REST" — the minimum needed to point at a
- * future municipal REST adapter (spec §59's "Future API Configuration
- * Boundary"). No auth material lives here; a real REST adapter would
- * resolve credentials from server-only environment variables keyed by
- * data source id, never from this JSON column (spec §60).
+ * How a REST data source authenticates outbound requests.
+ *
+ * Only the mode is stored here. The actual credential is resolved from
+ * server-only configuration at request time.
+ */
+export const authModeSchema = z.enum([
+    "NONE",
+    "API_KEY",
+    "BEARER_TOKEN",
+]);
+
+export type AuthMode = z.infer<typeof authModeSchema>;
+
+/**
+ * Config shape for kind: "REST".
+ *
+ * No authentication material lives here.
  */
 export const restDataSourceConfigSchema = z
     .object({
-        baseUrl: z.string().url(),
+        baseUrl: z.url(),
+
+        /** Path appended to baseUrl for discovery/fetch. */
+        path: z.string().min(1).default("/"),
+
+        authMode: authModeSchema.default("NONE"),
     })
     .strict();
 
-/** Config shape for kind: "GRAPHQL" — same posture as REST, above. */
+export type RestDataSourceConfig = z.infer<
+    typeof restDataSourceConfigSchema
+>;
+
+/**
+ * Config shape for kind: "GRAPHQL".
+ */
 export const graphqlDataSourceConfigSchema = z
     .object({
-        endpoint: z.string().url(),
+        endpoint: z.url(),
     })
     .strict();
 
+export type GraphqlDataSourceConfig = z.infer<
+    typeof graphqlDataSourceConfigSchema
+>;
+
+/**
+ * Returns the configuration schema associated with a data-source kind.
+ */
 export function configSchemaForKind(kind: DataSourceKind) {
     switch (kind) {
         case "MOCK":
             return mockDataSourceConfigSchema;
+
         case "REST":
             return restDataSourceConfigSchema;
+
         case "GRAPHQL":
             return graphqlDataSourceConfigSchema;
     }
 }
+
+/** Outcome of the most recent test-connection / fetch attempt. */
+export const dataSourceStatusSchema = z.enum([
+    "UNKNOWN",
+    "OK",
+    "ERROR",
+]);
+
+export type DataSourceStatus = z.infer<
+    typeof dataSourceStatusSchema
+>;
+
+/**
+ * Category of a test-connection/diagnostic failure.
+ */
+export const connectionDiagnosticCategorySchema = z.enum([
+    "CONNECTION_FAILED",
+    "AUTHENTICATION_FAILED",
+    "INVALID_RESPONSE",
+    "INVALID_CONFIGURATION",
+]);
+
+export type ConnectionDiagnosticCategory = z.infer<
+    typeof connectionDiagnosticCategorySchema
+>;
 
 export const dataSourceSchema = z.object({
     id: z.string().min(1),
@@ -67,34 +136,76 @@ export const dataSourceSchema = z.object({
     name: z.string().min(1),
     kind: dataSourceKindSchema,
     dataset: dataSourceDatasetSchema,
-    config: z.record(z.string(), z.unknown()),
-});
-export type DataSourceEntity = z.infer<typeof dataSourceSchema>;
 
+    config: z.record(
+        z.string(),
+        z.unknown()
+    ),
+
+    mapping: z.unknown().nullable(),
+
+    status: dataSourceStatusSchema,
+
+    lastCheckedAt: z.date().nullable(),
+
+    lastError: z.string().nullable(),
+});
+
+export type DataSourceEntity = z.infer<
+    typeof dataSourceSchema
+>;
+
+/**
+ * Input for creating or replacing the one configured source for a
+ * (website, dataset) pair.
+ */
 export const createDataSourceSchema = z.object({
     websiteId: z.string().min(1),
     name: z.string().min(1).max(100),
     kind: dataSourceKindSchema,
     dataset: dataSourceDatasetSchema,
-    config: z.record(z.string(), z.unknown()).default({}),
+
+    config: z
+        .record(z.string(), z.unknown())
+        .default({}),
 });
-export type CreateDataSourceInput = z.infer<typeof createDataSourceSchema>;
+
+export type CreateDataSourceInput = z.infer<
+    typeof createDataSourceSchema
+>;
 
 /**
- * Validates a DataSource's `config` blob against the shape its own
- * `kind` requires. Called after createDataSourceSchema so a REST source
- * can't be saved with GraphQL-shaped (or empty, or malformed) config —
- * spec §55: "Do not accept arbitrary source strings/configuration
- * without validation."
+ * Input for saving a completed field mapping.
+ */
+export const saveMappingSchema = z.object({
+    dataSourceId: z.string().min(1),
+    mapping: datasetMappingSchema,
+});
+
+export type SaveMappingInput = z.infer<
+    typeof saveMappingSchema
+>;
+
+/**
+ * Validates a DataSource's config blob against the shape required by
+ * its kind.
+ *
+ * Expected validation failures are returned as `err(...)`.
+ * Unexpected programmer errors are not swallowed.
  */
 export function validateDataSourceConfig(
     kind: DataSourceKind,
     config: unknown
-): { ok: true; data: Record<string, unknown> } | { ok: false; message: string } {
+): Result<Record<string, unknown>, string> {
     const schema = configSchemaForKind(kind);
     const parsed = schema.safeParse(config);
+
     if (!parsed.success) {
-        return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid data source configuration." };
+        return err(
+            parsed.error.issues[0]?.message ??
+            "Invalid data source configuration."
+        );
     }
-    return { ok: true, data: parsed.data };
+
+    return ok(parsed.data as Record<string, unknown>);
 }
