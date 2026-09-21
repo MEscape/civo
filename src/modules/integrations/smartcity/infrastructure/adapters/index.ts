@@ -1,4 +1,5 @@
 import { MockSmartCityDataProvider } from "./mock-smartcity-provider";
+import { RestSmartCityDataProvider } from "./rest-smartcity-provider";
 import type { SmartCityDataProvider } from "./smartcity-data-provider";
 import { resolveDataSourceKind } from "@/modules/data-sources/infrastructure/data-source-resolver";
 
@@ -18,31 +19,36 @@ function mockProvider(): SmartCityDataProvider {
 
 /**
  * Resolves the SmartCity data provider for a given website (Phase 3 spec
- * §21–22). Exact mirror of getCivicDataProvider — same pattern, same
- * resolver, different dataset key ("smartcity").
+ * §21–22, extended in Phase 3.5 §12 with a real REST-backed provider).
+ * Exact mirror of getCivicDataProvider — same pattern, same resolver,
+ * different dataset key ("smartcity").
  *
  * `websiteId` is optional so existing call sites without website context
  * keep working, resolving to mock exactly as the old synchronous singleton
  * always did — backward-compatible superset, not a breaking change.
  *
- * To add a real provider once a SmartCity REST/GraphQL adapter exists:
+ * RestSmartCityDataProvider is constructed fresh per call (not cached),
+ * matching getCivicDataProvider's RestCivicDataProvider — see that
+ * file's comment for why.
+ *
+ * To add a GraphQL adapter once one exists:
  *   1. Implement SmartCityDataProvider in a new file.
- *   2. Add a branch below for that kind, constructing it from the
- *      resolved DataSource row's config.
+ *   2. Add a branch below for "GRAPHQL", constructing it from `row`.
  *   3. Zero component files change.
  */
 export async function getSmartCityDataProvider(websiteId?: string): Promise<SmartCityDataProvider> {
-    const { kind } = await resolveDataSourceKind(websiteId, "smartcity");
+    const { kind, row } = await resolveDataSourceKind(websiteId, "smartcity");
 
     switch (kind) {
         case "MOCK":
             return mockProvider();
         case "REST":
+            return new RestSmartCityDataProvider(row);
         case "GRAPHQL":
-            // No adapter implemented yet — resolveDataSourceKind already
-            // logs and reports "MOCK" for these, so these branches are
-            // unreachable today but kept explicit as a compile-error
-            // reminder when a real adapter is added.
+            // No GraphQL adapter implemented yet — resolveDataSourceKind
+            // already logs and reports "MOCK" for this case, so this
+            // branch is unreachable today but kept explicit as a
+            // compile-error reminder when a real adapter is added.
             return mockProvider();
     }
 }

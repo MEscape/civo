@@ -17,6 +17,17 @@ enum DataSourceKind {
   GRAPHQL
 }
 
+enum DataSourceDataset {
+  civic     @map("civic")
+  smartcity @map("smartcity")
+}
+
+enum DataSourceStatus {
+  UNKNOWN
+  OK
+  ERROR
+}
+
 model Theme {
   id             String   @id @default(uuid())
   primaryColor   String   @default("#0F172A")
@@ -30,7 +41,7 @@ model Theme {
   updatedAt      DateTime @updatedAt
 
   // Relations
-  websites       Website[]
+  websites Website[]
 }
 
 model Website {
@@ -44,7 +55,7 @@ model Website {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  theme       Theme?   @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  theme       Theme?       @relation(fields: [themeId], references: [id], onDelete: SetNull)
   pages       Page[]
   dataSources DataSource[]
 }
@@ -58,41 +69,42 @@ model Page {
   updatedAt DateTime @updatedAt
 
   // Relations
-  website   Website      @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  configs   PageConfig[]
+  website Website      @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  configs PageConfig[]
 
-  // Optional: Ensures path unique constraint per website
   @@unique([websiteId, path])
 }
 
 model PageConfig {
   id        String           @id @default(uuid())
   pageId    String
-  content   Json             // Maps to 'unknown' in JS/TS
+  content   Json
   status    PageConfigStatus @default(DRAFT)
   version   Int              @default(1)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
   // Relations
-  page      Page             @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
 }
 
 model DataSource {
-  id        String         @id @default(uuid())
-  websiteId String
-  name      String
-  kind      DataSourceKind
-  config    Json           // Maps to 'unknown' in JS/TS
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id            String             @id @default(uuid())
+  websiteId     String
+  name          String
+  kind          DataSourceKind
+  config        Json
+  dataset       DataSourceDataset
+  mapping       Json?
+  status        DataSourceStatus    @default(UNKNOWN)
+  lastCheckedAt DateTime?
+  lastError     String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
   // Relations
-  website   Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 
-  // One row per (website, name) — e.g. a website has at most one row named
-  // "civic-primary". Required by dataSourceRepository.upsert, which relies
-  // on this constraint to update the existing configured source for a
-  // dataset instead of creating a duplicate on every save.
-  @@unique([websiteId, name])
+  // One data source per dataset for each website.
+  @@unique([websiteId, dataset])
 }

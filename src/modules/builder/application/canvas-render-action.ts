@@ -1,44 +1,66 @@
 "use server";
 
 import type { ReactNode } from "react";
+
 import { pageConfigSchema } from "@/modules/builder/domain/page-schema";
 import { renderPageNodes } from "@/modules/component-platform/infrastructure/render-nodes";
 
-export type CanvasRenderResult =
-    | { ok: true; node: ReactNode }
-    | { ok: false; message: string };
+import {
+    err,
+    ok,
+    type Result,
+} from "@/lib/result/result";
+
+import type { AppError } from "@/lib/errors/app-error";
+import { toActionResult, type ActionResult } from "@/lib/actions/action-result";
 
 /**
- * Server-renders the CURRENT DRAFT page tree using the exact same
- * `renderPageNodes`/component registry the public PageRenderer uses
- * (with `editMode: true`, adding only a `data-civo-node-id` marker per
- * node — see render-nodes.tsx), and returns the resulting React element
- * tree directly to the client as a Server Action result.
+ * Server-side rendering operation for the builder canvas.
  *
- * This is the framework-native mechanism for this problem. An earlier
- * version of this function called `react-dom/server`'s
- * `renderToStaticMarkup` manually and returned an HTML string — Next.js
- * 16's bundler hard-rejects that at build time in BOTH Server Actions
- * and Route Handlers ("You're importing a component that imports
- * react-dom/server... render or return the content directly as a Server
- * Component instead").
- *
- * Returning the React element tree itself (the RSC payload) is exactly
- * what that error message is asking for, and avoids the client needing
- * to invoke `dangerouslySetInnerHTML`, so async Server Components work
- * correctly without a second manually-invoked renderer.
- *
- * `websiteId` (spec §30–31) is passed through so data-aware components
- * preview against THIS website's configured data source (falling back to
- * demo/mock data when none is configured — see the civic/smartcity
- * provider resolvers) rather than a single global provider, keeping the
- * builder preview and the public render path consistent.
+ * This is intentionally a Result-producing function rather than an
+ * ActionResult-producing function. The Result belongs to the application/
+ * service layer; the Server Action converts it into the serializable,
+ * client-safe ActionResult at the boundary.
  */
-export async function renderCanvasAction(config: unknown, websiteId?: string): Promise<CanvasRenderResult> {
+function renderCanvas(
+    config: unknown,
+    websiteId?: string
+): Result<ReactNode, AppError> {
     const parsed = pageConfigSchema.safeParse(config);
+
     if (!parsed.success) {
-        return { ok: false, message: "Die aktuelle Seitenkonfiguration ist ungültig." };
+        return err({
+            code: "VALIDATION_ERROR",
+            message: "Die aktuelle Seitenkonfiguration ist ungültig.",
+        });
     }
 
-    return { ok: true, node: renderPageNodes(parsed.data.children, true, websiteId) };
+    return ok(
+        renderPageNodes(
+            parsed.data.children,
+            true,
+            websiteId
+        )
+    );
+}
+
+/**
+ * Server Action boundary.
+ *
+ * Server Actions return the serializable ActionResult shape rather than
+ * exposing internal AppError instances or arbitrary Result error values
+ * to the client.
+ *
+ * The React element tree itself is returned as the successful `data`
+ * payload. Next.js serializes it through the RSC payload, allowing the
+ * client to render the result without manually calling react-dom/server
+ * or using dangerouslySetInnerHTML.
+ */
+export async function renderCanvasAction(
+    config: unknown,
+    websiteId?: string
+): Promise<ActionResult<ReactNode>> {
+    return toActionResult(
+        renderCanvas(config, websiteId)
+    );
 }

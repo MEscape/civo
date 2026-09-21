@@ -1,4 +1,5 @@
 import { MockCivicDataProvider } from "./mock-civic-provider";
+import { RestCivicDataProvider } from "./rest-civic-provider";
 import type { CivicDataProvider } from "./civic-data-provider";
 import { resolveDataSourceKind } from "@/modules/data-sources/infrastructure/data-source-resolver";
 
@@ -20,7 +21,7 @@ function mockProvider(): CivicDataProvider {
 
 /**
  * Resolves the civic data provider for a given website (Phase 3 spec
- * §21–22).
+ * §21–22, extended in Phase 3.5 §12 with a real REST-backed provider).
  *
  * This is the ONLY import point any component should use to obtain civic
  * content — components receive a canonical, source-agnostic
@@ -33,23 +34,29 @@ function mockProvider(): CivicDataProvider {
  * backward-compatible superset of the previous behavior, not a breaking
  * change to the function's contract.
  *
- * To add a real provider once a municipal REST/GraphQL adapter exists:
- *   1. Implement CivicDataProvider in a new file (e.g. rest-civic-provider.ts).
- *   2. Add a branch below for that resolved kind, constructing it from
- *      the resolved DataSource row's config.
+ * RestCivicDataProvider is constructed fresh per call (not cached like
+ * mockProvider()) since it closes over a specific `DataSource` row — the
+ * mapping/config could change between requests, and the row itself is
+ * already loaded by resolveDataSourceKind, so there is no separate fetch
+ * to memoize here.
+ *
+ * To add a GraphQL adapter once one exists:
+ *   1. Implement CivicDataProvider in a new file (e.g. graphql-civic-provider.ts).
+ *   2. Add a branch below for "GRAPHQL", constructing it from `row`.
  *   3. Zero component files change — they already call this function.
  */
 export async function getCivicDataProvider(websiteId?: string): Promise<CivicDataProvider> {
-    const { kind } = await resolveDataSourceKind(websiteId, "civic");
+    const { kind, row } = await resolveDataSourceKind(websiteId, "civic");
 
     switch (kind) {
         case "MOCK":
             return mockProvider();
         case "REST":
+            return new RestCivicDataProvider(row);
         case "GRAPHQL":
-            // No adapter implemented yet (spec §52) — resolveDataSourceKind
+            // No GraphQL adapter implemented yet — resolveDataSourceKind
             // already logs this and reports "MOCK" as the kind in that
-            // case, so these branches are unreachable today but are kept
+            // case, so this branch is unreachable today but is kept
             // explicit (rather than falling through to `default`) so
             // adding a real adapter later is a compile error reminder
             // here, not a silent gap.

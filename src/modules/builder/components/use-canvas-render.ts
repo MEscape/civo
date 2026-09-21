@@ -14,7 +14,11 @@ import { renderCanvasAction } from "@/modules/builder/application/canvas-render-
  * `websiteId` is forwarded so data-aware components preview against this
  * website's own configured data source (spec §30).
  */
-export function useCanvasRender(children: PageNode[], websiteId?: string, debounceMs = 250) {
+export function useCanvasRender(
+    children: PageNode[],
+    websiteId?: string,
+    debounceMs = 250
+) {
     const [node, setNode] = useState<ReactNode>(null);
     const [isRendering, setIsRendering] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -25,12 +29,17 @@ export function useCanvasRender(children: PageNode[], websiteId?: string, deboun
             const requestId = ++requestIdRef.current;
             setIsRendering(true);
 
-            renderCanvasAction({ type: "page", children }, websiteId)
+            renderCanvasAction(
+                { type: "page", children },
+                websiteId
+            )
                 .then((result) => {
-                    if (requestId !== requestIdRef.current) return; // stale response, ignore
+                    if (requestId !== requestIdRef.current) return;
+
                     setIsRendering(false);
+
                     if (result.ok) {
-                        setNode(result.node);
+                        setNode(result.data);
                         setError(null);
                     } else {
                         setError(result.message);
@@ -38,6 +47,7 @@ export function useCanvasRender(children: PageNode[], websiteId?: string, deboun
                 })
                 .catch(() => {
                     if (requestId !== requestIdRef.current) return;
+
                     setIsRendering(false);
                     setError("Die Vorschau konnte nicht geladen werden.");
                 });

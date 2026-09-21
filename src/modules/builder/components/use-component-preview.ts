@@ -12,7 +12,11 @@ type PreviewState = {
     error: string | null;
 };
 
-const emptyState: PreviewState = { node: null, isLoading: false, error: null };
+const emptyState: PreviewState = {
+    node: null,
+    isLoading: false,
+    error: null,
+};
 
 /**
  * Renders a live, on-demand preview of a single component type for the
@@ -32,14 +36,24 @@ const emptyState: PreviewState = { node: null, isLoading: false, error: null };
  * palette entries in a couple of seconds:
  *  - A hover-intent delay (HOVER_INTENT_MS) so merely passing over an
  *    item doesn't trigger a server round-trip.
- *  - A per-session, per-type result cache (module-level `previewCache`)
- *    so re-hovering something already seen is instant and never
- *    re-fetches — a component's default preview never changes at
- *    runtime, so there's no invalidation to worry about.
+ *  - A per-session, per-website, per-type result cache (module-level
+ *    previewCache) so re-hovering something already seen is instant and
+ *    never re-fetches. The website is part of the key because data-aware
+ *    components may render different preview data per website.
  */
 const previewCache = new Map<string, ReactNode>();
 
-export function useComponentPreview(hoveredType: string | null, websiteId?: string) {
+function getPreviewCacheKey(
+    componentType: string,
+    websiteId?: string
+): string {
+    return `${websiteId ?? "__default__"}:${componentType}`;
+}
+
+export function useComponentPreview(
+    hoveredType: string | null,
+    websiteId?: string
+) {
     const [state, setState] = useState<PreviewState>(emptyState);
     const requestIdRef = useRef(0);
 
@@ -49,38 +63,78 @@ export function useComponentPreview(hoveredType: string | null, websiteId?: stri
             return;
         }
 
-        const cached = previewCache.get(hoveredType);
+        const cacheKey = getPreviewCacheKey(hoveredType, websiteId);
+        const cached = previewCache.get(cacheKey);
+
         if (cached !== undefined) {
-            setState({ node: cached, isLoading: false, error: null });
+            setState({
+                node: cached,
+                isLoading: false,
+                error: null,
+            });
             return;
         }
 
         const requestId = ++requestIdRef.current;
+
         const timeout = setTimeout(() => {
-            setState({ node: null, isLoading: true, error: null });
+            setState({
+                node: null,
+                isLoading: true,
+                error: null,
+            });
 
             let defaultNode;
+
             try {
-                defaultNode = getComponentDefinition(hoveredType).createDefaultNode();
+                defaultNode =
+                    getComponentDefinition(hoveredType).createDefaultNode();
             } catch {
                 if (requestId !== requestIdRef.current) return;
-                setState({ node: null, isLoading: false, error: "Unbekannte Komponente." });
+
+                setState({
+                    node: null,
+                    isLoading: false,
+                    error: "Unbekannte Komponente.",
+                });
+
                 return;
             }
 
-            renderCanvasAction({ type: "page", children: [defaultNode] }, websiteId)
+            renderCanvasAction(
+                {
+                    type: "page",
+                    children: [defaultNode],
+                },
+                websiteId
+            )
                 .then((result) => {
-                    if (requestId !== requestIdRef.current) return; // stale — hover moved on
+                    if (requestId !== requestIdRef.current) return;
+
                     if (result.ok) {
-                        previewCache.set(hoveredType, result.node);
-                        setState({ node: result.node, isLoading: false, error: null });
+                        previewCache.set(cacheKey, result.data);
+
+                        setState({
+                            node: result.data,
+                            isLoading: false,
+                            error: null,
+                        });
                     } else {
-                        setState({ node: null, isLoading: false, error: result.message });
+                        setState({
+                            node: null,
+                            isLoading: false,
+                            error: result.message,
+                        });
                     }
                 })
                 .catch(() => {
                     if (requestId !== requestIdRef.current) return;
-                    setState({ node: null, isLoading: false, error: "Vorschau konnte nicht geladen werden." });
+
+                    setState({
+                        node: null,
+                        isLoading: false,
+                        error: "Vorschau konnte nicht geladen werden.",
+                    });
                 });
         }, HOVER_INTENT_MS);
 
