@@ -23,7 +23,7 @@ describe("canvas render action", () => {
 
         expect(result.ok).toBe(true);
         if (result.ok) {
-            expect(result.node).toBe("MOCK_NODE");
+            expect(result.data).toBe("MOCK_NODE");
         }
         expect(renderPageNodes).toHaveBeenCalledWith(mockConfig.children, true, undefined);
     });
