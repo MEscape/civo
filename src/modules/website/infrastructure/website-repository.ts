@@ -76,7 +76,7 @@ export const websiteRepository = {
         } catch (cause: unknown) {
             logger.error("websiteRepository.create failed", { cause, input });
             if (isUniqueConstraintError(cause)) {
-                return err(AppErrors.conflict(`A website with slug "${input.slug}" already exists.`));
+                return err(AppErrors.conflict(`Eine Website mit dem Slug "${input.slug}" existiert bereits.`));
             }
             return err(AppErrors.database(cause));
         }

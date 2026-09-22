@@ -24,7 +24,7 @@ import type {
  * Implementations:
  *  - MockCivicDataProvider (src/modules/integrations/civic/infrastructure/adapters/mock-civic-provider.ts) —
  *    the only implementation wired up in the MVP.
- *  - Future: RestCivicDataProvider, GraphQLCivicDataProvider, etc.
+ *  - Future: RestCivicDataProvider, etc.
  *    Each maps its own external shape into the canonical content types
  *    via src/modules/integrations/civic/infrastructure/adapters, validated against the Zod schemas in
  *    src/modules/content/domain/content-schema.ts before being returned.

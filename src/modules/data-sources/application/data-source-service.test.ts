@@ -99,19 +99,6 @@ describe("dataSourceService", () => {
             expect(dataSourceRepository.upsert).not.toHaveBeenCalled();
         });
 
-        it("rejects REST config shaped like GraphQL config", async () => {
-            const result = await dataSourceService.upsert({
-                websiteId: WEBSITE_ID,
-                name: "Municipal Events",
-                kind: "REST",
-                dataset: "civic",
-                config: { endpoint: "https://example.de/graphql" },
-            });
-
-            expect(result.ok).toBe(false);
-            expect(dataSourceRepository.upsert).not.toHaveBeenCalled();
-        });
-
         it("rejects a REST baseUrl pointing at a private/internal address (SSRF guard at save time)", async () => {
             const result = await dataSourceService.upsert({
                 websiteId: WEBSITE_ID,

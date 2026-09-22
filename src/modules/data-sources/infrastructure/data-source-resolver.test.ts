@@ -64,14 +64,4 @@ describe("resolveDataSourceKind", () => {
 
         expect(result).toEqual({ kind: "REST", row });
     });
-
-    it("falls back to MOCK and logs when the configured kind is GRAPHQL (no adapter yet)", async () => {
-        const row = { id: "ds-1", kind: "GRAPHQL" };
-        vi.mocked(dataSourceRepository.findByWebsiteAndDataset).mockResolvedValue({ ok: true, data: row as never });
-
-        const result = await resolveDataSourceKind("website-1", "smartcity");
-
-        expect(result).toEqual({ kind: "MOCK", row });
-        expect(logger.warn).toHaveBeenCalled();
-    });
 });

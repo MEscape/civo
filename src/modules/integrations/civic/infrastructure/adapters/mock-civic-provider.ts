@@ -36,7 +36,7 @@ import type { NewsItem } from "@/modules/content/domain/civic-types";
  * This is the only provider wired up in the MVP. It simulates the shape
  * a real adapter would have — validating "external" data against the
  * canonical Zod schemas before returning it — so swapping in a real REST
- * or GraphQL-backed provider later is a drop-in replacement with no
+ * provider later is a drop-in replacement with no
  * changes required in any consuming component.
  *
  * See `getCivicDataProvider()` in index.ts for the singleton accessor —

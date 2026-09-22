@@ -39,11 +39,6 @@ function mockProvider(): CivicDataProvider {
  * mapping/config could change between requests, and the row itself is
  * already loaded by resolveDataSourceKind, so there is no separate fetch
  * to memoize here.
- *
- * To add a GraphQL adapter once one exists:
- *   1. Implement CivicDataProvider in a new file (e.g. graphql-civic-provider.ts).
- *   2. Add a branch below for "GRAPHQL", constructing it from `row`.
- *   3. Zero component files change — they already call this function.
  */
 export async function getCivicDataProvider(websiteId?: string): Promise<CivicDataProvider> {
     const { kind, row } = await resolveDataSourceKind(websiteId, "civic");
@@ -53,13 +48,5 @@ export async function getCivicDataProvider(websiteId?: string): Promise<CivicDat
             return mockProvider();
         case "REST":
             return new RestCivicDataProvider(row);
-        case "GRAPHQL":
-            // No GraphQL adapter implemented yet — resolveDataSourceKind
-            // already logs this and reports "MOCK" as the kind in that
-            // case, so this branch is unreachable today but is kept
-            // explicit (rather than falling through to `default`) so
-            // adding a real adapter later is a compile error reminder
-            // here, not a silent gap.
-            return mockProvider();
     }
 }

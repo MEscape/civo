@@ -13,6 +13,7 @@ import { applyMapping, datasetMappingSchema } from "@/modules/data-sources/domai
 import { deriveMappedRecordId } from "@/modules/data-sources/infrastructure/derive-mapped-record-id";
 import { cachedRestFetch } from "@/modules/data-sources/infrastructure/data-fetch-cache";
 import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
+import { sourceCacheVersion } from "@/modules/data-sources/domain/source-cache-version";
 
 /**
  * REST-backed implementation of CivicDataProvider (Phase 3.5 spec §12).
@@ -73,7 +74,7 @@ export class RestCivicDataProvider implements CivicDataProvider {
         const fetchResult = await cachedRestFetch(
             this.source.id,
             this.source.dataset,
-            this.source.updatedAt.toISOString(),
+            sourceCacheVersion(this.source),
             () => restJsonAdapter.fetch(configParsed.data, { dataSourceId: this.source.id })
         );
         if (!fetchResult.ok) return err(fetchResult.error);

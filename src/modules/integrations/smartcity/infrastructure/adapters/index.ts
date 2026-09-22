@@ -30,11 +30,6 @@ function mockProvider(): SmartCityDataProvider {
  * RestSmartCityDataProvider is constructed fresh per call (not cached),
  * matching getCivicDataProvider's RestCivicDataProvider — see that
  * file's comment for why.
- *
- * To add a GraphQL adapter once one exists:
- *   1. Implement SmartCityDataProvider in a new file.
- *   2. Add a branch below for "GRAPHQL", constructing it from `row`.
- *   3. Zero component files change.
  */
 export async function getSmartCityDataProvider(websiteId?: string): Promise<SmartCityDataProvider> {
     const { kind, row } = await resolveDataSourceKind(websiteId, "smartcity");
@@ -44,11 +39,5 @@ export async function getSmartCityDataProvider(websiteId?: string): Promise<Smar
             return mockProvider();
         case "REST":
             return new RestSmartCityDataProvider(row);
-        case "GRAPHQL":
-            // No GraphQL adapter implemented yet — resolveDataSourceKind
-            // already logs and reports "MOCK" for this case, so this
-            // branch is unreachable today but kept explicit as a
-            // compile-error reminder when a real adapter is added.
-            return mockProvider();
     }
 }

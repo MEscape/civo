@@ -51,7 +51,7 @@ describe("sourceCacheVersion", () => {
     });
 
     it("changes when the kind changes", () => {
-        expect(sourceCacheVersion({ ...base, kind: "GRAPHQL" })).not.toBe(sourceCacheVersion(base));
+        expect(sourceCacheVersion({ ...base, kind: "MOCK" })).not.toBe(sourceCacheVersion(base));
     });
 
     it("treats array order as significant, because mapping field order is meaningful", () => {

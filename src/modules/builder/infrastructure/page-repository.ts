@@ -79,7 +79,7 @@ export const pageRepository = {
         } catch (cause) {
             logger.error("pageRepository.create failed", { cause, input: { ...input, content: "omitted" } });
             if (isUniqueConstraintError(cause)) {
-                return err(AppErrors.conflict(`A page with path "${input.path}" already exists on this website.`));
+                return err(AppErrors.conflict(`Eine Seite mit dem Pfad "${input.path}" existiert bereits auf dieser Website.`));
             }
             return err(AppErrors.database(cause));
         }

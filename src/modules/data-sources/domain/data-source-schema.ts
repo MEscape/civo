@@ -17,7 +17,6 @@ import { err, ok, type Result } from "@/lib/result/result";
 export const dataSourceKindSchema = z.enum([
     "MOCK",
     "REST",
-    "GRAPHQL",
 ]);
 
 export type DataSourceKind = z.infer<typeof dataSourceKindSchema>;
@@ -77,19 +76,6 @@ export type RestDataSourceConfig = z.infer<
 >;
 
 /**
- * Config shape for kind: "GRAPHQL".
- */
-export const graphqlDataSourceConfigSchema = z
-    .object({
-        endpoint: z.url(),
-    })
-    .strict();
-
-export type GraphqlDataSourceConfig = z.infer<
-    typeof graphqlDataSourceConfigSchema
->;
-
-/**
  * Returns the configuration schema associated with a data-source kind.
  */
 export function configSchemaForKind(kind: DataSourceKind) {
@@ -99,9 +85,6 @@ export function configSchemaForKind(kind: DataSourceKind) {
 
         case "REST":
             return restDataSourceConfigSchema;
-
-        case "GRAPHQL":
-            return graphqlDataSourceConfigSchema;
     }
 }
 

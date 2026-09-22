@@ -2,7 +2,7 @@
  * Canonical internal content model — smart-city domain.
  *
  * These types are the ONLY shapes UI components are allowed to depend on.
- * External data (REST, GraphQL, municipal/smart-city APIs, CMS, database
+ * External data (REST, municipal/smart-city APIs, CMS, database
  * rows) is mapped into these shapes at the data-adapter boundary — see
  * `src/modules/integrations/smartcity/infrastructure/adapters`. Components
  * must never import provider-specific types.

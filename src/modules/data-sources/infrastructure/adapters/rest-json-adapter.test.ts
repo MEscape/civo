@@ -82,10 +82,6 @@ describe("RestJsonAdapter", () => {
             expect(adapter.parseConfig({ baseUrl: "https://example.de/api", apiKey: "leak" }).ok).toBe(false);
         });
 
-        it("rejects config shaped for another kind", () => {
-            expect(adapter.parseConfig({ endpoint: "https://example.de/graphql" }).ok).toBe(false);
-        });
-
         it("rejects a missing config", () => {
             expect(adapter.parseConfig(undefined).ok).toBe(false);
         });

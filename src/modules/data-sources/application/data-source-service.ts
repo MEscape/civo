@@ -15,9 +15,8 @@ export type { DataSourceView };
 
 /**
  * Resolves which adapter implementation handles a given data source kind
- * (spec §27). MOCK and GRAPHQL have no adapter — MOCK is served directly
- * by the mock civic/smart-city providers, and GRAPHQL has no
- * implementation yet (spec §4 scopes this phase to REST/JSON only).
+ * (spec §27). MOCK has no adapter — MOCK is served directly
+ * by the mock civic/smart-city providers (spec §4 scopes this phase to REST/JSON only).
  *
  * Each adapter owns its own config schema (`adapter.parseConfig`), so
  * adding a second kind with an adapter does not require touching the
@@ -187,8 +186,7 @@ export const dataSourceService = {
      * Creates or replaces the one data source configured for a
      * (website, dataset) pair (spec §24 steps 2–4). Validates the
      * top-level shape first, then hands `config` to the target kind's
-     * adapter to validate — a REST source can't be saved with
-     * GraphQL-shaped config, and neither can be saved with a stray
+     * adapter to validate — a REST source can't be saved with a stray
      * credential in `config`, since each adapter's schema is `.strict()`.
      * For REST sources, also enforces the SSRF guard (spec §22) via
      * `resolveRestUrl`, so a private-network or metadata-endpoint URL is
@@ -207,8 +205,7 @@ export const dataSourceService = {
 
         const adapter = adapterForKind(parsed.data.kind);
         // MOCK has no adapter and no config to validate beyond the empty
-        // shape createDataSourceSchema already checked; GRAPHQL/REST both
-        // route through their adapter's own schema.
+        // shape createDataSourceSchema already checked.
         const configResult = adapter ? adapter.parseConfig(parsed.data.config) : ok(parsed.data.config);
 
         if (!configResult.ok) {

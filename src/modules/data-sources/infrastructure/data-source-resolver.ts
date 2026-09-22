@@ -18,7 +18,7 @@ import type { DataSourceDataset, DataSourceView } from "@/modules/data-sources/d
  * When a website has no configured row for a dataset (the common case
  * for every website created so far, since this used to not exist at
  * all), this resolves to "MOCK". A row whose kind has no adapter
- * implementation yet (GRAPHQL — Phase 3.5 scopes building that adapter
+ * implementation yet (Phase 3.5 scopes building that adapter
  * OUT of this phase; REST now has one, see
  * civic/infrastructure/adapters/rest-civic-provider.ts) also falls back
  * to "MOCK" and logs why, rather than failing the whole page (spec §50 —
@@ -28,7 +28,7 @@ import type { DataSourceDataset, DataSourceView } from "@/modules/data-sources/d
 export async function resolveDataSourceKind(
     websiteId: string | undefined,
     dataset: DataSourceDataset
-): Promise<{ kind: "MOCK"; row: DataSourceView | null } | { kind: "REST" | "GRAPHQL"; row: DataSourceView }> {
+): Promise<{ kind: "MOCK"; row: DataSourceView | null } | { kind: "REST"; row: DataSourceView }> {
     if (!websiteId) {
         // No website context (e.g. a code path that renders components
         // outside any website, if one ever exists) — mock is the only
@@ -49,18 +49,6 @@ export async function resolveDataSourceKind(
     const row = result.data;
     if (!row) {
         return { kind: "MOCK", row: null };
-    }
-
-    if (row.kind === "GRAPHQL") {
-        // No GraphQL adapter implemented yet (kept explicit, not folded
-        // into a `default` branch, so adding one later is a compile-error
-        // reminder here rather than a silent gap).
-        logger.warn("resolveDataSourceKind: configured kind has no adapter implementation yet, falling back to mock", {
-            websiteId,
-            dataset,
-            configuredKind: row.kind,
-        });
-        return { kind: "MOCK", row };
     }
 
     return { kind: row.kind, row };

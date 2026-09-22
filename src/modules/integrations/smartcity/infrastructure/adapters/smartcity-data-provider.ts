@@ -12,7 +12,7 @@ import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
  *
  * Implementations:
  *  - MockSmartCityDataProvider (src/modules/integrations/smartcity/infrastructure/adapters/mock-smartcity-provider.ts)
- *  - Future: RestSmartCityDataProvider, GraphQLSmartCityDataProvider, etc.
+ *  - Future: RestSmartCityDataProvider, etc.
  *
  * @see CivicDataProvider for news, events, services, contacts, and other
  * civic content.
