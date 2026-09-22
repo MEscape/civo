@@ -53,7 +53,7 @@ export const pageConfigSchema = z
                 if (ids.has(node.id)) {
                     ctx.addIssue({
                         code: "custom",
-                        message: `Duplicate node id "${node.id}" found in page configuration.`,
+                        message: `Doppelte Knoten-ID "${node.id}" in der Seitenkonfiguration gefunden.`,
                         path: [...path, index, "id"],
                     });
                 }
@@ -65,3 +65,59 @@ export const pageConfigSchema = z
     });
 
 export type PageConfigInput = z.infer<typeof pageConfigSchema>;
+
+export type PageConfigStatus = "DRAFT" | "PUBLISHED";
+
+/**
+ * Domain read-model for a PageConfig.
+ * Isolates the presentation and application layers from Prisma dependency.
+ */
+export type PageConfigView = {
+    id: string;
+    pageId: string;
+    content: unknown;
+    status: PageConfigStatus;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+/**
+ * Domain read-model for a Page.
+ * Isolates the presentation and application layers from Prisma dependency.
+ */
+export type PageView = {
+    id: string;
+    websiteId: string;
+    path: string;
+    title: string;
+    createdAt: Date;
+    updatedAt: Date;
+    configs: PageConfigView[];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toPageConfigView(row: any): PageConfigView {
+    return {
+        id: row.id,
+        pageId: row.pageId,
+        content: row.content,
+        status: row.status as PageConfigStatus,
+        version: row.version,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toPageView(row: any): PageView {
+    return {
+        id: row.id,
+        websiteId: row.websiteId,
+        path: row.path,
+        title: row.title,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        configs: row.configs ? row.configs.map(toPageConfigView) : [],
+    };
+}

@@ -11,15 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DataSourceStatusBadge } from "@/modules/data-sources/components/data-source-status-badge";
-import { formatRelativeTime } from "@/modules/data-sources/components/format-relative-time";
 import { DataSourceMappingPanel } from "@/modules/data-sources/components/data-source-mapping-panel";
+import { formatRelativeTime } from "@/lib/formatters";
 import { describeConnectionFailure } from "@/modules/data-sources/components/describe-connection-failure";
-import type { DataSourceRow } from "@/modules/data-sources/infrastructure/data-source-service";
+import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 import type { AuthMode, DataSourceDataset, DataSourceKind } from "@/modules/data-sources/domain/data-source-schema";
 
 type DataSourcesPanelProps = {
     websiteId: string;
-    initialSources: DataSourceRow[];
+    initialSources: DataSourceView[];
 };
 
 const DATASET_LABEL: Record<DataSourceDataset, string> = {
@@ -61,13 +61,13 @@ export function DataSourcesPanel({ websiteId, initialSources }: DataSourcesPanel
 }
 
 function DatasetSourceCard({
-    websiteId,
-    dataset,
-    source,
-}: {
+                               websiteId,
+                               dataset,
+                               source,
+                           }: {
     websiteId: string;
     dataset: DataSourceDataset;
-    source: DataSourceRow | null;
+    source: DataSourceView | null;
 }) {
     const [isEditing, setIsEditing] = useState(!source);
 
@@ -84,11 +84,7 @@ function DatasetSourceCard({
             </CardHeader>
             <CardContent className="space-y-4">
                 {source && !isEditing ? (
-                    <ConfiguredSourceView
-                        websiteId={websiteId}
-                        source={source}
-                        onEdit={() => setIsEditing(true)}
-                    />
+                    <ConfiguredSourceView websiteId={websiteId} source={source} onEdit={() => setIsEditing(true)} />
                 ) : (
                     <DataSourceForm
                         websiteId={websiteId}
@@ -104,19 +100,21 @@ function DatasetSourceCard({
 }
 
 function ConfiguredSourceView({
-    websiteId,
-    source,
-    onEdit,
-}: {
+                                  websiteId,
+                                  source,
+                                  onEdit,
+                              }: {
     websiteId: string;
-    source: DataSourceRow;
+    source: DataSourceView;
     onEdit: () => void;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [testMessage, setTestMessage] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const config = source.config as { baseUrl?: string };
+    const mapping = source.mapping as { fields: import("@/modules/data-sources/domain/field-mapping-schema").FieldMapping[] } | null;
 
     function handleTestConnection() {
         setTestMessage(null);
@@ -135,9 +133,16 @@ function ConfiguredSourceView({
         if (!window.confirm("Diese Datenquelle wirklich entfernen? Die Website zeigt danach wieder Beispieldaten.")) {
             return;
         }
+        setDeleteError(null);
         startTransition(async () => {
             const result = await deleteDataSourceAction(source.id, websiteId);
-            if (result.ok) router.refresh();
+            if (!result.ok) {
+                // Previously silent on failure — the button would just stop
+                // spinning with no indication anything went wrong.
+                setDeleteError(result.message);
+                return;
+            }
+            router.refresh();
         });
     }
 
@@ -170,6 +175,7 @@ function ConfiguredSourceView({
                 </p>
             )}
             {testMessage && <p className="text-sm text-[var(--civo-color-text)]">{testMessage}</p>}
+            {deleteError && <p className="text-sm text-red-700">{deleteError}</p>}
 
             <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" size="sm" onClick={handleTestConnection} disabled={isPending}>
@@ -183,21 +189,26 @@ function ConfiguredSourceView({
                 </Button>
             </div>
 
-            <DataSourceMappingPanel websiteId={websiteId} dataSourceId={source.id} dataset={source.dataset} />
+            <DataSourceMappingPanel
+                websiteId={websiteId}
+                dataSourceId={source.id}
+                dataset={source.dataset}
+                existingMapping={mapping}
+            />
         </div>
     );
 }
 
 function DataSourceForm({
-    websiteId,
-    dataset,
-    existing,
-    onCancel,
-    onSaved,
-}: {
+                            websiteId,
+                            dataset,
+                            existing,
+                            onCancel,
+                            onSaved,
+                        }: {
     websiteId: string;
     dataset: DataSourceDataset;
-    existing: DataSourceRow | null;
+    existing: DataSourceView | null;
     onCancel?: () => void;
     onSaved: () => void;
 }) {
@@ -228,8 +239,11 @@ function DataSourceForm({
                 return;
             }
 
-            onSaved();
+            // Refresh before flipping out of edit mode, so the parent
+            // re-renders with the newly saved row in the same pass rather
+            // than briefly showing the old (or empty) configured view.
             router.refresh();
+            onSaved();
         });
     }
 

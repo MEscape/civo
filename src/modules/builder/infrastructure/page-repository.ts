@@ -5,9 +5,9 @@ import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
 import { logger } from "@/lib/logger/logger";
 import { isUniqueConstraintError } from "@/lib/db/prisma-errors";
-import type { Prisma, Page, PageConfig } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-export type PageWithConfig = Page & { configs: PageConfig[] };
+import { toPageView, toPageConfigView, type PageView, type PageConfigView } from "@/modules/builder/domain/page-schema";
 
 /**
  * Repository layer for Page + PageConfig. The MVP always keeps a single
@@ -16,27 +16,27 @@ export type PageWithConfig = Page & { configs: PageConfig[] };
  * multiple revisions doesn't require a repository rewrite.
  */
 export const pageRepository = {
-    async findByWebsiteId(websiteId: string): Promise<Result<PageWithConfig[], AppError>> {
+    async findByWebsiteId(websiteId: string): Promise<Result<PageView[], AppError>> {
         try {
             const pages = await prisma.page.findMany({
                 where: { websiteId },
                 include: { configs: { orderBy: { version: "desc" }, take: 1 } },
                 orderBy: { createdAt: "asc" },
             });
-            return ok(pages);
+            return ok(pages.map(toPageView));
         } catch (cause) {
             logger.error("pageRepository.findByWebsiteId failed", { cause, websiteId });
             return err(AppErrors.database(cause));
         }
     },
 
-    async findById(id: string): Promise<Result<PageWithConfig | null, AppError>> {
+    async findById(id: string): Promise<Result<PageView | null, AppError>> {
         try {
             const page = await prisma.page.findUnique({
                 where: { id },
                 include: { configs: { orderBy: { version: "desc" }, take: 1 } },
             });
-            return ok(page);
+            return ok(page ? toPageView(page) : null);
         } catch (cause) {
             logger.error("pageRepository.findById failed", { cause, id });
             return err(AppErrors.database(cause));
@@ -46,13 +46,13 @@ export const pageRepository = {
     async findByWebsiteAndPath(
         websiteId: string,
         path: string
-    ): Promise<Result<PageWithConfig | null, AppError>> {
+    ): Promise<Result<PageView | null, AppError>> {
         try {
             const page = await prisma.page.findUnique({
                 where: { websiteId_path: { websiteId, path } },
                 include: { configs: { orderBy: { version: "desc" }, take: 1 } },
             });
-            return ok(page);
+            return ok(page ? toPageView(page) : null);
         } catch (cause) {
             logger.error("pageRepository.findByWebsiteAndPath failed", { cause, websiteId, path });
             return err(AppErrors.database(cause));
@@ -64,7 +64,7 @@ export const pageRepository = {
         path: string;
         title: string;
         content: Prisma.InputJsonValue;
-    }): Promise<Result<PageWithConfig, AppError>> {
+    }): Promise<Result<PageView, AppError>> {
         try {
             const page = await prisma.page.create({
                 data: {
@@ -75,7 +75,7 @@ export const pageRepository = {
                 },
                 include: { configs: true },
             });
-            return ok(page);
+            return ok(toPageView(page));
         } catch (cause) {
             logger.error("pageRepository.create failed", { cause, input: { ...input, content: "omitted" } });
             if (isUniqueConstraintError(cause)) {
@@ -94,7 +94,7 @@ export const pageRepository = {
     async saveConfig(
         pageId: string,
         content: Prisma.InputJsonValue
-    ): Promise<Result<PageConfig, AppError>> {
+    ): Promise<Result<PageConfigView, AppError>> {
         try {
             const latest = await prisma.pageConfig.findFirst({
                 where: { pageId },
@@ -109,7 +109,7 @@ export const pageRepository = {
                     status: "PUBLISHED",
                 },
             });
-            return ok(config);
+            return ok(toPageConfigView(config));
         } catch (cause) {
             logger.error("pageRepository.saveConfig failed", { cause, pageId });
             return err(AppErrors.database(cause));

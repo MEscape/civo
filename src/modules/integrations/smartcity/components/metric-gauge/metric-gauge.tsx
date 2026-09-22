@@ -3,8 +3,7 @@ import { getSmartCityDataProvider } from "@/modules/integrations/smartcity/infra
 import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { logger } from "@/lib/logger/logger";
 import { GaugeChartClient } from "./gauge-chart-client";
-
-const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+import { formatNumber } from "@/lib/formatters";
 
 export async function MetricGauge({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = metricGaugePropsSchema.safeParse(props);
@@ -32,8 +31,8 @@ export async function MetricGauge({ props, websiteId }: { props: Record<string, 
                 <SectionHeading className="mb-2">{heading ?? metric.label}</SectionHeading>
                 <GaugeChartClient percent={percent} />
                 <p className="mt-2 text-sm text-[var(--civo-color-text-muted)]">
-                    {numberFormatter.format(metric.value)}
-                    {metric.unit ? ` ${metric.unit}` : ""} von {numberFormatter.format(metric.target)}
+                    {formatNumber(metric.value)}
+                    {metric.unit ? ` ${metric.unit}` : ""} von {formatNumber(metric.target)}
                     {metric.unit ? ` ${metric.unit}` : ""} Ziel
                 </p>
             </Container>

@@ -36,18 +36,18 @@ export const AppErrors = {
     validation: (message: string, field?: string): AppError =>
         appError("VALIDATION_ERROR", message, { field }),
     notFound: (resource: string): AppError =>
-        appError("NOT_FOUND", `${resource} was not found.`),
+        appError("NOT_FOUND", `${resource} wurde nicht gefunden.`),
     conflict: (message: string): AppError => appError("CONFLICT", message),
     database: (cause?: unknown): AppError =>
-        appError("DATABASE_ERROR", "A database error occurred.", { cause }),
+        appError("DATABASE_ERROR", "Ein Datenbankfehler ist aufgetreten.", { cause }),
     externalApi: (message: string, cause?: unknown): AppError =>
         appError("EXTERNAL_API_ERROR", message, { cause }),
     unauthorized: (): AppError =>
-        appError("UNAUTHORIZED", "Authentication is required for this action."),
+        appError("UNAUTHORIZED", "Für diese Aktion ist eine Anmeldung erforderlich."),
     forbidden: (): AppError =>
-        appError("FORBIDDEN", "You do not have permission to perform this action."),
+        appError("FORBIDDEN", "Sie haben keine Berechtigung, diese Aktion auszuführen."),
     internal: (cause?: unknown): AppError =>
-        appError("INTERNAL_ERROR", "An unexpected error occurred.", { cause }),
+        appError("INTERNAL_ERROR", "Ein unerwarteter Fehler ist aufgetreten.", { cause }),
 };
 
 /**
@@ -63,14 +63,14 @@ export function toUserMessage(error: AppError): string {
         case "CONFLICT":
             return error.message;
         case "UNAUTHORIZED":
-            return "Please sign in to continue.";
+            return "Bitte melden Sie sich an, um fortzufahren.";
         case "FORBIDDEN":
-            return "You do not have permission to perform this action.";
+            return "Sie haben keine Berechtigung, diese Aktion auszuführen.";
         case "DATABASE_ERROR":
         case "EXTERNAL_API_ERROR":
         case "INTERNAL_ERROR":
-            return "Something went wrong. Please try again.";
+            return "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
         default:
-            return "Something went wrong. Please try again.";
+            return "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
     }
 }

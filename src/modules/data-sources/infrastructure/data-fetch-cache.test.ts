@@ -24,7 +24,7 @@ describe("cachedRestFetch", () => {
         await cachedRestFetch("ds-1", "civic", "2026-09-18T00:00:00.000Z", fetchRaw);
 
         expect(unstableCacheMock).toHaveBeenCalledWith(
-            fetchRaw,
+            expect.any(Function),
             ["data-source-fetch", "ds-1", "2026-09-18T00:00:00.000Z"],
             expect.objectContaining({ tags: ["data-source:ds-1"] })
         );
@@ -70,5 +70,65 @@ describe("cachedRestFetch", () => {
         const result = await cachedRestFetch("ds-1", "civic", "v1", fetchRaw);
 
         expect(result).toEqual({ ok: true, data: ["record"] });
+    });
+
+    describe("failures are not cached", () => {
+        it("returns the failed Result to the caller unchanged", async () => {
+            const failure = {
+                code: "EXTERNAL_API_ERROR",
+                message: "Die Datenquelle konnte nicht erreicht werden.",
+                category: "CONNECTION_FAILED" as const,
+            };
+            const fetchRaw = vi.fn().mockResolvedValue({ ok: false, error: failure });
+
+            const result = await cachedRestFetch("ds-1", "civic", "v1", fetchRaw);
+
+            expect(result).toEqual({ ok: false, error: failure });
+        });
+
+        it("throws instead of returning on failure, so unstable_cache's own contract never stores it", async () => {
+            // This test pins the mechanism the module relies on: with the
+            // identity-passthrough mock above, `cached` IS the function
+            // passed to unstable_cache, so calling it directly proves
+            // whether a failure is returned (cacheable) or thrown (not).
+            const failure = {
+                code: "EXTERNAL_API_ERROR",
+                message: "boom",
+                category: "CONNECTION_FAILED" as const,
+            };
+            const fetchRaw = vi.fn().mockResolvedValue({ ok: false, error: failure });
+
+            await cachedRestFetch("ds-1", "civic", "v1", fetchRaw);
+
+            const wrapped = unstableCacheMock.mock.calls[0]![0];
+
+            await expect(wrapped()).rejects.toBeDefined();
+        });
+
+        it("calls fetchRaw again on a second failure instead of serving a cached failure", async () => {
+            // With the identity-passthrough mock, "no caching" shows up as
+            // fetchRaw being invoked once per cachedRestFetch call rather
+            // than only once total.
+            const fetchRaw = vi.fn().mockResolvedValue({ ok: false, error: { code: "E", message: "m", category: "CONNECTION_FAILED" } });
+
+            await cachedRestFetch("ds-1", "civic", "v1", fetchRaw);
+            await cachedRestFetch("ds-1", "civic", "v1", fetchRaw);
+
+            expect(fetchRaw).toHaveBeenCalledTimes(2);
+        });
+
+        it("preserves the original error's code, message and category across the cache boundary", async () => {
+            const failure = {
+                code: "UNAUTHORIZED",
+                message: "Authentication is required for this action.",
+                category: "AUTHENTICATION_FAILED" as const,
+                field: "authMode",
+            };
+            const fetchRaw = vi.fn().mockResolvedValue({ ok: false, error: failure });
+
+            const result = await cachedRestFetch("ds-1", "civic", "v1", fetchRaw);
+
+            expect(result).toEqual({ ok: false, error: failure });
+        });
     });
 });

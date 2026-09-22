@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { websiteService, type WebsiteWithTheme } from "@/modules/website/infrastructure/website-service";
+import { websiteService, type WebsiteView } from "@/modules/website/application/website-service";
 import { ActionResult, toActionResult } from "@/lib/actions/action-result";
 
 /**
@@ -20,7 +20,7 @@ export async function createWebsiteAction(input: {
     slug: string;
     description?: string;
     templateKey: "municipal" | "smart-city" | "association";
-}): Promise<ActionResult<WebsiteWithTheme>> {
+}): Promise<ActionResult<WebsiteView>> {
     const result = await websiteService.create(input);
     if (result.ok) {
         revalidatePath("/websites");
@@ -32,7 +32,7 @@ export async function updateWebsiteAction(input: {
     id: string;
     name?: string;
     description?: string;
-}): Promise<ActionResult<WebsiteWithTheme>> {
+}): Promise<ActionResult<WebsiteView>> {
     const result = await websiteService.update(input);
     if (result.ok) {
         revalidatePath("/websites");

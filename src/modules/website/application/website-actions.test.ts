@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createWebsiteAction, updateWebsiteAction, updateThemeAction } from "@/modules/website/application/website-actions";
-import { websiteService } from "@/modules/website/infrastructure/website-service";
+import { websiteService } from "@/modules/website/application/website-service";
 import { revalidatePath } from "next/cache";
 import { ok, err } from "@/lib/result/result";
 import { AppErrors } from "@/lib/errors/app-error";
@@ -9,7 +9,7 @@ vi.mock("next/cache", () => ({
     revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/modules/website/infrastructure/website-service", () => ({
+vi.mock("@/modules/website/application/website-service", () => ({
     websiteService: {
         create: vi.fn(),
         update: vi.fn(),

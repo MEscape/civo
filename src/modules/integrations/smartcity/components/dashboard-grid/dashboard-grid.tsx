@@ -7,13 +7,13 @@ import { logger } from "@/lib/logger/logger";
 import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 import { TrendChartClient } from "../metric-trend-chart/trend-chart-client";
 import { DonutChartClient } from "../metric-donut/donut-chart-client";
+import { formatNumber } from "@/lib/formatters";
 
 const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
     up: TrendingUp,
     down: TrendingDown,
     flat: Minus,
 };
-const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 
 /**
  * DashboardGrid — the "Smart-City-Dashboard" composite (spec: Smart City
@@ -56,7 +56,7 @@ export async function DashboardGrid({ props, websiteId }: { props: Record<string
                                     <p className="text-sm text-[var(--civo-color-text-muted)]">{metric.label}</p>
                                     <div className="mt-2 flex items-baseline gap-2">
                                         <span className="font-[family-name:var(--civo-font-heading)] text-2xl text-[var(--civo-color-primary)]">
-                                            {numberFormatter.format(metric.value)}
+                                            {formatNumber(metric.value)}
                                         </span>
                                         {metric.unit && (
                                             <span className="text-xs text-[var(--civo-color-text-muted)]">{metric.unit}</span>
@@ -65,7 +65,7 @@ export async function DashboardGrid({ props, websiteId }: { props: Record<string
                                     {Trend && metric.changePercent !== undefined && (
                                         <div className="mt-1 flex items-center gap-1 text-xs text-[var(--civo-color-text-muted)]">
                                             <Trend className="h-3 w-3" aria-hidden="true" />
-                                            <span>{numberFormatter.format(Math.abs(metric.changePercent))}%</span>
+                                            <span>{formatNumber(Math.abs(metric.changePercent))}%</span>
                                         </div>
                                     )}
                                 </CardContent>

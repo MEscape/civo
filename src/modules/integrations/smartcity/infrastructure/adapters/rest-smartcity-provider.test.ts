@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RestSmartCityDataProvider } from "./rest-smartcity-provider";
 import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
-import type { DataSource as PrismaDataSource } from "@prisma/client";
+import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 
 vi.mock("@/modules/data-sources/infrastructure/adapters/rest-json-adapter", () => ({
     restJsonAdapter: {
@@ -17,7 +17,7 @@ vi.mock("next/cache", () => ({
     unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
-function makeSource(overrides: Partial<PrismaDataSource> = {}): PrismaDataSource {
+function makeSource(overrides: Partial<DataSourceView> = {}): DataSourceView {
     return {
         id: "ds-2",
         websiteId: "website-1",
@@ -37,7 +37,7 @@ function makeSource(overrides: Partial<PrismaDataSource> = {}): PrismaDataSource
         createdAt: new Date(),
         updatedAt: new Date(),
         ...overrides,
-    } as PrismaDataSource;
+    } as DataSourceView;
 }
 
 describe("RestSmartCityDataProvider", () => {

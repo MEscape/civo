@@ -5,6 +5,7 @@ import {
     datasetMappingSchema,
     getByPath,
     applyMapping,
+    CANONICAL_TARGET_FIELDS,
     type DatasetMapping,
 } from "@/modules/data-sources/domain/field-mapping-schema";
 
@@ -168,7 +169,7 @@ describe("applyMapping", () => {
                 {
                     targetPath: "title",
                     message:
-                        '"event_name" is required but missing.',
+                        '"event_name" ist erforderlich, fehlt aber.',
                 },
             ]);
         }
@@ -248,7 +249,7 @@ describe("applyMapping", () => {
                 {
                     targetPath: "startDate",
                     message:
-                        '"not-a-date" is not a valid date.',
+                        '"not-a-date" ist kein gültiges Datum.',
                 },
             ]);
         }
@@ -404,5 +405,144 @@ describe("datasetMappingSchema", () => {
                 fields: [],
             }).success
         ).toBe(false);
+    });
+});
+
+
+describe("path safety (prototype pollution)", () => {
+    it("rejects a __proto__ target path at the schema level", () => {
+        const result = fieldMappingSchema.safeParse({
+            sourcePath: "a",
+            targetPath: "__proto__.polluted",
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it("rejects constructor.prototype target paths at the schema level", () => {
+        expect(
+            fieldMappingSchema.safeParse({ sourcePath: "a", targetPath: "constructor.prototype.x" }).success
+        ).toBe(false);
+    });
+
+    it("rejects a forbidden segment in a source path", () => {
+        expect(fieldMappingSchema.safeParse({ sourcePath: "__proto__.x", targetPath: "title" }).success).toBe(false);
+    });
+
+    it("rejects target paths with array indexes or unusual characters", () => {
+        for (const targetPath of ["tags[0]", "a..b", ".a", "a b", "a-b", "1abc"]) {
+            expect(fieldMappingSchema.safeParse({ sourcePath: "a", targetPath }).success).toBe(false);
+        }
+    });
+
+    it("rejects an overly deep target path", () => {
+        expect(fieldMappingSchema.safeParse({ sourcePath: "a", targetPath: "a.b.c.d.e.f" }).success).toBe(false);
+    });
+
+    it("does not pollute Object.prototype even when an unvalidated mapping reaches applyMapping", () => {
+        // A mapping persisted before the schema-level check existed bypasses
+        // Zod entirely, so applyMapping must defend itself.
+        const unvalidated = {
+            fields: [{ sourcePath: "a", targetPath: "__proto__.polluted", required: false }],
+        } as DatasetMapping;
+
+        const result = applyMapping(unvalidated, { a: "x" });
+
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+        expect(result.ok).toBe(false);
+    });
+
+    it("does not pollute via constructor.prototype either", () => {
+        const unvalidated = {
+            fields: [{ sourcePath: "a", targetPath: "constructor.prototype.polluted", required: false }],
+        } as DatasetMapping;
+
+        applyMapping(unvalidated, { a: "x" });
+
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    });
+
+    it("does not read inherited properties from a source record", () => {
+        expect(getByPath({}, "constructor")).toBeUndefined();
+        expect(getByPath({}, "toString")).toBeUndefined();
+        expect(getByPath({ a: 1 }, "__proto__")).toBeUndefined();
+    });
+});
+
+describe("datasetMappingSchema target uniqueness", () => {
+    it("rejects two fields mapped to the same target", () => {
+        const result = datasetMappingSchema.safeParse({
+            fields: [
+                { sourcePath: "a", targetPath: "title" },
+                { sourcePath: "b", targetPath: "title" },
+            ],
+        });
+
+        expect(result.success).toBe(false);
+
+        if (!result.success) {
+            expect(result.error.issues[0]?.message).toMatch(/wurde bereits/i);
+            expect(result.error.issues[0]?.path).toEqual(["fields", 1, "targetPath"]);
+        }
+    });
+
+    it("rejects a parent target combined with one of its children", () => {
+        expect(
+            datasetMappingSchema.safeParse({
+                fields: [
+                    { sourcePath: "a", targetPath: "location" },
+                    { sourcePath: "b", targetPath: "location.name" },
+                ],
+            }).success
+        ).toBe(false);
+
+        expect(
+            datasetMappingSchema.safeParse({
+                fields: [
+                    { sourcePath: "a", targetPath: "location.name" },
+                    { sourcePath: "b", targetPath: "location" },
+                ],
+            }).success
+        ).toBe(false);
+    });
+
+    it("accepts sibling targets that only share a name prefix", () => {
+        expect(
+            datasetMappingSchema.safeParse({
+                fields: [
+                    { sourcePath: "a", targetPath: "location" },
+                    { sourcePath: "b", targetPath: "locationNote" },
+                ],
+            }).success
+        ).toBe(true);
+    });
+
+    it("accepts distinct sibling children of the same parent", () => {
+        expect(
+            datasetMappingSchema.safeParse({
+                fields: [
+                    { sourcePath: "a", targetPath: "location.name" },
+                    { sourcePath: "b", targetPath: "location.zip" },
+                ],
+            }).success
+        ).toBe(true);
+    });
+});
+
+describe("CANONICAL_TARGET_FIELDS", () => {
+    it("exposes only paths and required flags, leaving labels to the presentation layer", () => {
+        for (const fields of Object.values(CANONICAL_TARGET_FIELDS)) {
+            for (const field of fields) {
+                expect(Object.keys(field).sort()).toEqual(["path", "required"]);
+            }
+        }
+    });
+
+    it("only offers targets that are themselves valid target paths", () => {
+        for (const fields of Object.values(CANONICAL_TARGET_FIELDS)) {
+            for (const field of fields) {
+                expect(fieldMappingSchema.safeParse({ sourcePath: "x", targetPath: field.path }).success).toBe(true);
+            }
+        }
     });
 });

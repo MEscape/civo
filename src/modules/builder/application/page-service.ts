@@ -1,9 +1,9 @@
-import { pageRepository, type PageWithConfig } from "@/modules/builder/infrastructure/page-repository";
+import { pageRepository } from "@/modules/builder/infrastructure/page-repository";
 import type { Result } from "@/lib/result/result";
 import { ok, err } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
-import { pageConfigSchema, type PageConfigInput } from "@/modules/builder/domain/page-schema";
+import { pageConfigSchema, type PageConfigInput, type PageView } from "@/modules/builder/domain/page-schema";
 import { createPageSchema } from "@/modules/website/domain/website-schema";
 import type { Prisma } from "@prisma/client";
 
@@ -17,24 +17,24 @@ import type { Prisma } from "@prisma/client";
  * closed instead of crashing the renderer.
  */
 export const pageService = {
-    async listForWebsite(websiteId: string): Promise<Result<PageWithConfig[], AppError>> {
+    async listForWebsite(websiteId: string): Promise<Result<PageView[], AppError>> {
         return pageRepository.findByWebsiteId(websiteId);
     },
 
-    async getById(id: string): Promise<Result<PageWithConfig, AppError>> {
+    async getById(id: string): Promise<Result<PageView, AppError>> {
         const result = await pageRepository.findById(id);
         if (!result.ok) return result;
-        if (!result.data) return err(AppErrors.notFound("Page"));
+        if (!result.data) return err(AppErrors.notFound("Seite"));
         return ok(result.data);
     },
 
     async getByWebsiteAndPath(
         websiteId: string,
         path: string
-    ): Promise<Result<PageWithConfig, AppError>> {
+    ): Promise<Result<PageView, AppError>> {
         const result = await pageRepository.findByWebsiteAndPath(websiteId, path);
         if (!result.ok) return result;
-        if (!result.data) return err(AppErrors.notFound("Page"));
+        if (!result.data) return err(AppErrors.notFound("Seite"));
         return ok(result.data);
     },
 
@@ -44,9 +44,9 @@ export const pageService = {
      * silently-broken render) if the stored JSON no longer matches the
      * schema.
      */
-    async getValidatedConfig(page: PageWithConfig): Promise<Result<PageConfigInput, AppError>> {
+    async getValidatedConfig(page: PageView): Promise<Result<PageConfigInput, AppError>> {
         const latest = page.configs[0];
-        if (!latest) return err(AppErrors.notFound("PageConfig"));
+        if (!latest) return err(AppErrors.notFound("Seitenkonfiguration"));
 
         const parsed = pageConfigSchema.safeParse(latest.content);
         if (!parsed.success) {
@@ -66,11 +66,11 @@ export const pageService = {
      * for the one documented exception where a different domain's service
      * calls pageRepository directly instead of through here.
      */
-    async create(input: unknown): Promise<Result<PageWithConfig, AppError>> {
+    async create(input: unknown): Promise<Result<PageView, AppError>> {
         const parsed = createPageSchema.safeParse(input);
         if (!parsed.success) {
             const first = parsed.error.issues[0];
-            return err(AppErrors.validation(first?.message ?? "Invalid input.", first?.path.join(".")));
+            return err(AppErrors.validation(first?.message ?? "Ungültige Eingabe.", first?.path.join(".")));
         }
 
         const emptyConfig: PageConfigInput = { type: "page", children: [] };
@@ -86,7 +86,7 @@ export const pageService = {
      * Internal page creation, bypassing the user-level createPageSchema.
      * Used by the system (e.g. website provisioning) to seed a page with a pre-validated configuration.
      */
-    async systemCreate(websiteId: string, path: string, title: string, content: PageConfigInput): Promise<Result<PageWithConfig, AppError>> {
+    async systemCreate(websiteId: string, path: string, title: string, content: PageConfigInput): Promise<Result<PageView, AppError>> {
         return pageRepository.create({
             websiteId,
             path,

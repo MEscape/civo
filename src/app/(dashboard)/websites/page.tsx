@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { websiteService } from "@/modules/website/infrastructure/website-service";
+import { websiteService } from "@/modules/website/application/website-service";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/layout-primitives";

@@ -12,7 +12,7 @@ import { restDataSourceConfigSchema } from "@/modules/data-sources/domain/data-s
 import { applyMapping, datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
 import { deriveMappedRecordId } from "@/modules/data-sources/infrastructure/derive-mapped-record-id";
 import { cachedRestFetch } from "@/modules/data-sources/infrastructure/data-fetch-cache";
-import type { DataSourceRow } from "@/modules/data-sources/infrastructure/data-source-repository";
+import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 
 /**
  * REST-backed implementation of CivicDataProvider (Phase 3.5 spec §12).
@@ -38,7 +38,7 @@ import type { DataSourceRow } from "@/modules/data-sources/infrastructure/data-s
 export class RestCivicDataProvider implements CivicDataProvider {
     private readonly fallback = new MockCivicDataProvider();
 
-    constructor(private readonly source: DataSourceRow) {}
+    constructor(private readonly source: DataSourceView) {}
 
     async getEvents(options?: { limit?: number; category?: string }): Promise<Result<CivicEvent[], AppError>> {
         const mappedResult = await this.fetchMappedEvents();
@@ -58,23 +58,23 @@ export class RestCivicDataProvider implements CivicDataProvider {
 
     private async fetchMappedEvents(): Promise<Result<CivicEvent[], AppError>> {
         if (!this.source.mapping) {
-            return err(AppErrors.validation("No field mapping is configured for this data source yet."));
+            return err(AppErrors.validation("Für diese Datenquelle ist noch keine Feldzuordnung konfiguriert."));
         }
         const mappingParsed = datasetMappingSchema.safeParse(this.source.mapping);
         if (!mappingParsed.success) {
-            return err(AppErrors.validation("The saved field mapping is no longer valid."));
+            return err(AppErrors.validation("Die gespeicherte Feldzuordnung ist nicht mehr gültig."));
         }
 
         const configParsed = restDataSourceConfigSchema.safeParse(this.source.config);
         if (!configParsed.success) {
-            return err(AppErrors.validation("The saved data source configuration is no longer valid."));
+            return err(AppErrors.validation("Die gespeicherte Konfiguration der Datenquelle ist nicht mehr gültig."));
         }
 
         const fetchResult = await cachedRestFetch(
             this.source.id,
             this.source.dataset,
             this.source.updatedAt.toISOString(),
-            () => restJsonAdapter.fetch(configParsed.data, this.source.id)
+            () => restJsonAdapter.fetch(configParsed.data, { dataSourceId: this.source.id })
         );
         if (!fetchResult.ok) return err(fetchResult.error);
 

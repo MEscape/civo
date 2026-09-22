@@ -54,9 +54,71 @@ export const createPageSchema = z.object({
         .string()
         .max(120)
         .regex(/^$|^[a-z0-9]+(-[a-z0-9]+)*(\/[a-z0-9]+(-[a-z0-9]+)*)*$/, {
-            message: "Path may only contain lowercase letters, numbers, hyphens, and slashes.",
+            message: "Der Pfad darf nur Kleinbuchstaben, Zahlen, Bindestriche und Schrägstriche enthalten.",
         }),
     title: z.string().min(1, "Title is required.").max(160),
 });
 
 export type CreatePageInput = z.infer<typeof createPageSchema>;
+
+/**
+ * Domain read-model for a Theme.
+ * Isolates the presentation and application layers from Prisma dependency.
+ */
+export type ThemeView = {
+    id: string;
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    headingFont: string;
+    bodyFont: string;
+    radius: string;
+    spacingScale: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+/**
+ * Domain read-model for a Website.
+ * Isolates the presentation and application layers from Prisma dependency.
+ */
+export type WebsiteView = {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    templateKey: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    theme: ThemeView | null;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toThemeView(row: any): ThemeView {
+    return {
+        id: row.id,
+        primaryColor: row.primaryColor,
+        secondaryColor: row.secondaryColor,
+        accentColor: row.accentColor,
+        headingFont: row.headingFont,
+        bodyFont: row.bodyFont,
+        radius: row.radius,
+        spacingScale: row.spacingScale,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toWebsiteView(row: any): WebsiteView {
+    return {
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        description: row.description,
+        templateKey: row.templateKey,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        theme: row.theme ? toThemeView(row.theme) : null,
+    };
+}

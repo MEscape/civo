@@ -3,8 +3,7 @@ import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructur
 import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
-
-const dateFormatter = new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "short" });
+import { formatDate } from "@/lib/formatters";
 
 /**
  * NewsAndEventsSplit — the extremely common municipal-homepage pattern
@@ -68,7 +67,7 @@ export async function NewsAndEventsSplit({ props, websiteId }: { props: Record<s
                                     <div className="flex items-start gap-3">
                                         <div className="flex shrink-0 flex-col items-center rounded-[calc(var(--civo-radius)_-_2px)] border border-[var(--civo-color-border)] px-3 py-1.5 text-center">
                                             <span className="text-xs uppercase text-[var(--civo-color-text-muted)]">
-                                                {dateFormatter.format(event.startDate)}
+                                                {formatDate(event.startDate, "short")}
                                             </span>
                                         </div>
                                         <div>

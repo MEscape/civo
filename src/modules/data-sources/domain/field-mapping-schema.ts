@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-    err,
-    ok,
-    type Result,
-} from "@/lib/result/result";
+import { err, ok, type Result } from "@/lib/result/result";
 
 /**
  * Explicit, serializable field mapping from an external record's shape to
@@ -11,7 +7,6 @@ import {
  *
  * This is deliberately NOT a programming language. `sourcePath` and
  * `targetPath` are dot/bracket paths resolved by getByPath/setByPath.
- *
  * No arbitrary code or expressions are evaluated.
  */
 
@@ -26,415 +21,285 @@ export const transformKindSchema = z.enum([
     "fallback",
 ]);
 
-export type TransformKind = z.infer<
-    typeof transformKindSchema
->;
+export type TransformKind = z.infer<typeof transformKindSchema>;
 
-export const transformDefinitionSchema =
-    z.discriminatedUnion("kind", [
-        z.object({
-            kind: z.literal("string"),
-        }),
+export const transformDefinitionSchema = z.discriminatedUnion("kind", [
+    z.object({ kind: z.literal("string") }),
+    z.object({ kind: z.literal("number") }),
+    z.object({ kind: z.literal("boolean") }),
+    z.object({ kind: z.literal("date") }),
+    z.object({ kind: z.literal("datetime") }),
+    z.object({ kind: z.literal("url") }),
+    z.object({
+        kind: z.literal("join"),
+        sourcePaths: z.array(z.string().min(1)).min(1).max(6),
+        separator: z.string().max(20).default(", "),
+    }),
+    z.object({
+        kind: z.literal("fallback"),
+        value: z.union([z.string(), z.number(), z.boolean()]),
+    }),
+]);
 
-        z.object({
-            kind: z.literal("number"),
-        }),
-
-        z.object({
-            kind: z.literal("boolean"),
-        }),
-
-        z.object({
-            kind: z.literal("date"),
-        }),
-
-        z.object({
-            kind: z.literal("datetime"),
-        }),
-
-        z.object({
-            kind: z.literal("url"),
-        }),
-
-        z.object({
-            kind: z.literal("join"),
-            sourcePaths: z
-                .array(z.string().min(1))
-                .min(1)
-                .max(6),
-            separator: z
-                .string()
-                .max(20)
-                .default(", "),
-        }),
-
-        z.object({
-            kind: z.literal("fallback"),
-            value: z.union([
-                z.string(),
-                z.number(),
-                z.boolean(),
-            ]),
-        }),
-    ]);
-
-export type TransformDefinition = z.infer<
-    typeof transformDefinitionSchema
->;
+export type TransformDefinition = z.infer<typeof transformDefinitionSchema>;
 
 /**
- * One field mapping.
+ * Property names that must never be traversed or written by a path.
+ * Writing through `__proto__` (or `constructor.prototype`) would mutate
+ * `Object.prototype` for the entire server process.
  */
+const FORBIDDEN_PATH_SEGMENTS: ReadonlySet<string> = new Set(["__proto__", "prototype", "constructor"]);
+
+/** Maximum nesting depth of a target path such as `location.address.city`. */
+const MAX_TARGET_PATH_DEPTH = 5;
+
+function splitPath(path: string): string[] {
+    return path
+        .replace(/\[(\d+)\]/g, ".$1")
+        .split(".")
+        .filter(Boolean);
+}
+
+function hasForbiddenSegment(path: string): boolean {
+    return splitPath(path).some((segment) => FORBIDDEN_PATH_SEGMENTS.has(segment));
+}
+
+/**
+ * Target paths are written to, so they are stricter than source paths:
+ * plain dot-separated identifiers only (no array indexes), bounded depth,
+ * and no forbidden segments.
+ */
+const targetPathSchema = z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/, "Target path must be dot-separated field names.")
+    .refine((path) => !hasForbiddenSegment(path), "Target path contains a forbidden segment.")
+    .refine((path) => path.split(".").length <= MAX_TARGET_PATH_DEPTH, "Target path is nested too deeply.");
+
+const sourcePathSchema = z
+    .string()
+    .min(1)
+    .max(200)
+    .refine((path) => !hasForbiddenSegment(path), "Source path contains a forbidden segment.");
+
+/** One field mapping. */
 export const fieldMappingSchema = z.object({
-    sourcePath: z.string().min(1).max(200),
-
-    targetPath: z.string().min(1).max(200),
-
+    sourcePath: sourcePathSchema,
+    targetPath: targetPathSchema,
     transform: transformDefinitionSchema.optional(),
-
     required: z.boolean().default(false),
 });
 
-export type FieldMapping = z.infer<
-    typeof fieldMappingSchema
->;
-
-export const datasetMappingSchema = z.object({
-    fields: z
-        .array(fieldMappingSchema)
-        .min(1)
-        .max(50),
-});
-
-export type DatasetMapping = z.infer<
-    typeof datasetMappingSchema
->;
+export type FieldMapping = z.infer<typeof fieldMappingSchema>;
 
 /**
- * Canonical target fields offered by the mapping UI.
+ * Whether one target path is the same as, or an ancestor/descendant of,
+ * another. `location` and `location.name` conflict: writing the first
+ * would clobber (or be clobbered by) the second.
  */
-export const CANONICAL_TARGET_FIELDS: Record<
-    "civic" | "smartcity",
-    {
-        path: string;
-        label: string;
-        required?: boolean;
-    }[]
-> = {
-    civic: [
-        {
-            path: "title",
-            label: "Titel",
-            required: true,
-        },
-        {
-            path: "description",
-            label: "Beschreibung",
-        },
-        {
-            path: "startDate",
-            label: "Startdatum",
-            required: true,
-        },
-        {
-            path: "endDate",
-            label: "Enddatum",
-        },
-        {
-            path: "location",
-            label: "Ort",
-        },
-        {
-            path: "category",
-            label: "Kategorie",
-        },
-        {
-            path: "imageUrl",
-            label: "Bild-URL",
-        },
-    ],
+function targetPathsConflict(a: string, b: string): boolean {
+    return a === b || a.startsWith(`${b}.`) || b.startsWith(`${a}.`);
+}
 
+export const datasetMappingSchema = z
+    .object({
+        fields: z.array(fieldMappingSchema).min(1).max(50),
+    })
+    .superRefine((mapping, context) => {
+        mapping.fields.forEach((field, index) => {
+            const conflicting = mapping.fields.findIndex(
+                (other, otherIndex) =>
+                    otherIndex < index && targetPathsConflict(other.targetPath, field.targetPath)
+            );
+
+            if (conflicting !== -1) {
+                context.addIssue({
+                    code: "custom",
+                    path: ["fields", index, "targetPath"],
+                    message: `"${field.targetPath}" wurde bereits einem anderen Feld zugeordnet.`,
+                });
+            }
+        });
+    });
+
+export type DatasetMapping = z.infer<typeof datasetMappingSchema>;
+
+export type CanonicalDataset = "civic" | "smartcity";
+
+export type CanonicalTargetField = {
+    path: string;
+    required: boolean;
+};
+
+/**
+ * Canonical target fields a mapping may fill, per dataset. The domain owns
+ * the field paths and which are required; display labels are a
+ * presentation concern and live in the components layer.
+ */
+export const CANONICAL_TARGET_FIELDS: Record<CanonicalDataset, readonly CanonicalTargetField[]> = {
+    civic: [
+        { path: "title", required: true },
+        { path: "description", required: false },
+        { path: "startDate", required: true },
+        { path: "endDate", required: false },
+        { path: "location", required: false },
+        { path: "category", required: false },
+        { path: "imageUrl", required: false },
+    ],
     smartcity: [
-        {
-            path: "label",
-            label: "Bezeichnung",
-            required: true,
-        },
-        {
-            path: "value",
-            label: "Wert",
-            required: true,
-        },
-        {
-            path: "unit",
-            label: "Einheit",
-        },
-        {
-            path: "category",
-            label: "Kategorie",
-        },
+        { path: "label", required: true },
+        { path: "value", required: true },
+        { path: "unit", required: false },
+        { path: "category", required: false },
     ],
 };
 
 /**
- * Reads a dot/bracket path from an unknown value.
- *
- * Example:
- *
- * getByPath(
- *     { location: { name: "Rathaus" } },
- *     "location.name"
- * );
- *
- * Returns undefined for any missing/invalid segment.
+ * Reads a dot/bracket path from an unknown value. Returns undefined for
+ * any missing, invalid or forbidden segment; never throws and never
+ * reads inherited properties.
  */
-export function getByPath(
-    source: unknown,
-    path: string
-): unknown {
-    const segments = path
-        .replace(/\[(\d+)\]/g, ".$1")
-        .split(".")
-        .filter(Boolean);
-
+export function getByPath(source: unknown, path: string): unknown {
     let current: unknown = source;
 
-    for (const segment of segments) {
-        if (
-            current === null ||
-            current === undefined ||
-            typeof current !== "object"
-        ) {
+    for (const segment of splitPath(path)) {
+        if (current === null || current === undefined || typeof current !== "object") {
             return undefined;
         }
 
-        current = (
-            current as Record<string, unknown>
-        )[segment];
+        if (FORBIDDEN_PATH_SEGMENTS.has(segment)) return undefined;
+
+        if (!Object.hasOwn(current, segment)) return undefined;
+
+        current = (current as Record<string, unknown>)[segment];
     }
 
     return current;
 }
 
 /**
- * Writes a value to a dot path on a plain object.
+ * Writes a value to a dot path on a plain object. Target-side array
+ * indexes are intentionally unsupported. Refuses forbidden segments even
+ * when a persisted mapping predates the schema-level check.
  *
- * Target-side array indexes are intentionally not supported.
+ * Returns false when the write was refused.
  */
-function setByPath(
-    target: Record<string, unknown>,
-    path: string,
-    value: unknown
-): void {
-    const segments = path
-        .split(".")
-        .filter(Boolean);
+function setByPath(target: Record<string, unknown>, path: string, value: unknown): boolean {
+    const segments = splitPath(path);
 
-    if (segments.length === 0) {
-        return;
-    }
+    if (segments.length === 0) return false;
+
+    if (segments.some((segment) => FORBIDDEN_PATH_SEGMENTS.has(segment))) return false;
 
     let current = target;
 
-    for (
-        let i = 0;
-        i < segments.length - 1;
-        i++
-    ) {
-        const segment = segments[i];
+    for (const segment of segments.slice(0, -1)) {
+        const next = Object.hasOwn(current, segment) ? current[segment] : undefined;
 
-        if (
-            typeof current[segment] !== "object" ||
-            current[segment] === null ||
-            Array.isArray(current[segment])
-        ) {
-            current[segment] = {};
+        if (typeof next !== "object" || next === null || Array.isArray(next)) {
+            const created: Record<string, unknown> = {};
+
+            current[segment] = created;
+            current = created;
+        } else {
+            current = next as Record<string, unknown>;
         }
-
-        current = current[segment] as Record<
-            string,
-            unknown
-        >;
     }
 
-    current[segments[segments.length - 1]] =
-        value;
+    current[segments[segments.length - 1]!] = value;
+
+    return true;
 }
 
-/**
- * Structured failure from applying a single field mapping.
- */
+/** Structured failure from applying a single field mapping. */
 export type MappingFieldError = {
     targetPath: string;
     message: string;
 };
 
+function isBlank(value: unknown): boolean {
+    return value === undefined || value === null || value === "";
+}
+
 /**
- * Applies one fixed transform.
- *
- * All expected transform failures are represented by Result.
- * No expected input error throws.
+ * Applies one fixed transform. All expected transform failures are
+ * represented by Result; no expected input error throws.
  */
 function applyTransform(
     transform: TransformDefinition | undefined,
     rawValue: unknown,
     record: unknown
 ): Result<unknown, string> {
-    if (!transform) {
-        return ok(rawValue);
-    }
+    if (!transform) return ok(rawValue);
 
     switch (transform.kind) {
         case "string": {
-            if (
-                rawValue === undefined ||
-                rawValue === null
-            ) {
-                return ok(undefined);
-            }
+            if (rawValue === undefined || rawValue === null) return ok(undefined);
 
             return ok(String(rawValue));
         }
 
         case "number": {
-            if (
-                rawValue === undefined ||
-                rawValue === null ||
-                rawValue === ""
-            ) {
-                return ok(undefined);
-            }
+            if (isBlank(rawValue)) return ok(undefined);
 
             const num = Number(rawValue);
 
-            if (Number.isNaN(num)) {
-                return err(
-                    `"${String(
-                        rawValue
-                    )}" is not a valid number.`
-                );
-            }
+            if (Number.isNaN(num)) return err(`"${String(rawValue)}" is not a valid number.`);
 
             return ok(num);
         }
 
         case "boolean": {
-            if (
-                rawValue === undefined ||
-                rawValue === null
-            ) {
-                return ok(undefined);
-            }
+            if (rawValue === undefined || rawValue === null) return ok(undefined);
 
-            if (typeof rawValue === "boolean") {
-                return ok(rawValue);
-            }
+            if (typeof rawValue === "boolean") return ok(rawValue);
 
-            if (rawValue === "true") {
-                return ok(true);
-            }
+            if (rawValue === "true") return ok(true);
 
-            if (rawValue === "false") {
-                return ok(false);
-            }
+            if (rawValue === "false") return ok(false);
 
-            return err(
-                `"${String(
-                    rawValue
-                )}" is not a valid boolean.`
-            );
+            return err(`"${String(rawValue)}" is not a valid boolean.`);
         }
 
         case "date":
         case "datetime": {
-            if (
-                rawValue === undefined ||
-                rawValue === null ||
-                rawValue === ""
-            ) {
-                return ok(undefined);
-            }
+            if (isBlank(rawValue)) return ok(undefined);
 
-            const date = new Date(
-                rawValue as string | number
-            );
+            const date = new Date(rawValue as string | number);
 
-            if (Number.isNaN(date.getTime())) {
-                return err(
-                    `"${String(
-                        rawValue
-                    )}" is not a valid date.`
-                );
-            }
+            if (Number.isNaN(date.getTime())) return err(`"${String(rawValue)}" ist kein gültiges Datum.`);
 
             return ok(date);
         }
 
         case "url": {
-            if (
-                rawValue === undefined ||
-                rawValue === null ||
-                rawValue === ""
-            ) {
-                return ok(undefined);
-            }
+            if (isBlank(rawValue)) return ok(undefined);
 
             try {
-                const url = new URL(
-                    String(rawValue)
-                );
+                const url = new URL(String(rawValue));
 
-                if (
-                    url.protocol !== "http:" &&
-                    url.protocol !== "https:"
-                ) {
-                    return err(
-                        `"${String(
-                            rawValue
-                        )}" must be an http(s) URL.`
-                    );
+                if (url.protocol !== "http:" && url.protocol !== "https:") {
+                    return err(`"${String(rawValue)}" must be an http(s) URL.`);
                 }
 
                 return ok(url.toString());
             } catch {
-                return err(
-                    `"${String(
-                        rawValue
-                    )}" is not a valid URL.`
-                );
+                return err(`"${String(rawValue)}" is not a valid URL.`);
             }
         }
 
         case "join": {
             const parts = transform.sourcePaths
-                .map((path) =>
-                    getByPath(record, path)
-                )
-                .filter(
-                    (value) =>
-                        value !== undefined &&
-                        value !== null &&
-                        value !== ""
-                )
+                .map((path) => getByPath(record, path))
+                .filter((value) => !isBlank(value))
                 .map(String);
 
-            return ok(
-                parts.length > 0
-                    ? parts.join(
-                        transform.separator
-                    )
-                    : undefined
-            );
+            return ok(parts.length > 0 ? parts.join(transform.separator) : undefined);
         }
 
         case "fallback": {
-            if (
-                rawValue === undefined ||
-                rawValue === null ||
-                rawValue === ""
-            ) {
-                return ok(transform.value);
-            }
+            if (isBlank(rawValue)) return ok(transform.value);
 
             return ok(rawValue);
         }
@@ -442,73 +307,46 @@ function applyTransform(
 }
 
 /**
- * Applies a dataset's field mappings to one external record.
- *
- * Expected mapping/transform failures are returned through Result.
- *
- * The error value is an array because we intentionally collect all field
- * errors from the record rather than stopping at the first one.
+ * Applies a dataset's field mappings to one external record. Expected
+ * mapping/transform failures are returned through Result. The error value
+ * is an array because all field errors from the record are collected
+ * rather than stopping at the first.
  */
 export function applyMapping(
     mapping: DatasetMapping,
     record: unknown
-): Result<
-    Record<string, unknown>,
-    MappingFieldError[]
-> {
+): Result<Record<string, unknown>, MappingFieldError[]> {
     const output: Record<string, unknown> = {};
     const errors: MappingFieldError[] = [];
 
     for (const field of mapping.fields) {
-        const rawValue =
-            field.transform?.kind === "join"
-                ? undefined
-                : getByPath(
-                    record,
-                    field.sourcePath
-                );
-
-        const transformed = applyTransform(
-            field.transform,
-            rawValue,
-            record
-        );
+        const rawValue = field.transform?.kind === "join" ? undefined : getByPath(record, field.sourcePath);
+        const transformed = applyTransform(field.transform, rawValue, record);
 
         if (!transformed.ok) {
-            errors.push({
-                targetPath: field.targetPath,
-                message: transformed.error,
-            });
-
+            errors.push({ targetPath: field.targetPath, message: transformed.error });
             continue;
         }
 
-        if (
-            field.required &&
-            (transformed.data === undefined ||
-                transformed.data === null ||
-                transformed.data === "")
-        ) {
+        if (field.required && isBlank(transformed.data)) {
             errors.push({
                 targetPath: field.targetPath,
-                message: `"${field.sourcePath}" is required but missing.`,
+                message: `"${field.sourcePath}" ist erforderlich, fehlt aber.`,
             });
-
             continue;
         }
 
-        if (transformed.data !== undefined) {
-            setByPath(
-                output,
-                field.targetPath,
-                transformed.data
-            );
+        if (transformed.data === undefined) continue;
+
+        if (!setByPath(output, field.targetPath, transformed.data)) {
+            errors.push({
+                targetPath: field.targetPath,
+                message: `"${field.targetPath}" ist kein gültiger Zielpfad.`,
+            });
         }
     }
 
-    if (errors.length > 0) {
-        return err(errors);
-    }
+    if (errors.length > 0) return err(errors);
 
     return ok(output);
 }

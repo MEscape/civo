@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { websiteService } from "@/modules/website/infrastructure/website-service";
+import { websiteService } from "@/modules/website/application/website-service";
 import { ThemeSettingsForm } from "@/modules/website/components/theme-settings-form";
 import { toDomainTheme } from "@/modules/website/domain/theme";
-import { dataSourceService } from "@/modules/data-sources/infrastructure/data-source-service";
+import { dataSourceService } from "@/modules/data-sources/application/data-source-service";
 import { DataSourcesPanel } from "@/modules/data-sources/components/data-sources-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";

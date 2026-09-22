@@ -5,9 +5,9 @@ import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
 import { logger } from "@/lib/logger/logger";
 import { isUniqueConstraintError, isNotFoundError } from "@/lib/db/prisma-errors";
-import type { Prisma, Website, Theme } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-export type WebsiteWithTheme = Website & { theme: Theme | null };
+import { toWebsiteView, toThemeView, type WebsiteView, type ThemeView } from "@/modules/website/domain/website-schema";
 
 /**
  * Repository layer: the ONLY place in the application allowed to call
@@ -15,39 +15,39 @@ export type WebsiteWithTheme = Website & { theme: Theme | null };
  * so callers (the service layer) never need to wrap this in try/catch.
  */
 export const websiteRepository = {
-    async findAll(): Promise<Result<WebsiteWithTheme[], AppError>> {
+    async findAll(): Promise<Result<WebsiteView[], AppError>> {
         try {
             const websites = await prisma.website.findMany({
                 include: { theme: true },
                 orderBy: { updatedAt: "desc" },
             });
-            return ok(websites);
+            return ok(websites.map(toWebsiteView));
         } catch (cause) {
             logger.error("websiteRepository.findAll failed", { cause });
             return err(AppErrors.database(cause));
         }
     },
 
-    async findById(id: string): Promise<Result<WebsiteWithTheme | null, AppError>> {
+    async findById(id: string): Promise<Result<WebsiteView | null, AppError>> {
         try {
             const website = await prisma.website.findUnique({
                 where: { id },
                 include: { theme: true },
             });
-            return ok(website);
+            return ok(website ? toWebsiteView(website) : null);
         } catch (cause) {
             logger.error("websiteRepository.findById failed", { cause, id });
             return err(AppErrors.database(cause));
         }
     },
 
-    async findBySlug(slug: string): Promise<Result<WebsiteWithTheme | null, AppError>> {
+    async findBySlug(slug: string): Promise<Result<WebsiteView | null, AppError>> {
         try {
             const website = await prisma.website.findUnique({
                 where: { slug },
                 include: { theme: true },
             });
-            return ok(website);
+            return ok(website ? toWebsiteView(website) : null);
         } catch (cause) {
             logger.error("websiteRepository.findBySlug failed", { cause, slug });
             return err(AppErrors.database(cause));
@@ -60,7 +60,7 @@ export const websiteRepository = {
         description?: string;
         templateKey: string;
         theme: Omit<Prisma.ThemeCreateInput, "website">;
-    }): Promise<Result<WebsiteWithTheme, AppError>> {
+    }): Promise<Result<WebsiteView, AppError>> {
         try {
             const website = await prisma.website.create({
                 data: {
@@ -72,7 +72,7 @@ export const websiteRepository = {
                 },
                 include: { theme: true },
             });
-            return ok(website);
+            return ok(toWebsiteView(website));
         } catch (cause: unknown) {
             logger.error("websiteRepository.create failed", { cause, input });
             if (isUniqueConstraintError(cause)) {
@@ -85,14 +85,14 @@ export const websiteRepository = {
     async update(
         id: string,
         input: { name?: string; description?: string }
-    ): Promise<Result<WebsiteWithTheme, AppError>> {
+    ): Promise<Result<WebsiteView, AppError>> {
         try {
             const website = await prisma.website.update({
                 where: { id },
                 data: input,
                 include: { theme: true },
             });
-            return ok(website);
+            return ok(toWebsiteView(website));
         } catch (cause) {
             logger.error("websiteRepository.update failed", { cause, id });
             if (isNotFoundError(cause)) {
@@ -113,10 +113,10 @@ export const websiteRepository = {
             radius: string;
             spacingScale: string;
         }>
-    ): Promise<Result<Theme, AppError>> {
+    ): Promise<Result<ThemeView, AppError>> {
         try {
             const theme = await prisma.theme.update({ where: { id: themeId }, data: input });
-            return ok(theme);
+            return ok(toThemeView(theme));
         } catch (cause) {
             logger.error("websiteRepository.updateTheme failed", { cause, themeId });
             if (isNotFoundError(cause)) {

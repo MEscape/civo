@@ -1,11 +1,12 @@
-import { websiteRepository, type WebsiteWithTheme } from "@/modules/website/infrastructure/website-repository";
-export type { WebsiteWithTheme };
+import { websiteRepository } from "@/modules/website/infrastructure/website-repository";
+export type { WebsiteView } from "@/modules/website/domain/website-schema";
+import type { WebsiteView } from "@/modules/website/domain/website-schema";
 
 import type { Result } from "@/lib/result/result";
 import { ok, err } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
-import { pageService } from "@/modules/builder/infrastructure/page-service";
+import { pageService } from "@/modules/builder/application/page-service";
 import {
     createWebsiteSchema,
     updateWebsiteSchema,
@@ -35,18 +36,18 @@ import "@/modules/component-platform/infrastructure/definitions";
  * layer (Server Actions, route handlers) is allowed to skip validation.
  */
 export const websiteService = {
-    async list(): Promise<Result<WebsiteWithTheme[], AppError>> {
+    async list(): Promise<Result<WebsiteView[], AppError>> {
         return websiteRepository.findAll();
     },
 
-    async getById(id: string): Promise<Result<WebsiteWithTheme, AppError>> {
+    async getById(id: string): Promise<Result<WebsiteView, AppError>> {
         const result = await websiteRepository.findById(id);
         if (!result.ok) return result;
         if (!result.data) return err(AppErrors.notFound("Website"));
         return ok(result.data);
     },
 
-    async getBySlug(slug: string): Promise<Result<WebsiteWithTheme, AppError>> {
+    async getBySlug(slug: string): Promise<Result<WebsiteView, AppError>> {
         const result = await websiteRepository.findBySlug(slug);
         if (!result.ok) return result;
         if (!result.data) return err(AppErrors.notFound("Website"));
@@ -59,17 +60,17 @@ export const websiteService = {
      * this call the website owns its own PageConfig rows — later changes to
      * the template definition will never retroactively affect this website.
      */
-    async create(input: unknown): Promise<Result<WebsiteWithTheme, AppError>> {
+    async create(input: unknown): Promise<Result<WebsiteView, AppError>> {
         const parsed = createWebsiteSchema.safeParse(input);
         if (!parsed.success) {
             const first = parsed.error.issues[0];
-            return err(AppErrors.validation(first?.message ?? "Invalid input.", first?.path.join(".")));
+            return err(AppErrors.validation(first?.message ?? "Ungültige Eingabe.", first?.path.join(".")));
         }
 
         const validated: CreateWebsiteInput = parsed.data;
         const template = getTemplate(validated.templateKey);
         if (!template) {
-            return err(AppErrors.validation("Unknown template selected.", "templateKey"));
+            return err(AppErrors.validation("Unbekannte Vorlage ausgewählt.", "templateKey"));
         }
 
         const homeConfig = template.generateHomePageConfig();
@@ -106,11 +107,11 @@ export const websiteService = {
         return ok(websiteResult.data);
     },
 
-    async update(input: unknown): Promise<Result<WebsiteWithTheme, AppError>> {
+    async update(input: unknown): Promise<Result<WebsiteView, AppError>> {
         const parsed = updateWebsiteSchema.safeParse(input);
         if (!parsed.success) {
             const first = parsed.error.issues[0];
-            return err(AppErrors.validation(first?.message ?? "Invalid input.", first?.path.join(".")));
+            return err(AppErrors.validation(first?.message ?? "Ungültige Eingabe.", first?.path.join(".")));
         }
         const validated: UpdateWebsiteInput = parsed.data;
         return websiteRepository.update(validated.id, {
@@ -123,7 +124,7 @@ export const websiteService = {
         const parsed = themeInputSchema.partial().safeParse(input);
         if (!parsed.success) {
             const first = parsed.error.issues[0];
-            return err(AppErrors.validation(first?.message ?? "Invalid theme input.", first?.path.join(".")));
+            return err(AppErrors.validation(first?.message ?? "Ungültige Theme-Eingabe.", first?.path.join(".")));
         }
         return websiteRepository.updateTheme(themeId, parsed.data);
     },

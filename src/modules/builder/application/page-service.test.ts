@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { pageService } from "./page-service";
-import { pageRepository, type PageWithConfig } from "@/modules/builder/infrastructure/page-repository";
-import { pageConfigSchema } from "@/modules/builder/domain/page-schema";
+import { pageRepository } from "@/modules/builder/infrastructure/page-repository";
+import { pageConfigSchema, type PageView } from "@/modules/builder/domain/page-schema";
 import { createPageSchema } from "@/modules/website/domain/website-schema";
 
 vi.mock("@/modules/builder/infrastructure/page-repository", () => ({
@@ -233,7 +233,7 @@ describe("pageService", () => {
                     },
                 },
             ],
-        } as PageWithConfig;
+        } as PageView;
 
         it("returns the validated config", async () => {
             const config = {

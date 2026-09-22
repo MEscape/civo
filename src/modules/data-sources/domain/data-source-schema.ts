@@ -142,7 +142,7 @@ export const dataSourceSchema = z.object({
         z.unknown()
     ),
 
-    mapping: z.unknown().nullable(),
+    mapping: datasetMappingSchema.nullable(),
 
     status: dataSourceStatusSchema,
 
@@ -208,4 +208,47 @@ export function validateDataSourceConfig(
     }
 
     return ok(parsed.data as Record<string, unknown>);
+}
+
+/**
+ * Domain read-model for a Data Source.
+ * This is the public shape of a data source used by the application and presentation layers,
+ * keeping Prisma dependencies isolated in the repository.
+ */
+export type DataSourceView = {
+    id: string;
+    websiteId: string;
+    name: string;
+    kind: DataSourceKind;
+    dataset: DataSourceDataset;
+    config: unknown;
+    mapping: unknown | null;
+    status: DataSourceStatus;
+    lastCheckedAt: Date | null;
+    lastError: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+/**
+ * Maps an infrastructure-layer record (e.g. Prisma row) to the domain view.
+ * Uses `any` for the row argument so the domain layer does not import Prisma types.
+ * The repository handles calling this function with the correct Prisma shape.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toDataSourceView(row: any): DataSourceView {
+    return {
+        id: row.id,
+        websiteId: row.websiteId,
+        name: row.name,
+        kind: row.kind as DataSourceKind,
+        dataset: row.dataset as DataSourceDataset,
+        config: row.config,
+        mapping: row.mapping,
+        status: row.status as DataSourceStatus,
+        lastCheckedAt: row.lastCheckedAt,
+        lastError: row.lastError,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    };
 }

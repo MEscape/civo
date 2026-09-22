@@ -6,22 +6,21 @@ import { AppErrors } from "@/lib/errors/app-error";
 import { logger } from "@/lib/logger/logger";
 import { isUniqueConstraintError, isNotFoundError } from "@/lib/db/prisma-errors";
 import { Prisma } from "@prisma/client";
-import type { DataSource as PrismaDataSource } from "@prisma/client";
+
 import type { DataSourceDataset, DataSourceStatus } from "@/modules/data-sources/domain/data-source-schema";
+import type { DatasetMapping } from "@/modules/data-sources/domain/field-mapping-schema";
+
+import { toDataSourceView, type DataSourceView, type DataSourceKind } from "@/modules/data-sources/domain/data-source-schema";
 
 /**
- * The repository's named alias for the Prisma-generated DataSource model.
- *
- * Mirrors `WebsiteWithTheme` (website-repository.ts) and `PageWithConfig`
- * (page-repository.ts): Prisma types are named here once and re-exported
- * from the service — everything above the infrastructure layer imports
- * this alias, never `DataSource` from `@prisma/client` directly.
- *
- * `DataSource` has no relations, so the alias is a direct rename. If a
- * relation is added later (e.g. `website: Website`) only this file changes.
+ * `Prisma.InputJsonValue` is an infrastructure/Prisma concept. Every
+ * method here accepts plain domain values (`Record<string, unknown>`,
+ * `DatasetMapping`) and performs the cast internally, so nothing above
+ * this file needs to know Prisma's JSON-input type exists.
  */
-export type DataSourceRow = PrismaDataSource;
-
+function toInputJson(value: Record<string, unknown> | DatasetMapping): Prisma.InputJsonValue {
+    return value as Prisma.InputJsonValue;
+}
 
 /**
  * Repository layer: the ONLY place in the application allowed to call
@@ -31,39 +30,62 @@ export type DataSourceRow = PrismaDataSource;
  * Prisma).
  */
 export const dataSourceRepository = {
-    async findByWebsite(websiteId: string): Promise<Result<PrismaDataSource[], AppError>> {
+    async findByWebsite(websiteId: string): Promise<Result<DataSourceView[], AppError>> {
         try {
             const rows = await prisma.dataSource.findMany({
                 where: { websiteId },
                 orderBy: { createdAt: "asc" },
             });
-            return ok(rows);
+            return ok(rows.map(toDataSourceView));
         } catch (cause) {
             logger.error("dataSourceRepository.findByWebsite failed", { cause, websiteId });
             return err(AppErrors.database(cause));
         }
     },
 
-    async findById(id: string): Promise<Result<PrismaDataSource | null, AppError>> {
+    async findById(id: string): Promise<Result<DataSourceView | null, AppError>> {
         try {
             const row = await prisma.dataSource.findUnique({ where: { id } });
-            return ok(row);
+            return ok(row ? toDataSourceView(row) : null);
         } catch (cause) {
             logger.error("dataSourceRepository.findById failed", { cause, id });
             return err(AppErrors.database(cause));
         }
     },
 
+    /**
+     * Same lookup as `findById`, scoped to a website in the same
+     * round trip. Used by the service to enforce that a `dataSourceId`
+     * a caller supplies actually belongs to the `websiteId` it claims,
+     * instead of trusting the two to match (spec §22/§29 — never trust
+     * client-provided identifiers to already be scoped correctly).
+     *
+     * Returns `ok(null)` both when the row does not exist and when it
+     * belongs to a different website — deliberately the same outcome, so
+     * a caller cannot distinguish "not found" from "not yours" from the
+     * error alone (avoids confirming a dataSourceId's existence to a
+     * caller who does not own it).
+     */
+    async findByIdForWebsite(id: string, websiteId: string): Promise<Result<DataSourceView | null, AppError>> {
+        const result = await this.findById(id);
+
+        if (!result.ok) return result;
+
+        if (result.data === null || result.data.websiteId !== websiteId) return ok(null);
+
+        return ok(result.data);
+    },
+
     /** The single row a website has configured for a given dataset (civic or smart-city), if any. */
     async findByWebsiteAndDataset(
         websiteId: string,
         dataset: DataSourceDataset
-    ): Promise<Result<PrismaDataSource | null, AppError>> {
+    ): Promise<Result<DataSourceView | null, AppError>> {
         try {
             const row = await prisma.dataSource.findUnique({
                 where: { websiteId_dataset: { websiteId, dataset } },
             });
-            return ok(row);
+            return ok(row ? toDataSourceView(row) : null);
         } catch (cause) {
             logger.error("dataSourceRepository.findByWebsiteAndDataset failed", { cause, websiteId, dataset });
             return err(AppErrors.database(cause));
@@ -82,9 +104,9 @@ export const dataSourceRepository = {
         websiteId: string;
         dataset: DataSourceDataset;
         name: string;
-        kind: PrismaDataSource["kind"];
-        config: Prisma.InputJsonValue;
-    }): Promise<Result<PrismaDataSource, AppError>> {
+        kind: DataSourceKind;
+        config: Record<string, unknown>;
+    }): Promise<Result<DataSourceView, AppError>> {
         try {
             const row = await prisma.dataSource.upsert({
                 where: { websiteId_dataset: { websiteId: input.websiteId, dataset: input.dataset } },
@@ -93,12 +115,12 @@ export const dataSourceRepository = {
                     dataset: input.dataset,
                     name: input.name,
                     kind: input.kind,
-                    config: input.config,
+                    config: toInputJson(input.config),
                 },
                 update: {
                     name: input.name,
                     kind: input.kind,
-                    config: input.config,
+                    config: toInputJson(input.config),
                     // Prisma requires Prisma.DbNull to clear a nullable
                     // Json? column — plain `null` is rejected by the type
                     // system (it reads as NullableJsonNullValueInput, not
@@ -109,11 +131,11 @@ export const dataSourceRepository = {
                     lastError: null,
                 },
             });
-            return ok(row);
+            return ok(toDataSourceView(row));
         } catch (cause) {
             logger.error("dataSourceRepository.upsert failed", { cause, input });
             if (isUniqueConstraintError(cause)) {
-                return err(AppErrors.conflict("A data source for this dataset already exists."));
+                return err(AppErrors.conflict("Eine Datenquelle für diesen Datensatz existiert bereits."));
             }
             if (isNotFoundError(cause)) {
                 return err(AppErrors.notFound("Website"));
@@ -132,28 +154,28 @@ export const dataSourceRepository = {
     async recordTestResult(
         id: string,
         result: { status: DataSourceStatus; lastError: string | null }
-    ): Promise<Result<PrismaDataSource, AppError>> {
+    ): Promise<Result<DataSourceView, AppError>> {
         try {
             const row = await prisma.dataSource.update({
                 where: { id },
                 data: { status: result.status, lastError: result.lastError, lastCheckedAt: new Date() },
             });
-            return ok(row);
+            return ok(toDataSourceView(row));
         } catch (cause) {
             logger.error("dataSourceRepository.recordTestResult failed", { cause, id });
-            if (isNotFoundError(cause)) return err(AppErrors.notFound("Data source"));
+            if (isNotFoundError(cause)) return err(AppErrors.notFound("Datenquelle"));
             return err(AppErrors.database(cause));
         }
     },
 
     /** Persists a completed field mapping for a data source (spec §9). */
-    async saveMapping(id: string, mapping: Prisma.InputJsonValue): Promise<Result<PrismaDataSource, AppError>> {
+    async saveMapping(id: string, mapping: DatasetMapping): Promise<Result<DataSourceView, AppError>> {
         try {
-            const row = await prisma.dataSource.update({ where: { id }, data: { mapping } });
-            return ok(row);
+            const row = await prisma.dataSource.update({ where: { id }, data: { mapping: toInputJson(mapping) } });
+            return ok(toDataSourceView(row));
         } catch (cause) {
             logger.error("dataSourceRepository.saveMapping failed", { cause, id });
-            if (isNotFoundError(cause)) return err(AppErrors.notFound("Data source"));
+            if (isNotFoundError(cause)) return err(AppErrors.notFound("Datenquelle"));
             return err(AppErrors.database(cause));
         }
     },
@@ -164,7 +186,7 @@ export const dataSourceRepository = {
             return ok(undefined);
         } catch (cause) {
             logger.error("dataSourceRepository.delete failed", { cause, id });
-            if (isNotFoundError(cause)) return err(AppErrors.notFound("Data source"));
+            if (isNotFoundError(cause)) return err(AppErrors.notFound("Datenquelle"));
             return err(AppErrors.database(cause));
         }
     },

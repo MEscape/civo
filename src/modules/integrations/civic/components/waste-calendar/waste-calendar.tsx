@@ -6,8 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger/logger";
 import type { WasteType } from "@/modules/content/domain/civic-types";
-
-const dateFormatter = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "short" });
+import { formatDate } from "@/lib/formatters";
 
 /**
  * Human-readable German labels for waste types. Exported from this index
@@ -66,7 +65,7 @@ export async function WasteCalendar({ props, websiteId }: { props: Record<string
                                     <div className="flex items-center gap-3">
                                         <Trash2 className="h-4 w-4 shrink-0 text-[var(--civo-color-text-muted)]" aria-hidden="true" />
                                         <div>
-                                            <p className="text-[var(--civo-color-text)]">{dateFormatter.format(entry.date)}</p>
+                                            <p className="text-[var(--civo-color-text)]">{formatDate(entry.date, "weekday-short")}</p>
                                             {entry.district && (
                                                 <p className="text-xs text-[var(--civo-color-text-muted)]">{entry.district}</p>
                                             )}

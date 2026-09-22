@@ -84,7 +84,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "Something went wrong. Please try again.",
+            message: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
             field: undefined,
         });
 
@@ -105,7 +105,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "Something went wrong. Please try again.",
+            message: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
             field: undefined,
         });
     });
@@ -122,7 +122,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "Something went wrong. Please try again.",
+            message: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
             field: undefined,
         });
     });
@@ -134,7 +134,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "Please sign in to continue.",
+            message: "Bitte melden Sie sich an, um fortzufahren.",
             field: undefined,
         });
     });
@@ -146,7 +146,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "You do not have permission to perform this action.",
+            message: "Sie haben keine Berechtigung, diese Aktion auszuführen.",
             field: undefined,
         });
     });
@@ -158,7 +158,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "User was not found.",
+            message: "User wurde nicht gefunden.",
             field: undefined,
         });
     });
@@ -188,7 +188,7 @@ describe("toActionResult", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "Something went wrong. Please try again.",
+            message: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
             field: undefined,
         });
     });
@@ -256,7 +256,7 @@ describe("ActionResult type", () => {
 
         expect(actionResult).toEqual({
             ok: false,
-            message: "Something went wrong. Please try again.",
+            message: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
             field: undefined,
         });
 

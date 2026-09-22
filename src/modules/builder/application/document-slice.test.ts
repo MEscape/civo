@@ -71,10 +71,10 @@ describe("document slice: deletion", () => {
         expect(state.history.present.children.map((n: PageNode) => n.id)).toEqual(["news-1"]);
     });
 
-    it("clears selection if the deleted node was selected", () => {
+    it("selects the next sibling if the deleted node was selected", () => {
         let state = reducer(loaded(), selectNode("hero-1"));
         state = reducer(state, removeNodeAction("hero-1"));
-        expect(state.history.present.selectedNodeId).toBeNull();
+        expect(state.history.present.selectedNodeId).toBe("news-1");
     });
 
     it("preserves selection if a different node was selected", () => {

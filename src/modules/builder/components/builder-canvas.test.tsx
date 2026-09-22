@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import documentReducer from "@/modules/builder/application/document-slice";
@@ -29,7 +29,7 @@ vi.mock("@/modules/builder/application/canvas-render-action", async () => {
     return {
         renderCanvasAction: vi.fn(async () => ({
             ok: true,
-            node: React.createElement("div", { "data-civo-node-id": "hero-1", "data-testid": "hero-1" }, "Hero"),
+            data: React.createElement("div", { "data-civo-node-id": "hero-1", "data-testid": "hero-1" }, "Hero"),
         })),
     };
 });
@@ -112,7 +112,9 @@ describe("BuilderCanvas selection overlay tracks viewport resize", () => {
             return overlay?.style.width;
         };
 
-        expect(getOverlayWidth()).toBe("1000px");
+        await waitFor(() => {
+            expect(getOverlayWidth()).toBe("1000px");
+        });
 
         // Switch to tablet: the underlying layout is now narrower (as it
         // would be once the browser reflows for the new max-width).
@@ -149,6 +151,9 @@ describe("BuilderCanvas selection overlay tracks viewport resize", () => {
             container.dispatchEvent(event);
         });
 
-        expect(getOverlayWidth()).toBe("400px");
+        // wait for the CSS transitionend effect to re-measure
+        await waitFor(() => {
+            expect(getOverlayWidth()).toBe("400px");
+        });
     });
 });

@@ -3,9 +3,7 @@ import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructur
 import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
-
-const dateFormatter = new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "short" });
-const timeFormatter = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
+import { formatDate } from "@/lib/formatters";
 
 export async function EventsGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
     const parsed = eventsGridPropsSchema.safeParse(props);
@@ -42,14 +40,14 @@ export async function EventsGrid({ props, websiteId }: { props: Record<string, u
                             <CardHeader>
                                 <div className="flex items-start gap-3">
                                     <div className="flex shrink-0 flex-col items-center rounded-[calc(var(--civo-radius)_-_2px)] border border-[var(--civo-color-border)] px-3 py-1.5 text-center">
-                    <span className="text-xs uppercase text-[var(--civo-color-text-muted)]">
-                      {dateFormatter.format(event.startDate)}
-                    </span>
+                                        <span className="text-xs uppercase text-[var(--civo-color-text-muted)]">
+                                            {formatDate(event.startDate, "short")}
+                                        </span>
                                     </div>
                                     <div>
                                         <CardTitle>{event.title}</CardTitle>
                                         <p className="mt-1 text-xs text-[var(--civo-color-text-muted)]">
-                                            {timeFormatter.format(event.startDate)} Uhr
+                                            {formatDate(event.startDate, "time")} Uhr
                                             {event.location ? ` · ${event.location}` : ""}
                                         </p>
                                     </div>

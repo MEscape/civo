@@ -13,11 +13,57 @@ import type { DiscoveredField } from "@/modules/data-sources/domain/data-source-
 import type { DataSourceDataset } from "@/modules/data-sources/domain/data-source-schema";
 import { describeConnectionFailure } from "@/modules/data-sources/components/describe-connection-failure";
 
+/**
+ * Display labels for canonical target fields, by dataset. Kept here
+ * rather than in the domain layer: the domain owns which paths exist and
+ * which are required (`CANONICAL_TARGET_FIELDS`), but the German label
+ * text is a presentation concern, and the only thing that renders it.
+ */
+const TARGET_FIELD_LABELS: Record<DataSourceDataset, Record<string, string>> = {
+    civic: {
+        title: "Titel",
+        description: "Beschreibung",
+        startDate: "Startdatum",
+        endDate: "Enddatum",
+        location: "Ort",
+        category: "Kategorie",
+        imageUrl: "Bild-URL",
+    },
+    smartcity: {
+        label: "Bezeichnung",
+        value: "Wert",
+        unit: "Einheit",
+        category: "Kategorie",
+    },
+};
+
 type DataSourceMappingPanelProps = {
     websiteId: string;
     dataSourceId: string;
     dataset: DataSourceDataset;
+    /** The mapping already saved for this source, if any, so reopening the panel does not discard it. */
+    existingMapping?: { fields: FieldMapping[] } | null;
 };
+
+/**
+ * The panel's outcome after the most recent user-triggered action. A
+ * single discriminated union instead of separate `error`/`preview`/
+ * `saved` booleans: those three were mutually exclusive in practice
+ * (every state change reset the other two), which a union makes
+ * structural instead of a convention to remember at each call site.
+ */
+type PanelStatus =
+    | { kind: "idle" }
+    | { kind: "error"; message: string }
+    | { kind: "previewed"; value: Record<string, unknown> }
+    | { kind: "saved" };
+
+/** Builds the `sourcePath -> targetPath` map a saved mapping implies, for preloading the assignment table. */
+function assignmentsFromMapping(mapping: { fields: FieldMapping[] } | null | undefined): Record<string, string> {
+    if (!mapping) return {};
+
+    return Object.fromEntries(mapping.fields.map((field) => [field.sourcePath, field.targetPath]));
+}
 
 /**
  * Discovery + mapping UI (spec §7, §9). Two steps in one panel:
@@ -34,24 +80,38 @@ type DataSourceMappingPanelProps = {
  * field-mapping-schema.ts supports. The schema already allows richer
  * transforms for a future editor to add without a data-model change.
  */
-export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: DataSourceMappingPanelProps) {
+export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset, existingMapping }: DataSourceMappingPanelProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [fields, setFields] = useState<DiscoveredField[] | null>(null);
-    const [assignments, setAssignments] = useState<Record<string, string>>({});
-    const [error, setError] = useState<string | null>(null);
-    const [preview, setPreview] = useState<Record<string, unknown> | null>(null);
-    const [saved, setSaved] = useState(false);
+    // Preloaded from the saved mapping, if any (previously always started
+    // empty, so reopening this panel silently offered to overwrite a
+    // working mapping with nothing assigned).
+    const [assignments, setAssignments] = useState<Record<string, string>>(() => assignmentsFromMapping(existingMapping));
+    const [status, setStatus] = useState<PanelStatus>({ kind: "idle" });
 
     const targetFields = CANONICAL_TARGET_FIELDS[dataset];
+    const labels = TARGET_FIELD_LABELS[dataset];
+
+    function targetLabel(path: string): string {
+        return labels[path] ?? path;
+    }
+
+    /** Target paths already claimed by a different source field than `excludingSourcePath`. */
+    function targetsUsedElsewhere(excludingSourcePath: string): Set<string> {
+        return new Set(
+            Object.entries(assignments)
+                .filter(([sourcePath]) => sourcePath !== excludingSourcePath)
+                .map(([, targetPath]) => targetPath)
+        );
+    }
 
     function handleDiscover() {
-        setError(null);
-        setSaved(false);
+        setStatus({ kind: "idle" });
         startTransition(async () => {
-            const result = await discoverDataSourceAction(dataSourceId);
+            const result = await discoverDataSourceAction(dataSourceId, websiteId);
             if (!result.ok) {
-                setError(describeConnectionFailure(result.category, result.message));
+                setStatus({ kind: "error", message: describeConnectionFailure(result.category, result.message) });
                 return;
             }
             setFields(result.data.fields);
@@ -68,8 +128,7 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: Dat
             }
             return next;
         });
-        setPreview(null);
-        setSaved(false);
+        setStatus({ kind: "idle" });
     }
 
     function buildMapping(): FieldMapping[] {
@@ -81,40 +140,42 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: Dat
     }
 
     function handlePreview() {
-        setError(null);
         const mappingFields = buildMapping();
         if (mappingFields.length === 0) {
-            setError("Ordnen Sie mindestens ein Feld zu, bevor Sie eine Vorschau anzeigen.");
+            setStatus({ kind: "error", message: "Ordnen Sie mindestens ein Feld zu, bevor Sie eine Vorschau anzeigen." });
             return;
         }
 
         startTransition(async () => {
-            const result = await previewDataSourceMappingAction(dataSourceId, { fields: mappingFields });
+            const result = await previewDataSourceMappingAction(dataSourceId, websiteId, { fields: mappingFields });
             if (!result.ok) {
-                setError(result.message);
-                setPreview(null);
+                setStatus({ kind: "error", message: result.message });
                 return;
             }
-            setPreview(result.value);
+            setStatus({ kind: "previewed", value: result.value });
         });
     }
 
     function handleSave() {
-        setError(null);
         const mappingFields = buildMapping();
-        const missingRequired = targetFields.filter((f) => f.required && !mappingFields.some((m) => m.targetPath === f.path));
+        const missingRequired = targetFields.filter(
+            (f) => f.required && !mappingFields.some((m) => m.targetPath === f.path)
+        );
         if (missingRequired.length > 0) {
-            setError(`Pflichtfelder fehlen: ${missingRequired.map((f) => f.label).join(", ")}.`);
+            setStatus({
+                kind: "error",
+                message: `Pflichtfelder fehlen: ${missingRequired.map((f) => targetLabel(f.path)).join(", ")}.`,
+            });
             return;
         }
 
         startTransition(async () => {
             const result = await saveDataSourceMappingAction(dataSourceId, { fields: mappingFields }, websiteId);
             if (!result.ok) {
-                setError(result.message);
+                setStatus({ kind: "error", message: result.message });
                 return;
             }
-            setSaved(true);
+            setStatus({ kind: "saved" });
             router.refresh();
         });
     }
@@ -128,7 +189,7 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: Dat
                 </Button>
             </div>
 
-            {error && <p className="text-sm text-red-700">{error}</p>}
+            {status.kind === "error" && <p className="text-sm text-red-700">{status.message}</p>}
 
             {fields && (
                 <div className="space-y-3">
@@ -140,14 +201,17 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: Dat
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-[var(--civo-color-border)] text-left text-[var(--civo-color-text-muted)]">
-                                        <th className="py-1.5 pr-3 font-medium">Externes Feld</th>
-                                        <th className="py-1.5 pr-3 font-medium">Beispielwert</th>
-                                        <th className="py-1.5 font-medium">Zielfeld</th>
-                                    </tr>
+                                <tr className="border-b border-[var(--civo-color-border)] text-left text-[var(--civo-color-text-muted)]">
+                                    <th className="py-1.5 pr-3 font-medium">Externes Feld</th>
+                                    <th className="py-1.5 pr-3 font-medium">Beispielwert</th>
+                                    <th className="py-1.5 font-medium">Zielfeld</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    {fields.map((field) => (
+                                {fields.map((field) => {
+                                    const usedElsewhere = targetsUsedElsewhere(field.path);
+
+                                    return (
                                         <tr key={field.path} className="border-b border-[var(--civo-color-border)] last:border-0">
                                             <td className="py-1.5 pr-3 font-mono text-xs text-[var(--civo-color-text)]">
                                                 {field.path}
@@ -163,15 +227,27 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: Dat
                                                 >
                                                     <option value="">Nicht zugeordnet</option>
                                                     {targetFields.map((target) => (
-                                                        <option key={target.path} value={target.path}>
-                                                            {target.label}
+                                                        <option
+                                                            key={target.path}
+                                                            value={target.path}
+                                                            // A target already assigned to a different source
+                                                            // field is disabled rather than silently allowed a
+                                                            // second time — assigning it here would silently
+                                                            // clobber the other assignment (spec §10, last write
+                                                            // wins is not an acceptable outcome for a canonical
+                                                            // field).
+                                                            disabled={usedElsewhere.has(target.path)}
+                                                        >
+                                                            {targetLabel(target.path)}
                                                             {target.required ? " *" : ""}
+                                                            {usedElsewhere.has(target.path) ? " (bereits zugeordnet)" : ""}
                                                         </option>
                                                     ))}
                                                 </select>
                                             </td>
                                         </tr>
-                                    ))}
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>
@@ -186,15 +262,15 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset }: Dat
                         </Button>
                     </div>
 
-                    {saved && <p className="text-sm text-green-700">Mapping gespeichert.</p>}
+                    {status.kind === "saved" && <p className="text-sm text-green-700">Mapping gespeichert.</p>}
 
-                    {preview && (
+                    {status.kind === "previewed" && (
                         <div className="rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-background)] p-3">
                             <p className="mb-1.5 text-xs font-medium text-[var(--civo-color-text-muted)]">
                                 Vorschau des zugeordneten Datensatzes
                             </p>
                             <pre className="overflow-x-auto text-xs text-[var(--civo-color-text)]">
-                                {JSON.stringify(preview, null, 2)}
+                                {JSON.stringify(status.value, null, 2)}
                             </pre>
                         </div>
                     )}

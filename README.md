@@ -17,11 +17,12 @@ This codebase is fully built, typechecked, unit-tested, and production-build-ver
 - **Database:** Prisma schema (`Website`, `Page`, `PageConfig`, `Theme`, `DataSource`).
 - **Domain:** Canonical content domain types + Zod schemas (`NewsItem`, `CivicEvent`, `Service`, `Contact`, `SmartCityMetric`, etc).
 - **Page Tree:** `PageNode` / `PageConfig` JSON page-tree model + recursive Zod validation + pure functional tree operations.
-- **Data Adapters:** `CivicDataProvider` and `SmartCityDataProvider` interfaces + mock local implementations with realistic German seed content ("Musterstadt").
+- **Data Sources & Integrations:** Dynamic REST/JSON data sources, visual field-mapping UI, outbound URL validation (SSRF protection), and aggressive dataset caching.
+- **Data Adapters:** `CivicDataProvider` and `SmartCityDataProvider` have production-ready REST implementations backed by user-configured field mappings, alongside mock fallbacks for zero-config onboarding.
 - **Component Platform:** Centralized component registry (`type` → component resolution) + `PageRenderer`.
 - **Component Library:** 27+ modular components across `standard`, `civic`, and `smartcity` namespaces (including Hero, RichText, NewsGrid, ServiceFinder, KPI Grids, and interactive Metric Charts).
 - **Builder Editor:** Client-side Redux Toolkit state, three-panel shell, drag-and-drop sortable canvas (with precise hit-testing, native event delegation, and visual drag overlays), properties panel.
-- **Server Actions:** Zod-validated mutations for website creation, theme updates, and page-config saving.
+- **Server Actions:** Zod-validated mutations for website creation, theme updates, page-config saving, and data source management.
 
 ### What YOU need to do to actually run this
 1. **Run `npm run db:generate`** (`prisma generate`) — downloads the Prisma query-engine binary and generates the actual typed client.
@@ -131,10 +132,11 @@ prisma/
 2. Create the React component (e.g., `your-component.tsx`). It receives `{ props, websiteId }`.
 3. Register it in the module's `components.ts` file, which exports the definitions up to the global platform registry.
 
-### Add a new data provider (e.g. a real REST API)
-1. Implement the data provider interface (e.g. `CivicDataProvider`) in `src/modules/integrations/civic/infrastructure/adapters/rest-provider.ts`.
-2. Map the external response shape into the canonical types, validating before returning.
-3. Swap the instantiation in the resolver to use your new provider.
+### Add a new data provider (e.g. GraphQL or a specialized API)
+1. Implement the data provider interface (e.g. `CivicDataProvider`) in `src/modules/integrations/civic/infrastructure/adapters/your-provider.ts`.
+2. Ensure you respect the `DataSourceRow` boundary type instead of importing the raw Prisma model directly into components/actions.
+3. Map the external response shape into the canonical types, validating before returning.
+4. Swap the instantiation in `data-source-resolver.ts` to route to your new provider based on the `DataSourceKind`.
 
 ### Add a new template
 Add a new `WebsiteTemplate` entry in `src/modules/website/domain/templates/`. Its `generateHomePageConfig()` should return a fresh `PageConfig` object built from component registry types.

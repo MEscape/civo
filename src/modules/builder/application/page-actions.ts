@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { pageService } from "@/modules/builder/infrastructure/page-service";
+import { pageService } from "@/modules/builder/application/page-service";
 
 import { ActionResult, toActionResult } from "@/lib/actions/action-result";
 import type { PageConfigInput } from "@/modules/builder/domain/page-schema";
-import type { PageWithConfig } from "@/modules/builder/infrastructure/page-repository";
+import type { PageView } from "@/modules/builder/domain/page-schema";
 
 /**
  * The builder's "Save" action. Client sends the current draft tree (as
@@ -36,7 +36,7 @@ export async function createPageAction(input: {
     websiteId: string;
     path: string;
     title: string;
-}): Promise<ActionResult<PageWithConfig>> {
+}): Promise<ActionResult<PageView>> {
     const result = await pageService.create(input);
     if (result.ok) {
         revalidatePath(`/websites/${input.websiteId}/builder`);

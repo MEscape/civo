@@ -22,13 +22,13 @@ describe("appError", () => {
 
         const error = appError(
             "DATABASE_ERROR",
-            "A database error occurred.",
+            "Ein Datenbankfehler ist aufgetreten.",
             { cause },
         );
 
         expect(error).toEqual({
             code: "DATABASE_ERROR",
-            message: "A database error occurred.",
+            message: "Ein Datenbankfehler ist aufgetreten.",
             cause,
             field: undefined,
         });
@@ -92,7 +92,7 @@ describe("AppErrors", () => {
     it("creates a not found error", () => {
         expect(AppErrors.notFound("User")).toEqual({
             code: "NOT_FOUND",
-            message: "User was not found.",
+            message: "User wurde nicht gefunden.",
             cause: undefined,
             field: undefined,
         });
@@ -112,7 +112,7 @@ describe("AppErrors", () => {
 
         expect(AppErrors.database(cause)).toEqual({
             code: "DATABASE_ERROR",
-            message: "A database error occurred.",
+            message: "Ein Datenbankfehler ist aufgetreten.",
             cause,
             field: undefined,
         });
@@ -121,7 +121,7 @@ describe("AppErrors", () => {
     it("creates a database error without a cause", () => {
         expect(AppErrors.database()).toEqual({
             code: "DATABASE_ERROR",
-            message: "A database error occurred.",
+            message: "Ein Datenbankfehler ist aufgetreten.",
             cause: undefined,
             field: undefined,
         });
@@ -152,7 +152,7 @@ describe("AppErrors", () => {
     it("creates an unauthorized error", () => {
         expect(AppErrors.unauthorized()).toEqual({
             code: "UNAUTHORIZED",
-            message: "Authentication is required for this action.",
+            message: "Für diese Aktion ist eine Anmeldung erforderlich.",
             cause: undefined,
             field: undefined,
         });
@@ -161,7 +161,7 @@ describe("AppErrors", () => {
     it("creates a forbidden error", () => {
         expect(AppErrors.forbidden()).toEqual({
             code: "FORBIDDEN",
-            message: "You do not have permission to perform this action.",
+            message: "Sie haben keine Berechtigung, diese Aktion auszuführen.",
             cause: undefined,
             field: undefined,
         });
@@ -172,7 +172,7 @@ describe("AppErrors", () => {
 
         expect(AppErrors.internal(cause)).toEqual({
             code: "INTERNAL_ERROR",
-            message: "An unexpected error occurred.",
+            message: "Ein unerwarteter Fehler ist aufgetreten.",
             cause,
             field: undefined,
         });
@@ -181,7 +181,7 @@ describe("AppErrors", () => {
     it("creates an internal error without a cause", () => {
         expect(AppErrors.internal()).toEqual({
             code: "INTERNAL_ERROR",
-            message: "An unexpected error occurred.",
+            message: "Ein unerwarteter Fehler ist aufgetreten.",
             cause: undefined,
             field: undefined,
         });
@@ -201,7 +201,7 @@ describe("toUserMessage", () => {
     it("returns the not found message", () => {
         const error = AppErrors.notFound("User");
 
-        expect(toUserMessage(error)).toBe("User was not found.");
+        expect(toUserMessage(error)).toBe("User wurde nicht gefunden.");
     });
 
     it("returns the conflict message", () => {
@@ -214,7 +214,7 @@ describe("toUserMessage", () => {
         const error = AppErrors.unauthorized();
 
         expect(toUserMessage(error)).toBe(
-            "Please sign in to continue.",
+            "Bitte melden Sie sich an, um fortzufahren.",
         );
     });
 
@@ -222,7 +222,7 @@ describe("toUserMessage", () => {
         const error = AppErrors.forbidden();
 
         expect(toUserMessage(error)).toBe(
-            "You do not have permission to perform this action.",
+            "Sie haben keine Berechtigung, diese Aktion auszuführen.",
         );
     });
 
@@ -232,7 +232,7 @@ describe("toUserMessage", () => {
         );
 
         expect(toUserMessage(error)).toBe(
-            "Something went wrong. Please try again.",
+            "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
         );
 
         expect(toUserMessage(error)).not.toContain("postgres");
@@ -245,7 +245,7 @@ describe("toUserMessage", () => {
         );
 
         expect(toUserMessage(error)).toBe(
-            "Something went wrong. Please try again.",
+            "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
         );
     });
 
@@ -255,7 +255,7 @@ describe("toUserMessage", () => {
         );
 
         expect(toUserMessage(error)).toBe(
-            "Something went wrong. Please try again.",
+            "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
         );
     });
 
@@ -276,7 +276,7 @@ describe("toUserMessage", () => {
         } as never;
 
         expect(toUserMessage(error)).toBe(
-            "Something went wrong. Please try again.",
+            "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
         );
     });
 });

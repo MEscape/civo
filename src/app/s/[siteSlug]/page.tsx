@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { websiteService } from "@/modules/website/infrastructure/website-service";
-import { pageService } from "@/modules/builder/infrastructure/page-service";
+import { websiteService } from "@/modules/website/application/website-service";
+import { pageService } from "@/modules/builder/application/page-service";
 import { PageRenderer } from "@/modules/website/components/page-renderer";
 import { ThemeProvider } from "@/modules/website/components/theme-provider";
 import { toDomainTheme } from "@/modules/website/domain/theme";

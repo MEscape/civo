@@ -1,54 +1,49 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import {
-    dataSourceService,
-    type DataSourceRow,
-} from "@/modules/data-sources/infrastructure/data-source-service";
-import {
-    ActionResult,
-    toActionResult,
-} from "@/lib/actions/action-result";
+import { dataSourceService, type DataSourceView } from "@/modules/data-sources/application/data-source-service";
+import { ActionResult, toActionResult } from "@/lib/actions/action-result";
 import type {
     ConnectionDiagnosticCategory,
     DataSourceDataset,
     DataSourceKind,
 } from "@/modules/data-sources/domain/data-source-schema";
-import type {
-    DataDiscoveryResult,
-} from "@/modules/data-sources/domain/data-source-adapter";
-import type {
-    DatasetMapping,
-} from "@/modules/data-sources/domain/field-mapping-schema";
+import type { DataDiscoveryResult } from "@/modules/data-sources/domain/data-source-adapter";
+import type { DatasetMapping } from "@/modules/data-sources/domain/field-mapping-schema";
 
 /**
  * Server Actions for the Data Sources settings area (Phase 3.5 spec §3).
  *
- * Every action validates via the service layer (which validates via Zod)
- * and never trusts client input directly.
+ * Every action validates via the service layer (which validates via Zod
+ * and checks the caller's access to `websiteId` — see
+ * application/website-access-guard.ts) and never trusts client input
+ * directly.
  *
  * Flow:
  *
- * Client → Server Action → Zod/service → repository/adapter
+ * Client → Server Action → website access + Zod/service → repository/adapter
  * → Prisma/external API → revalidate
  *
- * `testDataSourceConnectionAction` and
- * `discoverDataSourceAction` intentionally return their own small result
- * shapes instead of the generic `ActionResult<T>`.
+ * Every action that operates on a `dataSourceId` also takes `websiteId`
+ * and passes both to the service, which confirms the data source
+ * actually belongs to that website before doing anything else (spec §22,
+ * §29 — never trust a client-supplied id to already be scoped
+ * correctly). `discoverDataSourceAction` and
+ * `previewDataSourceMappingAction` gained a `websiteId` parameter for
+ * this reason; callers must be updated to pass it.
  *
- * This preserves the diagnostic category required by the settings UI.
+ * `testDataSourceConnectionAction` and `discoverDataSourceAction`
+ * intentionally return their own small result shapes instead of the
+ * generic `ActionResult<T>`, to preserve the diagnostic category the
+ * settings UI needs (spec §6).
  */
 
 /* -------------------------------------------------------------------------- */
 /* List                                                                       */
 /* -------------------------------------------------------------------------- */
 
-export async function listDataSourcesAction(
-    websiteId: string
-): Promise<ActionResult<DataSourceRow[]>> {
-    return toActionResult(
-        await dataSourceService.listForWebsite(websiteId)
-    );
+export async function listDataSourcesAction(websiteId: string): Promise<ActionResult<DataSourceView[]>> {
+    return toActionResult(await dataSourceService.listForWebsite(websiteId));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -61,13 +56,11 @@ export async function upsertDataSourceAction(input: {
     kind: DataSourceKind;
     dataset: DataSourceDataset;
     config: Record<string, unknown>;
-}): Promise<ActionResult<DataSourceRow>> {
+}): Promise<ActionResult<DataSourceView>> {
     const result = await dataSourceService.upsert(input);
 
     if (result.ok) {
-        revalidatePath(
-            `/websites/${input.websiteId}/settings`
-        );
+        revalidatePath(`/websites/${input.websiteId}/settings`);
     }
 
     return toActionResult(result);
@@ -77,17 +70,11 @@ export async function upsertDataSourceAction(input: {
 /* Delete                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export async function deleteDataSourceAction(
-    dataSourceId: string,
-    websiteId: string
-): Promise<ActionResult<void>> {
-    const result =
-        await dataSourceService.delete(dataSourceId);
+export async function deleteDataSourceAction(dataSourceId: string, websiteId: string): Promise<ActionResult<void>> {
+    const result = await dataSourceService.delete(dataSourceId, websiteId);
 
     if (result.ok) {
-        revalidatePath(
-            `/websites/${websiteId}/settings`
-        );
+        revalidatePath(`/websites/${websiteId}/settings`);
     }
 
     return toActionResult(result);
@@ -105,30 +92,25 @@ export async function deleteDataSourceAction(
  */
 export type TestConnectionActionResult =
     | {
-          ok: true;
-          statusCode: number;
-          responseTimeMs: number;
-      }
+    ok: true;
+    statusCode: number;
+    responseTimeMs: number;
+}
     | {
-          ok: false;
-          category: ConnectionDiagnosticCategory;
-          message: string;
-      };
+    ok: false;
+    category: ConnectionDiagnosticCategory;
+    message: string;
+};
 
 export async function testDataSourceConnectionAction(
     dataSourceId: string,
     websiteId: string
 ): Promise<TestConnectionActionResult> {
-    const result =
-        await dataSourceService.testConnection(
-            dataSourceId
-        );
+    const result = await dataSourceService.testConnection(dataSourceId, websiteId);
 
     // Revalidate regardless of outcome. The settings list displays
     // status and last-checked information after every test attempt.
-    revalidatePath(
-        `/websites/${websiteId}/settings`
-    );
+    revalidatePath(`/websites/${websiteId}/settings`);
 
     if (!result.ok) {
         return {
@@ -151,20 +133,24 @@ export async function testDataSourceConnectionAction(
 
 export type DiscoverActionResult =
     | {
-          ok: true;
-          data: DataDiscoveryResult;
-      }
+    ok: true;
+    data: DataDiscoveryResult;
+}
     | {
-          ok: false;
-          category: ConnectionDiagnosticCategory;
-          message: string;
-      };
+    ok: false;
+    category: ConnectionDiagnosticCategory;
+    message: string;
+};
 
-export async function discoverDataSourceAction(
-    dataSourceId: string
-): Promise<DiscoverActionResult> {
-    const result =
-        await dataSourceService.discover(dataSourceId);
+/**
+ * `websiteId` is required (not just `dataSourceId`) so the service can
+ * confirm the data source belongs to that website before running
+ * discovery against it — discovery reads live external data, so an
+ * unscoped `dataSourceId` here would let any caller read another
+ * website's configured source.
+ */
+export async function discoverDataSourceAction(dataSourceId: string, websiteId: string): Promise<DiscoverActionResult> {
+    const result = await dataSourceService.discover(dataSourceId, websiteId);
 
     if (!result.ok) {
         return {
@@ -186,23 +172,24 @@ export async function discoverDataSourceAction(
 
 export type PreviewMappingActionResult =
     | {
-          ok: true;
-          value: Record<string, unknown>;
-      }
+    ok: true;
+    value: Record<string, unknown>;
+}
     | {
-          ok: false;
-          message: string;
-      };
+    ok: false;
+    message: string;
+};
 
+/**
+ * `websiteId` is required for the same reason as `discoverDataSourceAction`
+ * — previewing a mapping fetches live data from the configured source.
+ */
 export async function previewDataSourceMappingAction(
     dataSourceId: string,
+    websiteId: string,
     mapping: DatasetMapping
 ): Promise<PreviewMappingActionResult> {
-    const result =
-        await dataSourceService.previewMapping(
-            dataSourceId,
-            mapping
-        );
+    const result = await dataSourceService.previewMapping(dataSourceId, websiteId, mapping);
 
     /*
      * Outer Result:
@@ -237,9 +224,7 @@ export async function previewDataSourceMappingAction(
     if (!result.data.ok) {
         return {
             ok: false,
-            message:
-                result.data.error[0]?.message ??
-                "The mapping could not be applied.",
+            message: result.data.error[0]?.message ?? "The mapping could not be applied.",
         };
     }
 
@@ -257,21 +242,12 @@ export async function saveDataSourceMappingAction(
     dataSourceId: string,
     mapping: DatasetMapping,
     websiteId: string
-): Promise<ActionResult<DataSourceRow>> {
-    const result =
-        await dataSourceService.saveMapping({
-            dataSourceId,
-            mapping,
-        });
+): Promise<ActionResult<DataSourceView>> {
+    const result = await dataSourceService.saveMapping({ dataSourceId, mapping }, websiteId);
 
     if (result.ok) {
-        revalidatePath(
-            `/websites/${websiteId}/settings`
-        );
-
-        revalidatePath(
-            `/websites/${websiteId}/builder`
-        );
+        revalidatePath(`/websites/${websiteId}/settings`);
+        revalidatePath(`/websites/${websiteId}/builder`);
     }
 
     return toActionResult(result);

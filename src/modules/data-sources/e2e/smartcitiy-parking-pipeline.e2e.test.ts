@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
-import type { DataSource as PrismaDataSource } from "@prisma/client";
+import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 
 /**
  * End-to-end test for the smart-city half of Phase 3.5's pipeline (spec
@@ -20,10 +20,18 @@ vi.mock("next/cache", () => ({
     unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
+vi.mock("node:dns/promises", () => {
+    const mockLookup = vi.fn().mockResolvedValue([{ address: "93.184.216.34" }]);
+    return {
+        default: { lookup: mockLookup },
+        lookup: mockLookup,
+    };
+});
+
 const { dataSourceRepository } = await import("@/modules/data-sources/infrastructure/data-source-repository");
 const { KpiGrid } = await import("@/modules/integrations/smartcity/components/kpi-grid/kpi-grid");
 
-function configuredParkingSource(): PrismaDataSource {
+function configuredParkingSource(): DataSourceView {
     return {
         id: "e2e-parking-source",
         websiteId: "website-e2e",
@@ -43,7 +51,7 @@ function configuredParkingSource(): PrismaDataSource {
         lastError: null,
         createdAt: new Date("2026-09-01T00:00:00Z"),
         updatedAt: new Date("2026-09-18T12:00:00Z"),
-    } as PrismaDataSource;
+    } as DataSourceView;
 }
 
 describe("End-to-end: configured REST source → mapping → canonical metric → KpiGrid", () => {

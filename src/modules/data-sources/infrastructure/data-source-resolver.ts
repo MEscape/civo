@@ -1,7 +1,6 @@
 import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
 import { logger } from "@/lib/logger/logger";
-import type { DataSourceDataset } from "@/modules/data-sources/domain/data-source-schema";
-import type { DataSourceRow } from "@/modules/data-sources/infrastructure/data-source-repository";
+import type { DataSourceDataset, DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 
 /**
  * Resolves which `DataSourceKind` a website has configured for a given
@@ -29,7 +28,7 @@ import type { DataSourceRow } from "@/modules/data-sources/infrastructure/data-s
 export async function resolveDataSourceKind(
     websiteId: string | undefined,
     dataset: DataSourceDataset
-): Promise<{ kind: "MOCK"; row: DataSourceRow | null } | { kind: "REST" | "GRAPHQL"; row: DataSourceRow }> {
+): Promise<{ kind: "MOCK"; row: DataSourceView | null } | { kind: "REST" | "GRAPHQL"; row: DataSourceView }> {
     if (!websiteId) {
         // No website context (e.g. a code path that renders components
         // outside any website, if one ever exists) — mock is the only

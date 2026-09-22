@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { savePageConfigAction, createPageAction } from "@/modules/builder/application/page-actions";
 import type { PageConfigInput } from "@/modules/builder/domain/page-schema";
-import type { PageWithConfig } from "@/modules/builder/infrastructure/page-repository";
-import { pageService } from "@/modules/builder/infrastructure/page-service";
+import type { PageView } from "@/modules/builder/domain/page-schema";
+import { pageService } from "@/modules/builder/application/page-service";
 import { revalidatePath } from "next/cache";
 import { ok, err } from "@/lib/result/result";
 import { AppErrors } from "@/lib/errors/app-error";
@@ -11,7 +11,7 @@ vi.mock("next/cache", () => ({
     revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/modules/builder/infrastructure/page-service", () => ({
+vi.mock("@/modules/builder/application/page-service", () => ({
     pageService: {
         saveConfig: vi.fn(),
         create: vi.fn(),
@@ -57,7 +57,7 @@ describe("page actions", () => {
     describe("createPageAction", () => {
         it("returns success and revalidates when creation succeeds", async () => {
             const mockPage = { id: "p1", websiteId: "w1", path: "/test", title: "Test", configs: [] };
-            vi.mocked(pageService.create).mockResolvedValue(ok(mockPage as unknown as PageWithConfig));
+            vi.mocked(pageService.create).mockResolvedValue(ok(mockPage as unknown as PageView));
 
             const result = await createPageAction({ websiteId: "w1", path: "/test", title: "Test" });
 

@@ -37,4 +37,22 @@ describe("deriveMappedRecordId", () => {
         const result = deriveMappedRecordId({ id: "" }, { title: "Stadtfest" });
         expect(result).toMatch(/^[a-f0-9]{16}$/);
     });
+
+    it("produces the same hash regardless of the mapped object's key order", () => {
+        const a = deriveMappedRecordId({}, { title: "Stadtfest", location: "Rathaus" });
+        const b = deriveMappedRecordId({}, { location: "Rathaus", title: "Stadtfest" });
+        expect(a).toBe(b);
+    });
+
+    it("produces the same hash regardless of key order in nested objects", () => {
+        const a = deriveMappedRecordId({}, { location: { name: "Rathaus", zip: "12345" } });
+        const b = deriveMappedRecordId({}, { location: { zip: "12345", name: "Rathaus" } });
+        expect(a).toBe(b);
+    });
+
+    it("still treats array element order as significant", () => {
+        const a = deriveMappedRecordId({}, { tags: ["a", "b"] });
+        const b = deriveMappedRecordId({}, { tags: ["b", "a"] });
+        expect(a).not.toBe(b);
+    });
 });

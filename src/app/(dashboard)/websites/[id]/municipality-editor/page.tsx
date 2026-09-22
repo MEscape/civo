@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { websiteService } from "@/modules/website/infrastructure/website-service";
-import { pageService } from "@/modules/builder/infrastructure/page-service";
+import { websiteService } from "@/modules/website/application/website-service";
+import { pageService } from "@/modules/builder/application/page-service";
 import { BuilderStoreProvider } from "@/modules/builder/application/builder-store-provider";
 import { BuilderShell } from "@/modules/builder/components/builder-shell";
 import { toDomainTheme } from "@/modules/website/domain/theme";

@@ -1,10 +1,9 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { formatDate } from "@/lib/formatters";
 
 export type TrendDatum = { date: string; value: number };
-
-const dateFormatter = new Intl.DateTimeFormat("de-DE", { month: "short" });
 
 /**
  * TrendChartClient — isolated "use client" leaf (spec §14), mirroring
@@ -27,7 +26,7 @@ export function TrendChartClient({ data, unit }: { data: TrendDatum[]; unit?: st
                     <CartesianGrid stroke="var(--civo-color-border)" vertical={false} />
                     <XAxis
                         dataKey="date"
-                        tickFormatter={(value: string) => dateFormatter.format(new Date(value))}
+                        tickFormatter={(value: string) => formatDate(new Date(value), "short")}
                         stroke="var(--civo-color-text-muted)"
                         fontSize={12}
                         tickLine={false}
@@ -37,7 +36,7 @@ export function TrendChartClient({ data, unit }: { data: TrendDatum[]; unit?: st
                     <Tooltip
                         formatter={(value) => [unit ? `${value} ${unit}` : String(value ?? ""), ""]}
                         labelFormatter={(value) =>
-                            typeof value === "string" ? dateFormatter.format(new Date(value)) : String(value ?? "")
+                            typeof value === "string" ? formatDate(new Date(value), "short") : String(value ?? "")
                         }
                         contentStyle={{
                             background: "var(--civo-color-surface)",

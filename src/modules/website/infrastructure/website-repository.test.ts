@@ -419,8 +419,9 @@ describe("websiteRepository", () => {
         it("updates a theme", async () => {
             const theme = {
                 id: "theme-1",
-                websiteId: "website-1",
                 ...input,
+                createdAt: new Date("2026-09-01"),
+                updatedAt: new Date("2026-09-01"),
             };
 
             vi.mocked(prisma.theme.update).mockResolvedValue(theme as never);
@@ -446,6 +447,8 @@ describe("websiteRepository", () => {
             const theme = {
                 id: "theme-1",
                 primaryColor: input.primaryColor,
+                createdAt: new Date("2026-09-01"),
+                updatedAt: new Date("2026-09-01"),
             };
 
             vi.mocked(prisma.theme.update).mockResolvedValue(theme as never);

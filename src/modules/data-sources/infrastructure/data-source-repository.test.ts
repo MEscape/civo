@@ -3,6 +3,7 @@ import { dataSourceRepository } from "./data-source-repository";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger/logger";
 import { isUniqueConstraintError, isNotFoundError } from "@/lib/db/prisma-errors";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db/prisma", () => ({
     prisma: {
@@ -124,7 +125,11 @@ describe("dataSourceRepository", () => {
                         name: "Municipal Events",
                         kind: "REST",
                         config: input.config,
-                        mapping: null,
+                        // A cleared nullable Json? column is Prisma.DbNull,
+                        // not a plain `null` (see upsert()'s own comment) -
+                        // this was previously asserted as `null`, which
+                        // could never match what the code actually sends.
+                        mapping: Prisma.DbNull,
                         status: "UNKNOWN",
                         lastCheckedAt: null,
                         lastError: null,
@@ -196,7 +201,7 @@ describe("dataSourceRepository", () => {
 
     describe("saveMapping", () => {
         it("persists the mapping JSON for a data source", async () => {
-            const mapping = { fields: [{ sourcePath: "a", targetPath: "b" }] };
+            const mapping = { fields: [{ sourcePath: "a", targetPath: "b", required: false }] };
             const row = { id: "ds-1", mapping };
             vi.mocked(prisma.dataSource.update).mockResolvedValue(row as never);
 
@@ -207,6 +212,43 @@ describe("dataSourceRepository", () => {
                 where: { id: "ds-1" },
                 data: { mapping },
             });
+        });
+    });
+
+    describe("findByIdForWebsite", () => {
+        it("returns the row when it belongs to the given website", async () => {
+            const row = { id: "ds-1", websiteId: "website-1", dataset: "civic" };
+            vi.mocked(prisma.dataSource.findUnique).mockResolvedValue(row as never);
+
+            const result = await dataSourceRepository.findByIdForWebsite("ds-1", "website-1");
+
+            expect(result).toEqual({ ok: true, data: row });
+        });
+
+        it("returns ok(null) when the row belongs to a different website", async () => {
+            const row = { id: "ds-1", websiteId: "someone-elses-website", dataset: "civic" };
+            vi.mocked(prisma.dataSource.findUnique).mockResolvedValue(row as never);
+
+            const result = await dataSourceRepository.findByIdForWebsite("ds-1", "website-1");
+
+            expect(result).toEqual({ ok: true, data: null });
+        });
+
+        it("returns ok(null), the same shape as a mismatch, when the row does not exist", async () => {
+            vi.mocked(prisma.dataSource.findUnique).mockResolvedValue(null);
+
+            const result = await dataSourceRepository.findByIdForWebsite("missing", "website-1");
+
+            expect(result).toEqual({ ok: true, data: null });
+        });
+
+        it("propagates a database error", async () => {
+            const cause = new Error("Connection failed");
+            vi.mocked(prisma.dataSource.findUnique).mockRejectedValue(cause);
+
+            const result = await dataSourceRepository.findByIdForWebsite("ds-1", "website-1");
+
+            expect(result.ok).toBe(false);
         });
     });
 

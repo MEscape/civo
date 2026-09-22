@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { websiteService } from "./website-service";
 import {
     websiteRepository,
-    type WebsiteWithTheme,
 } from "@/modules/website/infrastructure/website-repository";
-import { pageService } from "@/modules/builder/infrastructure/page-service";
+import { pageService } from "@/modules/builder/application/page-service";
 import {
     createWebsiteSchema,
     updateWebsiteSchema,
     themeInputSchema,
+    type WebsiteView,
 } from "@/modules/website/domain/website-schema";
 import { pageConfigSchema } from "@/modules/builder/domain/page-schema";
 import { getTemplate } from "@/modules/website/domain/templates";
@@ -28,7 +28,7 @@ vi.mock(
 );
 
 vi.mock(
-    "@/modules/builder/infrastructure/page-service",
+    "@/modules/builder/application/page-service",
     () => ({
         pageService: {
             systemCreate: vi.fn(),
@@ -85,14 +85,13 @@ describe("websiteService", () => {
 
     describe("list", () => {
         it("delegates to websiteRepository.findAll", async () => {
-            const websites: WebsiteWithTheme[] = [
+            const websites: WebsiteView[] = [
                 {
                     id: "website-1",
                     name: "Test Website",
                     slug: "test-website",
                     description: null,
                     templateKey: "default",
-                    themeId: null,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     theme: null,
