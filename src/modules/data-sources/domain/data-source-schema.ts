@@ -203,7 +203,7 @@ export function validateDataSourceConfig(
     if (!parsed.success) {
         return err(
             parsed.error.issues[0]?.message ??
-            "Invalid data source configuration."
+            "Ungültige Datenquellenkonfiguration."
         );
     }
 

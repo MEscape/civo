@@ -91,7 +91,7 @@ Server Action           (src/modules/*/application/*-actions.ts)
  ↓
 Zod validation          (src/modules/*/domain/*-schema.ts)
  ↓
-Service                 (src/modules/*/infrastructure/*-service.ts)
+Service                 (src/modules/*/application/*-service.ts)
  ↓
 Repository              (src/modules/*/infrastructure/*-repository.ts)
  ↓
@@ -134,7 +134,7 @@ prisma/
 
 ### Add a new data provider (e.g. GraphQL or a specialized API)
 1. Implement the data provider interface (e.g. `CivicDataProvider`) in `src/modules/integrations/civic/infrastructure/adapters/your-provider.ts`.
-2. Ensure you respect the `DataSourceRow` boundary type instead of importing the raw Prisma model directly into components/actions.
+2. Ensure you respect the `DataSourceView` boundary type instead of importing the raw Prisma model directly into components/actions.
 3. Map the external response shape into the canonical types, validating before returning.
 4. Swap the instantiation in `data-source-resolver.ts` to route to your new provider based on the `DataSourceKind`.
 

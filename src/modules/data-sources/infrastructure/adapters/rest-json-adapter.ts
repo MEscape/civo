@@ -117,7 +117,7 @@ export class RestJsonAdapter implements DataSourceAdapter<RestDataSourceConfig> 
         const parsed = restDataSourceConfigSchema.safeParse(rawConfig);
 
         if (!parsed.success) {
-            return err(parsed.error.issues[0]?.message ?? "Invalid REST data source configuration.");
+            return err(parsed.error.issues[0]?.message ?? "Ungültige REST-Datenquellenkonfiguration.");
         }
 
         return ok(parsed.data);
@@ -186,7 +186,7 @@ export class RestJsonAdapter implements DataSourceAdapter<RestDataSourceConfig> 
             return failure(
                 "INVALID_CONFIGURATION",
                 AppErrors.validation(
-                    "This data source requires a credential that has not been configured on the server.",
+                    "Diese Datenquelle erfordert Anmeldeinformationen, die nicht auf dem Server konfiguriert wurden.",
                     "authMode"
                 )
             );
@@ -246,7 +246,7 @@ export class RestJsonAdapter implements DataSourceAdapter<RestDataSourceConfig> 
 
             return failure(
                 "INVALID_RESPONSE",
-                AppErrors.externalApi(`The data source returned an error (HTTP ${response.status}).`)
+                AppErrors.externalApi(`Die Datenquelle hat einen Fehler zurückgegeben (HTTP ${response.status}).`)
             );
         }
 
@@ -349,7 +349,7 @@ function parseJson(text: string): Result<unknown, string> {
     try {
         return ok(JSON.parse(text));
     } catch {
-        return err("The response body is not valid JSON.");
+        return err("Die Antwort ist kein gültiges JSON.");
     }
 }
 
@@ -385,13 +385,13 @@ async function readBounded(response: Response, maxBytes: number): Promise<Result
             if (total > maxBytes) {
                 await reader.cancel();
 
-                return err("The data source's response was too large.");
+                return err("Die Antwort der Datenquelle war zu groß.");
             }
 
             chunks.push(value);
         }
     } catch {
-        return err("The data source's response could not be read.");
+        return err("Die Antwort der Datenquelle konnte nicht gelesen werden.");
     }
 
     return ok(Buffer.concat(chunks).toString("utf-8"));

@@ -77,8 +77,8 @@ export function buildAuthHeaders(
     if (!credential) {
         return err(
             authMode === "API_KEY"
-                ? "API key is not configured for this data source."
-                : "Bearer token is not configured for this data source."
+                ? "Für diese Datenquelle ist kein API-Schlüssel konfiguriert."
+                : "Für diese Datenquelle ist kein Bearer-Token konfiguriert."
         );
     }
 

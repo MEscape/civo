@@ -49,7 +49,7 @@ describe("dataSourceService", () => {
             const value = raw as Record<string, unknown>;
 
             if (typeof value?.baseUrl !== "string") {
-                return { ok: false, error: "Invalid REST data source configuration." };
+                return { ok: false, error: "Ungültige REST-Datenquellenkonfiguration." };
             }
 
             return {

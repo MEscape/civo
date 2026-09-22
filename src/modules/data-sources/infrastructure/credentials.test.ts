@@ -72,11 +72,11 @@ describe("buildAuthHeaders", () => {
     it("fails closed when the credential is missing, with a mode-specific message", () => {
         expect(buildAuthHeaders("ds1", "API_KEY", {})).toEqual({
             ok: false,
-            error: "API key is not configured for this data source.",
+            error: "Für diese Datenquelle ist kein API-Schlüssel konfiguriert.",
         });
         expect(buildAuthHeaders("ds1", "BEARER_TOKEN", {})).toEqual({
             ok: false,
-            error: "Bearer token is not configured for this data source.",
+            error: "Für diese Datenquelle ist kein Bearer-Token konfiguriert.",
         });
     });
 

@@ -52,7 +52,7 @@ export const pageService = {
         if (!parsed.success) {
             return err(
                 AppErrors.validation(
-                    "Stored page configuration is invalid and could not be rendered.",
+                    "Die gespeicherte Seitenkonfiguration ist ungültig und konnte nicht gerendert werden.",
                     undefined
                 )
             );

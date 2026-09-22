@@ -222,7 +222,7 @@ describe("RestJsonAdapter", () => {
 
         it("fails closed when auth is required but no credential is configured", async () => {
             const { adapter, fetchMock } = createAdapter({
-                authHeaders: () => ({ ok: false, error: "API key is not configured for this data source." }),
+                authHeaders: () => ({ ok: false, error: "Für diese Datenquelle ist kein API-Schlüssel konfiguriert." }),
             });
 
             const result = await adapter.testConnection({ ...baseConfig, authMode: "API_KEY" }, CONTEXT);
@@ -302,7 +302,7 @@ describe("RestJsonAdapter", () => {
             expect(result.ok).toBe(false);
 
             if (!result.ok) {
-                expect(result.error.message).toMatch(/too large/i);
+                expect(result.error.message).toMatch(/zu groß/i);
                 expect(result.error.category).toBe("INVALID_RESPONSE");
             }
         });

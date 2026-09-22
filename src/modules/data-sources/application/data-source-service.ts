@@ -54,7 +54,7 @@ function loadAdapterAndConfig(
     if (!adapter) {
         return err(
             connectionFailure(
-                AppErrors.validation(`No connector is available for data sources of kind "${row.kind}" yet.`),
+                AppErrors.validation(`Für Datenquellen des Typs "${row.kind}" ist noch kein Connector verfügbar.`),
                 "INVALID_CONFIGURATION"
             )
         );
