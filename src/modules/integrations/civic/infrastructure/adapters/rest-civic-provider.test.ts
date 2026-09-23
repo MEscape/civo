@@ -19,7 +19,35 @@ vi.mock("@/modules/data-sources/infrastructure/adapters/rest-json-adapter", () =
 // whether the underlying fetch happens to be cached.
 vi.mock("next/cache", () => ({
     unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+    unstable_cacheTag: vi.fn(),
+    unstable_cacheLife: vi.fn(),
 }));
+
+import type { DatasetView } from "@/modules/data-sources/domain/dataset-schema";
+
+function makeDataset(overrides: Partial<DatasetView> = {}): DatasetView {
+    return {
+        id: "ds-1",
+        dataSourceId: "ds-1",
+        name: "Events",
+        slug: "events",
+        canonicalType: "Event",
+        sourceName: "test",
+        sourceKind: "REST",
+        sourceStatus: "OK",
+        mapping: {
+            fields: [
+                { sourcePath: "event_name", targetPath: "title", required: true },
+                { sourcePath: "start", targetPath: "startDate", transform: { kind: "date" }, required: true },
+            ],
+        },
+        status: "OK",
+        lastFetchedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...overrides,
+    } as DatasetView;
+}
 
 function makeSource(overrides: Partial<DataSourceView> = {}): DataSourceView {
     return {
@@ -59,7 +87,7 @@ describe("RestCivicDataProvider", () => {
                 ],
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents();
 
             expect(result.ok).toBe(true);
@@ -76,7 +104,7 @@ describe("RestCivicDataProvider", () => {
                 data: [{ uuid: "external-uuid-1", event_name: "Stadtfest", start: "2026-09-20T18:00:00" }],
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents();
 
             expect(result.ok).toBe(true);
@@ -89,7 +117,7 @@ describe("RestCivicDataProvider", () => {
                 data: [{ event_name: "Stadtfest", start: "2026-09-20T18:00:00" }],
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents();
 
             expect(result.ok).toBe(true);
@@ -107,7 +135,7 @@ describe("RestCivicDataProvider", () => {
                 ],
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents();
 
             expect(result.ok).toBe(true);
@@ -120,7 +148,7 @@ describe("RestCivicDataProvider", () => {
                 data: [{ event_name: "Stadtfest", start: "not-a-valid-date" }],
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents();
 
             expect(result.ok).toBe(true);
@@ -136,7 +164,7 @@ describe("RestCivicDataProvider", () => {
                 ],
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents({ limit: 1 });
 
             expect(result.ok).toBe(true);
@@ -144,7 +172,7 @@ describe("RestCivicDataProvider", () => {
         });
 
         it("falls back to mock data when no mapping is configured", async () => {
-            const provider = new RestCivicDataProvider(makeSource({ mapping: null }));
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset({  mapping: null  }));
 
             const result = await provider.getEvents();
 
@@ -158,7 +186,7 @@ describe("RestCivicDataProvider", () => {
                 error: { code: "EXTERNAL_API_ERROR", message: "unreachable", category: "CONNECTION_FAILED" },
             });
 
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getEvents();
 
             // Falls back to MockCivicDataProvider's own (non-empty) sample data.
@@ -167,7 +195,7 @@ describe("RestCivicDataProvider", () => {
         });
 
         it("falls back to mock data when the saved config no longer validates", async () => {
-            const provider = new RestCivicDataProvider(makeSource({ config: { notAValidRestConfig: true } }));
+            const provider = new RestCivicDataProvider(makeSource({  config: { notAValidRestConfig: true }  }), makeDataset());
 
             const result = await provider.getEvents();
 
@@ -178,7 +206,7 @@ describe("RestCivicDataProvider", () => {
 
     describe("delegation to the mock provider", () => {
         it("delegates getNews, getServices, getContacts, and other unmapped methods", async () => {
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
 
             const [news, services, contacts, openingHours, serviceDetails, councilBodies, waste, alerts, departments] =
                 await Promise.all([
@@ -199,7 +227,7 @@ describe("RestCivicDataProvider", () => {
         });
 
         it("delegates getNewsBySlug", async () => {
-            const provider = new RestCivicDataProvider(makeSource());
+            const provider = new RestCivicDataProvider(makeSource(), makeDataset());
             const result = await provider.getNewsBySlug("some-slug");
             expect(result.ok).toBe(true);
         });

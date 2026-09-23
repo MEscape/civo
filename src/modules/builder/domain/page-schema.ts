@@ -96,8 +96,17 @@ export type PageView = {
     configs: PageConfigView[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toPageConfigView(row: any): PageConfigView {
+export type PageConfigRow = {
+    id: string;
+    pageId: string;
+    content: unknown;
+    status: string;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+export function toPageConfigView(row: PageConfigRow): PageConfigView {
     return {
         id: row.id,
         pageId: row.pageId,
@@ -109,8 +118,17 @@ export function toPageConfigView(row: any): PageConfigView {
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toPageView(row: any): PageView {
+export type PageRow = {
+    id: string;
+    websiteId: string;
+    path: string;
+    title: string;
+    createdAt: Date;
+    updatedAt: Date;
+    configs?: PageConfigRow[];
+};
+
+export function toPageView(row: PageRow): PageView {
     return {
         id: row.id,
         websiteId: row.websiteId,

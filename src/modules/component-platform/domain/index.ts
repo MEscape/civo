@@ -23,9 +23,11 @@
  */
 export type {
     ComponentDefinition,
+    ComponentDataBinding,
     ComponentCategory,
     PropField,
     PropFieldControl,
+    PropFieldGroup,
     PageComponentProps,
 } from "./types";
 

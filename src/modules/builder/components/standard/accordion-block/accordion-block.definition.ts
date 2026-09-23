@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const accordionPropsSchema = z.object({
     heading: z.string().optional(),
     items: z.array(z.object({ question: z.string(), answer: z.string() })).default([]),
@@ -28,8 +27,6 @@ export const accordionDefinition: ComponentDefinition<z.infer<typeof accordionPr
     }),
     propsSchema: accordionPropsSchema,
     fields: accordionFields,
-    
-
     municipalFields: ["heading", "items"],
     municipallyEditable: true,
 };

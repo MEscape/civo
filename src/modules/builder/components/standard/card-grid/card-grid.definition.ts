@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const cardGridPropsSchema = z.object({
     heading: z.string().optional(),
     columns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).default(3),
@@ -42,8 +41,6 @@ export const cardGridDefinition: ComponentDefinition<z.infer<typeof cardGridProp
     }),
     propsSchema: cardGridPropsSchema,
     fields: cardGridFields,
-    
-
     municipalFields: ["heading", "cards"],
     municipallyEditable: true,
 };

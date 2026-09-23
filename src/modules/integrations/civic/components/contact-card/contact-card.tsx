@@ -5,11 +5,11 @@ import { Section, Container, Grid, SectionHeading } from "@/components/layout/la
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 
-export async function ContactCard({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function ContactCard({ props }: { props: Record<string, unknown>}) {
     const parsed = contactCardPropsSchema.safeParse(props);
-    const { heading } = parsed.success ? parsed.data : { heading: "Kontakt" };
+    const { heading, datasetId } = parsed.success ? parsed.data : { heading: "Kontakt" , datasetId: undefined};
 
-    const provider = await getCivicDataProvider(websiteId);
+    const provider = await getCivicDataProvider(datasetId);
     const result = await provider.getContacts();
 
     if (!result.ok) {
@@ -19,7 +19,8 @@ export async function ContactCard({ props, websiteId }: { props: Record<string, 
     if (result.data.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Grid columns={result.data.length >= 3 ? 3 : (result.data.length as 1 | 2)}>

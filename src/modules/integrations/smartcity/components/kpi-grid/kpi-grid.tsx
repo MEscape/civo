@@ -5,7 +5,7 @@ import { Section, Container, Grid, SectionHeading } from "@/components/layout/la
 import { Card, CardContent } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
-import { formatNumber } from "@/lib/formatters";
+import { formatNumber } from "@/lib/utils/formatters";
 
 const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
     up: TrendingUp,
@@ -13,13 +13,13 @@ const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp
     flat: Minus,
 };
 
-export async function KpiGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function KpiGrid({ props }: { props: Record<string, unknown>}) {
     const parsed = kpiGridPropsSchema.safeParse(props);
-    const { heading, columns, category } = parsed.success
+    const { heading, columns, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Stadt in Zahlen", columns: 3 as const, category: undefined };
+        : { heading: "Stadt in Zahlen", columns: 3 as const, category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
@@ -30,6 +30,7 @@ export async function KpiGrid({ props, websiteId }: { props: Record<string, unkn
 
     return (
         <Section>
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Grid columns={columns}>

@@ -3,7 +3,7 @@ import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructur
 import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
-import { formatDate } from "@/lib/formatters";
+import { formatDate } from "@/lib/utils/formatters";
 
 /**
  * NewsAndEventsSplit — the extremely common municipal-homepage pattern
@@ -13,17 +13,18 @@ import { formatDate } from "@/lib/formatters";
  * Internally still just calls the same provider methods newsGrid/
  * eventsGrid use — no new data-fetching logic, just a different layout.
  */
-export async function NewsAndEventsSplit({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function NewsAndEventsSplit({ props }: { props: Record<string, unknown> }) {
     const parsed = newsAndEventsSplitPropsSchema.safeParse(props);
-    const { heading, newsLimit, eventsLimit } = parsed.success
+    const { heading, newsLimit, eventsLimit, eventsDatasetId, newsDatasetId } = parsed.success
         ? parsed.data
-        : { heading: "Aktuelles & Termine", newsLimit: 4, eventsLimit: 4 };
+        : { heading: "Aktuelles & Termine", newsLimit: 4, eventsLimit: 4, eventsDatasetId: undefined, newsDatasetId: undefined };
 
-    const provider = await getCivicDataProvider(websiteId);
+    const newsProvider = await getCivicDataProvider(newsDatasetId);
+    const eventsProvider = await getCivicDataProvider(eventsDatasetId);
     // Fetch both in parallel
     const [newsResult, eventsResult] = await Promise.all([
-        provider.getNews({ limit: newsLimit }),
-        provider.getEvents({ limit: eventsLimit }),
+        newsProvider.getNews({ limit: newsLimit }),
+        eventsProvider.getEvents({ limit: eventsLimit }),
     ]);
 
     if (!newsResult.ok || !eventsResult.ok) {
@@ -37,7 +38,7 @@ export async function NewsAndEventsSplit({ props, websiteId }: { props: Record<s
     if (news.length === 0 && events.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">

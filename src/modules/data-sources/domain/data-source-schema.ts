@@ -1,14 +1,15 @@
 import { z } from "zod";
-import { datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
 import { err, ok, type Result } from "@/lib/result/result";
+import type { DatasetView } from "./dataset-schema";
 
 /**
- * A website's configured data source (Phase 3 spec §22–23).
+ * A website's configured data source (Phase 3.5).
  *
- * Mirrors the Prisma `DataSource` model 1:1 — this module is the only
- * place that model's `kind`/`config` are interpreted. `kind` decides
- * which provider implementation a website's civic/smart-city components
- * resolve to; `config` is a small, kind-specific settings blob.
+ * A DataSource represents a connection to an external system (REST endpoint,
+ * mock, future: CKAN, WFS, ...). It no longer carries a "dataset" family
+ * constraint — a website may have many DataSources of any mix. Each
+ * DataSource exposes one or more named Datasets, each with its own
+ * canonicalType and field mapping.
  *
  * Credentials are never stored in `config`. Secrets belong in server-only
  * environment configuration.
@@ -20,16 +21,6 @@ export const dataSourceKindSchema = z.enum([
 ]);
 
 export type DataSourceKind = z.infer<typeof dataSourceKindSchema>;
-
-/** Which canonical dataset family a DataSource applies to. */
-export const dataSourceDatasetSchema = z.enum([
-    "civic",
-    "smartcity",
-]);
-
-export type DataSourceDataset = z.infer<
-    typeof dataSourceDatasetSchema
->;
 
 /**
  * Config shape for kind: "MOCK".
@@ -118,19 +109,9 @@ export const dataSourceSchema = z.object({
     websiteId: z.string().min(1),
     name: z.string().min(1),
     kind: dataSourceKindSchema,
-    dataset: dataSourceDatasetSchema,
-
-    config: z.record(
-        z.string(),
-        z.unknown()
-    ),
-
-    mapping: datasetMappingSchema.nullable(),
-
+    config: z.record(z.string(), z.unknown()),
     status: dataSourceStatusSchema,
-
     lastCheckedAt: z.date().nullable(),
-
     lastError: z.string().nullable(),
 });
 
@@ -139,15 +120,13 @@ export type DataSourceEntity = z.infer<
 >;
 
 /**
- * Input for creating or replacing the one configured source for a
- * (website, dataset) pair.
+ * Input for creating a new DataSource for a website.
+ * A website may have any number of sources — no per-kind constraint.
  */
 export const createDataSourceSchema = z.object({
     websiteId: z.string().min(1),
     name: z.string().min(1).max(100),
     kind: dataSourceKindSchema,
-    dataset: dataSourceDatasetSchema,
-
     config: z
         .record(z.string(), z.unknown())
         .default({}),
@@ -158,28 +137,20 @@ export type CreateDataSourceInput = z.infer<
 >;
 
 /**
- * Input for saving a completed field mapping.
- */
-export const saveMappingSchema = z.object({
-    dataSourceId: z.string().min(1),
-    mapping: datasetMappingSchema,
-});
-
-export type SaveMappingInput = z.infer<
-    typeof saveMappingSchema
->;
-
-/**
  * Validates a DataSource's config blob against the shape required by
  * its kind.
  *
  * Expected validation failures are returned as `err(...)`.
  * Unexpected programmer errors are not swallowed.
  */
+export type DataSourceConfig =
+    | z.infer<typeof mockDataSourceConfigSchema>
+    | z.infer<typeof restDataSourceConfigSchema>;
+
 export function validateDataSourceConfig(
     kind: DataSourceKind,
     config: unknown
-): Result<Record<string, unknown>, string> {
+): Result<DataSourceConfig, string> {
     const schema = configSchemaForKind(kind);
     const parsed = schema.safeParse(config);
 
@@ -190,48 +161,57 @@ export function validateDataSourceConfig(
         );
     }
 
-    return ok(parsed.data as Record<string, unknown>);
+    return ok(parsed.data as DataSourceConfig);
 }
 
 /**
- * Domain read-model for a Data Source.
- * This is the public shape of a data source used by the application and presentation layers,
- * keeping Prisma dependencies isolated in the repository.
+ * Domain read-model for a DataSource.
+ * Keeps Prisma dependencies isolated in the repository.
+ * `datasets` is included when the repository loads the source with its relations.
  */
 export type DataSourceView = {
     id: string;
     websiteId: string;
     name: string;
     kind: DataSourceKind;
-    dataset: DataSourceDataset;
     config: unknown;
-    mapping: unknown | null;
     status: DataSourceStatus;
+    lastCheckedAt: Date | null;
+    lastError: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    datasets?: DatasetView[];
+};
+
+/**
+ * Maps an infrastructure-layer record (e.g. Prisma row) to the domain view.
+ * Uses `any` for the row argument so the domain layer does not import Prisma types.
+ */
+type DataSourceRow = {
+    id: string;
+    websiteId: string;
+    name: string;
+    kind: string;
+    config: unknown;
+    status: string;
     lastCheckedAt: Date | null;
     lastError: string | null;
     createdAt: Date;
     updatedAt: Date;
 };
 
-/**
- * Maps an infrastructure-layer record (e.g. Prisma row) to the domain view.
- * Uses `any` for the row argument so the domain layer does not import Prisma types.
- * The repository handles calling this function with the correct Prisma shape.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toDataSourceView(row: any): DataSourceView {
+export function toDataSourceView(row: DataSourceRow, datasets?: DatasetView[]): DataSourceView {
     return {
         id: row.id,
         websiteId: row.websiteId,
         name: row.name,
         kind: row.kind as DataSourceKind,
-        dataset: row.dataset as DataSourceDataset,
         config: row.config,
-        mapping: row.mapping,
         status: row.status as DataSourceStatus,
         lastCheckedAt: row.lastCheckedAt,
         lastError: row.lastError,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
+        datasets,
     };
 }

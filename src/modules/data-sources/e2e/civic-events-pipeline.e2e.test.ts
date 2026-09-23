@@ -30,7 +30,14 @@ import type { DataSourceView } from "@/modules/data-sources/domain/data-source-s
 
 vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
     dataSourceRepository: {
-        findByWebsiteAndDataset: vi.fn(),
+        findById: vi.fn(),
+        findByWebsiteWithDatasets: vi.fn(),
+    },
+}));
+
+vi.mock("@/modules/data-sources/infrastructure/dataset-repository", () => ({
+    datasetRepository: {
+        findById: vi.fn(),
     },
 }));
 
@@ -39,6 +46,8 @@ vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
 // rest-civic-provider.test.ts for the same rationale).
 vi.mock("next/cache", () => ({
     unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+    unstable_cacheTag: vi.fn(),
+    unstable_cacheLife: vi.fn(),
 }));
 
 vi.mock("node:dns/promises", () => {
@@ -49,8 +58,9 @@ vi.mock("node:dns/promises", () => {
     };
 });
 
-const { dataSourceRepository } = await import("@/modules/data-sources/infrastructure/data-source-repository");
-const { EventsGrid } = await import("@/modules/integrations/civic/components/events-grid/events-grid");
+import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
+import { datasetRepository } from "@/modules/data-sources/infrastructure/dataset-repository";
+import { EventsGrid } from "@/modules/integrations/civic/components/events-grid/events-grid";
 
 function configuredEventsSource(): DataSourceView {
     return {
@@ -58,23 +68,10 @@ function configuredEventsSource(): DataSourceView {
         websiteId: "website-e2e",
         name: "Municipal Events API",
         kind: "REST",
-        dataset: "civic",
         config: {
             baseUrl: "https://example-municipality.de/api",
             path: "/events",
             authMode: "NONE",
-        },
-        // A realistic administrator-authored mapping (spec §24 step 8):
-        // the external API uses different field names than the
-        // canonical model, exactly like the phase spec's own worked
-        // example (event_name → title, start → startDate, ...).
-        mapping: {
-            fields: [
-                { sourcePath: "event_name", targetPath: "title", required: true },
-                { sourcePath: "description", targetPath: "description", required: false },
-                { sourcePath: "start", targetPath: "startDate", transform: { kind: "datetime" }, required: true },
-                { sourcePath: "venue", targetPath: "location", required: false },
-            ],
         },
         status: "OK",
         lastCheckedAt: new Date("2026-09-18T12:00:00Z"),
@@ -84,9 +81,32 @@ function configuredEventsSource(): DataSourceView {
     } as DataSourceView;
 }
 
+function configuredDataset(): any {
+    return {
+        id: "ds-civic",
+        dataSourceId: "e2e-events-source",
+        name: "Civic Data",
+        slug: "civic",
+        canonicalType: "Event",
+        sourceKind: "REST",
+        mapping: {
+            fields: [
+                { sourcePath: "event_name", targetPath: "title", required: true },
+                { sourcePath: "description", targetPath: "description", required: false },
+                { sourcePath: "start", targetPath: "startDate", transform: { kind: "datetime" }, required: true },
+                { sourcePath: "venue", targetPath: "location", required: false },
+            ],
+        },
+    };
+}
+
 describe("End-to-end: configured REST source → mapping → canonical event → EventsGrid", () => {
     beforeEach(() => {
-        vi.mocked(dataSourceRepository.findByWebsiteAndDataset).mockResolvedValue({
+        vi.mocked(datasetRepository.findById).mockResolvedValue({
+            ok: true,
+            data: configuredDataset(),
+        });
+        vi.mocked(dataSourceRepository.findById).mockResolvedValue({
             ok: true,
             data: configuredEventsSource(),
         });
@@ -123,7 +143,7 @@ describe("End-to-end: configured REST source → mapping → canonical event →
         // This is the exact call the real render pipeline makes — see
         // render-nodes.tsx's PageNodeRenderer, which passes `props` and
         // `websiteId` straight through to the registered component.
-        const jsx = await EventsGrid({ props: { heading: "Kommende Termine" }, websiteId: "website-e2e" });
+        const jsx = await EventsGrid({ props: { heading: "Kommende Termine", datasetId: "ds-civic" } });
         const { container } = render(jsx);
 
         // Proves the mapping actually ran: the rendered text uses the
@@ -151,7 +171,7 @@ describe("End-to-end: configured REST source → mapping → canonical event →
             )
         );
 
-        const jsx = await EventsGrid({ props: { limit: 2 }, websiteId: "website-e2e" });
+        const jsx = await EventsGrid({ props: { limit: 2, datasetId: "ds-civic" } });
         const { container } = render(jsx);
 
         expect(container.textContent).toContain("Event A");
@@ -166,7 +186,7 @@ describe("End-to-end: configured REST source → mapping → canonical event →
         // guarantee from spec §20, §25: the page must remain usable, not
         // show a broken component or a raw error, when the configured
         // external source is down.
-        const jsx = await EventsGrid({ props: {}, websiteId: "website-e2e" });
+        const jsx = await EventsGrid({ props: { datasetId: "ds-civic" } });
         const { container } = render(jsx);
 
         // Falls back to MockCivicDataProvider's sample events rather
@@ -189,20 +209,20 @@ describe("End-to-end: configured REST source → mapping → canonical event →
             )
         );
 
-        const jsx = await EventsGrid({ props: {}, websiteId: "website-e2e" });
+        const jsx = await EventsGrid({ props: { datasetId: "ds-civic" } });
         const { container } = render(jsx);
 
         expect(container.textContent).toContain("Valid Event");
         expect(container.textContent).not.toContain("Broken Event");
     });
 
-    it("falls back to mock data when no website context is available (e.g. a preview outside any website)", async () => {
+    it("falls back to mock data when no datasetId is available", async () => {
         vi.stubGlobal("fetch", vi.fn());
 
-        const jsx = await EventsGrid({ props: {}, websiteId: undefined });
+        const jsx = await EventsGrid({ props: {} });
         const { container } = render(jsx);
 
-        expect(dataSourceRepository.findByWebsiteAndDataset).not.toHaveBeenCalled();
+        expect(datasetRepository.findById).not.toHaveBeenCalled();
         expect(container.textContent?.length).toBeGreaterThan(0);
     });
 });

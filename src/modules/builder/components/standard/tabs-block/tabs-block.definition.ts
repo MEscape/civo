@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const tabsPropsSchema = z.object({
     tabs: z.array(z.object({ label: z.string(), body: z.string() })).default([]),
 });
@@ -24,8 +23,6 @@ export const tabsDefinition: ComponentDefinition<z.infer<typeof tabsPropsSchema>
     }),
     propsSchema: tabsPropsSchema,
     fields: tabsFields,
-    
-
     municipalFields: ["tabs"],
     municipallyEditable: true,
 };

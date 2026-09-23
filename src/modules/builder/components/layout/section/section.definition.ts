@@ -43,8 +43,6 @@ export const sectionDefinition: ComponentDefinition<z.infer<typeof sectionPropsS
     }),
     propsSchema: sectionPropsSchema,
     fields: sectionFields,
-
-
     municipalFields: [],
     municipallyEditable: false,
 };

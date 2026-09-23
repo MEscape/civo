@@ -4,13 +4,13 @@ import { Section, Container, SectionHeading } from "@/components/layout/layout-p
 import { logger } from "@/lib/logger/logger";
 import { ComparisonChartClient } from "./comparison-chart-client";
 
-export async function MetricComparisonChart({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function MetricComparisonChart({ props }: { props: Record<string, unknown>}) {
     const parsed = metricComparisonChartPropsSchema.safeParse(props);
-    const { heading, category } = parsed.success
+    const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Vergleich", category: undefined };
+        : { heading: "Vergleich", category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
@@ -26,7 +26,8 @@ export async function MetricComparisonChart({ props, websiteId }: { props: Recor
     }));
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <ComparisonChartClient data={data} />

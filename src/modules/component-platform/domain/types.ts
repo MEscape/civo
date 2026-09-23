@@ -1,9 +1,13 @@
 import type { ZodType } from "zod";
-
 import type { PageNode } from "@/modules/builder/domain/page-node";
+import type { CanonicalType } from "@/modules/data-sources/domain/dataset-schema";
 
 /**
  * Valid UI controls for the properties panel.
+ *
+ * "dataset" is the data-binding control: renders a searchable combobox
+ * populated by datasets compatible with the component's declared
+ * dataBinding.canonicalType (Phase 3.5).
  */
 export type PropFieldControl =
     | "text"
@@ -11,14 +15,20 @@ export type PropFieldControl =
     | "number"
     | "select"
     | "columns"
-    | "switch";
+    | "switch"
+    | "dataset";
 
 /**
  * Logical group for a PropField — rendered as distinct sections in the
- * properties panel so data configuration and appearance controls never
- * appear interleaved (spec §25, §32).
+ * properties panel.
+ *
+ * "data"       — Data binding (dataset selector). Rendered first.
+ * "content"    — Textual / editorial content.
+ * "appearance" — Layout and visual presentation.
+ *
+ * Fields without a group are rendered in an ungrouped section after "content".
  */
-export type PropFieldGroup = "content" | "appearance";
+export type PropFieldGroup = "data" | "content" | "appearance";
 
 /**
  * UI field descriptor for the schema-driven properties panel.
@@ -29,12 +39,13 @@ export type PropField<TKey extends string = string> = {
     control: PropFieldControl;
     /**
      * Optional logical group. Fields without a group are rendered together
-     * in an ungrouped section (preserves backward-compat with all existing
-     * component definitions that don't set a group).
+     * after the declared groups.
      */
     group?: PropFieldGroup;
     options?: { value: string | number; label: string }[];
     placeholder?: string;
+    /** For "dataset" controls: which CanonicalType to filter the selector by. */
+    canonicalType?: CanonicalType;
 };
 
 export type ComponentCategory = "layout" | "content" | "civic" | "smartcity";
@@ -45,22 +56,30 @@ export type ComponentCategory = "layout" | "content" | "civic" | "smartcity";
  * per-component here) — component props are validated at the leaf rather
  * than typed as a tree-wide discriminated union.
  *
- * `websiteId` (Phase 3 spec §22–23) identifies which website's configured
- * data sources a data-aware component (NewsGrid, EventsGrid, ...) should
- * resolve against — see getCivicDataProvider(websiteId) /
- * getSmartCityDataProvider(websiteId). Components that don't fetch data
- * simply ignore it. It's threaded explicitly through the render tree
- * (PageRenderer -> renderPageNodes -> PageNodeRenderer -> here) rather
- * than read from ambient/module-level request state, since Server
- * Component rendering can interleave across concurrent requests and an
- * explicit parameter can't leak between them the way mutable module state
- * could.
+ * `websiteId` identifies which website is being rendered — used for routing,
+ * analytics, and as a fallback context. Data-aware components resolve their
+ * data via `props.datasetId` (Phase 3.5), not via `websiteId` directly.
+ *
+ * Both are threaded explicitly through the render tree rather than read from
+ * ambient/module-level request state, since Server Component rendering can
+ * interleave across concurrent requests and an explicit parameter can't leak
+ * between them the way mutable module state could.
  */
 export type PageComponentProps = {
     props: Record<string, unknown>;
     children?: PageNode[];
     editMode?: boolean;
     websiteId?: string;
+};
+
+/**
+ * Declares that a component consumes a specific canonical data type.
+ * Used by the dataset selector to filter compatible datasets and by the
+ * settings UI to show usage counts per dataset.
+ */
+export type ComponentDataBinding = {
+    /** Which canonical type this component's primary dataset must expose. */
+    canonicalType: CanonicalType;
 };
 
 /**
@@ -93,4 +112,10 @@ export type ComponentDefinition<TProps extends Record<string, unknown> = any> = 
      * restricted component palette (spec §37).
      */
     municipallyEditable?: boolean;
+    /**
+     * Declares which canonical data type this component consumes (Phase 3.5).
+     * Required on any component with a "dataset" control field.
+     * Absent on layout/content components that don't fetch external data.
+     */
+    dataBinding?: ComponentDataBinding;
 };

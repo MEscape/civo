@@ -10,13 +10,13 @@ import { TrendChartClient } from "./trend-chart-client";
  * metricChart, which only ever compares metrics side by side at a single
  * point in time and can't show change over time at all.
  */
-export async function MetricTrendChart({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function MetricTrendChart({ props }: { props: Record<string, unknown>}) {
     const parsed = metricTrendChartPropsSchema.safeParse(props);
-    const { heading, metricId, category } = parsed.success
+    const { heading, metricId, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Entwicklung über Zeit", metricId: undefined, category: undefined };
+        : { heading: "Entwicklung über Zeit", metricId: undefined, category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {

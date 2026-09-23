@@ -2,15 +2,16 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const serviceFinderPropsSchema = z.object({
     heading: z.string().default("Leistungen finden"),
     description: z.string().optional(),
     placeholder: z.string().default("Leistung suchen…"),
     initialCategory: z.string().optional(),
+    datasetId: z.string().optional(),
 });
 
 export const serviceFinderFields: PropField<Extract<keyof z.infer<typeof serviceFinderPropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "description", label: "Beschreibung", control: "textarea" },
     { key: "placeholder", group: "content", label: "Platzhalter", control: "text" },
@@ -30,8 +31,7 @@ export const serviceFinderDefinition: ComponentDefinition<z.infer<typeof service
     }),
     propsSchema: serviceFinderPropsSchema,
     fields: serviceFinderFields,
-    
-
     municipalFields: ["heading", "placeholder"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "Service" },
 };

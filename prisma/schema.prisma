@@ -16,11 +16,6 @@ enum DataSourceKind {
   REST
 }
 
-enum DataSourceDataset {
-  civic     @map("civic")
-  smartcity @map("smartcity")
-}
-
 enum DataSourceStatus {
   UNKNOWN
   OK
@@ -87,23 +82,49 @@ model PageConfig {
   page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
 }
 
+/**
+ * Represents an external data connection (REST endpoint, mock, future: CKAN, GeoJSON, ...).
+ * A website can have many DataSources. Each DataSource can expose many Datasets.
+ * Credentials are never stored here — they live in server-only env config.
+ */
 model DataSource {
-  id            String             @id @default(uuid())
+  id            String           @id @default(uuid())
   websiteId     String
   name          String
   kind          DataSourceKind
-  config        Json
-  dataset       DataSourceDataset
-  mapping       Json?
-  status        DataSourceStatus    @default(UNKNOWN)
+  config        Json             // Kind-specific connection config (e.g. baseUrl, authMode)
+  status        DataSourceStatus @default(UNKNOWN)
   lastCheckedAt DateTime?
   lastError     String?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // Relations
-  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  website  Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  datasets Dataset[]
+}
 
-  // One data source per dataset for each website.
-  @@unique([websiteId, dataset])
+/**
+ * A specific canonical dataset exposed by a DataSource.
+ * Each Dataset has a single canonicalType (e.g. "Event", "NewsItem") and its own
+ * field mapping from the external record shape to that canonical type.
+ * Components reference a Dataset by ID — never the DataSource directly.
+ */
+model Dataset {
+  id            String           @id @default(uuid())
+  dataSourceId  String
+  name          String           // Human-readable e.g. "Würzburg Veranstaltungen"
+  slug          String           // URL-safe key e.g. "events"
+  canonicalType String           // "Event" | "NewsItem" | "Service" | ... (see CanonicalType in domain)
+  mapping       Json?            // Field mapping from external shape to canonical type
+  status        DataSourceStatus @default(UNKNOWN)
+  lastFetchedAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  dataSource DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+
+  // One dataset per slug per source (e.g. a source can't have two "events" datasets)
+  @@unique([dataSourceId, slug])
 }

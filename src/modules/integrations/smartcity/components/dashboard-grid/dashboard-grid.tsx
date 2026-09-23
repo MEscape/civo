@@ -7,7 +7,7 @@ import { logger } from "@/lib/logger/logger";
 import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 import { TrendChartClient } from "../metric-trend-chart/trend-chart-client";
 import { DonutChartClient } from "../metric-donut/donut-chart-client";
-import { formatNumber } from "@/lib/formatters";
+import { formatNumber } from "@/lib/utils/formatters";
 
 const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
     up: TrendingUp,
@@ -24,13 +24,13 @@ const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp
  * Reuses the same client chart leaves as the standalone components
  * (TrendChartClient, DonutChartClient) — no duplicated charting logic.
  */
-export async function DashboardGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function DashboardGrid({ props }: { props: Record<string, unknown>}) {
     const parsed = dashboardGridPropsSchema.safeParse(props);
-    const { heading, category } = parsed.success
+    const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Smart-City-Dashboard", category: undefined };
+        : { heading: "Smart-City-Dashboard", category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
@@ -44,6 +44,7 @@ export async function DashboardGrid({ props, websiteId }: { props: Record<string
 
     return (
         <Section>
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
 

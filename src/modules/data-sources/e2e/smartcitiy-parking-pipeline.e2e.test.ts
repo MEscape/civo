@@ -12,12 +12,21 @@ import type { DataSourceView } from "@/modules/data-sources/domain/data-source-s
 
 vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
     dataSourceRepository: {
-        findByWebsiteAndDataset: vi.fn(),
+        findById: vi.fn(),
+        findByWebsiteWithDatasets: vi.fn(),
+    },
+}));
+
+vi.mock("@/modules/data-sources/infrastructure/dataset-repository", () => ({
+    datasetRepository: {
+        findById: vi.fn(),
     },
 }));
 
 vi.mock("next/cache", () => ({
     unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+    unstable_cacheTag: vi.fn(),
+    unstable_cacheLife: vi.fn(),
 }));
 
 vi.mock("node:dns/promises", () => {
@@ -28,8 +37,9 @@ vi.mock("node:dns/promises", () => {
     };
 });
 
-const { dataSourceRepository } = await import("@/modules/data-sources/infrastructure/data-source-repository");
-const { KpiGrid } = await import("@/modules/integrations/smartcity/components/kpi-grid/kpi-grid");
+import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
+import { datasetRepository } from "@/modules/data-sources/infrastructure/dataset-repository";
+import { KpiGrid } from "@/modules/integrations/smartcity/components/kpi-grid/kpi-grid";
 
 function configuredParkingSource(): DataSourceView {
     return {
@@ -37,15 +47,7 @@ function configuredParkingSource(): DataSourceView {
         websiteId: "website-e2e",
         name: "Smart Parking",
         kind: "REST",
-        dataset: "smartcity",
         config: { baseUrl: "https://example-municipality.de/api", path: "/parking", authMode: "NONE" },
-        mapping: {
-            fields: [
-                { sourcePath: "name", targetPath: "label", required: true },
-                { sourcePath: "free_spaces", targetPath: "value", transform: { kind: "number" }, required: true },
-                { sourcePath: "unit_label", targetPath: "unit", required: false },
-            ],
-        },
         status: "OK",
         lastCheckedAt: new Date("2026-09-18T12:00:00Z"),
         lastError: null,
@@ -54,9 +56,31 @@ function configuredParkingSource(): DataSourceView {
     } as DataSourceView;
 }
 
+function configuredDataset(): any {
+    return {
+        id: "ds-parking",
+        dataSourceId: "e2e-parking-source",
+        name: "Parking Data",
+        slug: "parking",
+        canonicalType: "Kpi",
+        sourceKind: "REST",
+        mapping: {
+            fields: [
+                { sourcePath: "name", targetPath: "label", required: true },
+                { sourcePath: "free_spaces", targetPath: "value", transform: { kind: "number" }, required: true },
+                { sourcePath: "unit_label", targetPath: "unit", required: false },
+            ],
+        },
+    };
+}
+
 describe("End-to-end: configured REST source → mapping → canonical metric → KpiGrid", () => {
     beforeEach(() => {
-        vi.mocked(dataSourceRepository.findByWebsiteAndDataset).mockResolvedValue({
+        vi.mocked(datasetRepository.findById).mockResolvedValue({
+            ok: true,
+            data: configuredDataset(),
+        });
+        vi.mocked(dataSourceRepository.findById).mockResolvedValue({
             ok: true,
             data: configuredParkingSource(),
         });
@@ -81,7 +105,7 @@ describe("End-to-end: configured REST source → mapping → canonical metric �
             )
         );
 
-        const jsx = await KpiGrid({ props: { heading: "Parkplätze" }, websiteId: "website-e2e" });
+        const jsx = await KpiGrid({ props: { heading: "Parkplätze", datasetId: "ds-parking" } });
         const { container } = render(jsx);
 
         expect(container.textContent).toContain("Parkplätze");
@@ -94,7 +118,7 @@ describe("End-to-end: configured REST source → mapping → canonical metric �
     it("degrades to sample data when the parking API is unreachable", async () => {
         vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
 
-        const jsx = await KpiGrid({ props: {}, websiteId: "website-e2e" });
+        const jsx = await KpiGrid({ props: { datasetId: "ds-parking" } });
         const { container } = render(jsx);
 
         expect(container.textContent?.length).toBeGreaterThan(0);

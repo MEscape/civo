@@ -172,7 +172,7 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
                     </main>
 
                     <aside className="overflow-y-auto border-l border-[var(--civo-color-border)] bg-[var(--civo-color-surface)]">
-                        <PropertiesPanel />
+                        <PropertiesPanel websiteId={website.id} />
                     </aside>
                 </div>
             )}

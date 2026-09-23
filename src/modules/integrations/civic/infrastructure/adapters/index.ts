@@ -1,17 +1,14 @@
 import { MockCivicDataProvider } from "./mock-civic-provider";
 import { RestCivicDataProvider } from "./rest-civic-provider";
 import type { CivicDataProvider } from "./civic-data-provider";
-import { resolveDataSourceKind } from "@/modules/data-sources/infrastructure/data-source-resolver";
+import { resolveDataset } from "@/modules/data-sources/infrastructure/data-source-resolver";
+import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
 
 export type { CivicDataProvider };
 
 /**
- * The mock provider instance is a stateless, pure-function-like reader of
- * static demo data (see mock-civic-provider.ts) — it has no per-website
- * state, so ONE instance is reused across every website resolved to
- * "MOCK", rather than constructing a new one per call. What varies per
- * website is which KIND of provider `getCivicDataProvider` resolves to,
- * not the mock implementation itself.
+ * The mock provider instance is stateless — one instance is reused across
+ * all unbound/fallback calls rather than constructing a new one per request.
  */
 let mockInstance: CivicDataProvider | null = null;
 function mockProvider(): CivicDataProvider {
@@ -20,33 +17,35 @@ function mockProvider(): CivicDataProvider {
 }
 
 /**
- * Resolves the civic data provider for a given website (Phase 3 spec
- * §21–22, extended in Phase 3.5 §12 with a real REST-backed provider).
+ * Resolves the civic data provider for a specific Dataset (Phase 3.5).
  *
- * This is the ONLY import point any component should use to obtain civic
- * content — components receive a canonical, source-agnostic
- * `CivicDataProvider`, never touching Prisma, an external API, or the
- * `DataSource` configuration model directly (spec §18, §60).
+ * This is the ONLY import point any civic component should use — components
+ * receive a canonical, source-agnostic `CivicDataProvider` and never touch
+ * Prisma, external APIs, or `DataSource`/`Dataset` configuration directly.
  *
- * `websiteId` is optional so existing call sites (and tests) that don't
- * have website context yet keep working, resolving to the mock provider
- * exactly as the old hardcoded singleton always did — this is a
- * backward-compatible superset of the previous behavior, not a breaking
- * change to the function's contract.
+ * Resolution logic:
+ * - `datasetId` undefined or unknown → mock provider (sample data)
+ * - Dataset found, source is MOCK → mock provider (sample data)
+ * - Dataset found, source is REST, dataset has a mapping → REST provider
+ * - Dataset found, source is REST, no mapping yet → mock provider
  *
- * RestCivicDataProvider is constructed fresh per call (not cached like
- * mockProvider()) since it closes over a specific `DataSource` row — the
- * mapping/config could change between requests, and the row itself is
- * already loaded by resolveDataSourceKind, so there is no separate fetch
- * to memoize here.
+ * `RestCivicDataProvider` is constructed fresh per call since it closes
+ * over a specific Dataset row. The row is already loaded by resolveDataset,
+ * so there is no additional fetch to memoize.
  */
-export async function getCivicDataProvider(websiteId?: string): Promise<CivicDataProvider> {
-    const { kind, row } = await resolveDataSourceKind(websiteId, "civic");
+export async function getCivicDataProvider(datasetId?: string): Promise<CivicDataProvider> {
+    const resolved = await resolveDataset(datasetId);
 
-    switch (kind) {
-        case "MOCK":
-            return mockProvider();
-        case "REST":
-            return new RestCivicDataProvider(row);
+    if (!resolved) return mockProvider();
+
+    const { dataset, sourceId, sourceKind } = resolved;
+
+    if (sourceKind === "REST" && dataset.mapping) {
+        const sourceResult = await dataSourceRepository.findById(sourceId);
+        if (sourceResult.ok && sourceResult.data) {
+            return new RestCivicDataProvider(sourceResult.data, dataset);
+        }
     }
+
+    return mockProvider();
 }

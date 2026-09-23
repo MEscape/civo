@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 const smartCityCategoryOptions = [
     { value: "sustainability", label: "Nachhaltigkeit" },
     { value: "mobility", label: "Mobilität" },
@@ -12,10 +11,12 @@ const smartCityCategoryOptions = [
 
 export const metricTablePropsSchema = z.object({
     heading: z.string().default("Kennzahlen im Überblick"),
-    category: z.enum(["sustainability", "mobility", "energy", "other"]).optional()
+    category: z.enum(["sustainability", "mobility", "energy", "other"]).optional(),
+    datasetId: z.string().optional(),
 });
 
 export const metricTableFields: PropField<Extract<keyof z.infer<typeof metricTablePropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "category", group: "content", label: "Kategorie", control: "select", options: smartCityCategoryOptions }
 ];
@@ -33,8 +34,7 @@ export const metricTableDefinition: ComponentDefinition<z.infer<typeof metricTab
     }),
     propsSchema: metricTablePropsSchema,
     fields: metricTableFields,
-    
-
     municipalFields: ["heading", "category"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "SmartCityMetric" },
 };

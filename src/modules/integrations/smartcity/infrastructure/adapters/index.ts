@@ -1,15 +1,14 @@
 import { MockSmartCityDataProvider } from "./mock-smartcity-provider";
 import { RestSmartCityDataProvider } from "./rest-smartcity-provider";
 import type { SmartCityDataProvider } from "./smartcity-data-provider";
-import { resolveDataSourceKind } from "@/modules/data-sources/infrastructure/data-source-resolver";
+import { resolveDataset } from "@/modules/data-sources/infrastructure/data-source-resolver";
+import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
 
 export type { SmartCityDataProvider };
 
 /**
- * The mock provider is stateless — one instance is reused across every
- * website resolved to "MOCK", rather than constructing a new one per call.
- * What varies per website is which KIND of provider resolves, not the mock
- * implementation itself.
+ * The mock provider is stateless — one instance is reused across all
+ * unbound/fallback calls.
  */
 let mockInstance: SmartCityDataProvider | null = null;
 function mockProvider(): SmartCityDataProvider {
@@ -18,26 +17,29 @@ function mockProvider(): SmartCityDataProvider {
 }
 
 /**
- * Resolves the SmartCity data provider for a given website (Phase 3 spec
- * §21–22, extended in Phase 3.5 §12 with a real REST-backed provider).
+ * Resolves the SmartCity data provider for a specific Dataset (Phase 3.5).
  * Exact mirror of getCivicDataProvider — same pattern, same resolver,
- * different dataset key ("smartcity").
+ * different component family.
  *
- * `websiteId` is optional so existing call sites without website context
- * keep working, resolving to mock exactly as the old synchronous singleton
- * always did — backward-compatible superset, not a breaking change.
- *
- * RestSmartCityDataProvider is constructed fresh per call (not cached),
- * matching getCivicDataProvider's RestCivicDataProvider — see that
- * file's comment for why.
+ * Resolution:
+ * - `datasetId` undefined or unknown → mock provider
+ * - Dataset found, source is MOCK → mock provider
+ * - Dataset found, source is REST + mapping → REST provider
+ * - Dataset found, source is REST, no mapping → mock provider
  */
-export async function getSmartCityDataProvider(websiteId?: string): Promise<SmartCityDataProvider> {
-    const { kind, row } = await resolveDataSourceKind(websiteId, "smartcity");
+export async function getSmartCityDataProvider(datasetId?: string): Promise<SmartCityDataProvider> {
+    const resolved = await resolveDataset(datasetId);
 
-    switch (kind) {
-        case "MOCK":
-            return mockProvider();
-        case "REST":
-            return new RestSmartCityDataProvider(row);
+    if (!resolved) return mockProvider();
+
+    const { dataset, sourceId, sourceKind } = resolved;
+
+    if (sourceKind === "REST" && dataset.mapping) {
+        const sourceResult = await dataSourceRepository.findById(sourceId);
+        if (sourceResult.ok && sourceResult.data) {
+            return new RestSmartCityDataProvider(sourceResult.data, dataset);
+        }
     }
+
+    return mockProvider();
 }

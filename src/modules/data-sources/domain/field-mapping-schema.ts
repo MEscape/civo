@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { err, ok, type Result } from "@/lib/result/result";
+import type { CanonicalType } from "./dataset-schema";
 
 /**
  * Explicit, serializable field mapping from an external record's shape to
@@ -125,20 +126,21 @@ export const datasetMappingSchema = z
 
 export type DatasetMapping = z.infer<typeof datasetMappingSchema>;
 
-export type CanonicalDataset = "civic" | "smartcity";
-
 export type CanonicalTargetField = {
     path: string;
     required: boolean;
 };
 
 /**
- * Canonical target fields a mapping may fill, per dataset. The domain owns
- * the field paths and which are required; display labels are a
- * presentation concern and live in the components layer.
+ * Canonical target fields a mapping may fill, keyed by CanonicalType.
+ *
+ * The domain owns the field paths and which are required; display labels are a
+ * presentation concern and live in the components layer. Each canonical type
+ * has its own field list — the mapping UI shows only the fields that apply
+ * to the type the Dataset has declared.
  */
-export const CANONICAL_TARGET_FIELDS: Record<CanonicalDataset, readonly CanonicalTargetField[]> = {
-    civic: [
+export const CANONICAL_TARGET_FIELDS: Record<CanonicalType, readonly CanonicalTargetField[]> = {
+    Event: [
         { path: "title", required: true },
         { path: "description", required: false },
         { path: "startDate", required: true },
@@ -147,11 +149,70 @@ export const CANONICAL_TARGET_FIELDS: Record<CanonicalDataset, readonly Canonica
         { path: "category", required: false },
         { path: "imageUrl", required: false },
     ],
-    smartcity: [
+    NewsItem: [
+        { path: "title", required: true },
+        { path: "slug", required: true },
+        { path: "excerpt", required: false },
+        { path: "content", required: false },
+        { path: "imageUrl", required: false },
+        { path: "publishedAt", required: false },
+        { path: "category", required: false },
+    ],
+    Service: [
+        { path: "title", required: true },
+        { path: "href", required: true },
+        { path: "description", required: false },
+        { path: "icon", required: false },
+    ],
+    Contact: [
+        { path: "name", required: true },
+        { path: "role", required: false },
+        { path: "email", required: false },
+        { path: "phone", required: false },
+    ],
+    Alert: [
+        { path: "title", required: true },
+        { path: "message", required: false },
+        { path: "severity", required: true },
+        { path: "active", required: true },
+        { path: "href", required: false },
+    ],
+    SmartCityMetric: [
         { path: "label", required: true },
         { path: "value", required: true },
         { path: "unit", required: false },
         { path: "category", required: false },
+        { path: "trend", required: false },
+        { path: "changePercent", required: false },
+    ],
+    OpeningHoursEntry: [
+        { path: "dayOfWeek", required: true },
+        { path: "openTime", required: true },
+        { path: "closeTime", required: true },
+    ],
+    ServiceDetail: [
+        { path: "title", required: true },
+        { path: "description", required: false },
+        { path: "requirements", required: false },
+        { path: "costs", required: false },
+        { path: "href", required: false },
+    ],
+    CouncilBody: [
+        { path: "name", required: true },
+        { path: "role", required: false },
+        { path: "party", required: false },
+        { path: "imageUrl", required: false },
+    ],
+    WasteCollectionEntry: [
+        { path: "district", required: true },
+        { path: "wasteType", required: true },
+        { path: "collectionDate", required: true },
+    ],
+    Department: [
+        { path: "name", required: true },
+        { path: "description", required: false },
+        { path: "contact", required: false },
+        { path: "address", required: false },
     ],
 };
 

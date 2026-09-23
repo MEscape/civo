@@ -12,19 +12,20 @@ import { logger } from "@/lib/logger/logger";
  * the mock provider, a future REST adapter, or a database query is
  * invisible here.
  */
-export async function NewsGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function NewsGrid({ props }: { props: Record<string, unknown>}) {
     const parsed = newsGridPropsSchema.safeParse(props);
-    const { heading, columns, limit, category } = parsed.success
+    const { heading, columns, limit, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Aktuelles", columns: 3 as const, limit: 6, category: undefined };
+        : { heading: "Aktuelles", columns: 3 as const, limit: 6, category: undefined , datasetId: undefined};
 
-    const provider = await getCivicDataProvider(websiteId);
+    const provider = await getCivicDataProvider(datasetId);
     const result = await provider.getNews({ limit, category });
 
     if (!result.ok) {
         logger.error("NewsGrid failed to load news", { error: result.error });
         return (
-            <Section>
+        <Section>
+            
                 <Container>
                     <SectionHeading>{heading}</SectionHeading>
                     <p className="text-sm text-[var(--civo-color-text-muted)]">
@@ -38,7 +39,8 @@ export async function NewsGrid({ props, websiteId }: { props: Record<string, unk
     if (result.data.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Grid columns={columns}>

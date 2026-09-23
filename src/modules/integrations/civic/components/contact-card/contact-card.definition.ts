@@ -2,12 +2,13 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const contactCardPropsSchema = z.object({
     heading: z.string().default("Kontakt"),
+    datasetId: z.string().optional(),
 });
 
 export const contactCardFields: PropField<Extract<keyof z.infer<typeof contactCardPropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", label: "Überschrift", control: "text", group: "content" }
 ];
 
@@ -26,4 +27,5 @@ export const contactCardDefinition: ComponentDefinition<z.infer<typeof contactCa
     fields: contactCardFields,
     municipalFields: ["heading"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "Contact" },
 };

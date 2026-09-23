@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const heroPropsSchema = z.object({
     title: z.string().default("Titel"),
     subtitle: z.string().optional(),

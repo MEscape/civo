@@ -11,11 +11,11 @@ import { DonutChartClient } from "./donut-chart-client";
  * no explicit metricId is given, matching metricTrendChart's fallback
  * pattern for consistency.
  */
-export async function MetricDonut({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function MetricDonut({ props }: { props: Record<string, unknown>}) {
     const parsed = metricDonutPropsSchema.safeParse(props);
-    const { heading, metricId } = parsed.success ? parsed.data : { heading: "Verteilung", metricId: undefined };
+    const { heading, metricId, datasetId } = parsed.success ? parsed.data : { heading: "Verteilung", metricId: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({});
 
     if (!result.ok) {
@@ -30,7 +30,8 @@ export async function MetricDonut({ props, websiteId }: { props: Record<string, 
     if (!metric || !metric.breakdown || metric.breakdown.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container className="max-w-2xl">
                 <SectionHeading>{`${heading} · ${metric.label}`}</SectionHeading>
                 <DonutChartClient data={metric.breakdown} />

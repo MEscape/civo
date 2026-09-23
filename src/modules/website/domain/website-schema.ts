@@ -93,8 +93,20 @@ export type WebsiteView = {
     theme: ThemeView | null;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toThemeView(row: any): ThemeView {
+export type ThemeRow = {
+    id: string;
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    headingFont: string;
+    bodyFont: string;
+    radius: string;
+    spacingScale: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+export function toThemeView(row: ThemeRow): ThemeView {
     return {
         id: row.id,
         primaryColor: row.primaryColor,
@@ -109,8 +121,18 @@ export function toThemeView(row: any): ThemeView {
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toWebsiteView(row: any): WebsiteView {
+export type WebsiteRow = {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    templateKey: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    theme?: ThemeRow | null;
+};
+
+export function toWebsiteView(row: WebsiteRow): WebsiteView {
     return {
         id: row.id,
         name: row.name,

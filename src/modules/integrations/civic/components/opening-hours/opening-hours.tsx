@@ -15,11 +15,11 @@ const dayLabels: Record<OpeningHoursEntry["day"], string> = {
     sun: "Sonntag",
 };
 
-export async function OpeningHours({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function OpeningHours({ props }: { props: Record<string, unknown>}) {
     const parsed = openingHoursPropsSchema.safeParse(props);
-    const { heading } = parsed.success ? parsed.data : { heading: "Öffnungszeiten" };
+    const { heading, datasetId } = parsed.success ? parsed.data : { heading: "Öffnungszeiten" , datasetId: undefined};
 
-    const provider = await getCivicDataProvider(websiteId);
+    const provider = await getCivicDataProvider(datasetId);
     const result = await provider.getOpeningHours();
 
     if (!result.ok) {
@@ -29,7 +29,8 @@ export async function OpeningHours({ props, websiteId }: { props: Record<string,
     if (result.data.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container className="max-w-xl">
                 <SectionHeading>{heading}</SectionHeading>
                 <Card>

@@ -228,6 +228,7 @@ export class RestJsonAdapter implements DataSourceAdapter<RestDataSourceConfig> 
                 redirect: "error",
             });
         } catch (cause) {
+            logger.error("REST fetch failed:", { cause, dataSourceId, targetUrl: targetUrl.toString() });
             return this.connectionFailure(cause, controller, dataSourceId, Date.now() - startedAt);
         }
 
@@ -375,7 +376,7 @@ async function readBounded(response: Response, maxBytes: number): Promise<Result
     let total = 0;
 
     try {
-        for (;;) {
+        for (; ;) {
             const { done, value } = await reader.read();
 
             if (done) break;

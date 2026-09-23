@@ -5,7 +5,7 @@ import { Section, Container, SectionHeading } from "@/components/layout/layout-p
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { logger } from "@/lib/logger/logger";
 import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
-import { formatNumber } from "@/lib/formatters";
+import { formatNumber } from "@/lib/utils/formatters";
 
 const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
     up: TrendingUp,
@@ -21,13 +21,13 @@ const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp
  * grid of divs, per spec §27's guidance to use library primitives over
  * rebuilding them.
  */
-export async function MetricTable({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function MetricTable({ props }: { props: Record<string, unknown>}) {
     const parsed = metricTablePropsSchema.safeParse(props);
-    const { heading, category } = parsed.success
+    const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Kennzahlen im Überblick", category: undefined };
+        : { heading: "Kennzahlen im Überblick", category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
@@ -38,6 +38,7 @@ export async function MetricTable({ props, websiteId }: { props: Record<string, 
 
     return (
         <Section>
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Table>

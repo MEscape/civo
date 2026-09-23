@@ -8,8 +8,10 @@ import { PropertyControl, PropertyField } from "@/modules/builder/components/pro
 import { ChevronRight } from "@/components/ui/icons";
 import type { PropField } from "@/modules/component-platform/domain/types";
 import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
+import { CanonicalType } from "@/modules/data-sources/domain/dataset-schema";
 
 const groupLabels = {
+    data: "Daten",
     content: "Inhalt",
     appearance: "Darstellung",
 } as const;
@@ -37,7 +39,7 @@ const groupLabels = {
  * (fast local state) but only commit a history entry on blur/discrete-
  * choice (spec §23).
  */
-export function PropertiesPanel() {
+export function PropertiesPanel({ websiteId }: { websiteId: string }) {
     const node = useAppSelector(selectSelectedNode);
     const ancestors = useAppSelector(selectSelectedNodeAncestors);
     const editorMode = useAppSelector(selectEditorMode);
@@ -84,7 +86,13 @@ export function PropertiesPanel() {
             {showVisibilityToggle && <VisibilityToggle nodeId={node.id} visible={node.props.visible !== false} />}
 
             {fields.length > 0 ? (
-                <GroupedFields nodeId={node.id} fields={fields} props={node.props} />
+                <GroupedFields
+                    nodeId={node.id}
+                    fields={fields}
+                    props={node.props}
+                    websiteId={websiteId}
+                    canonicalType={definition?.dataBinding?.canonicalType}
+                />
             ) : (
                 <p className="text-sm text-[var(--civo-color-text-muted)]">
                     Diese Komponente hat keine bearbeitbaren Eigenschaften.
@@ -103,30 +111,40 @@ function GroupedFields({
     nodeId,
     fields,
     props,
+    websiteId,
+    canonicalType,
 }: {
     nodeId: string;
     fields: readonly PropField[];
     props: Record<string, unknown>;
+    websiteId: string;
+    canonicalType?: string;
 }) {
     const ungrouped = fields.filter((f) => !f.group);
+    const data = fields.filter((f) => f.group === "data");
     const content = fields.filter((f) => f.group === "content");
     const appearance = fields.filter((f) => f.group === "appearance");
 
-    const hasGroups = content.length > 0 || appearance.length > 0;
+    const hasGroups = data.length > 0 || content.length > 0 || appearance.length > 0;
 
     return (
         <div className="flex flex-col gap-6">
             {ungrouped.length > 0 && (
-                <FieldList nodeId={nodeId} fields={ungrouped} props={props} />
+                <FieldList nodeId={nodeId} fields={ungrouped} props={props} websiteId={websiteId} canonicalType={canonicalType} />
+            )}
+            {hasGroups && data.length > 0 && (
+                <FieldGroup label={groupLabels.data}>
+                    <FieldList nodeId={nodeId} fields={data} props={props} websiteId={websiteId} canonicalType={canonicalType} />
+                </FieldGroup>
             )}
             {hasGroups && content.length > 0 && (
                 <FieldGroup label={groupLabels.content}>
-                    <FieldList nodeId={nodeId} fields={content} props={props} />
+                    <FieldList nodeId={nodeId} fields={content} props={props} websiteId={websiteId} canonicalType={canonicalType} />
                 </FieldGroup>
             )}
             {hasGroups && appearance.length > 0 && (
                 <FieldGroup label={groupLabels.appearance}>
-                    <FieldList nodeId={nodeId} fields={appearance} props={props} />
+                    <FieldList nodeId={nodeId} fields={appearance} props={props} websiteId={websiteId} canonicalType={canonicalType} />
                 </FieldGroup>
             )}
         </div>
@@ -148,15 +166,26 @@ function FieldList({
     nodeId,
     fields,
     props,
+    websiteId,
+    canonicalType,
 }: {
     nodeId: string;
     fields: readonly PropField[];
     props: Record<string, unknown>;
+    websiteId: string;
+    canonicalType?: string;
 }) {
     return (
         <div className="flex flex-col gap-4">
             {fields.map((field) => (
-                <FieldRow key={field.key} nodeId={nodeId} field={field} value={props[field.key]} />
+                <FieldRow
+                    key={field.key}
+                    nodeId={nodeId}
+                    field={field}
+                    value={props[field.key]}
+                    websiteId={websiteId}
+                    canonicalType={field.canonicalType ?? canonicalType}
+                />
             ))}
         </div>
     );
@@ -166,10 +195,14 @@ function FieldRow({
     nodeId,
     field,
     value,
+    websiteId,
+    canonicalType,
 }: {
     nodeId: string;
     field: PropField;
     value: unknown;
+    websiteId: string;
+    canonicalType?: string;
 }) {
     const dispatch = useAppDispatch();
 
@@ -180,6 +213,8 @@ function FieldRow({
                 value={value}
                 onChange={(next) => dispatch(updateNodePropsAction({ nodeId, props: { [field.key]: next } }))}
                 onCommit={() => dispatch(commitPropsHistory())}
+                websiteId={websiteId}
+                canonicalType={canonicalType as CanonicalType}
             />
         </PropertyField>
     );

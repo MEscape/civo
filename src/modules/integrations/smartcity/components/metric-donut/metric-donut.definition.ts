@@ -2,13 +2,14 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const metricDonutPropsSchema = z.object({
     heading: z.string().default("Verteilung"),
-    metricId: z.string().optional()
+    metricId: z.string().optional(),
+    datasetId: z.string().optional(),
 });
 
 export const metricDonutFields: PropField<Extract<keyof z.infer<typeof metricDonutPropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "metricId", group: "content", label: "Metrik-ID", control: "text" }
 ];
@@ -26,8 +27,7 @@ export const metricDonutDefinition: ComponentDefinition<z.infer<typeof metricDon
     }),
     propsSchema: metricDonutPropsSchema,
     fields: metricDonutFields,
-    
-
     municipalFields: ["heading", "metricId"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "SmartCityMetric" },
 };

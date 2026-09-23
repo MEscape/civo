@@ -13,7 +13,8 @@ import { applyMapping, datasetMappingSchema } from "@/modules/data-sources/domai
 import { deriveMappedRecordId } from "@/modules/data-sources/infrastructure/derive-mapped-record-id";
 import { cachedRestFetch } from "@/modules/data-sources/infrastructure/data-fetch-cache";
 import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
-import { sourceCacheVersion } from "@/modules/data-sources/domain/source-cache-version";
+import type { DatasetView } from "@/modules/data-sources/domain/dataset-schema";
+import { datasetCacheVersion } from "@/modules/data-sources/domain/source-cache-version";
 
 /**
  * REST-backed implementation of CivicDataProvider (Phase 3.5 spec §12).
@@ -39,7 +40,10 @@ import { sourceCacheVersion } from "@/modules/data-sources/domain/source-cache-v
 export class RestCivicDataProvider implements CivicDataProvider {
     private readonly fallback = new MockCivicDataProvider();
 
-    constructor(private readonly source: DataSourceView) {}
+    constructor(
+        private readonly source: DataSourceView,
+        private readonly dataset: DatasetView
+    ) {}
 
     async getEvents(options?: { limit?: number; category?: string }): Promise<Result<CivicEvent[], AppError>> {
         const mappedResult = await this.fetchMappedEvents();
@@ -58,10 +62,10 @@ export class RestCivicDataProvider implements CivicDataProvider {
     }
 
     private async fetchMappedEvents(): Promise<Result<CivicEvent[], AppError>> {
-        if (!this.source.mapping) {
-            return err(AppErrors.validation("Für diese Datenquelle ist noch keine Feldzuordnung konfiguriert."));
+        if (!this.dataset.mapping) {
+            return err(AppErrors.validation("Für diesen Datensatz ist noch keine Feldzuordnung konfiguriert."));
         }
-        const mappingParsed = datasetMappingSchema.safeParse(this.source.mapping);
+        const mappingParsed = datasetMappingSchema.safeParse(this.dataset.mapping);
         if (!mappingParsed.success) {
             return err(AppErrors.validation("Die gespeicherte Feldzuordnung ist nicht mehr gültig."));
         }
@@ -72,10 +76,15 @@ export class RestCivicDataProvider implements CivicDataProvider {
         }
 
         const fetchResult = await cachedRestFetch(
+            this.dataset.id,
+            this.dataset.canonicalType,
+            datasetCacheVersion({
+                sourceKind: this.source.kind,
+                sourceConfig: this.source.config,
+                datasetMapping: this.dataset.mapping,
+            }),
             this.source.id,
-            this.source.dataset,
-            sourceCacheVersion(this.source),
-            () => restJsonAdapter.fetch(configParsed.data, { dataSourceId: this.source.id })
+            configParsed.data
         );
         if (!fetchResult.ok) return err(fetchResult.error);
 

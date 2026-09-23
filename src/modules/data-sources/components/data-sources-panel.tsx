@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-    upsertDataSourceAction,
+    createDataSourceAction,
     deleteDataSourceAction,
     testDataSourceConnectionAction,
 } from "@/modules/data-sources/application/data-source-actions";
@@ -11,102 +11,72 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DataSourceStatusBadge } from "@/modules/data-sources/components/data-source-status-badge";
-import { DataSourceMappingPanel } from "@/modules/data-sources/components/data-source-mapping-panel";
-import { formatRelativeTime } from "@/lib/formatters";
+import { DatasetManagementPanel } from "@/modules/data-sources/components/dataset-management-panel";
+import { formatRelativeTime } from "@/lib/utils/formatters";
 import { describeConnectionFailure } from "@/modules/data-sources/components/describe-connection-failure";
-import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
-import type { AuthMode, DataSourceDataset, DataSourceKind } from "@/modules/data-sources/domain/data-source-schema";
+import type { AuthMode, DataSourceKind, DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 
 type DataSourcesPanelProps = {
     websiteId: string;
     initialSources: DataSourceView[];
 };
 
-const DATASET_LABEL: Record<DataSourceDataset, string> = {
-    civic: "Bürgerdaten (Veranstaltungen, News, Services, Kontakte)",
-    smartcity: "Smart-City-Daten (Sensoren, Kennzahlen)",
-};
-
-/**
- * Root client component for Settings → Data Sources (spec §3). A
- * municipality has at most one configured source per canonical dataset
- * (civic / smartcity — spec §11's "Data Source → Canonical Dataset"),
- * so this renders one card per dataset rather than an open-ended list:
- * either the dataset is unconfigured (falls back to sample/mock data —
- * spec §25) or it has exactly one REST connection, editable in place.
- */
 export function DataSourcesPanel({ websiteId, initialSources }: DataSourcesPanelProps) {
-    const sourceByDataset = new Map(initialSources.map((source) => [source.dataset, source]));
+    const [isCreating, setIsCreating] = useState(false);
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-xl font-semibold text-[var(--civo-color-text)]">Datenquellen</h2>
-                <p className="mt-1 text-sm text-[var(--civo-color-text-muted)]">
-                    Verbinden Sie kommunale und Smart-City-Datenquellen, um Ihren Website-Komponenten echte Daten
-                    zur Verfügung zu stellen.
-                </p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-semibold text-[var(--civo-color-text)]">Datenquellen</h2>
+                    <p className="mt-1 text-sm text-[var(--civo-color-text-muted)]">
+                        Verbinden Sie kommunale und Smart-City-Datenquellen, um Ihren Website-Komponenten echte Daten
+                        zur Verfügung zu stellen.
+                    </p>
+                </div>
+                <Button onClick={() => setIsCreating(true)} disabled={isCreating}>
+                    + Neue Quelle
+                </Button>
             </div>
 
-            {(Object.keys(DATASET_LABEL) as DataSourceDataset[]).map((dataset) => (
-                <DatasetSourceCard
-                    key={dataset}
+            {isCreating && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Neue Datenquelle anlegen</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <DataSourceForm
+                            websiteId={websiteId}
+                            onCancel={() => setIsCreating(false)}
+                            onSaved={() => setIsCreating(false)}
+                        />
+                    </CardContent>
+                </Card>
+            )}
+
+            {initialSources.map((source) => (
+                <ConfiguredSourceCard
+                    key={source.id}
                     websiteId={websiteId}
-                    dataset={dataset}
-                    source={sourceByDataset.get(dataset) ?? null}
+                    source={source}
                 />
             ))}
+            
+            {initialSources.length === 0 && !isCreating && (
+                <div className="rounded-lg border border-dashed p-8 text-center text-sm text-[var(--civo-color-text-muted)]">
+                    Keine Datenquellen konfiguriert. Es werden Beispieldaten angezeigt.
+                </div>
+            )}
         </div>
     );
 }
 
-function DatasetSourceCard({
-                               websiteId,
-                               dataset,
-                               source,
-                           }: {
-    websiteId: string;
-    dataset: DataSourceDataset;
-    source: DataSourceView | null;
-}) {
-    const [isEditing, setIsEditing] = useState(!source);
-
-    return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-4">
-                <div>
-                    <CardTitle>{DATASET_LABEL[dataset]}</CardTitle>
-                    <CardDescription className="mt-1">
-                        {source ? source.name : "Es ist noch keine Datenquelle konfiguriert — es werden Beispieldaten angezeigt."}
-                    </CardDescription>
-                </div>
-                {source && !isEditing && <DataSourceStatusBadge status={source.status} />}
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {source && !isEditing ? (
-                    <ConfiguredSourceView websiteId={websiteId} source={source} onEdit={() => setIsEditing(true)} />
-                ) : (
-                    <DataSourceForm
-                        websiteId={websiteId}
-                        dataset={dataset}
-                        existing={source}
-                        onCancel={source ? () => setIsEditing(false) : undefined}
-                        onSaved={() => setIsEditing(false)}
-                    />
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-function ConfiguredSourceView({
-                                  websiteId,
-                                  source,
-                                  onEdit,
-                              }: {
+function ConfiguredSourceCard({
+    websiteId,
+    source,
+}: {
     websiteId: string;
     source: DataSourceView;
-    onEdit: () => void;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -114,7 +84,6 @@ function ConfiguredSourceView({
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const config = source.config as { baseUrl?: string };
-    const mapping = source.mapping as { fields: import("@/modules/data-sources/domain/field-mapping-schema").FieldMapping[] } | null;
 
     function handleTestConnection() {
         setTestMessage(null);
@@ -130,15 +99,13 @@ function ConfiguredSourceView({
     }
 
     function handleDelete() {
-        if (!window.confirm("Diese Datenquelle wirklich entfernen? Die Website zeigt danach wieder Beispieldaten.")) {
+        if (!window.confirm("Diese Datenquelle wirklich entfernen? Alle Datensätze dieser Quelle werden ebenfalls gelöscht.")) {
             return;
         }
         setDeleteError(null);
         startTransition(async () => {
             const result = await deleteDataSourceAction(source.id, websiteId);
             if (!result.ok) {
-                // Previously silent on failure — the button would just stop
-                // spinning with no indication anything went wrong.
                 setDeleteError(result.message);
                 return;
             }
@@ -147,90 +114,81 @@ function ConfiguredSourceView({
     }
 
     return (
-        <div className="space-y-4">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
                 <div>
-                    <dt className="text-[var(--civo-color-text-muted)]">Typ</dt>
-                    <dd className="text-[var(--civo-color-text)]">REST / JSON</dd>
+                    <CardTitle>{source.name}</CardTitle>
+                    <CardDescription className="mt-1">
+                        {config.baseUrl ?? "Unbekannte URL"}
+                    </CardDescription>
                 </div>
-                <div>
-                    <dt className="text-[var(--civo-color-text-muted)]">URL</dt>
-                    <dd className="truncate text-[var(--civo-color-text)]">{config.baseUrl ?? "—"}</dd>
-                </div>
-                <div>
-                    <dt className="text-[var(--civo-color-text-muted)]">Zuletzt geprüft</dt>
-                    <dd className="text-[var(--civo-color-text)]">
-                        {source.lastCheckedAt ? formatRelativeTime(new Date(source.lastCheckedAt)) : "Noch nie"}
-                    </dd>
-                </div>
-                <div>
-                    <dt className="text-[var(--civo-color-text-muted)]">Mapping</dt>
-                    <dd className="text-[var(--civo-color-text)]">{source.mapping ? "Konfiguriert" : "Nicht konfiguriert"}</dd>
-                </div>
-            </dl>
+                <DataSourceStatusBadge status={source.status} />
+            </CardHeader>
+            <CardContent className="space-y-6 border-t pt-4">
+                <div className="space-y-4">
+                    <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                        <div>
+                            <dt className="text-[var(--civo-color-text-muted)]">Typ</dt>
+                            <dd className="text-[var(--civo-color-text)]">{source.kind === "REST" ? "REST / JSON" : "Mock (Beispieldaten)"}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-[var(--civo-color-text-muted)]">Zuletzt geprüft</dt>
+                            <dd className="text-[var(--civo-color-text)]">
+                                {source.lastCheckedAt ? formatRelativeTime(new Date(source.lastCheckedAt)) : "Noch nie"}
+                            </dd>
+                        </div>
+                    </dl>
 
-            {source.status === "ERROR" && source.lastError && (
-                <p className="rounded-[var(--civo-radius)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
-                    {source.lastError}
-                </p>
-            )}
-            {testMessage && <p className="text-sm text-[var(--civo-color-text)]">{testMessage}</p>}
-            {deleteError && <p className="text-sm text-red-700">{deleteError}</p>}
+                    {source.status === "ERROR" && source.lastError && (
+                        <p className="rounded-[var(--civo-radius)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+                            {source.lastError}
+                        </p>
+                    )}
+                    {testMessage && <p className="text-sm text-[var(--civo-color-text)]">{testMessage}</p>}
+                    {deleteError && <p className="text-sm text-red-700">{deleteError}</p>}
 
-            <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={handleTestConnection} disabled={isPending}>
-                    {isPending ? "Prüft…" : "Verbindung testen"}
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={onEdit} disabled={isPending}>
-                    Bearbeiten
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={handleDelete} disabled={isPending}>
-                    Entfernen
-                </Button>
-            </div>
+                    <div className="flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={handleTestConnection} disabled={isPending}>
+                            {isPending ? "Prüft…" : "Verbindung testen"}
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={handleDelete} disabled={isPending}>
+                            Entfernen
+                        </Button>
+                    </div>
+                </div>
 
-            <DataSourceMappingPanel
-                websiteId={websiteId}
-                dataSourceId={source.id}
-                dataset={source.dataset}
-                existingMapping={mapping}
-            />
-        </div>
+                <DatasetManagementPanel websiteId={websiteId} dataSource={source} initialDatasets={source.datasets ?? []} />
+            </CardContent>
+        </Card>
     );
 }
 
 function DataSourceForm({
-                            websiteId,
-                            dataset,
-                            existing,
-                            onCancel,
-                            onSaved,
-                        }: {
+    websiteId,
+    onCancel,
+    onSaved,
+}: {
     websiteId: string;
-    dataset: DataSourceDataset;
-    existing: DataSourceView | null;
-    onCancel?: () => void;
+    onCancel: () => void;
     onSaved: () => void;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
 
-    const existingConfig = (existing?.config ?? {}) as { baseUrl?: string; authMode?: AuthMode };
-    const [name, setName] = useState(existing?.name ?? "");
-    const [baseUrl, setBaseUrl] = useState(existingConfig.baseUrl ?? "");
-    const [authMode, setAuthMode] = useState<AuthMode>(existingConfig.authMode ?? "NONE");
+    const [name, setName] = useState("");
+    const [baseUrl, setBaseUrl] = useState("");
+    const [authMode, setAuthMode] = useState<AuthMode>("NONE");
 
     function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
         setError(null);
 
         startTransition(async () => {
-            const result = await upsertDataSourceAction({
+            const result = await createDataSourceAction({
                 websiteId,
                 name,
                 kind: "REST" satisfies DataSourceKind,
-                dataset,
                 config: { baseUrl, authMode },
             });
 
@@ -239,9 +197,6 @@ function DataSourceForm({
                 return;
             }
 
-            // Refresh before flipping out of edit mode, so the parent
-            // re-renders with the newly saved row in the same pass rather
-            // than briefly showing the old (or empty) configured view.
             router.refresh();
             onSaved();
         });
@@ -251,19 +206,19 @@ function DataSourceForm({
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                    <Label htmlFor={`name-${dataset}`}>Name</Label>
+                    <Label htmlFor="name">Name der Quelle</Label>
                     <Input
-                        id={`name-${dataset}`}
+                        id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="z. B. Kommunales Veranstaltungsportal"
+                        placeholder="z. B. Kommunales Open-Data-Portal"
                         required
                     />
                 </div>
                 <div className="space-y-1.5">
-                    <Label htmlFor={`authMode-${dataset}`}>Authentifizierung</Label>
+                    <Label htmlFor="authMode">Authentifizierung</Label>
                     <select
-                        id={`authMode-${dataset}`}
+                        id="authMode"
                         value={authMode}
                         onChange={(e) => setAuthMode(e.target.value as AuthMode)}
                         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -276,13 +231,13 @@ function DataSourceForm({
             </div>
 
             <div className="space-y-1.5">
-                <Label htmlFor={`baseUrl-${dataset}`}>URL</Label>
+                <Label htmlFor="baseUrl">API Basis-URL</Label>
                 <Input
-                    id={`baseUrl-${dataset}`}
+                    id="baseUrl"
                     type="url"
                     value={baseUrl}
                     onChange={(e) => setBaseUrl(e.target.value)}
-                    placeholder="https://beispiel-kommune.de/api/veranstaltungen"
+                    placeholder="https://beispiel-kommune.de/api"
                     required
                 />
             </div>
@@ -300,11 +255,9 @@ function DataSourceForm({
                 <Button type="submit" size="sm" disabled={isPending}>
                     {isPending ? "Speichert…" : "Speichern"}
                 </Button>
-                {onCancel && (
-                    <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-                        Abbrechen
-                    </Button>
-                )}
+                <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+                    Abbrechen
+                </Button>
             </div>
         </form>
     );

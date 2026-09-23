@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const locationPlaceholderPropsSchema = z.object({
     heading: z.string().default("Anfahrt"),
     address: z.string().optional(),
@@ -26,8 +25,6 @@ export const locationPlaceholderDefinition: ComponentDefinition<z.infer<typeof l
     }),
     propsSchema: locationPlaceholderPropsSchema,
     fields: locationPlaceholderFields,
-    
-
     municipalFields: ["heading", "address"],
     municipallyEditable: true,
 };

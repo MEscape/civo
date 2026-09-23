@@ -11,13 +11,13 @@ import { logger } from "@/lib/logger/logger";
  * with its own description and optional link to a dedicated department
  * page, rather than a flat list of individual people.
  */
-export async function DepartmentDirectory({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function DepartmentDirectory({ props }: { props: Record<string, unknown>}) {
     const parsed = departmentDirectoryPropsSchema.safeParse(props);
-    const { heading, columns } = parsed.success
+    const { heading, columns, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Ämter & Fachbereiche", columns: 2 as const };
+        : { heading: "Ämter & Fachbereiche", columns: 2 as const , datasetId: undefined};
 
-    const provider = await getCivicDataProvider(websiteId);
+    const provider = await getCivicDataProvider(datasetId);
     const result = await provider.getDepartments();
 
     if (!result.ok) {
@@ -27,7 +27,8 @@ export async function DepartmentDirectory({ props, websiteId }: { props: Record<
     if (result.data.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Grid columns={columns}>

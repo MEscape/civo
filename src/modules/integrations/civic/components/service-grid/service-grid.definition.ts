@@ -2,15 +2,16 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 const gridColumnsSchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]);
 
 export const serviceGridPropsSchema = z.object({
     heading: z.string().default("Online-Leistungen"),
     columns: gridColumnsSchema.default(3),
+    datasetId: z.string().optional(),
 });
 
 export const serviceGridFields: PropField<Extract<keyof z.infer<typeof serviceGridPropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "columns", label: "Spalten", control: "columns" },
 ];
@@ -28,8 +29,7 @@ export const serviceGridDefinition: ComponentDefinition<z.infer<typeof serviceGr
     }),
     propsSchema: serviceGridPropsSchema,
     fields: serviceGridFields,
-    
-
     municipalFields: ["heading"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "Service" },
 };

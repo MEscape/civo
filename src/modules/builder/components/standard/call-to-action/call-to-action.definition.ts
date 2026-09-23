@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const callToActionPropsSchema = z.object({
     heading: z.string().default("Jetzt aktiv werden"),
     body: z.string().optional(),
@@ -30,8 +29,6 @@ export const callToActionDefinition: ComponentDefinition<z.infer<typeof callToAc
     }),
     propsSchema: callToActionPropsSchema,
     fields: callToActionFields,
-    
-
     municipalFields: ["heading", "body", "buttonLabel", "href"],
     municipallyEditable: true,
 };

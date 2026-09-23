@@ -1,4 +1,5 @@
 import type { DataSourceStatus } from "@/modules/data-sources/domain/data-source-schema";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * Fixed semantic colors for connection status — not theme tokens,
@@ -6,10 +7,10 @@ import type { DataSourceStatus } from "@/modules/data-sources/domain/data-source
  * severity indicators: a municipality's brand palette should never make
  * "this connection is broken" ambiguous.
  */
-const statusClasses: Record<DataSourceStatus, string> = {
-    OK: "border-green-200 bg-green-50 text-green-900",
-    ERROR: "border-red-200 bg-red-50 text-red-900",
-    UNKNOWN: "border-gray-200 bg-gray-50 text-gray-700",
+const statusVariants: Record<DataSourceStatus, "default" | "destructive" | "secondary"> = {
+    OK: "default", // We could add a 'success' variant to badge.tsx if we wanted to be perfectly semantic
+    ERROR: "destructive",
+    UNKNOWN: "secondary",
 };
 
 const statusLabel: Record<DataSourceStatus, string> = {
@@ -20,10 +21,8 @@ const statusLabel: Record<DataSourceStatus, string> = {
 
 export function DataSourceStatusBadge({ status }: { status: DataSourceStatus }) {
     return (
-        <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusClasses[status]}`}
-        >
+        <Badge variant={statusVariants[status]}>
             {statusLabel[status]}
-        </span>
+        </Badge>
     );
 }

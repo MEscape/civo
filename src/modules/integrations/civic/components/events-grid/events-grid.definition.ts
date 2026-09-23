@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 const gridColumnsSchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]);
 
 export const eventsGridPropsSchema = z.object({
@@ -10,9 +9,11 @@ export const eventsGridPropsSchema = z.object({
     columns: gridColumnsSchema.default(3),
     limit: z.number().min(1).max(24).default(6),
     category: z.string().optional(),
+    datasetId: z.string().optional(),
 });
 
 export const eventsGridFields: PropField<Extract<keyof z.infer<typeof eventsGridPropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", label: "Überschrift", control: "text", group: "content" },
     { key: "limit", label: "Anzahl", control: "number", group: "content" },
     { key: "category", label: "Kategorie", control: "text", placeholder: "z. B. Markt", group: "content" },
@@ -34,4 +35,5 @@ export const eventsGridDefinition: ComponentDefinition<z.infer<typeof eventsGrid
     fields: eventsGridFields,
     municipalFields: ["heading", "limit", "category"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "Event" },
 };

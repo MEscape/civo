@@ -1,8 +1,10 @@
 "use client";
 
 import type { PropField } from "@/modules/component-platform/domain";
+import type { CanonicalType } from "@/modules/data-sources/application/dataset-service";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
+import { DatasetSelectField } from "./dataset-select-field";
 
 /**
  * Reusable, controlled property controls (Phase 2 spec §19). Each
@@ -18,10 +20,23 @@ type ControlProps = {
     value: unknown;
     onChange: (value: unknown) => void;
     onCommit: () => void;
+    websiteId?: string;
+    canonicalType?: CanonicalType;
 };
 
-export function PropertyControl({ field, value, onChange, onCommit }: ControlProps) {
+export function PropertyControl({ field, value, onChange, onCommit, websiteId, canonicalType }: ControlProps) {
     switch (field.control) {
+        case "dataset":
+            return (
+                <DatasetSelectField
+                    id={`prop-${field.key}`}
+                    value={value}
+                    onChange={onChange}
+                    onCommit={onCommit}
+                    websiteId={websiteId}
+                    canonicalType={canonicalType}
+                />
+            );
         case "text":
             return (
                 <Input

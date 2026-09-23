@@ -3,14 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-    discoverDataSourceAction,
-    previewDataSourceMappingAction,
-    saveDataSourceMappingAction,
-} from "@/modules/data-sources/application/data-source-actions";
+    discoverDatasetAction,
+    previewDatasetMappingAction,
+    saveDatasetMappingAction,
+} from "@/modules/data-sources/application/dataset-actions";
 import { Button } from "@/components/ui/button";
 import { CANONICAL_TARGET_FIELDS, type FieldMapping } from "@/modules/data-sources/domain/field-mapping-schema";
 import type { DiscoveredField } from "@/modules/data-sources/domain/data-source-adapter";
-import type { DataSourceDataset } from "@/modules/data-sources/domain/data-source-schema";
+import type { CanonicalType } from "@/modules/data-sources/domain/dataset-schema";
 import { describeConnectionFailure } from "@/modules/data-sources/components/describe-connection-failure";
 
 /**
@@ -19,28 +19,20 @@ import { describeConnectionFailure } from "@/modules/data-sources/components/des
  * which are required (`CANONICAL_TARGET_FIELDS`), but the German label
  * text is a presentation concern, and the only thing that renders it.
  */
-const TARGET_FIELD_LABELS: Record<DataSourceDataset, Record<string, string>> = {
-    civic: {
-        title: "Titel",
-        description: "Beschreibung",
-        startDate: "Startdatum",
-        endDate: "Enddatum",
-        location: "Ort",
-        category: "Kategorie",
-        imageUrl: "Bild-URL",
-    },
-    smartcity: {
-        label: "Bezeichnung",
-        value: "Wert",
-        unit: "Einheit",
-        category: "Kategorie",
-    },
+const TARGET_FIELD_LABELS: Record<string, Record<string, string>> = {
+    Event: { title: "Titel", description: "Beschreibung", startDate: "Startdatum", endDate: "Enddatum", location: "Ort", category: "Kategorie", imageUrl: "Bild-URL" },
+    NewsItem: { title: "Titel", excerpt: "Auszug", category: "Kategorie", imageUrl: "Bild-URL", publishedAt: "Veröffentlichungsdatum", slug: "URL-Slug", content: "Inhalt" },
+    Service: { title: "Titel", description: "Beschreibung", href: "Link", icon: "Icon-Name" },
+    Contact: { name: "Name", role: "Rolle", email: "E-Mail", phone: "Telefon" },
+    Alert: { title: "Titel", message: "Nachricht", severity: "Schweregrad", active: "Aktiv", href: "Link" },
+    SmartCityMetric: { label: "Bezeichnung", value: "Wert", unit: "Einheit", category: "Kategorie", trend: "Trend", changePercent: "Veränderung (%)" },
 };
 
 type DataSourceMappingPanelProps = {
     websiteId: string;
     dataSourceId: string;
-    dataset: DataSourceDataset;
+    datasetId: string;
+    canonicalType: CanonicalType;
     /** The mapping already saved for this source, if any, so reopening the panel does not discard it. */
     existingMapping?: { fields: FieldMapping[] } | null;
 };
@@ -80,7 +72,7 @@ function assignmentsFromMapping(mapping: { fields: FieldMapping[] } | null | und
  * field-mapping-schema.ts supports. The schema already allows richer
  * transforms for a future editor to add without a data-model change.
  */
-export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset, existingMapping }: DataSourceMappingPanelProps) {
+export function DataSourceMappingPanel({ websiteId, dataSourceId, datasetId, canonicalType, existingMapping }: DataSourceMappingPanelProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [fields, setFields] = useState<DiscoveredField[] | null>(null);
@@ -90,8 +82,8 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset, exist
     const [assignments, setAssignments] = useState<Record<string, string>>(() => assignmentsFromMapping(existingMapping));
     const [status, setStatus] = useState<PanelStatus>({ kind: "idle" });
 
-    const targetFields = CANONICAL_TARGET_FIELDS[dataset];
-    const labels = TARGET_FIELD_LABELS[dataset];
+    const targetFields = CANONICAL_TARGET_FIELDS[canonicalType] ?? [];
+    const labels = TARGET_FIELD_LABELS[canonicalType] ?? {};
 
     function targetLabel(path: string): string {
         return labels[path] ?? path;
@@ -109,7 +101,7 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset, exist
     function handleDiscover() {
         setStatus({ kind: "idle" });
         startTransition(async () => {
-            const result = await discoverDataSourceAction(dataSourceId, websiteId);
+            const result = await discoverDatasetAction(datasetId, websiteId);
             if (!result.ok) {
                 setStatus({ kind: "error", message: describeConnectionFailure(result.category, result.message) });
                 return;
@@ -147,7 +139,7 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset, exist
         }
 
         startTransition(async () => {
-            const result = await previewDataSourceMappingAction(dataSourceId, websiteId, { fields: mappingFields });
+            const result = await previewDatasetMappingAction(datasetId, websiteId, { fields: mappingFields });
             if (!result.ok) {
                 setStatus({ kind: "error", message: result.message });
                 return;
@@ -170,7 +162,7 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, dataset, exist
         }
 
         startTransition(async () => {
-            const result = await saveDataSourceMappingAction(dataSourceId, { fields: mappingFields }, websiteId);
+            const result = await saveDatasetMappingAction(datasetId, { fields: mappingFields }, websiteId);
             if (!result.ok) {
                 setStatus({ kind: "error", message: result.message });
                 return;

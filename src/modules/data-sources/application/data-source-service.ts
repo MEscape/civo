@@ -2,35 +2,16 @@ import type { Result } from "@/lib/result/result";
 import { ok, err } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
-import {
-    dataSourceRepository,
-} from "@/modules/data-sources/infrastructure/data-source-repository";
+import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
 import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
 import type { DataSourceAdapter, DataSourceError, DataDiscoveryResult } from "@/modules/data-sources/domain/data-source-adapter";
-import { createDataSourceSchema, saveMappingSchema, type DataSourceKind, type DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
-import { applyMapping, type DatasetMapping, type MappingFieldError } from "@/modules/data-sources/domain/field-mapping-schema";
+import { createDataSourceSchema, type DataSourceKind, type DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 import { resolveRestUrl } from "@/modules/data-sources/domain/resolve-rest-url";
+import { adapterForKind, connectionFailure } from "./adapter-helpers";
 
 export type { DataSourceView };
 
-/**
- * Resolves which adapter implementation handles a given data source kind
- * (spec §27). MOCK has no adapter — MOCK is served directly
- * by the mock civic/smart-city providers (spec §4 scopes this phase to REST/JSON only).
- *
- * Each adapter owns its own config schema (`adapter.parseConfig`), so
- * adding a second kind with an adapter does not require touching the
- * validation logic below — only this lookup.
- */
-function adapterForKind(kind: DataSourceKind): DataSourceAdapter<unknown> | null {
-    return kind === "REST" ? restJsonAdapter : null;
-}
-
-function connectionFailure(error: AppError, category: DataSourceError["category"]): DataSourceError {
-    return { ...error, category };
-}
-
-/** A `DataSourceView` looked up and confirmed to belong to `websiteId`, or a diagnostic error to return as-is. */
+/** A DataSourceView looked up and confirmed to belong to websiteId. */
 async function loadOwnedRow(
     dataSourceId: string,
     websiteId: string
@@ -44,7 +25,7 @@ async function loadOwnedRow(
     return ok(rowResult.data);
 }
 
-/** Resolves the adapter and parsed config for an owned row, or a diagnostic error. */
+/** Resolves the adapter and parsed config for an owned row. */
 function loadAdapterAndConfig(
     row: DataSourceView
 ): Result<{ adapter: DataSourceAdapter<unknown>; config: unknown }, DataSourceError> {
@@ -73,20 +54,7 @@ function loadAdapterAndConfig(
     return ok({ adapter, config: configParsed.data });
 }
 
-/**
- * Runs "Test Connection" for a saved, owned data source (spec §6) and
- * records the outcome for the settings UI's status display (spec §3,
- * §29). Returns the adapter's category-tagged `DataSourceError` on
- * failure — deliberately not the generic `Result<T, AppError>` used
- * elsewhere — so the settings UI can show one of the four distinct
- * messages spec §6 asks for.
- *
- * A module-level function, not a method referencing `this`: `saveMapping`
- * below calls `discover`/`previewMapping` directly rather than through
- * `this.discover(...)`, so destructuring `dataSourceService`'s methods
- * cannot silently break them.
- */
-async function testConnection(
+async function testConnectionInternal(
     dataSourceId: string,
     websiteId: string
 ): Promise<Result<{ statusCode: number; responseTimeMs: number }, DataSourceError>> {
@@ -101,11 +69,6 @@ async function testConnection(
 
     const testResult = await resolved.data.adapter.testConnection(resolved.data.config, { dataSourceId: row.id });
 
-    // Persist the outcome regardless of success/failure so the settings
-    // list's status badge and "last checked" timestamp stay current
-    // (spec §3, §29). A failure to WRITE the diagnostic (e.g. a DB
-    // hiccup) doesn't override the actual test outcome returned to the
-    // caller — it's logged by the repository and otherwise ignored here.
     await dataSourceRepository.recordTestResult(row.id, {
         status: testResult.ok ? "OK" : "ERROR",
         lastError: testResult.ok ? null : testResult.error.message,
@@ -114,13 +77,7 @@ async function testConnection(
     return testResult;
 }
 
-/**
- * Retrieves a sample of external data and flattens its available fields
- * for the mapping UI (spec §7). Read-only — never writes anything, since
- * discovery can be run speculatively while an administrator is exploring
- * a source.
- */
-async function discover(
+async function discoverInternal(
     dataSourceId: string,
     websiteId: string
 ): Promise<Result<DataDiscoveryResult, DataSourceError>> {
@@ -136,67 +93,26 @@ async function discover(
 }
 
 /**
- * Applies a candidate mapping to one live sample record from the source,
- * without saving anything — used by both `saveMapping`'s validation step
- * and the mapping UI's live preview (spec §9).
- */
-async function previewMapping(
-    dataSourceId: string,
-    websiteId: string,
-    mapping: DatasetMapping
-): Promise<Result<Result<Record<string, unknown>, MappingFieldError[]>, DataSourceError>> {
-    const discoveryResult = await discover(dataSourceId, websiteId);
-
-    if (!discoveryResult.ok) return discoveryResult;
-
-    const [record] = discoveryResult.data.sample;
-
-    if (record === undefined) {
-        return err(
-            connectionFailure(
-                AppErrors.validation("Die Datenquelle hat keine Beispieldatensätze für die Vorschau zurückgegeben."),
-                "INVALID_RESPONSE"
-            )
-        );
-    }
-
-    return ok(applyMapping(mapping, record));
-}
-
-/**
- * Application service for the Data Sources settings area (spec §3–§9).
- * Every method authorizes the caller against `websiteId` first, validates
- * input with Zod, and only then touches the repository or an adapter.
- * The Server Actions in `application/data-source-actions.ts` are thin
- * wrappers around this.
+ * Application service for Data Source management.
  *
- * Every method that accepts a `dataSourceId` also requires `websiteId`
- * and uses it to confirm the row is actually owned by that website
- * (`dataSourceRepository.findByIdForWebsite`) rather than trusting the
- * two to already correspond — a `dataSourceId` is caller-supplied input,
- * not something the server already knows the caller may act on (spec
- * §22, §29).
+ * A DataSource is a connection to an external system. It has no dataset-kind
+ * constraint — a website may have any number of sources. Datasets (with their
+ * field mappings) are managed via dataset-service.ts.
  */
 export const dataSourceService = {
     async listForWebsite(websiteId: string): Promise<Result<DataSourceView[], AppError>> {
         return dataSourceRepository.findByWebsite(websiteId);
     },
 
+    async listForWebsiteWithDatasets(websiteId: string): Promise<Result<DataSourceView[], AppError>> {
+        return dataSourceRepository.findByWebsiteWithDatasets(websiteId);
+    },
+
     /**
-     * Creates or replaces the one data source configured for a
-     * (website, dataset) pair (spec §24 steps 2–4). Validates the
-     * top-level shape first, then hands `config` to the target kind's
-     * adapter to validate — a REST source can't be saved with a stray
-     * credential in `config`, since each adapter's schema is `.strict()`.
-     * For REST sources, also enforces the SSRF guard (spec §22) via
-     * `resolveRestUrl`, so a private-network or metadata-endpoint URL is
-     * rejected at save time with a clear message rather than only
-     * failing later on first test or fetch. The adapter re-checks the
-     * same guard at request time regardless (defense in depth, not a
-     * replacement — a URL valid at save time is not guaranteed to stay
-     * so, e.g. after a DNS record change).
+     * Creates a new DataSource for a website. Validates config against the
+     * kind's schema and applies the SSRF guard for REST sources.
      */
-    async upsert(input: unknown): Promise<Result<DataSourceView, AppError>> {
+    async create(input: unknown): Promise<Result<DataSourceView, AppError>> {
         const parsed = createDataSourceSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -204,8 +120,6 @@ export const dataSourceService = {
         }
 
         const adapter = adapterForKind(parsed.data.kind);
-        // MOCK has no adapter and no config to validate beyond the empty
-        // shape createDataSourceSchema already checked.
         const configResult = adapter ? adapter.parseConfig(parsed.data.config) : ok(parsed.data.config);
 
         if (!configResult.ok) {
@@ -221,9 +135,8 @@ export const dataSourceService = {
             }
         }
 
-        return dataSourceRepository.upsert({
+        return dataSourceRepository.create({
             websiteId: parsed.data.websiteId,
-            dataset: parsed.data.dataset,
             name: parsed.data.name,
             kind: parsed.data.kind,
             config: configResult.data as Record<string, unknown>,
@@ -244,54 +157,10 @@ export const dataSourceService = {
         dataSourceId: string,
         websiteId: string
     ): Promise<Result<{ statusCode: number; responseTimeMs: number }, DataSourceError>> {
-        return testConnection(dataSourceId, websiteId);
+        return testConnectionInternal(dataSourceId, websiteId);
     },
 
     async discover(dataSourceId: string, websiteId: string): Promise<Result<DataDiscoveryResult, DataSourceError>> {
-        return discover(dataSourceId, websiteId);
-    },
-
-    /**
-     * Validates and saves a field mapping for a data source (spec §9,
-     * §10). Before saving, this fetches a live sample and runs the
-     * mapping against it end-to-end (map → nothing more — canonical Zod
-     * validation of the *mapped* records happens per-dataset in each
-     * provider, since only that provider knows which canonical schema a
-     * given dataset maps to). This service's job is narrower: confirm
-     * the mapping is well-formed and that applying it to a real sample
-     * doesn't immediately fail, so an administrator gets fast feedback
-     * rather than only discovering a bad mapping when a website visitor
-     * sees an empty component.
-     */
-    async saveMapping(input: unknown, websiteId: string): Promise<Result<DataSourceView, AppError>> {
-        const parsed = saveMappingSchema.safeParse(input);
-
-        if (!parsed.success) {
-            return err(AppErrors.validation(parsed.error.issues[0]?.message ?? "Ungültige Mapping-Eingabe."));
-        }
-
-        const previewResult = await previewMapping(parsed.data.dataSourceId, websiteId, parsed.data.mapping);
-
-        if (!previewResult.ok) return err(previewResult.error);
-
-        if (!previewResult.data.ok) {
-            return err(
-                AppErrors.validation(
-                    `The mapping could not be applied to a live sample: ${
-                        previewResult.data.error[0]?.message ?? "unknown error"
-                    }`
-                )
-            );
-        }
-
-        return dataSourceRepository.saveMapping(parsed.data.dataSourceId, parsed.data.mapping);
-    },
-
-    async previewMapping(
-        dataSourceId: string,
-        websiteId: string,
-        mapping: DatasetMapping
-    ): Promise<Result<Result<Record<string, unknown>, MappingFieldError[]>, DataSourceError>> {
-        return previewMapping(dataSourceId, websiteId, mapping);
+        return discoverInternal(dataSourceId, websiteId);
     },
 };

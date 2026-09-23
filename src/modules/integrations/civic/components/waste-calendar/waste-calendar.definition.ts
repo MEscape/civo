@@ -2,14 +2,15 @@ import { z } from "zod";
 import type { ComponentDefinition, PropField } from "@/modules/component-platform/domain/types";
 import { generateNodeId } from "@/modules/builder/domain/tree-operations";
 
-
 export const wasteCalendarPropsSchema = z.object({
     heading: z.string().default("Abfuhrkalender"),
     district: z.string().optional(),
-    limit: z.number().default(10)
+    limit: z.number().default(10),
+    datasetId: z.string().optional(),
 });
 
 export const wasteCalendarFields: PropField<Extract<keyof z.infer<typeof wasteCalendarPropsSchema>, string>>[] = [
+    { key: "datasetId", label: "Datensatz", control: "dataset", group: "data" },
     { key: "heading", group: "content", label: "Überschrift", control: "text" },
     { key: "district", label: "Bezirk", control: "text" },
     { key: "limit", label: "Anzahl", control: "number" }
@@ -28,8 +29,7 @@ export const wasteCalendarDefinition: ComponentDefinition<z.infer<typeof wasteCa
     }),
     propsSchema: wasteCalendarPropsSchema,
     fields: wasteCalendarFields,
-    
-
     municipalFields: ["heading"],
     municipallyEditable: true,
+    dataBinding: { canonicalType: "WasteCollectionEntry" },
 };

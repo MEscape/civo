@@ -1,7 +1,7 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { formatDate } from "@/lib/formatters";
+import { formatDate } from "@/lib/utils/formatters";
 
 export type TrendDatum = { date: string; value: number };
 

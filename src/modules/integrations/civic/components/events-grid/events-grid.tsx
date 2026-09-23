@@ -3,21 +3,22 @@ import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructur
 import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
-import { formatDate } from "@/lib/formatters";
+import { formatDate } from "@/lib/utils/formatters";
 
-export async function EventsGrid({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function EventsGrid({ props }: { props: Record<string, unknown>}) {
     const parsed = eventsGridPropsSchema.safeParse(props);
-    const { heading, columns, limit, category } = parsed.success
+    const { heading, columns, limit, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Termine", columns: 3 as const, limit: 6, category: undefined };
+        : { heading: "Termine", columns: 3 as const, limit: 6, category: undefined , datasetId: undefined};
 
-    const provider = await getCivicDataProvider(websiteId);
+    const provider = await getCivicDataProvider(datasetId);
     const result = await provider.getEvents({ limit, category });
 
     if (!result.ok) {
         logger.error("EventsGrid failed to load events", { error: result.error });
         return (
-            <Section>
+        <Section>
+            
                 <Container>
                     <SectionHeading>{heading}</SectionHeading>
                     <p className="text-sm text-[var(--civo-color-text-muted)]">
@@ -31,7 +32,8 @@ export async function EventsGrid({ props, websiteId }: { props: Record<string, u
     if (result.data.length === 0) return null;
 
     return (
-        <Section>
+        <Section className="relative">
+            
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Grid columns={columns}>

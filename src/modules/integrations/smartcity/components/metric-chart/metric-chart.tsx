@@ -4,13 +4,13 @@ import { Section, Container, SectionHeading } from "@/components/layout/layout-p
 import { logger } from "@/lib/logger/logger";
 import { MetricChartClient } from "./metric-chart-client";
 
-export async function MetricChart({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function MetricChart({ props }: { props: Record<string, unknown>}) {
     const parsed = metricChartPropsSchema.safeParse(props);
-    const { heading, category } = parsed.success
+    const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Entwicklung", category: undefined };
+        : { heading: "Entwicklung", category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {

@@ -3,13 +3,13 @@ import { getSmartCityDataProvider } from "@/modules/integrations/smartcity/infra
 import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
 import { logger } from "@/lib/logger/logger";
 import { GaugeChartClient } from "./gauge-chart-client";
-import { formatNumber } from "@/lib/formatters";
+import { formatNumber } from "@/lib/utils/formatters";
 
-export async function MetricGauge({ props, websiteId }: { props: Record<string, unknown>; websiteId?: string }) {
+export async function MetricGauge({ props }: { props: Record<string, unknown>}) {
     const parsed = metricGaugePropsSchema.safeParse(props);
-    const { heading, metricId } = parsed.success ? parsed.data : { heading: undefined, metricId: undefined };
+    const { heading, metricId, datasetId } = parsed.success ? parsed.data : { heading: undefined, metricId: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(websiteId);
+    const provider = await getSmartCityDataProvider(datasetId);
     const result = await provider.getMetrics({});
 
     if (!result.ok) {
