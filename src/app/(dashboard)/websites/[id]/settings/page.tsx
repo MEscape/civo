@@ -19,7 +19,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
     const themeId = websiteResult.data.theme?.id || "";
 
     const dataSourcesResult = await dataSourceService.listForWebsite(id);
-    const dataSources = dataSourcesResult.ok ? dataSourcesResult.data : [];
+    const dataSources = dataSourcesResult.ok ? dataSourcesResult.data.filter((ds) => ds.kind !== "MOCK") : [];
 
     return (
         <div className="flex h-app-body flex-col">
