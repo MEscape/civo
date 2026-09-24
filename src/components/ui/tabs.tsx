@@ -10,7 +10,7 @@ export function TabsList({ className, ...props }: React.ComponentProps<typeof Ta
     return (
         <TabsPrimitive.List
             className={cn(
-                "inline-flex items-center gap-1 border-b border-[var(--civo-color-border)]",
+                "inline-flex items-center gap-1 border-b border-border",
                 className
             )}
             {...props}
@@ -25,7 +25,7 @@ export function TabsTrigger({
     return (
         <TabsPrimitive.Trigger
             className={cn(
-                "px-4 py-2 text-sm font-medium text-[var(--civo-color-text-muted)] border-b-2 border-transparent -mb-px data-[state=active]:text-[var(--civo-color-primary)] data-[state=active]:border-[var(--civo-color-primary)]",
+                "px-4 py-2 text-sm font-medium text-copy-muted border-b-2 border-transparent -mb-px data-[state=active]:text-primary-copy data-[state=active]:border-primary",
                 className
             )}
             {...props}
@@ -39,7 +39,7 @@ export function TabsContent({
                             }: React.ComponentProps<typeof TabsPrimitive.Content>) {
     return (
         <TabsPrimitive.Content
-            className={cn("pt-6 text-sm text-[var(--civo-color-text)]", className)}
+            className={cn("pt-6 text-sm text-copy", className)}
             {...props}
         />
     );

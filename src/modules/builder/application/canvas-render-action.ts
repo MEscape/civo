@@ -23,8 +23,7 @@ import { toActionResult, type ActionResult } from "@/lib/actions/action-result";
  * client-safe ActionResult at the boundary.
  */
 function renderCanvas(
-    config: unknown,
-    websiteId?: string
+    config: unknown
 ): Result<ReactNode, AppError> {
     const parsed = pageConfigSchema.safeParse(config);
 
@@ -38,8 +37,7 @@ function renderCanvas(
     return ok(
         renderPageNodes(
             parsed.data.children,
-            true,
-            websiteId
+            true
         )
     );
 }
@@ -57,10 +55,9 @@ function renderCanvas(
  * or using dangerouslySetInnerHTML.
  */
 export async function renderCanvasAction(
-    config: unknown,
-    websiteId?: string
+    config: unknown
 ): Promise<ActionResult<ReactNode>> {
     return toActionResult(
-        renderCanvas(config, websiteId)
+        renderCanvas(config)
     );
 }

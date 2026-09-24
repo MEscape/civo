@@ -77,7 +77,7 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
                         onChange(e.target.value);
                         onCommit();
                     }}
-                    className="h-9 w-full rounded-[calc(var(--civo-radius)_-_2px)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] px-2 text-sm text-[var(--civo-color-text)] focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)]"
+                    className="h-9 w-full rounded-token-sm border border-border bg-surface px-2 text-sm text-copy focus-visible:outline-2 focus-visible:outline-accent"
                 >
                     <option value="" disabled>
                         Auswählen…
@@ -102,10 +102,10 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
                                 onCommit();
                             }}
                             className={cn(
-                                "flex h-9 w-9 items-center justify-center rounded-[calc(var(--civo-radius)_-_2px)] border text-sm font-medium focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)]",
+                                "flex h-9 w-9 items-center justify-center rounded-token-sm border text-sm font-medium",
                                 value === count
-                                    ? "border-[var(--civo-color-accent)] bg-[var(--civo-color-accent)] text-white"
-                                    : "border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] text-[var(--civo-color-text)] hover:border-[var(--civo-color-secondary)]"
+                                    ? "border-accent bg-accent text-accent-foreground"
+                                    : "border-border-strong bg-surface text-copy hover:border-secondary"
                             )}
                         >
                             {count}
@@ -124,13 +124,13 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
                         onCommit();
                     }}
                     className={cn(
-                        "relative h-5 w-9 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)]",
-                        value ? "bg-[var(--civo-color-accent)]" : "bg-[var(--civo-color-border)]"
+                        "relative h-5 w-9 rounded-full transition-colors",
+                        value ? "bg-accent" : "bg-border-strong"
                     )}
                 >
                     <span
                         className={cn(
-                            "absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform",
+                            "absolute top-0.5 h-4 w-4 rounded-full bg-surface transition-transform",
                             value ? "translate-x-4" : "translate-x-0.5"
                         )}
                     />

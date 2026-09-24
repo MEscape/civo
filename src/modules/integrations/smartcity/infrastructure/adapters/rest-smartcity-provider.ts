@@ -1,5 +1,4 @@
 import type { SmartCityDataProvider } from "./smartcity-data-provider";
-import { MockSmartCityDataProvider } from "./mock-smartcity-provider";
 import type { Result } from "@/lib/result/result";
 import { ok, err } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
@@ -7,7 +6,6 @@ import { AppErrors } from "@/lib/errors/app-error";
 import { logger } from "@/lib/logger/logger";
 import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
 import { smartCityMetricSchema } from "@/modules/content/domain/smartcity-schema";
-import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
 import { restDataSourceConfigSchema } from "@/modules/data-sources/domain/data-source-schema";
 import { applyMapping, datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
 import { deriveMappedRecordId } from "@/modules/data-sources/infrastructure/derive-mapped-record-id";
@@ -29,8 +27,6 @@ import { datasetCacheVersion } from "@/modules/data-sources/domain/source-cache-
  * metrics (spec §25).
  */
 export class RestSmartCityDataProvider implements SmartCityDataProvider {
-    private readonly fallback = new MockSmartCityDataProvider();
-
     constructor(
         private readonly source: DataSourceView,
         private readonly dataset: DatasetView
@@ -41,11 +37,11 @@ export class RestSmartCityDataProvider implements SmartCityDataProvider {
     }): Promise<Result<SmartCityMetric[], AppError>> {
         const mappedResult = await this.fetchMappedMetrics();
         if (!mappedResult.ok) {
-            logger.warn("RestSmartCityDataProvider.getMetrics falling back to mock data", {
+            logger.warn("RestSmartCityDataProvider.getMetrics falling back to empty list", {
                 dataSourceId: this.source.id,
                 cause: mappedResult.error,
             });
-            return this.fallback.getMetrics(options);
+            return ok([]);
         }
 
         let items = mappedResult.data;

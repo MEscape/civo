@@ -6,6 +6,7 @@ import {
     AVAILABLE_HEADING_FONTS,
     AVAILABLE_BODY_FONTS,
 } from "@/modules/website/domain/theme";
+import { contrastRatio, PAGE_BACKGROUND } from "@/modules/website/domain/contrast";
 
 /**
  * Added per architecture review §P: theme.ts had no dedicated test file
@@ -86,6 +87,12 @@ describe("themeToCssVariables", () => {
                 "--civo-color-primary",
                 "--civo-color-secondary",
                 "--civo-color-accent",
+                "--civo-color-primary-foreground",
+                "--civo-color-secondary-foreground",
+                "--civo-color-accent-foreground",
+                "--civo-color-primary-copy",
+                "--civo-color-secondary-copy",
+                "--civo-color-accent-copy",
                 "--civo-font-heading",
                 "--civo-font-body",
                 "--civo-radius",
@@ -99,6 +106,45 @@ describe("themeToCssVariables", () => {
         expect(vars["--civo-color-primary"]).toBe(defaultTheme.colors.primary);
         expect(vars["--civo-color-secondary"]).toBe(defaultTheme.colors.secondary);
         expect(vars["--civo-color-accent"]).toBe(defaultTheme.colors.accent);
+    });
+
+    describe("brand color accessibility", () => {
+        const withColors = (primary: string, secondary: string, accent: string) => ({
+            ...defaultTheme,
+            colors: { primary, secondary, accent },
+        });
+
+        it("picks a readable text color to put ON each brand color", () => {
+            // Smart City sample: near-black primary, cyan accent (white on cyan is 1.5:1).
+            const vars = themeToCssVariables(withColors("#1a1a1a", "#333333", "#00e5ff"));
+            expect(vars["--civo-color-primary-foreground"]).toBe("#ffffff");
+            expect(vars["--civo-color-secondary-foreground"]).toBe("#ffffff");
+            expect(vars["--civo-color-accent-foreground"]).toBe("#000000");
+        });
+
+        it("provides a variant of each brand color that is readable AS text on the page", () => {
+            const vars = themeToCssVariables(withColors("#f2a900", "#7a8b85", "#00e5ff"));
+            for (const key of ["primary", "secondary", "accent"] as const) {
+                const copy = vars[`--civo-color-${key}-copy`];
+                expect(contrastRatio(copy, PAGE_BACKGROUND), key).toBeGreaterThanOrEqual(4.5);
+            }
+        });
+
+        it("leaves an already-readable brand color exactly as chosen", () => {
+            const vars = themeToCssVariables(withColors("#1a1a1a", "#333333", "#024b6d"));
+            expect(vars["--civo-color-primary-copy"]).toBe("#1a1a1a");
+            expect(vars["--civo-color-secondary-copy"]).toBe("#333333");
+            expect(vars["--civo-color-accent-copy"]).toBe("#024b6d");
+        });
+
+        it("still emits the raw brand color for fills, borders and backgrounds", () => {
+            const vars = themeToCssVariables(withColors("#111111", "#222222", "#00e5ff"));
+            expect(vars["--civo-color-accent"]).toBe("#00e5ff");
+        });
+
+        it("does not throw on a half-typed color (the settings preview passes these through)", () => {
+            expect(() => themeToCssVariables(withColors("#1A1", "", "not-a-color"))).not.toThrow();
+        });
     });
 
     it("resolves font names to their loaded CSS variable with a sane fallback stack", () => {

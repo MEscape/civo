@@ -13,10 +13,10 @@ export default async function WebsitesPage() {
         <Container className="py-10">
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="font-[family-name:var(--civo-font-heading)] text-2xl text-[var(--civo-color-text)]">
+                    <h1 className="font-heading text-2xl text-copy">
                         Websites
                     </h1>
-                    <p className="mt-1 text-sm text-[var(--civo-color-text-muted)]">
+                    <p className="mt-1 text-sm text-copy-muted">
                         Kommunale, Smart-City und Vereins-Websites, die auf dieser Plattform verwaltet werden.
                     </p>
                 </div>
@@ -26,14 +26,14 @@ export default async function WebsitesPage() {
             </div>
 
             {!result.ok && (
-                <div className="rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] p-6 text-sm text-[var(--civo-color-text-muted)]">
+                <div className="rounded-token border border-border bg-surface p-6 text-sm text-copy-muted">
                     Websites konnten nicht geladen werden. Stellen Sie sicher, dass die Datenbank läuft und migriert wurde (siehe README).
                 </div>
             )}
 
             {result.ok && result.data.length === 0 && (
-                <div className="rounded-[var(--civo-radius)] border border-dashed border-[var(--civo-color-border)] p-10 text-center">
-                    <p className="text-sm text-[var(--civo-color-text-muted)]">
+                <div className="rounded-token border border-dashed border-border p-10 text-center">
+                    <p className="text-sm text-copy-muted">
                         Noch keine Websites vorhanden. Erstellen Sie die erste, um zu beginnen.
                     </p>
                 </div>
@@ -44,12 +44,12 @@ export default async function WebsitesPage() {
                     {result.data.map((website) => (
                         <Card key={website.id} className="h-full flex-1 flex flex-col">
                             <CardHeader className="flex-1 flex flex-col">
-                                <CardTitle>{website.name}</CardTitle>
+                                <CardTitle as="h2">{website.name}</CardTitle>
                                 <CardDescription>
                                     {website.description || `/${website.slug}`}
                                 </CardDescription>
                                 {website.templateKey && (
-                                    <p className="mt-2 inline-block w-fit rounded-full bg-[var(--civo-color-background)] px-2.5 py-1 text-xs text-[var(--civo-color-text-muted)]">
+                                    <p className="mt-2 inline-block w-fit rounded-full bg-canvas px-2.5 py-1 text-xs text-copy-muted">
                                         {website.templateKey}
                                     </p>
                                 )}

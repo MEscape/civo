@@ -12,12 +12,12 @@ export function QuickLinks({ props }: { props: Record<string, unknown> }) {
         <Section tone="muted">
             <Container className="max-w-3xl">
                 <SectionHeading>{heading}</SectionHeading>
-                <ul className="divide-y divide-[var(--civo-color-border)]">
+                <ul className="divide-y divide-border">
                     {links.map((link, index) => (
                         <li key={`${link.href}-${index}`}>
                             <a
                                 href={link.href}
-                                className="flex items-center justify-between py-3 text-sm font-medium text-[var(--civo-color-text)] hover:text-[var(--civo-color-primary)]"
+                                className="flex items-center justify-between py-3 text-sm font-medium text-copy hover:text-primary-copy"
                             >
                                 {link.label}
                                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />

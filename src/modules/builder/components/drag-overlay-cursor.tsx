@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { DragSource } from "./use-canvas-dnd";
-import { getComponentDefinition, tryGetComponentDefinition } from "@/modules/component-platform/domain";
+import { tryGetComponentDefinition } from "@/modules/component-platform/domain";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import { flattenTree } from "@/modules/builder/domain/drop-placement";
 
@@ -41,7 +41,7 @@ export function DragOverlayCursor({ activeSource, nodes }: { activeSource: DragS
     return (
         <div
             ref={overlayRef}
-            className="fixed left-0 top-0 z-[9999] pointer-events-none rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] px-3 py-1.5 text-sm font-medium text-[var(--civo-color-text)] shadow-lg opacity-90 transition-opacity duration-150"
+            className="fixed left-0 top-0 z-[9999] pointer-events-none rounded-token border border-border bg-surface px-3 py-1.5 text-sm font-medium text-copy shadow-lg opacity-90 transition-opacity duration-150"
             style={{ transform: "translate(-9999px, -9999px)" /* Start offscreen until first mouse move */ }}
         >
             {label}

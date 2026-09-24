@@ -29,12 +29,10 @@ export function SectionNode({
                                 props,
                                 children,
                                 editMode = false,
-                                websiteId,
                             }: {
     props: Record<string, unknown>;
     children?: PageNode[];
     editMode?: boolean;
-    websiteId?: string;
 }) {
     const parsed = sectionPropsSchema.safeParse(props);
     const { spacing, tone } = parsed.success
@@ -54,12 +52,12 @@ export function SectionNode({
                     // simply renders nothing, and this placeholder markup never
                     // reaches persisted PageConfig or public HTML.
                     editMode && (
-                        <div className="rounded-[var(--civo-radius)] border border-dashed border-[var(--civo-color-border)] px-4 py-6 text-center text-sm text-[var(--civo-color-text-muted)]">
+                        <div className="rounded-token border border-dashed border-border px-4 py-6 text-center text-sm text-copy-muted">
                             Leere Section — Komponente aus der linken Liste hierher ziehen.
                         </div>
                     )
                 ) : (
-                    renderPageNodes(children, editMode, websiteId)
+                    renderPageNodes(children, editMode)
                 )}
             </Container>
         </SectionPrimitive>

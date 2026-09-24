@@ -6,6 +6,8 @@ import { dataSourceService } from "@/modules/data-sources/application/data-sourc
 import { DataSourcesPanel } from "@/modules/data-sources/components/data-sources-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import { ToolbarLink } from "@/components/ui/toolbar-link";
+import { ArrowLeft, ExternalLink } from "@/components/ui/icons";
 
 export default async function SettingsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -20,31 +22,39 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
     const dataSources = dataSourcesResult.ok ? dataSourcesResult.data : [];
 
     return (
-        <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] px-4">
-                <div className="flex items-center gap-2 text-sm">
-                    <Link href="/websites" className="text-[var(--civo-color-text-muted)] hover:underline">
-                        ← Websites
+        <div className="flex h-app-body flex-col">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-border bg-surface px-4 py-2">
+                <nav aria-label="Brotkrumen" className="flex min-w-0 items-center gap-2 text-sm">
+                    <Link
+                        href="/websites"
+                        className="inline-flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-token-sm text-copy-muted hover:text-copy pointer-coarse:h-11 pointer-coarse:min-w-11"
+                    >
+                        <ArrowLeft className="size-4" />
+                        <span className="sr-only sm:not-sr-only">Websites</span>
                     </Link>
-                    <span className="text-[var(--civo-color-border)]">/</span>
-                    <Link href={`/websites/${id}/builder`} className="text-[var(--civo-color-text-muted)] hover:underline">
-                        {websiteResult.data.name}
+                    <span aria-hidden="true" className="text-border-strong">/</span>
+                    <Link
+                        href={`/websites/${id}/builder`}
+                        className="inline-flex h-8 min-w-0 items-center text-copy-muted hover:text-copy pointer-coarse:h-11"
+                    >
+                        <span className="truncate">{websiteResult.data.name}</span>
                     </Link>
-                    <span className="text-[var(--civo-color-border)]">/</span>
-                    <span className="font-medium text-[var(--civo-color-text)]">Einstellungen</span>
-                </div>
+                    <span aria-hidden="true" className="text-border-strong">/</span>
+                    <span aria-current="page" className="shrink-0 font-medium text-copy">Einstellungen</span>
+                </nav>
 
-                <Link
+                <ToolbarLink
                     href={`/s/${websiteResult.data.id}`}
-                    target="_blank"
-                    className="text-sm text-[var(--civo-color-text-muted)] hover:underline"
-                >
-                    Öffentliche Seite
-                </Link>
+                    label="Öffentliche Seite"
+                    icon={<ExternalLink className="size-4" />}
+                    newTab
+                />
             </div>
 
-            <main className="flex-1 overflow-y-auto bg-[var(--civo-color-background)] p-6 md:p-8">
+            {/* Not <main>: the dashboard layout already provides the page's one main landmark. */}
+            <div className="min-h-0 flex-1 overflow-y-auto bg-canvas p-4 md:p-8">
                 <div className="mx-auto max-w-6xl">
+                    <h1 className="sr-only">Einstellungen für {websiteResult.data.name}</h1>
                     <Tabs defaultValue="theme">
                         <TabsList>
                             <TabsTrigger value="theme">Theme</TabsTrigger>
@@ -62,7 +72,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
                         </TabsContent>
                     </Tabs>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

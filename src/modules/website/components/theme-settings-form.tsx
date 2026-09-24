@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateThemeAction } from "@/modules/website/application/website-actions";
-import { Input, Label } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/modules/website/components/theme-provider";
 import { AVAILABLE_BODY_FONTS, AVAILABLE_HEADING_FONTS, type WebsiteTheme, type ThemeRadius, type ThemeSpacingScale } from "@/modules/website/domain/theme";
@@ -73,126 +73,71 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
     return (
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div>
-                <h2 className="mb-6 text-xl font-semibold text-[var(--civo-color-text)]">Theme Einstellungen</h2>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] p-6">
+                <h2 className="mb-6 text-xl font-semibold text-copy">Theme Einstellungen</h2>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 rounded-token border border-border bg-surface p-6">
                     <div className="space-y-4">
-                        <h3 className="text-sm font-medium text-[var(--civo-color-text)]">Farben</h3>
+                        <h3 className="text-sm font-medium text-copy">Farben</h3>
 
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="primaryColor">Primär</Label>
-                                <div className="flex gap-2">
-                                    <Input 
-                                        id="primaryColor-color" 
-                                        type="color" 
-                                        className="w-12 p-1 h-9 cursor-pointer" 
-                                        value={formValues.primaryColor ?? initialTheme.colors.primary}
-                                        onChange={(e) => form.setValue("primaryColor", e.target.value, { shouldValidate: true, shouldDirty: true })} 
-                                    />
-                                    <Input {...form.register("primaryColor")} className="flex-1" />
-                                </div>
-                                {form.formState.errors.primaryColor && <p className="text-xs text-red-700">{form.formState.errors.primaryColor.message}</p>}
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="secondaryColor">Sekundär</Label>
-                                <div className="flex gap-2">
-                                    <Input 
-                                        id="secondaryColor-color" 
-                                        type="color" 
-                                        className="w-12 p-1 h-9 cursor-pointer" 
-                                        value={formValues.secondaryColor ?? initialTheme.colors.secondary}
-                                        onChange={(e) => form.setValue("secondaryColor", e.target.value, { shouldValidate: true, shouldDirty: true })} 
-                                    />
-                                    <Input {...form.register("secondaryColor")} className="flex-1" />
-                                </div>
-                                {form.formState.errors.secondaryColor && <p className="text-xs text-red-700">{form.formState.errors.secondaryColor.message}</p>}
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="accentColor">Akzent</Label>
-                                <div className="flex gap-2">
-                                    <Input 
-                                        id="accentColor-color" 
-                                        type="color" 
-                                        className="w-12 p-1 h-9 cursor-pointer" 
-                                        value={formValues.accentColor ?? initialTheme.colors.accent}
-                                        onChange={(e) => form.setValue("accentColor", e.target.value, { shouldValidate: true, shouldDirty: true })} 
-                                    />
-                                    <Input {...form.register("accentColor")} className="flex-1" />
-                                </div>
-                                {form.formState.errors.accentColor && <p className="text-xs text-red-700">{form.formState.errors.accentColor.message}</p>}
-                            </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <ColorField form={form} name="primaryColor" label="Primär" value={previewTheme.colors.primary} fallback={initialTheme.colors.primary} />
+                            <ColorField form={form} name="secondaryColor" label="Sekundär" value={previewTheme.colors.secondary} fallback={initialTheme.colors.secondary} />
+                            <ColorField form={form} name="accentColor" label="Akzent" value={previewTheme.colors.accent} fallback={initialTheme.colors.accent} />
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="text-sm font-medium text-[var(--civo-color-text)]">Typografie</h3>
+                        <h3 className="text-sm font-medium text-copy">Typografie</h3>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
                                 <Label htmlFor="headingFont">Überschriften</Label>
-                                <select
-                                    id="headingFont"
-                                    {...form.register("headingFont")}
-                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                >
+                                <Select id="headingFont" {...form.register("headingFont")}>
                                     {AVAILABLE_HEADING_FONTS.map(font => (
                                         <option key={font} value={font}>{font}</option>
                                     ))}
-                                </select>
-                                {form.formState.errors.headingFont && <p className="text-xs text-red-700">{form.formState.errors.headingFont.message}</p>}
+                                </Select>
+                                {form.formState.errors.headingFont && <p className="text-xs text-danger">{form.formState.errors.headingFont.message}</p>}
                             </div>
                             <div className="space-y-1.5">
                                 <Label htmlFor="bodyFont">Fließtext</Label>
-                                <select
-                                    id="bodyFont"
-                                    {...form.register("bodyFont")}
-                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                >
+                                <Select id="bodyFont" {...form.register("bodyFont")}>
                                     {AVAILABLE_BODY_FONTS.map(font => (
                                         <option key={font} value={font}>{font}</option>
                                     ))}
-                                </select>
-                                {form.formState.errors.bodyFont && <p className="text-xs text-red-700">{form.formState.errors.bodyFont.message}</p>}
+                                </Select>
+                                {form.formState.errors.bodyFont && <p className="text-xs text-danger">{form.formState.errors.bodyFont.message}</p>}
                             </div>
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="text-sm font-medium text-[var(--civo-color-text)]">Layout</h3>
+                        <h3 className="text-sm font-medium text-copy">Layout</h3>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
                                 <Label htmlFor="radius">Abrundung</Label>
-                                <select
-                                    id="radius"
-                                    {...form.register("radius")}
-                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                >
+                                <Select id="radius" {...form.register("radius")}>
                                     <option value="none">Eckig (0px)</option>
                                     <option value="sm">Leicht (2px)</option>
                                     <option value="md">Mittel (6px)</option>
                                     <option value="lg">Stark (12px)</option>
-                                </select>
-                                {form.formState.errors.radius && <p className="text-xs text-red-700">{form.formState.errors.radius.message}</p>}
+                                </Select>
+                                {form.formState.errors.radius && <p className="text-xs text-danger">{form.formState.errors.radius.message}</p>}
                             </div>
                             <div className="space-y-1.5">
                                 <Label htmlFor="spacingScale">Abstände</Label>
-                                <select
-                                    id="spacingScale"
-                                    {...form.register("spacingScale")}
-                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                >
+                                <Select id="spacingScale" {...form.register("spacingScale")}>
                                     <option value="compact">Kompakt</option>
                                     <option value="comfortable">Komfortabel</option>
                                     <option value="spacious">Großzügig</option>
-                                </select>
-                                {form.formState.errors.spacingScale && <p className="text-xs text-red-700">{form.formState.errors.spacingScale.message}</p>}
+                                </Select>
+                                {form.formState.errors.spacingScale && <p className="text-xs text-danger">{form.formState.errors.spacingScale.message}</p>}
                             </div>
                         </div>
                     </div>
 
-                    {error && <p className="text-sm text-red-700">{error}</p>}
-                    {success && <p className="text-sm text-green-700">Theme erfolgreich gespeichert!</p>}
+                    {error && <p className="text-sm text-danger">{error}</p>}
+                    {success && <p className="text-sm text-success">Theme erfolgreich gespeichert!</p>}
 
                     <Button type="submit" disabled={isPending}>
                         {isPending ? "Speichert…" : "Theme speichern"}
@@ -201,36 +146,37 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
             </div>
 
             <div>
-                <h2 className="mb-6 text-xl font-semibold text-[var(--civo-color-text)]">Live-Vorschau</h2>
-                <div className="rounded-xl border border-[var(--civo-color-border)] bg-gray-50 p-6 overflow-hidden relative min-h-[400px]">
+                <h2 className="mb-6 text-xl font-semibold text-copy">Live-Vorschau</h2>
+                {/* Illustration only: hidden from assistive tech, so it holds no headings, links or buttons. */}
+                <div aria-hidden="true" className="relative min-h-96 overflow-hidden rounded-token border border-border bg-canvas p-6">
                     <ThemeProvider theme={previewTheme}>
-                        <div className="space-y-[var(--civo-section-spacing)] max-w-sm mx-auto p-4 bg-[var(--civo-color-background)] rounded-[var(--civo-radius)] shadow-sm border border-[var(--civo-color-border)]">
+                        <div className="mx-auto max-w-sm space-y-section rounded-token border border-border bg-canvas p-4">
                             <div>
-                                <h1 className="font-heading text-3xl font-bold text-[var(--civo-color-text)] mb-2">
+                                <p className="mb-2 font-heading text-3xl font-bold text-copy">
                                     Willkommen
-                                </h1>
-                                <p className="font-body text-base text-[var(--civo-color-text-muted)]">
+                                </p>
+                                <p className="font-body text-base text-copy-muted">
                                     Dies ist eine Vorschau, wie Ihre Komponenten mit den neuen Theme-Einstellungen aussehen werden.
                                 </p>
                             </div>
 
                             <div className="flex gap-3">
-                                <button className="bg-[var(--civo-color-primary)] text-[var(--civo-color-primary-foreground)] px-4 py-2 font-body font-medium rounded-[var(--civo-radius)] hover:opacity-90">
+                                <span className="rounded-token bg-primary px-4 py-2 font-body font-medium text-primary-foreground">
                                     Primär
-                                </button>
-                                <button className="bg-[var(--civo-color-secondary)] text-[var(--civo-color-secondary-foreground)] px-4 py-2 font-body font-medium rounded-[var(--civo-radius)] hover:opacity-90">
+                                </span>
+                                <span className="rounded-token bg-secondary px-4 py-2 font-body font-medium text-secondary-foreground">
                                     Sekundär
-                                </button>
-                                <button className="bg-[var(--civo-color-accent)] text-[var(--civo-color-accent-foreground)] px-4 py-2 font-body font-medium rounded-[var(--civo-radius)] hover:opacity-90">
+                                </span>
+                                <span className="rounded-token bg-accent px-4 py-2 font-body font-medium text-accent-foreground">
                                     Akzent
-                                </button>
+                                </span>
                             </div>
 
-                            <div className="bg-[var(--civo-color-surface)] border border-[var(--civo-color-border)] p-4 rounded-[var(--civo-radius)]">
-                                <h3 className="font-heading text-xl font-semibold text-[var(--civo-color-text)] mb-2">
+                            <div className="rounded-token border border-border bg-surface p-4">
+                                <p className="mb-2 font-heading text-xl font-semibold text-copy">
                                     Karte
-                                </h3>
-                                <p className="font-body text-sm text-[var(--civo-color-text-muted)]">
+                                </p>
+                                <p className="font-body text-sm text-copy-muted">
                                     Komponenten wie Karten übernehmen automatisch die abgerundeten Ecken und Hintergrundfarben des Themes.
                                 </p>
                             </div>
@@ -238,6 +184,59 @@ export function ThemeSettingsForm({ websiteId, themeId, initialTheme }: ThemeSet
                     </ThemeProvider>
                 </div>
             </div>
+        </div>
+    );
+}
+
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+/**
+ * One brand color: a native picker plus an editable hex field. The visible
+ * label names the hex field (htmlFor/id), the picker gets its own accessible
+ * name, and a validation message is tied to the field so assistive tech
+ * reads it with the input. `value` may be half-typed; the native picker only
+ * accepts a full #rrggbb, so it shows `fallback` until the text is valid.
+ */
+function ColorField({
+    form,
+    name,
+    label,
+    value,
+    fallback,
+}: {
+    form: UseFormReturn<ThemeInput>;
+    name: "primaryColor" | "secondaryColor" | "accentColor";
+    label: string;
+    value: string;
+    fallback: string;
+}) {
+    const errorId = `${name}-error`;
+    const error = form.formState.errors[name]?.message;
+
+    return (
+        <div className="space-y-1.5">
+            <Label htmlFor={name}>{label}</Label>
+            <div className="flex gap-2">
+                <Input
+                    type="color"
+                    aria-label={`${label}: Farbe auswählen`}
+                    className="h-9 w-12 cursor-pointer p-1"
+                    value={HEX_COLOR.test(value) ? value : fallback}
+                    onChange={(event) => form.setValue(name, event.target.value, { shouldValidate: true, shouldDirty: true })}
+                />
+                <Input
+                    id={name}
+                    className="flex-1"
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? errorId : undefined}
+                    {...form.register(name)}
+                />
+            </div>
+            {error && (
+                <p id={errorId} className="text-xs text-danger">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }

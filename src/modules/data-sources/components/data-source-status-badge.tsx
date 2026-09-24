@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
  * severity indicators: a municipality's brand palette should never make
  * "this connection is broken" ambiguous.
  */
-const statusVariants: Record<DataSourceStatus, "default" | "destructive" | "secondary"> = {
-    OK: "default", // We could add a 'success' variant to badge.tsx if we wanted to be perfectly semantic
-    ERROR: "destructive",
-    UNKNOWN: "secondary",
+const statusVariants: Record<DataSourceStatus, "success" | "danger" | "muted"> = {
+    OK: "success",
+    ERROR: "danger",
+    UNKNOWN: "muted",
 };
 
 const statusLabel: Record<DataSourceStatus, string> = {

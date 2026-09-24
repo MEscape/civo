@@ -29,7 +29,6 @@ type BuilderCanvasProps = {
     theme?: WebsiteTheme;
     containerRef: RefObject<HTMLDivElement | null>;
     dnd: ReturnType<typeof useCanvasDnd>;
-    websiteId?: string;
 };
 
 const viewportWidths: Record<BuilderCanvasProps["viewport"], string> = {
@@ -57,13 +56,13 @@ const viewportWidths: Record<BuilderCanvasProps["viewport"], string> = {
  * descendant — also needs to drive the same drag session when starting a
  * drag from a palette item (spec §10).
  */
-export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme, containerRef, dnd, websiteId }: BuilderCanvasProps) {
+export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme, containerRef, dnd }: BuilderCanvasProps) {
     const dispatch = useAppDispatch();
     const editorMode = useAppSelector(selectEditorMode);
     const canEditStructure = hasCapability(editorMode, "editStructure");
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
-    const { node, isRendering, error } = useCanvasRender(nodes, websiteId);
+    const { node, isRendering, error } = useCanvasRender(nodes);
     const { measure, selectedRect, setSelectedRect, hoveredRect, setHoveredRect, handlers } = useCanvasHitTesting(
         containerRef,
         {
@@ -80,28 +79,28 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
         setHoveredRect(hoveredNodeId && hoveredNodeId !== selectedNodeId ? measure(hoveredNodeId) : null);
     }, [hoveredNodeId, selectedNodeId, node, viewport, measure, setHoveredRect]);
 
-    // The viewport switcher (desktop/tablet/mobile) animates the canvas's
-    // max-width over 150ms (see the outer div's `transition-[max-width]`
-    // below), so the two effects above — which re-measure the instant
-    // `viewport` changes — capture the selection/hover overlay's rect
-    // before the resize animation has actually finished, leaving the
-    // overlay box at a stale position/size relative to the now-resized
-    // content. Re-measuring again on `transitionend` catches the final,
-    // settled geometry. Listened on the same element `measure` reads
-    // from (containerRef), which sits inside the transitioning ancestor
-    // so the bubbling `transitionend` event still reaches it.
+    // The overlay boxes are positioned from measurements of the rendered
+    // content, so they go stale whenever that content changes size without
+    // the selection changing: the viewport switcher animates the canvas's
+    // max-width over 150ms (see the outer div's `transition-[max-width]`),
+    // the browser window resizes, images finish loading. The effects above
+    // measure once per change of their inputs, which is too early for an
+    // animation. A ResizeObserver reports every actual size change, including
+    // each frame of the transition, so the overlay follows the content.
+    //
+    // Not `transitionend`: that fires on the element that transitions and
+    // bubbles UP to its ancestors. `containerRef` is a descendant of the
+    // transitioning element, so it never receives it in a browser.
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 
-        function handleTransitionEnd(event: TransitionEvent) {
-            if (event.propertyName !== "max-width") return;
+        const observer = new ResizeObserver(() => {
             setSelectedRect(measure(selectedNodeId));
             setHoveredRect(hoveredNodeId && hoveredNodeId !== selectedNodeId ? measure(hoveredNodeId) : null);
-        }
-
-        container.addEventListener("transitionend", handleTransitionEnd);
-        return () => container.removeEventListener("transitionend", handleTransitionEnd);
+        });
+        observer.observe(container);
+        return () => observer.disconnect();
     }, [containerRef, selectedNodeId, hoveredNodeId, measure, setSelectedRect, setHoveredRect]);
 
     const { activeSource, dropIndicatorRect, keyboardActive, handleGripKeyDown } = dnd;
@@ -116,7 +115,7 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
 
     return (
         <div className="mx-auto transition-[max-width] duration-150" style={{ maxWidth: viewportWidths[viewport] }}>
-            <div className="civo-canvas rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-background)]">
+            <div className="civo-canvas rounded-token border border-border bg-canvas">
                 <div
                     ref={containerRef}
                     className="civo-canvas-content"
@@ -210,9 +209,9 @@ export function BuilderCanvas({ nodes, selectedNodeId, onSelect, viewport, theme
             </div>
 
             {isRendering && nodes.length > 0 && !node && (
-                <p className="mt-3 text-center text-xs text-[var(--civo-color-text-muted)]">Wird gerendert…</p>
+                <p className="mt-3 text-center text-xs text-copy-muted">Wird gerendert…</p>
             )}
-            {error && <p className="mt-3 text-center text-xs text-red-700">{error}</p>}
+            {error && <p className="mt-3 text-center text-xs text-danger">{error}</p>}
         </div>
     );
 }

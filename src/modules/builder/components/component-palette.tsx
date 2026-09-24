@@ -7,6 +7,7 @@ import { getAllComponentDefinitions } from "@/modules/component-platform/domain/
 import { insertNodeAction } from "@/modules/builder/application/document-slice";
 import { selectEditorMode } from "@/modules/builder/application/builder-selectors";
 import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
+import { cn } from "@/lib/utils/cn";
 
 const categoryLabels: Record<ComponentCategory, string> = {
     layout: "Layout",
@@ -23,10 +24,17 @@ import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { ComponentPreviewPopover } from "./component-preview-popover";
 
 type ComponentPaletteProps = {
-    onBeginDrag: (componentType: string, label: string) => void;
-    onDragPosition: (clientX: number, clientY: number) => void;
-    onDragEnd: () => void;
-    onDragCancel: () => void;
+    /**
+     * Drag-to-insert callbacks. Omit all four for a click-only palette,
+     * which is what the phone/tablet sheet uses: the drop targets sit
+     * behind the sheet's overlay there, so dragging cannot work.
+     */
+    onBeginDrag?: (componentType: string, label: string) => void;
+    onDragPosition?: (clientX: number, clientY: number) => void;
+    onDragEnd?: () => void;
+    onDragCancel?: () => void;
+    /** Called after a click inserts a component (e.g. to close the sheet). */
+    onInsert?: () => void;
     websiteId?: string;
     theme?: WebsiteTheme;
 };
@@ -52,10 +60,11 @@ type ComponentPaletteProps = {
  * resolution and completion, exactly as they do for in-canvas node
  * drags.
  */
-export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDragCancel, websiteId, theme }: ComponentPaletteProps) {
+export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDragCancel, onInsert, websiteId, theme }: ComponentPaletteProps) {
     const dispatch = useAppDispatch();
     const editorMode = useAppSelector(selectEditorMode);
     const canEditStructure = hasCapability(editorMode, "editStructure");
+    const canDrag = canEditStructure && onBeginDrag !== undefined;
     const pointerDownRef = useRef<{ x: number; y: number; type: string; label: string } | null>(null);
     const draggingRef = useRef(false);
     const [hoverState, setHoverState] = useState<{ type: string; rect: DOMRect } | null>(null);
@@ -81,19 +90,19 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                 if (Math.hypot(dx, dy) < DRAG_ACTIVATION_DISTANCE) return;
                 draggingRef.current = true;
                 setHoverState(null);
-                onBeginDrag(start.type, start.label);
+                onBeginDrag?.(start.type, start.label);
             }
-            onDragPosition(moveEvent.clientX, moveEvent.clientY);
+            onDragPosition?.(moveEvent.clientX, moveEvent.clientY);
         }
 
         function handleUp() {
             if (draggingRef.current) {
-                onDragEnd();
+                onDragEnd?.();
             }
             pointerDownRef.current = null;
 
-            // Delay resetting draggingRef so the subsequent native 'click' event 
-            // (which the browser fires if the drop happens on the same button) 
+            // Delay resetting draggingRef so the subsequent native 'click' event
+            // (which the browser fires if the drop happens on the same button)
             // still sees it as true and correctly ignores it.
             setTimeout(() => {
                 draggingRef.current = false;
@@ -105,7 +114,7 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
         }
 
         function handleCancel() {
-            if (draggingRef.current) onDragCancel();
+            if (draggingRef.current) onDragCancel?.();
             pointerDownRef.current = null;
 
             setTimeout(() => {
@@ -132,11 +141,12 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
         const definition = getAllComponentDefinitions().find((def) => def.type === type);
         if (!definition) return;
         dispatch(insertNodeAction({ node: definition.createDefaultNode(), parentId: null }));
+        onInsert?.();
     }
 
     return (
         <div className="p-4">
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-[var(--civo-color-text-muted)]">
+            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-copy-muted">
                 Komponenten
             </h2>
             {categories.map((category) => {
@@ -144,7 +154,7 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                 if (items.length === 0) return null;
                 return (
                     <div key={category} className="mb-5">
-                        <p className="mb-2 text-xs font-medium text-[var(--civo-color-text-muted)]">
+                        <p className="mb-2 text-xs font-medium text-copy-muted">
                             {categoryLabels[category]}
                         </p>
                         <div className="flex flex-col gap-1">
@@ -152,14 +162,16 @@ export function ComponentPalette({ onBeginDrag, onDragPosition, onDragEnd, onDra
                                 <button
                                     key={item.type}
                                     type="button"
-                                    onPointerDown={canEditStructure ? (event) => handlePointerDown(event, item.type, item.label) : undefined}
+                                    onPointerDown={canDrag ? (event) => handlePointerDown(event, item.type, item.label) : undefined}
                                     onClick={() => handleClick(item.type)}
                                     onPointerEnter={(e) => {
-                                        if (draggingRef.current) return;
+                                        // Hover preview is a mouse/pen affordance. A touch tap fires
+                                        // pointerenter too, and would pop the preview over every tap.
+                                        if (draggingRef.current || e.pointerType === "touch") return;
                                         setHoverState({ type: item.type, rect: e.currentTarget.getBoundingClientRect() });
                                     }}
                                     onPointerLeave={() => setHoverState(null)}
-                                    className="cursor-grab rounded-[calc(var(--civo-radius)_-_2px)] px-2.5 py-2 text-left text-sm text-[var(--civo-color-text)] hover:bg-[var(--civo-color-background)] focus-visible:outline-2 focus-visible:outline-[var(--civo-color-accent)]"
+                                    className={cn("rounded-token-sm px-2.5 py-2 text-left text-sm text-copy hover:bg-canvas pointer-coarse:py-3", canDrag && "cursor-grab")}
                                 >
                                     {item.label}
                                 </button>

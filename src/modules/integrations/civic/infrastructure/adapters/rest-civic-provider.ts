@@ -1,5 +1,4 @@
 import type { CivicDataProvider } from "./civic-data-provider";
-import { MockCivicDataProvider } from "./mock-civic-provider";
 import type { Result } from "@/lib/result/result";
 import { ok, err } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
@@ -7,7 +6,6 @@ import { AppErrors } from "@/lib/errors/app-error";
 import { logger } from "@/lib/logger/logger";
 import type { CivicEvent } from "@/modules/content/domain/civic-types";
 import { civicEventSchema } from "@/modules/content/domain/civic-schema";
-import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
 import { restDataSourceConfigSchema } from "@/modules/data-sources/domain/data-source-schema";
 import { applyMapping, datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
 import { deriveMappedRecordId } from "@/modules/data-sources/infrastructure/derive-mapped-record-id";
@@ -38,8 +36,6 @@ import { datasetCacheVersion } from "@/modules/data-sources/domain/source-cache-
  * method here — not a redesign of this class.
  */
 export class RestCivicDataProvider implements CivicDataProvider {
-    private readonly fallback = new MockCivicDataProvider();
-
     constructor(
         private readonly source: DataSourceView,
         private readonly dataset: DatasetView
@@ -48,11 +44,11 @@ export class RestCivicDataProvider implements CivicDataProvider {
     async getEvents(options?: { limit?: number; category?: string }): Promise<Result<CivicEvent[], AppError>> {
         const mappedResult = await this.fetchMappedEvents();
         if (!mappedResult.ok) {
-            logger.warn("RestCivicDataProvider.getEvents falling back to mock data", {
+            logger.warn("RestCivicDataProvider.getEvents falling back to empty list", {
                 dataSourceId: this.source.id,
                 cause: mappedResult.error,
             });
-            return this.fallback.getEvents(options);
+            return ok([]);
         }
 
         let items = mappedResult.data;
@@ -117,17 +113,15 @@ export class RestCivicDataProvider implements CivicDataProvider {
     }
 
     // Every other method: no mapping targets these canonical types in
-    // this phase, so serve sample data rather than an empty/broken
-    // component (spec §25).
-    getNews: CivicDataProvider["getNews"] = (options) => this.fallback.getNews(options);
-    getNewsBySlug: CivicDataProvider["getNewsBySlug"] = (slug) => this.fallback.getNewsBySlug(slug);
-    getServices: CivicDataProvider["getServices"] = (options) => this.fallback.getServices(options);
-    getContacts: CivicDataProvider["getContacts"] = (options) => this.fallback.getContacts(options);
-    getOpeningHours: CivicDataProvider["getOpeningHours"] = () => this.fallback.getOpeningHours();
-    getServiceDetails: CivicDataProvider["getServiceDetails"] = (options) => this.fallback.getServiceDetails(options);
-    getCouncilBodies: CivicDataProvider["getCouncilBodies"] = () => this.fallback.getCouncilBodies();
-    getWasteCollectionEntries: CivicDataProvider["getWasteCollectionEntries"] = (options) =>
-        this.fallback.getWasteCollectionEntries(options);
-    getAlerts: CivicDataProvider["getAlerts"] = (options) => this.fallback.getAlerts(options);
-    getDepartments: CivicDataProvider["getDepartments"] = () => this.fallback.getDepartments();
+    // this phase, so return empty lists.
+    getNews: CivicDataProvider["getNews"] = () => Promise.resolve(ok([]));
+    getNewsBySlug: CivicDataProvider["getNewsBySlug"] = () => Promise.resolve(err(AppErrors.notFound("Meldung")));
+    getServices: CivicDataProvider["getServices"] = () => Promise.resolve(ok([]));
+    getContacts: CivicDataProvider["getContacts"] = () => Promise.resolve(ok([]));
+    getOpeningHours: CivicDataProvider["getOpeningHours"] = () => Promise.resolve(ok([]));
+    getServiceDetails: CivicDataProvider["getServiceDetails"] = () => Promise.resolve(ok([]));
+    getCouncilBodies: CivicDataProvider["getCouncilBodies"] = () => Promise.resolve(ok([]));
+    getWasteCollectionEntries: CivicDataProvider["getWasteCollectionEntries"] = () => Promise.resolve(ok([]));
+    getAlerts: CivicDataProvider["getAlerts"] = () => Promise.resolve(ok([]));
+    getDepartments: CivicDataProvider["getDepartments"] = () => Promise.resolve(ok([]));
 }

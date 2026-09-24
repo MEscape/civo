@@ -47,7 +47,7 @@ export function PropertiesPanel({ websiteId }: { websiteId: string }) {
     if (!node) {
         return (
             <div className="p-4">
-                <p className="text-sm text-[var(--civo-color-text-muted)]">
+                <p className="text-sm text-copy-muted">
                     Komponente auswählen, um Eigenschaften zu bearbeiten.
                 </p>
             </div>
@@ -76,10 +76,10 @@ export function PropertiesPanel({ websiteId }: { websiteId: string }) {
         <div className="p-4">
             {ancestors.length > 0 && <Breadcrumb ancestors={ancestors} currentLabel={definition?.label ?? node.type} />}
 
-            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--civo-color-text-muted)]">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-copy-muted">
                 Eigenschaften
             </h2>
-            <p className="mb-4 text-sm font-medium text-[var(--civo-color-text)]">
+            <p className="mb-4 text-sm font-medium text-copy">
                 {definition?.label ?? node.type}
             </p>
 
@@ -94,7 +94,7 @@ export function PropertiesPanel({ websiteId }: { websiteId: string }) {
                     canonicalType={definition?.dataBinding?.canonicalType}
                 />
             ) : (
-                <p className="text-sm text-[var(--civo-color-text-muted)]">
+                <p className="text-sm text-copy-muted">
                     Diese Komponente hat keine bearbeitbaren Eigenschaften.
                 </p>
             )}
@@ -154,7 +154,7 @@ function GroupedFields({
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--civo-color-text-muted)]">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-copy-muted">
                 {label}
             </p>
             <div className="flex flex-col gap-4">{children}</div>
@@ -236,10 +236,10 @@ function VisibilityToggle({ nodeId, visible }: { nodeId: string; visible: boolea
                     dispatch(updateNodePropsAction({ nodeId, props: { visible: e.target.checked } }));
                     dispatch(commitPropsHistory());
                 }}
-                className="h-4 w-4 rounded accent-[var(--civo-color-accent)]"
+                className="h-4 w-4 rounded accent-accent"
                 id={`visibility-${nodeId}`}
             />
-            <span className="text-[var(--civo-color-text)]">Sichtbar</span>
+            <span className="text-copy">Sichtbar</span>
         </label>
     );
 }
@@ -254,11 +254,11 @@ function Breadcrumb({
 }) {
     const dispatch = useAppDispatch();
     return (
-        <div className="mb-3 flex flex-wrap items-center gap-1 text-xs text-[var(--civo-color-text-muted)]">
+        <div className="mb-3 flex flex-wrap items-center gap-1 text-xs text-copy-muted">
             <button
                 type="button"
                 onClick={() => dispatch(selectNode(null))}
-                className="hover:text-[var(--civo-color-text)] hover:underline"
+                className="hover:text-copy hover:underline"
             >
                 Seite
             </button>
@@ -270,7 +270,7 @@ function Breadcrumb({
                         <button
                             type="button"
                             onClick={() => dispatch(selectNode(ancestor.id))}
-                            className="hover:text-[var(--civo-color-text)] hover:underline"
+                            className="hover:text-copy hover:underline"
                         >
                             {def?.label ?? ancestor.type}
                         </button>
@@ -279,7 +279,7 @@ function Breadcrumb({
             })}
             <span className="flex items-center gap-1">
                 <ChevronRight className="h-3 w-3" />
-                <span className="text-[var(--civo-color-text)]">{currentLabel}</span>
+                <span className="text-copy">{currentLabel}</span>
             </span>
         </div>
     );

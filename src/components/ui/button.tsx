@@ -9,16 +9,16 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 primary:
-                    "bg-[var(--civo-color-primary)] text-white hover:bg-[var(--civo-color-primary)]/90",
-                accent: "bg-[var(--civo-color-accent)] text-white hover:bg-[var(--civo-color-accent)]/90",
+                    "bg-primary text-primary-foreground hover:bg-primary/90",
+                accent: "bg-accent text-accent-foreground hover:bg-accent/90",
                 outline:
-                    "border border-[var(--civo-color-border)] bg-transparent text-[var(--civo-color-text)] hover:bg-[var(--civo-color-surface)]",
-                ghost: "bg-transparent text-[var(--civo-color-text)] hover:bg-black/5",
+                    "border border-border-strong bg-transparent text-copy hover:bg-surface",
+                ghost: "bg-transparent text-copy hover:bg-canvas",
             },
             size: {
-                sm: "h-8 px-3 rounded-[calc(var(--civo-radius)_-_2px)]",
-                md: "h-10 px-4 rounded-[var(--civo-radius)]",
-                lg: "h-12 px-6 text-base rounded-[var(--civo-radius)]",
+                sm: "h-8 px-3 rounded-token-sm pointer-coarse:h-11",
+                md: "h-10 px-4 rounded-token pointer-coarse:h-11",
+                lg: "h-12 px-6 text-base rounded-token",
             },
         },
         defaultVariants: { variant: "primary", size: "md" },

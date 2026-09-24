@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
@@ -10,15 +10,21 @@ import type { PageNode } from "@/modules/builder/domain/page-node";
 import type { useCanvasDnd } from "@/modules/builder/components/use-canvas-dnd";
 
 /**
- * Regression test for the selection-overlay resize bug: switching the
+ * Regression tests for the selection-overlay resize bug: switching the
  * builder's viewport (desktop/tablet/mobile) visually resizes the canvas,
  * but the selection/hover overlay box was left at its pre-resize
- * coordinates because the effects measuring it never re-ran on a
- * `viewport` change, and — once that dependency was added — because the
- * canvas width change animates over 150ms (`transition-[max-width]`), so
- * measuring the instant `viewport` changes still captured stale,
- * mid-animation geometry. See builder-canvas.tsx's effects for the fix
- * (viewport dependency + a `transitionend` re-measure).
+ * coordinates. Two causes, two tests:
+ *  1. the measuring effects did not depend on `viewport`;
+ *  2. the width change animates over 150ms (`transition-[max-width]`), so
+ *     measuring the instant `viewport` changes captures mid-animation
+ *     geometry. builder-canvas.tsx therefore also re-measures whenever
+ *     the canvas content resizes, using a ResizeObserver.
+ *
+ * Why not `transitionend`, which this file used to simulate: that event
+ * fires on the element that transitions and bubbles UP to its ancestors.
+ * The measured container is a DESCENDANT of the transitioning element, so it
+ * never receives it in a browser. The old test passed only because it
+ * dispatched the event straight onto the container, which no browser does.
  */
 
 // renderCanvasAction is a Server Action; mock it to resolve synchronously
@@ -29,10 +35,42 @@ vi.mock("@/modules/builder/application/canvas-render-action", async () => {
     return {
         renderCanvasAction: vi.fn(async () => ({
             ok: true,
-            data: React.createElement("div", { "data-civo-node-id": "hero-1", "data-testid": "hero-1" }, "Hero"),
+            node: React.createElement("div", { "data-civo-node-id": "hero-1", "data-testid": "hero-1" }, "Hero"),
         })),
     };
 });
+
+/**
+ * jsdom has no layout, so it never reports resizes. This stand-in records
+ * every observer so a test can play the browser's part: change the geometry,
+ * then call `resizeObservers.notify()` exactly as a real ResizeObserver would.
+ */
+const resizeObservers = {
+    instances: [] as Array<{ callback: ResizeObserverCallback; targets: Set<Element> }>,
+    notify() {
+        for (const { callback, targets } of this.instances) {
+            callback([...targets].map((target) => ({ target }) as ResizeObserverEntry), {} as ResizeObserver);
+        }
+    },
+};
+
+class FakeResizeObserver {
+    private record: { callback: ResizeObserverCallback; targets: Set<Element> };
+    constructor(callback: ResizeObserverCallback) {
+        this.record = { callback, targets: new Set() };
+        resizeObservers.instances.push(this.record);
+    }
+    observe(target: Element) {
+        this.record.targets.add(target);
+    }
+    unobserve(target: Element) {
+        this.record.targets.delete(target);
+    }
+    disconnect() {
+        this.record.targets.clear();
+        resizeObservers.instances = resizeObservers.instances.filter((r) => r !== this.record);
+    }
+}
 
 function makeStore() {
     return configureStore({
@@ -74,8 +112,14 @@ function mockRect(width: number): DOMRect {
     } as DOMRect;
 }
 
+beforeEach(() => {
+    resizeObservers.instances = [];
+    vi.stubGlobal("ResizeObserver", FakeResizeObserver);
+});
+
 afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     widthPhase = "desktop";
 });
 
@@ -112,9 +156,9 @@ describe("BuilderCanvas selection overlay tracks viewport resize", () => {
             return overlay?.style.width;
         };
 
-        await waitFor(() => {
-            expect(getOverlayWidth()).toBe("1000px");
-        });
+        // The rect is measured in an effect AFTER the async render lands, so the
+        // hero being in the DOM does not yet mean the overlay is drawn: wait for it.
+        await waitFor(() => expect(getOverlayWidth()).toBe("1000px"));
 
         // Switch to tablet: the underlying layout is now narrower (as it
         // would be once the browser reflows for the new max-width).
@@ -138,22 +182,38 @@ describe("BuilderCanvas selection overlay tracks viewport resize", () => {
         // change — this is the primary fix (previously stayed 1000px).
         expect(getOverlayWidth()).toBe("400px");
 
-        // Now simulate the animation actually completing: fire
-        // `transitionend` on the measured container, as the real
-        // max-width transition would once settled. This exercises the
-        // second half of the fix — the safety net for the animated case.
-        act(() => {
-            const container = document.querySelector(".civo-canvas-content") as HTMLElement;
-            const event = new Event("transitionend", { bubbles: true }) as TransitionEvent & {
-                propertyName: string;
-            };
-            Object.defineProperty(event, "propertyName", { value: "max-width" });
-            container.dispatchEvent(event);
-        });
+        // Still at 400px here in this test, but a real max-width transition changes
+        // the layout AFTER the prop change. Play the browser's part: the geometry
+        // moves on (widthPhase), and the ResizeObserver reports it.
+        widthPhase = "desktop";
+        act(() => resizeObservers.notify());
+        expect(getOverlayWidth(), "a resize of the canvas content must re-measure").toBe("1000px");
 
-        // wait for the CSS transitionend effect to re-measure
-        await waitFor(() => {
-            expect(getOverlayWidth()).toBe("400px");
-        });
+        widthPhase = "tablet";
+        act(() => resizeObservers.notify());
+        expect(getOverlayWidth()).toBe("400px");
+    });
+
+    it("observes the canvas content for the whole time it is mounted, and stops when unmounted", async () => {
+        const containerRef = { current: null as HTMLDivElement | null };
+        const { unmount } = render(
+            <Provider store={makeStore()}>
+                <BuilderCanvas
+                    nodes={nodes}
+                    selectedNodeId="hero-1"
+                    onSelect={() => {}}
+                    viewport="desktop"
+                    containerRef={containerRef as React.RefObject<HTMLDivElement | null>}
+                    dnd={makeDnd()}
+                />
+            </Provider>
+        );
+        await screen.findByTestId("hero-1", {}, { timeout: 3000 });
+
+        const observed = resizeObservers.instances.flatMap((r) => [...r.targets]);
+        expect(observed).toContain(document.querySelector(".civo-canvas-content"));
+
+        unmount();
+        expect(resizeObservers.instances.flatMap((r) => [...r.targets])).toEqual([]);
     });
 });

@@ -1,19 +1,13 @@
-import { TrendingUp, TrendingDown, Minus } from "@/components/ui/icons";
 import { dashboardGridPropsSchema } from "./dashboard-grid.definition";
 import { getSmartCityDataProvider } from "@/modules/integrations/smartcity/infrastructure/adapters";
 import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
+import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
-import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
+import { MetricCard } from "../metric-card";
+import { MetricFreshness } from "../metric-freshness";
 import { TrendChartClient } from "../metric-trend-chart/trend-chart-client";
 import { DonutChartClient } from "../metric-donut/donut-chart-client";
-import { formatNumber } from "@/lib/utils/formatters";
-
-const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
-    up: TrendingUp,
-    down: TrendingDown,
-    flat: Minus,
-};
 
 /**
  * DashboardGrid — the "Smart-City-Dashboard" composite (spec: Smart City
@@ -24,63 +18,44 @@ const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp
  * Reuses the same client chart leaves as the standalone components
  * (TrendChartClient, DonutChartClient) — no duplicated charting logic.
  */
-export async function DashboardGrid({ props }: { props: Record<string, unknown>}) {
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
+
+export async function DashboardGrid({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = dashboardGridPropsSchema.safeParse(props);
     const { heading, category, datasetId } = parsed.success
         ? parsed.data
         : { heading: "Smart-City-Dashboard", category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(datasetId);
+    const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
         logger.error("DashboardGrid failed to load metrics", { error: result.error });
-        return null;
+        return <WidgetState kind="error" heading={heading} />;
     }
-    if (result.data.length === 0) return null;
+    if (result.data.length === 0) return <WidgetState kind="empty" heading={heading} />;
 
     const trendMetric = result.data.find((m) => m.series && m.series.length > 0);
     const donutMetric = result.data.find((m) => m.breakdown && m.breakdown.length > 0);
 
     return (
-        <Section>
-            
+        <Section className="relative">
+            {editMode && <PreviewStatusBadge datasetId={datasetId} />}
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
 
                 <Grid columns={result.data.length >= 4 ? 4 : ((result.data.length || 1) as 1 | 2 | 3 | 4)}>
-                    {result.data.map((metric) => {
-                        const Trend = metric.trend ? trendIcon[metric.trend] : null;
-                        return (
-                            <Card key={metric.id}>
-                                <CardContent className="pt-5">
-                                    <p className="text-sm text-[var(--civo-color-text-muted)]">{metric.label}</p>
-                                    <div className="mt-2 flex items-baseline gap-2">
-                                        <span className="font-[family-name:var(--civo-font-heading)] text-2xl text-[var(--civo-color-primary)]">
-                                            {formatNumber(metric.value)}
-                                        </span>
-                                        {metric.unit && (
-                                            <span className="text-xs text-[var(--civo-color-text-muted)]">{metric.unit}</span>
-                                        )}
-                                    </div>
-                                    {Trend && metric.changePercent !== undefined && (
-                                        <div className="mt-1 flex items-center gap-1 text-xs text-[var(--civo-color-text-muted)]">
-                                            <Trend className="h-3 w-3" aria-hidden="true" />
-                                            <span>{formatNumber(Math.abs(metric.changePercent))}%</span>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                    {result.data.map((metric) => (
+                        <MetricCard key={metric.id} metric={metric} size="md" />
+                    ))}
                 </Grid>
 
                 {(trendMetric || donutMetric) && (
-                    <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+                    <div className="mt-8 grid grid-cols-1 gap-8 @5xl:grid-cols-2">
                         {trendMetric?.series && (
                             <Card>
                                 <CardContent className="pt-5">
-                                    <p className="mb-3 text-sm font-medium text-[var(--civo-color-text)]">
+                                    <p className="mb-3 text-sm font-medium text-copy">
                                         {trendMetric.label} · Verlauf
                                     </p>
                                     <TrendChartClient data={trendMetric.series} unit={trendMetric.unit} />
@@ -90,7 +65,7 @@ export async function DashboardGrid({ props }: { props: Record<string, unknown>}
                         {donutMetric?.breakdown && (
                             <Card>
                                 <CardContent className="pt-5">
-                                    <p className="mb-3 text-sm font-medium text-[var(--civo-color-text)]">
+                                    <p className="mb-3 text-sm font-medium text-copy">
                                         {donutMetric.label} · Verteilung
                                     </p>
                                     <DonutChartClient data={donutMetric.breakdown} />
@@ -99,6 +74,8 @@ export async function DashboardGrid({ props }: { props: Record<string, unknown>}
                         )}
                     </div>
                 )}
+
+                <MetricFreshness metrics={result.data} />
             </Container>
         </Section>
     );

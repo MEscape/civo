@@ -2,8 +2,10 @@ import { AlertTriangle, Info, AlertOctagon } from "@/components/ui/icons";
 import { alertBannerPropsSchema } from "./alert-banner.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
 import { Container } from "@/components/layout/layout-primitives";
+import { WidgetState } from "@/components/layout/widget-state";
 import { logger } from "@/lib/logger/logger";
 import type { AlertSeverity } from "@/modules/content/domain/civic-types";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * AlertBanner — official notices / Bekanntmachungen (spec: civic
@@ -19,38 +21,44 @@ const severityIcon: Record<AlertSeverity, typeof Info> = {
     urgent: AlertOctagon,
 };
 
-// Intentionally not theme tokens: severity color is a fixed semantic
-// signal (danger/warning/info) that must stay legible regardless of a
-// municipality's brand palette — the one deliberate exception to
-// "everything through --civo tokens", scoped to this component only.
+// Severity uses the static status tokens (never the brand palette), so a
+// notice stays legible and means the same thing on every municipality's
+// site. Meaning is carried by the icon and role as well as color.
 const severityClasses: Record<AlertSeverity, string> = {
-    info: "border-blue-200 bg-blue-50 text-blue-900",
-    warning: "border-amber-200 bg-amber-50 text-amber-900",
-    urgent: "border-red-200 bg-red-50 text-red-900",
+    info: "border-info-border bg-info-subtle text-info",
+    warning: "border-warning-border bg-warning-subtle text-warning",
+    urgent: "border-danger-border bg-danger-subtle text-danger",
 };
 
-export async function AlertBanner({ props }: { props: Record<string, unknown>}) {
+export async function AlertBanner({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = alertBannerPropsSchema.safeParse(props);
     const { heading, activeOnly, limit, datasetId } = parsed.success
         ? parsed.data
-        : { heading: undefined, activeOnly: true, limit: 3 , datasetId: undefined};
+        : { heading: undefined, activeOnly: true, limit: 3, datasetId: undefined };
 
-    const provider = await getCivicDataProvider(datasetId);
+    const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getAlerts({ activeOnly });
 
     if (!result.ok) {
         logger.error("AlertBanner failed to load alerts", { error: result.error });
-        return null;
+        // Unlike the other widgets, a MISSING heading is common here (most
+        // placements show no heading at all), so the error state needs its
+        // own fallback title rather than silently rendering an unlabelled
+        // WidgetState. An empty result is NOT an error: no active alerts is
+        // the normal, common case, and showing a banner that says "no
+        // alerts" on every quiet day would be noise, not information.
+        return <WidgetState kind="error" heading={heading ?? "Aktuelle Hinweise"} />;
     }
     if (result.data.length === 0) return null;
 
     const alerts = result.data.slice(0, limit);
 
     return (
-        <div style={{ paddingBlock: "calc(var(--civo-section-spacing) * 0.4)" }}>
+        <div style={{ paddingBlock: "calc(var(--civo-section-spacing) * 0.4)" }} className="relative">
+            {editMode && <PreviewStatusBadge datasetId={datasetId} />}
             <Container className="flex flex-col gap-3">
                 {heading && (
-                    <h2 className="font-[family-name:var(--civo-font-heading)] text-lg text-[var(--civo-color-text)]">
+                    <h2 className="font-heading text-lg text-copy">
                         {heading}
                     </h2>
                 )}
@@ -60,7 +68,7 @@ export async function AlertBanner({ props }: { props: Record<string, unknown>}) 
                         <div
                             key={alert.id}
                             role={alert.severity === "urgent" ? "alert" : "status"}
-                            className={`flex items-start gap-3 rounded-[var(--civo-radius)] border px-4 py-3 text-sm ${severityClasses[alert.severity]}`}
+                            className={`flex items-start gap-3 rounded-token border px-4 py-3 text-sm ${severityClasses[alert.severity]}`}
                         >
                             <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                             <div>

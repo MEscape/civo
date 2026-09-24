@@ -9,11 +9,11 @@ export function RichText({ props }: { props: Record<string, unknown> }) {
         <Section>
             <Container className="max-w-3xl">
                 {heading && (
-                    <h2 className="mb-4 font-[family-name:var(--civo-font-heading)] text-2xl text-[var(--civo-color-text)]">
+                    <h2 className="mb-4 font-heading text-2xl text-copy">
                         {heading}
                     </h2>
                 )}
-                <p className="text-base leading-relaxed text-[var(--civo-color-text)]">{body}</p>
+                <p className="text-base leading-relaxed text-copy">{body}</p>
             </Container>
         </Section>
     );

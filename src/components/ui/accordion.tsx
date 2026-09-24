@@ -13,7 +13,7 @@ export function AccordionItem({
 }: React.ComponentProps<typeof AccordionPrimitive.Item>) {
     return (
         <AccordionPrimitive.Item
-            className={cn("border-b border-[var(--civo-color-border)]", className)}
+            className={cn("border-b border-border", className)}
             {...props}
         />
     );
@@ -28,13 +28,13 @@ export function AccordionTrigger({
         <AccordionPrimitive.Header className="flex">
             <AccordionPrimitive.Trigger
                 className={cn(
-                    "flex flex-1 items-center justify-between py-4 text-left text-base font-medium text-[var(--civo-color-text)] transition-transform [&[data-state=open]>svg]:rotate-180",
+                    "flex flex-1 items-center justify-between py-4 text-left text-base font-medium text-copy transition-transform [&[data-state=open]>svg]:rotate-180",
                     className
                 )}
                 {...props}
             >
                 {children}
-                <ChevronDown className="h-4 w-4 shrink-0 text-[var(--civo-color-secondary)] transition-transform duration-200" />
+                <ChevronDown className="h-4 w-4 shrink-0 text-secondary-copy transition-transform duration-200" />
             </AccordionPrimitive.Trigger>
         </AccordionPrimitive.Header>
     );
@@ -47,7 +47,7 @@ export function AccordionContent({
 }: React.ComponentProps<typeof AccordionPrimitive.Content>) {
     return (
         <AccordionPrimitive.Content
-            className="overflow-hidden text-sm text-[var(--civo-color-text-muted)] data-[state=closed]:animate-[accordion-up_200ms_ease-out] data-[state=open]:animate-[accordion-down_200ms_ease-out]"
+            className="overflow-hidden text-sm text-copy-muted data-[state=closed]:animate-[accordion-up_200ms_ease-out] data-[state=open]:animate-[accordion-down_200ms_ease-out]"
             {...props}
         >
             <div className={cn("pb-4", className)}>{children}</div>

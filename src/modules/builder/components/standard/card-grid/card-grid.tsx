@@ -20,7 +20,7 @@ export function CardGrid({ props }: { props: Record<string, unknown> }) {
                             <CardHeader>
                                 <CardTitle>
                                     {card.href ? (
-                                        <a href={card.href} className="hover:text-[var(--civo-color-primary)]">
+                                        <a href={card.href} className="hover:text-primary-copy">
                                             {card.title}
                                         </a>
                                     ) : (

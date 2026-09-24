@@ -2,6 +2,7 @@ import { Trash2 } from "@/components/ui/icons";
 import { wasteCalendarPropsSchema } from "./waste-calendar.definition";
 import { getCivicDataProvider } from "@/modules/integrations/civic/infrastructure/adapters";
 import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
+import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger/logger";
@@ -33,41 +34,43 @@ const wasteBadgeVariant: Record<WasteType, "default" | "muted" | "warning"> = {
  * WasteCalendar — Abfuhrkalender. A common, genuinely municipal-specific
  * need (spec: civic composites batch) that no generic list component
  * models well, since it needs date + waste-type + district together with
- * type-specific visual distinction (color-coded badges, as residents
  * expect from real Abfuhrkalender apps/flyers).
  */
-export async function WasteCalendar({ props }: { props: Record<string, unknown>}) {
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
+
+export async function WasteCalendar({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = wasteCalendarPropsSchema.safeParse(props);
     const { heading, district, limit, datasetId } = parsed.success
         ? parsed.data
         : { heading: "Abfuhrkalender", district: undefined, limit: 10 , datasetId: undefined};
 
-    const provider = await getCivicDataProvider(datasetId);
+    const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getWasteCollectionEntries({ district, from: new Date() });
 
     if (!result.ok) {
         logger.error("WasteCalendar failed to load entries", { error: result.error });
-        return null;
+        return <WidgetState kind="error" heading={heading} tone="muted" />;
     }
-    if (result.data.length === 0) return null;
+    if (result.data.length === 0) return <WidgetState kind="empty" heading={heading} tone="muted" />;
 
     const entries = result.data.slice(0, limit);
 
     return (
-        <Section tone="muted">
+        <Section tone="muted" className="relative">
+            {editMode && <PreviewStatusBadge datasetId={datasetId} />}
             <Container className="max-w-2xl">
                 <SectionHeading>{heading}</SectionHeading>
                 <Card>
                     <CardContent className="pt-5">
-                        <ul className="flex flex-col divide-y divide-[var(--civo-color-border)]">
+                        <ul className="flex flex-col divide-y divide-border">
                             {entries.map((entry) => (
                                 <li key={entry.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                                     <div className="flex items-center gap-3">
-                                        <Trash2 className="h-4 w-4 shrink-0 text-[var(--civo-color-text-muted)]" aria-hidden="true" />
+                                        <Trash2 className="h-4 w-4 shrink-0 text-copy-muted" aria-hidden="true" />
                                         <div>
-                                            <p className="text-[var(--civo-color-text)]">{formatDate(entry.date, "weekday-short")}</p>
+                                            <p className="text-copy">{formatDate(entry.date, "weekday-short")}</p>
                                             {entry.district && (
-                                                <p className="text-xs text-[var(--civo-color-text-muted)]">{entry.district}</p>
+                                                <p className="text-xs text-copy-muted">{entry.district}</p>
                                             )}
                                         </div>
                                     </div>

@@ -56,9 +56,7 @@ export type ComponentCategory = "layout" | "content" | "civic" | "smartcity";
  * per-component here) — component props are validated at the leaf rather
  * than typed as a tree-wide discriminated union.
  *
- * `websiteId` identifies which website is being rendered — used for routing,
- * analytics, and as a fallback context. Data-aware components resolve their
- * data via `props.datasetId` (Phase 3.5), not via `websiteId` directly.
+ * Data-aware components resolve their data via `props.datasetId` (Phase 3.5).
  *
  * Both are threaded explicitly through the render tree rather than read from
  * ambient/module-level request state, since Server Component rendering can
@@ -69,7 +67,6 @@ export type PageComponentProps = {
     props: Record<string, unknown>;
     children?: PageNode[];
     editMode?: boolean;
-    websiteId?: string;
 };
 
 /**

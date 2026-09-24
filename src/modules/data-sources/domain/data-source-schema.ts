@@ -29,7 +29,9 @@ export type DataSourceKind = z.infer<typeof dataSourceKindSchema>;
  * strict so MOCK is validated the same way as every other kind.
  */
 export const mockDataSourceConfigSchema = z
-    .object({})
+    .object({
+        path: z.string().optional(),
+    })
     .strict();
 
 /**

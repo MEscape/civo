@@ -1,64 +1,38 @@
-import { TrendingUp, TrendingDown, Minus } from "@/components/ui/icons";
 import { kpiGridPropsSchema } from "./kpi-grid.definition";
 import { getSmartCityDataProvider } from "@/modules/integrations/smartcity/infrastructure/adapters";
 import { Section, Container, Grid, SectionHeading } from "@/components/layout/layout-primitives";
-import { Card, CardContent } from "@/components/ui/card";
+import { WidgetState } from "@/components/layout/widget-state";
 import { logger } from "@/lib/logger/logger";
-import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
-import { formatNumber } from "@/lib/utils/formatters";
+import { MetricCard } from "../metric-card";
+import { MetricFreshness } from "../metric-freshness";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
-const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
-    up: TrendingUp,
-    down: TrendingDown,
-    flat: Minus,
-};
-
-export async function KpiGrid({ props }: { props: Record<string, unknown>}) {
+export async function KpiGrid({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = kpiGridPropsSchema.safeParse(props);
     const { heading, columns, category, datasetId } = parsed.success
         ? parsed.data
         : { heading: "Stadt in Zahlen", columns: 3 as const, category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(datasetId);
+    const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
         logger.error("KpiGrid failed to load metrics", { error: result.error });
-        return null;
+        return <WidgetState kind="error" heading={heading} />;
     }
-    if (result.data.length === 0) return null;
+    if (result.data.length === 0) return <WidgetState kind="empty" heading={heading} />;
 
     return (
-        <Section>
-            
+        <Section className="relative">
+            {editMode && <PreviewStatusBadge datasetId={datasetId} />}
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
                 <Grid columns={columns}>
-                    {result.data.map((metric) => {
-                        const Trend = metric.trend ? trendIcon[metric.trend] : null;
-                        return (
-                            <Card key={metric.id}>
-                                <CardContent className="pt-5">
-                                    <p className="text-sm text-[var(--civo-color-text-muted)]">{metric.label}</p>
-                                    <div className="mt-2 flex items-baseline gap-2">
-                                        <span className="font-[family-name:var(--civo-font-heading)] text-3xl text-[var(--civo-color-primary)]">
-                                            {formatNumber(metric.value)}
-                                        </span>
-                                        {metric.unit && (
-                                            <span className="text-sm text-[var(--civo-color-text-muted)]">{metric.unit}</span>
-                                        )}
-                                    </div>
-                                    {Trend && metric.changePercent !== undefined && (
-                                        <div className="mt-2 flex items-center gap-1 text-xs text-[var(--civo-color-text-muted)]">
-                                            <Trend className="h-3.5 w-3.5" aria-hidden="true" />
-                                            <span>{formatNumber(Math.abs(metric.changePercent))}%</span>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                    {result.data.map((metric) => (
+                        <MetricCard key={metric.id} metric={metric} />
+                    ))}
                 </Grid>
+                <MetricFreshness metrics={result.data} />
             </Container>
         </Section>
     );

@@ -19,7 +19,7 @@ export function LocationPlaceholder({ props }: { props: Record<string, unknown> 
         <Section>
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
-                <div className="flex aspect-[16/7] w-full flex-col items-center justify-center gap-2 rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface)] text-[var(--civo-color-text-muted)]">
+                <div className="flex aspect-[16/7] w-full flex-col items-center justify-center gap-2 rounded-token border border-border bg-surface text-copy-muted">
                     <MapPin className="h-6 w-6" aria-hidden="true" />
                     {address && <p className="text-sm">{address}</p>}
                 </div>

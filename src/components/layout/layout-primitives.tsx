@@ -15,7 +15,7 @@ export function Section({
     return (
         <section
             className={cn(
-                tone === "muted" && "bg-[var(--civo-color-surface)]",
+                tone === "muted" && "bg-surface",
                 className
             )}
             style={{ paddingBlock: "var(--civo-section-spacing)" }}
@@ -30,15 +30,17 @@ export function Container({ className, ...props }: React.HTMLAttributes<HTMLDivE
 
 const columnClasses: Record<number, string> = {
     1: "grid-cols-1",
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+    2: "grid-cols-1 @2xl:grid-cols-2",
+    3: "grid-cols-1 @2xl:grid-cols-2 @5xl:grid-cols-3",
+    4: "grid-cols-1 @2xl:grid-cols-2 @5xl:grid-cols-4",
 };
 
 /**
  * Grid — accepts a controlled `columns` option (1–4) rather than an
  * arbitrary CSS grid-template-columns value, keeping the builder's
- * "columns" property simple and safe.
+ * "columns" property simple and safe. Breakpoints are container variants
+ * (see ThemeProvider): the column count follows the page frame's width, so
+ * the builder's tablet/mobile preview shows what a real device would.
  */
 export function Grid({
                          columns = 3,
@@ -58,7 +60,7 @@ export function SectionHeading({
     return (
         <h2
             className={cn(
-                "mb-8 text-2xl font-[family-name:var(--civo-font-heading)] text-[var(--civo-color-text)]",
+                "mb-8 text-2xl font-heading text-copy",
                 className
             )}
         >

@@ -22,11 +22,11 @@ export function Hero({ props }: { props: Record<string, unknown> }) {
                 />
             )}
             <Container className="relative">
-                <h1 className="max-w-3xl font-[family-name:var(--civo-font-heading)] text-4xl leading-tight text-[var(--civo-color-primary)] sm:text-5xl">
+                <h1 className="max-w-3xl font-heading text-4xl leading-tight text-primary-copy @2xl:text-5xl">
                     {title}
                 </h1>
                 {subtitle && (
-                    <p className="mt-4 max-w-xl text-lg text-[var(--civo-color-text-muted)]">{subtitle}</p>
+                    <p className="mt-4 max-w-xl text-lg text-copy-muted">{subtitle}</p>
                 )}
             </Container>
         </section>

@@ -68,7 +68,7 @@ export function CreateWebsiteForm() {
                     })}
                 />
                 {form.formState.errors.name && (
-                    <p className="text-sm text-red-700">{form.formState.errors.name.message}</p>
+                    <p className="text-sm text-danger">{form.formState.errors.name.message}</p>
                 )}
             </div>
 
@@ -85,7 +85,7 @@ export function CreateWebsiteForm() {
                     })}
                 />
                 {form.formState.errors.slug && (
-                    <p className="text-sm text-red-700">{form.formState.errors.slug.message}</p>
+                    <p className="text-sm text-danger">{form.formState.errors.slug.message}</p>
                 )}
             </div>
 
@@ -97,12 +97,12 @@ export function CreateWebsiteForm() {
                             key={template.key}
                             type="button"
                             onClick={() => form.setValue("templateKey", template.key, { shouldValidate: true })}
-                            className={`text-left ${currentTemplateKey === template.key ? "ring-2 ring-[var(--civo-color-accent)]" : ""}`}
+                            className={`text-left ${currentTemplateKey === template.key ? "ring-2 ring-accent" : ""}`}
                         >
                             <Card>
                                 <CardContent className="pt-4">
-                                    <p className="text-sm font-medium text-[var(--civo-color-text)]">{template.label}</p>
-                                    <p className="mt-1 text-xs text-[var(--civo-color-text-muted)]">
+                                    <p className="text-sm font-medium text-copy">{template.label}</p>
+                                    <p className="mt-1 text-xs text-copy-muted">
                                         {template.description}
                                     </p>
                                 </CardContent>
@@ -111,11 +111,11 @@ export function CreateWebsiteForm() {
                     ))}
                 </div>
                 {form.formState.errors.templateKey && (
-                    <p className="text-sm text-red-700">{form.formState.errors.templateKey.message}</p>
+                    <p className="text-sm text-danger">{form.formState.errors.templateKey.message}</p>
                 )}
             </div>
 
-            {error && <p className="text-sm text-red-700">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <Button type="submit" disabled={isPending}>
                 {isPending ? "Wird erstellt…" : "Website erstellen"}

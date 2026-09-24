@@ -71,10 +71,46 @@ describe("document slice: deletion", () => {
         expect(state.history.present.children.map((n: PageNode) => n.id)).toEqual(["news-1"]);
     });
 
-    it("selects the next sibling if the deleted node was selected", () => {
-        let state = reducer(loaded(), selectNode("hero-1"));
-        state = reducer(state, removeNodeAction("hero-1"));
-        expect(state.history.present.selectedNodeId).toBe("news-1");
+    describe("selection after deleting the selected node", () => {
+        const selectedAfterDeleting = (tree: PageNode[], selected: string, deleted = selected) => {
+            let state = reducer(loaded(tree), selectNode(selected));
+            state = reducer(state, removeNodeAction(deleted));
+            return state.history.present.selectedNodeId;
+        };
+        const child = (id: string): PageNode => ({ id, type: "text", props: {} });
+        const section = (id: string, children: PageNode[]): PageNode => ({ id, type: "section", props: {}, children });
+
+        it("selects the NEXT sibling when there is one", () => {
+            expect(selectedAfterDeleting([heroNode, newsNode], "hero-1")).toBe("news-1");
+        });
+
+        it("selects the PREVIOUS sibling when the deleted node was last", () => {
+            expect(selectedAfterDeleting([heroNode, newsNode], "news-1")).toBe("hero-1");
+        });
+
+        it("prefers the next sibling over the previous one when the deleted node is in the middle", () => {
+            expect(selectedAfterDeleting([child("a"), child("b"), child("c")], "b")).toBe("c");
+        });
+
+        it("selects nothing when the deleted node was the only node on the page", () => {
+            expect(selectedAfterDeleting([heroNode], "hero-1")).toBeNull();
+        });
+
+        it("selects the PARENT when the deleted node was an only child", () => {
+            expect(selectedAfterDeleting([section("sec", [child("only")])], "only")).toBe("sec");
+        });
+
+        it("stays within the same container: a nested node's sibling, not a page-level node", () => {
+            const tree = [section("sec", [child("x"), child("y")]), heroNode];
+            expect(selectedAfterDeleting(tree, "x")).toBe("y");
+        });
+
+        it("selects a neighbor that actually exists in the resulting tree", () => {
+            let state = reducer(loaded([heroNode, newsNode]), selectNode("hero-1"));
+            state = reducer(state, removeNodeAction("hero-1"));
+            const ids = state.history.present.children.map((n: PageNode) => n.id);
+            expect(ids).toContain(state.history.present.selectedNodeId);
+        });
     });
 
     it("preserves selection if a different node was selected", () => {
@@ -129,7 +165,7 @@ describe("document slice: property updates", () => {
         state = reducer(state, updateNodePropsAction({ nodeId: "hero-1", props: { title: "W" } }));
         state = reducer(state, updateNodePropsAction({ nodeId: "hero-1", props: { title: "We" } }));
         state = reducer(state, commitPropsHistory());
-        
+
         // Start a new burst
         state = reducer(state, updateNodePropsAction({ nodeId: "hero-1", props: { title: "Welcome back" } }));
         expect(state.history.past).toHaveLength(2);
@@ -185,5 +221,3 @@ describe("document slice: undo/redo", () => {
         expect(afterUndo.history.present.children).toEqual(state.history.present.children);
     });
 });
-
-

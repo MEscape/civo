@@ -1,17 +1,12 @@
-import { TrendingUp, TrendingDown, Minus } from "@/components/ui/icons";
 import { metricTablePropsSchema } from "./metric-table.definition";
 import { getSmartCityDataProvider } from "@/modules/integrations/smartcity/infrastructure/adapters";
 import { Section, Container, SectionHeading } from "@/components/layout/layout-primitives";
+import { WidgetState } from "@/components/layout/widget-state";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { logger } from "@/lib/logger/logger";
-import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
-import { formatNumber } from "@/lib/utils/formatters";
-
-const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp> = {
-    up: TrendingUp,
-    down: TrendingDown,
-    flat: Minus,
-};
+import { MetricChange } from "../metric-change";
+import { MetricFreshness } from "../metric-freshness";
+import {formatNumber} from "tinybench";
 
 /**
  * MetricTable — tabular view of KPIs (spec: Smart City viz batch), for
@@ -21,27 +16,29 @@ const trendIcon: Record<NonNullable<SmartCityMetric["trend"]>, typeof TrendingUp
  * grid of divs, per spec §27's guidance to use library primitives over
  * rebuilding them.
  */
-export async function MetricTable({ props }: { props: Record<string, unknown>}) {
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
+
+export async function MetricTable({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = metricTablePropsSchema.safeParse(props);
     const { heading, category, datasetId } = parsed.success
         ? parsed.data
         : { heading: "Kennzahlen im Überblick", category: undefined , datasetId: undefined};
 
-    const provider = await getSmartCityDataProvider(datasetId);
+    const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });
 
     if (!result.ok) {
         logger.error("MetricTable failed to load metrics", { error: result.error });
-        return null;
+        return <WidgetState kind="error" heading={heading} />;
     }
-    if (result.data.length === 0) return null;
+    if (result.data.length === 0) return <WidgetState kind="empty" heading={heading} />;
 
     return (
-        <Section>
-            
+        <Section className="relative">
+            {editMode && <PreviewStatusBadge datasetId={datasetId} />}
             <Container>
                 <SectionHeading>{heading}</SectionHeading>
-                <Table>
+                <Table label={heading}>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Kennzahl</TableHead>
@@ -50,30 +47,28 @@ export async function MetricTable({ props }: { props: Record<string, unknown>}) 
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {result.data.map((metric) => {
-                            const Trend = metric.trend ? trendIcon[metric.trend] : null;
-                            return (
-                                <TableRow key={metric.id}>
-                                    <TableCell>{metric.label}</TableCell>
-                                    <TableCell>
-                                        {formatNumber(metric.value)}
-                                        {metric.unit ? ` ${metric.unit}` : ""}
-                                    </TableCell>
-                                    <TableCell>
-                                        {Trend && metric.changePercent !== undefined ? (
-                                            <span className="inline-flex items-center gap-1 text-[var(--civo-color-text-muted)]">
-                                                <Trend className="h-3.5 w-3.5" aria-hidden="true" />
-                                                {formatNumber(Math.abs(metric.changePercent))}%
-                                            </span>
-                                        ) : (
-                                            "–"
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                        {result.data.map((metric) => (
+                            <TableRow key={metric.id}>
+                                <TableCell>{metric.label}</TableCell>
+                                <TableCell>
+                                    {formatNumber(metric.value)}
+                                    {metric.unit ? ` ${metric.unit}` : ""}
+                                </TableCell>
+                                <TableCell className="text-copy-muted">
+                                    {metric.trend && metric.changePercent !== undefined ? (
+                                        <MetricChange trend={metric.trend} changePercent={metric.changePercent} />
+                                    ) : (
+                                        <>
+                                            <span aria-hidden="true">–</span>
+                                            <span className="sr-only">keine Angabe</span>
+                                        </>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
+                <MetricFreshness metrics={result.data} />
             </Container>
         </Section>
     );

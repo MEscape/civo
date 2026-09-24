@@ -1,5 +1,7 @@
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("de-DE", { numeric: "auto" });
 const defaultNumberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+// style: "percent" puts the non-breaking space before % that DIN 5008 asks for ("3,1 %").
+const percentFormatter = new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 1 });
 
 const UNITS: { unit: Intl.RelativeTimeFormatUnit; seconds: number }[] = [
     { unit: "year", seconds: 31536000 },
@@ -36,6 +38,27 @@ export function formatRelativeTime(date: Date): string {
 export function formatNumber(value: number, fractionDigits: number = 1): string {
     if (fractionDigits === 1) return defaultNumberFormatter.format(value);
     return new Intl.NumberFormat("de-DE", { maximumFractionDigits: fractionDigits }).format(value);
+}
+
+/** A 0..1 fraction as a percentage: 0.45 -> "45 %". */
+export function formatShare(fraction: number): string {
+    return percentFormatter.format(fraction);
+}
+
+const CHANGE_SIGN: Record<"up" | "down" | "flat", string> = {
+    up: "+",
+    // U+2212, not a hyphen: it is typographically correct and screen readers say "minus".
+    down: "\u2212",
+    flat: "\u00b1",
+};
+
+/**
+ * A change in percent, e.g. "+3,1 %". The SIGN comes from `trend` and the
+ * SIZE from the magnitude of `changePercent`: providers disagree on whether
+ * that number is signed, and reading it both ways would print "+-6,8 %".
+ */
+export function formatChange(changePercent: number, trend: "up" | "down" | "flat"): string {
+    return `${CHANGE_SIGN[trend]}${percentFormatter.format(Math.abs(changePercent) / 100)}`;
 }
 
 /** Formats a Date using common preset formats in German. */

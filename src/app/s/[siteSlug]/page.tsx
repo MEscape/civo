@@ -39,7 +39,10 @@ export default async function PublicWebsitePage({
 
     return (
         <ThemeProvider theme={theme}>
-            <PageRenderer config={configResult.data} websiteId={websiteResult.data.id} />
+            {/* The public site has no dashboard layout above it, so it owns the page's main landmark. */}
+            <main>
+                <PageRenderer config={configResult.data} websiteId={websiteResult.data.id} />
+            </main>
         </ThemeProvider>
     );
 }

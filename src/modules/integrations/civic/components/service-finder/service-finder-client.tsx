@@ -37,10 +37,10 @@ export function ServiceFinderClient({
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-3 @2xl:flex-row">
                 <div className="relative flex-1">
                     <Search
-                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--civo-color-text-muted)]"
+                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-copy-muted"
                         aria-hidden="true"
                     />
                     <Input
@@ -59,8 +59,8 @@ export function ServiceFinderClient({
                             onClick={() => setCategory("")}
                             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                                 category === ""
-                                    ? "bg-[var(--civo-color-primary)] text-white"
-                                    : "bg-[var(--civo-color-surface)] text-[var(--civo-color-text-muted)] hover:text-[var(--civo-color-text)]"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-surface text-copy-muted hover:text-copy"
                             }`}
                         >
                             Alle
@@ -72,8 +72,8 @@ export function ServiceFinderClient({
                                 onClick={() => setCategory(c)}
                                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                                     category === c
-                                        ? "bg-[var(--civo-color-primary)] text-white"
-                                        : "bg-[var(--civo-color-surface)] text-[var(--civo-color-text-muted)] hover:text-[var(--civo-color-text)]"
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-surface text-copy-muted hover:text-copy"
                                 }`}
                             >
                                 {c}
@@ -84,25 +84,25 @@ export function ServiceFinderClient({
             </div>
 
             {filtered.length === 0 ? (
-                <p className="text-sm text-[var(--civo-color-text-muted)]">Keine passenden Leistungen gefunden.</p>
+                <p className="text-sm text-copy-muted">Keine passenden Leistungen gefunden.</p>
             ) : (
-                <ul className="flex flex-col divide-y divide-[var(--civo-color-border)]">
+                <ul className="flex flex-col divide-y divide-border">
                     {filtered.map((service) => {
                         return (
                             <li key={service.id}>
                                 <a
                                     href={service.href}
-                                    className="group flex items-start gap-4 py-4 hover:bg-[var(--civo-color-surface)]"
+                                    className="group flex items-start gap-4 py-4 hover:bg-surface"
                                 >
-                                    <Card className="flex h-10 w-10 shrink-0 items-center justify-center border-0 bg-[var(--civo-color-surface)]">
-                                        <DynamicIcon name={service.icon} fallback="arrow-right" className="h-5 w-5 text-[var(--civo-color-primary)]" aria-hidden="true" />
+                                    <Card className="flex h-10 w-10 shrink-0 items-center justify-center border-0 bg-surface">
+                                        <DynamicIcon name={service.icon} fallback="arrow-right" className="h-5 w-5 text-primary-copy" aria-hidden="true" />
                                     </Card>
                                     <CardContent className="flex-1 p-0">
-                                        <p className="text-sm font-medium text-[var(--civo-color-text)] group-hover:text-[var(--civo-color-primary)]">
+                                        <p className="text-sm font-medium text-copy group-hover:text-primary-copy">
                                             {service.title}
                                         </p>
                                         {service.description && (
-                                            <p className="mt-0.5 text-sm text-[var(--civo-color-text-muted)]">
+                                            <p className="mt-0.5 text-sm text-copy-muted">
                                                 {service.description}
                                             </p>
                                         )}

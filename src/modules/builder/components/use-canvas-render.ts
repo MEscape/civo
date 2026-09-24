@@ -10,13 +10,9 @@ import { renderCanvasAction } from "@/modules/builder/application/canvas-render-
  * tree (not an HTML string — see canvas-render-action.ts for why).
  * Debounced so rapid property edits (typing in a text field) don't
  * trigger a server round-trip per keystroke (spec §20).
- *
- * `websiteId` is forwarded so data-aware components preview against this
- * website's own configured data source (spec §30).
  */
 export function useCanvasRender(
     children: PageNode[],
-    websiteId?: string,
     debounceMs = 250
 ) {
     const [node, setNode] = useState<ReactNode>(null);
@@ -30,8 +26,7 @@ export function useCanvasRender(
             setIsRendering(true);
 
             renderCanvasAction(
-                { type: "page", children },
-                websiteId
+                { type: "page", children }
             )
                 .then((result) => {
                     if (requestId !== requestIdRef.current) return;
@@ -54,7 +49,7 @@ export function useCanvasRender(
         }, debounceMs);
 
         return () => clearTimeout(timeout);
-    }, [children, websiteId, debounceMs]);
+    }, [children, debounceMs]);
 
     return { node, isRendering, error };
 }

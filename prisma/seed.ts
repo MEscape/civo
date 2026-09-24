@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { getTemplate } from "../src/modules/website/domain/templates";
 import { pageConfigSchema } from "../src/modules/builder/domain/page-schema";
+import { MOCK_DATASETS } from "../src/data/musterstadt";
 import "../src/modules/component-platform/infrastructure/definitions";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -55,6 +56,30 @@ async function seedWebsite(options: {
             },
         },
     });
+
+    for (const ds of MOCK_DATASETS) {
+        try {
+            await prisma.dataSource.create({
+                data: {
+                    websiteId: website.id,
+                    name: `Musterstadt API - ${ds.name}`,
+                    kind: "MOCK",
+                    config: { path: ds.path || "/" } as Prisma.InputJsonValue,
+                    datasets: {
+                        create: {
+                            slug: ds.slug,
+                            name: ds.name,
+                            canonicalType: ds.canonicalType,
+                            mapping: ds.mapping as Prisma.InputJsonValue,
+                        },
+                    },
+                },
+            });
+        } catch (e) {
+            console.error(`Failed to create DataSource for dataset ${ds.name}:`, e);
+            throw e;
+        }
+    }
 
     console.log(`  Created "${website.name}" (${website.slug}).`);
 }

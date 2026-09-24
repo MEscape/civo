@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadPage, undo, redo, selectNode, removeNodeAction } from "@/modules/builder/application/document-slice";
 import { selectIsDirty, selectSelectedNodeId, selectBuilderMode, selectViewport, selectDraftChildren, selectBuilderPageId } from "@/modules/builder/application/builder-selectors";
@@ -14,6 +14,8 @@ import { PreviewCanvas } from "@/modules/builder/components/preview-canvas";
 import { useCanvasDnd } from "@/modules/builder/components/use-canvas-dnd";
 import { useDropHandler } from "@/modules/builder/components/use-drop-handler";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import { BuilderToolbar } from "./builder-toolbar";
 import { DragOverlayCursor } from "./drag-overlay-cursor";
 import "@/modules/component-platform/infrastructure/definitions";
@@ -30,9 +32,15 @@ type BuilderShellProps = {
     editorMode?: EditorMode;
 };
 
+type SidePanel = "palette" | "properties";
+
 /**
  * The builder shell. Connects keyboard shortcuts, warning on unload,
- * and sets up the three-column layout wrapping the core canvas.
+ * and lays out the workspace around the core canvas.
+ *
+ * Layout: from `lg` (64rem) up, the palette and properties panel sit beside
+ * the canvas. Below that they would leave the canvas a sliver, so they move
+ * into sheets that the toolbar opens, and the canvas gets the full width.
  */
 export function BuilderShell({ website, page, initialChildren, editorMode = "internal" }: BuilderShellProps) {
     const dispatch = useAppDispatch();
@@ -41,6 +49,22 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
     const selectedNodeId = useAppSelector(selectSelectedNodeId);
     const mode = useAppSelector(selectBuilderMode);
     const viewport = useAppSelector(selectViewport);
+
+    // `true` on the server/hydration pass: the panels' wrappers are also
+    // `hidden lg:block` in CSS, so a phone's first paint is correct either way.
+    const isDesktop = useMediaQuery("(min-width: 64rem)", true);
+    const [openPanel, setOpenPanel] = useState<SidePanel | null>(null);
+    // State (not a ref) so it can be read during render: the sheets mount inside
+    // the shell, keeping the dashboard layout's font tokens.
+    const [shellElement, setShellElement] = useState<HTMLDivElement | null>(null);
+    // Crossing the breakpoint (tablet rotation, window resize) closes any
+    // open sheet, so it can't reappear later. Adjusting state during render,
+    // not in an effect, is React's documented pattern for this.
+    const [wasDesktop, setWasDesktop] = useState(isDesktop);
+    if (isDesktop !== wasDesktop) {
+        setWasDesktop(isDesktop);
+        setOpenPanel(null);
+    }
 
     const canvasContainerRef = useRef<HTMLDivElement>(null);
     const handleDrop = useDropHandler(draftChildren, (id) => dispatch(selectNode(id)));
@@ -131,34 +155,44 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
     }, [dispatch, selectedNodeId]);
 
     return (
-        <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-            <BuilderToolbar website={website} page={page} />
+        <div ref={setShellElement} className="flex h-app-body flex-col">
+            <BuilderToolbar
+                website={website}
+                page={page}
+                onOpenPalette={canEditStructure ? () => setOpenPanel("palette") : undefined}
+                onOpenProperties={() => setOpenPanel("properties")}
+            />
 
             {mode === "preview" ? (
-                <div className="flex-1 overflow-y-auto bg-[var(--civo-color-background)]">
+                <div className="flex-1 overflow-y-auto bg-canvas">
                     <PreviewCanvas
                         nodes={isSwitchingPage ? [] : draftChildren}
                         viewport={viewport}
                         theme={website.theme}
-                        websiteId={website.id}
                     />
                 </div>
             ) : (
-                <div className={`grid min-h-0 flex-1 ${canEditStructure ? "grid-cols-[240px_1fr_300px]" : "grid-cols-[1fr_300px]"}`}>
+                <div className="flex min-h-0 flex-1">
                     {canEditStructure && (
-                        <aside className="overflow-y-auto border-r border-[var(--civo-color-border)] bg-[var(--civo-color-surface)]">
-                            <ComponentPalette
-                                onBeginDrag={dnd.beginPaletteDrag}
-                                onDragPosition={dnd.updatePaletteDragPosition}
-                                onDragEnd={dnd.endDrag}
-                                onDragCancel={dnd.cancelDrag}
-                                websiteId={website.id}
-                                theme={website.theme}
-                            />
+                        <aside aria-label="Komponenten" className="hidden w-60 shrink-0 overflow-y-auto border-r border-border bg-surface lg:block">
+                            {isDesktop && (
+                                <ComponentPalette
+                                    onBeginDrag={dnd.beginPaletteDrag}
+                                    onDragPosition={dnd.updatePaletteDragPosition}
+                                    onDragEnd={dnd.endDrag}
+                                    onDragCancel={dnd.cancelDrag}
+                                    websiteId={website.id}
+                                    theme={website.theme}
+                                />
+                            )}
                         </aside>
                     )}
 
-                    <main className="overflow-y-auto bg-[var(--civo-color-background)] p-6">
+                    {/* Not <main>: the dashboard layout already provides the page's one main landmark.
+                        Padding: the selection label (24px, see builder-canvas.css) sits ABOVE the selected
+                        node, so the top padding must leave room for it or the first node's controls are
+                        clipped. Phones save space at the sides and bottom only. */}
+                    <section aria-label="Canvas" className="min-w-0 flex-1 overflow-y-auto bg-canvas px-3 pt-7 pb-3 sm:p-6">
                         <BuilderCanvas
                             nodes={isSwitchingPage ? [] : draftChildren}
                             selectedNodeId={selectedNodeId}
@@ -167,16 +201,39 @@ export function BuilderShell({ website, page, initialChildren, editorMode = "int
                             theme={website.theme}
                             containerRef={canvasContainerRef}
                             dnd={dnd}
-                            websiteId={website.id}
                         />
-                    </main>
+                    </section>
 
-                    <aside className="overflow-y-auto border-l border-[var(--civo-color-border)] bg-[var(--civo-color-surface)]">
-                        <PropertiesPanel websiteId={website.id} />
+                    <aside aria-label="Eigenschaften" className="hidden w-72 shrink-0 overflow-y-auto border-l border-border bg-surface lg:block">
+                        {isDesktop && <PropertiesPanel websiteId={website.id} />}
                     </aside>
                 </div>
             )}
-            
+
+            {!isDesktop && mode !== "preview" && (
+                <>
+                    {canEditStructure && (
+                        <Sheet open={openPanel === "palette"} onOpenChange={(open) => setOpenPanel(open ? "palette" : null)}>
+                            <SheetContent side="left" container={shellElement}>
+                                <SheetTitle className="sr-only">Komponenten</SheetTitle>
+                                {/* Click-to-add only: drag targets sit behind the overlay. */}
+                                <ComponentPalette
+                                    onInsert={() => setOpenPanel(null)}
+                                    websiteId={website.id}
+                                    theme={website.theme}
+                                />
+                            </SheetContent>
+                        </Sheet>
+                    )}
+                    <Sheet open={openPanel === "properties"} onOpenChange={(open) => setOpenPanel(open ? "properties" : null)}>
+                        <SheetContent side="right" container={shellElement}>
+                            <SheetTitle className="sr-only">Eigenschaften</SheetTitle>
+                            <PropertiesPanel websiteId={website.id} />
+                        </SheetContent>
+                    </Sheet>
+                </>
+            )}
+
             {/* Renders globally on top of the UI during drag operations */}
             <DragOverlayCursor activeSource={dnd.activeSource} nodes={draftChildren} />
         </div>

@@ -9,7 +9,6 @@ type PreviewCanvasProps = {
     nodes: PageNode[];
     viewport: "desktop" | "tablet" | "mobile";
     theme?: WebsiteTheme;
-    websiteId?: string;
 };
 
 const viewportWidths: Record<PreviewCanvasProps["viewport"], string> = {
@@ -28,12 +27,12 @@ const viewportWidths: Record<PreviewCanvasProps["viewport"], string> = {
  * share render-nodes.tsx / the component registry, and this one shares
  * the exact same renderCanvasAction Server Action as the canvas).
  */
-export function PreviewCanvas({ nodes, viewport, theme, websiteId }: PreviewCanvasProps) {
-    const { node, isRendering, error } = useCanvasRender(nodes, websiteId);
+export function PreviewCanvas({ nodes, viewport, theme }: PreviewCanvasProps) {
+    const { node, isRendering, error } = useCanvasRender(nodes);
 
     if (nodes.length === 0) {
         return (
-            <div className="flex h-full min-h-[50vh] items-center justify-center text-[var(--civo-color-text-muted)]">
+            <div className="flex h-full min-h-96 items-center justify-center text-copy-muted">
                 <p>Nichts zu sehen — die Seite ist leer.</p>
             </div>
         );
@@ -41,7 +40,7 @@ export function PreviewCanvas({ nodes, viewport, theme, websiteId }: PreviewCanv
 
     return (
         <div className="mx-auto transition-[max-width] duration-300" style={{ maxWidth: viewportWidths[viewport] }}>
-            <div className="min-h-screen bg-[var(--civo-color-background)] shadow-2xl ring-1 ring-[var(--civo-color-border)]">
+            <div className="min-h-dvh bg-canvas shadow-2xl ring-1 ring-border">
                 {theme ? (
                     <ThemeProvider theme={theme}>
                         {node}
@@ -52,9 +51,9 @@ export function PreviewCanvas({ nodes, viewport, theme, websiteId }: PreviewCanv
             </div>
 
             {isRendering && !node && (
-                <p className="mt-4 text-center text-sm text-[var(--civo-color-text-muted)]">Wird gerendert…</p>
+                <p className="mt-4 text-center text-sm text-copy-muted">Wird gerendert…</p>
             )}
-            {error && <p className="mt-4 text-center text-sm text-red-700">{error}</p>}
+            {error && <p className="mt-4 text-center text-sm text-danger">{error}</p>}
         </div>
     );
 }

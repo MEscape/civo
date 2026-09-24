@@ -1,328 +1,410 @@
-import type {
-    NewsItem,
-    CivicEvent,
-    Service,
-    Contact,
-    OpeningHoursEntry,
-    ServiceDetail,
-    CouncilBody,
-    WasteCollectionEntry,
-    Alert,
-    Department,
-} from "@/modules/content/domain/civic-types";
-import type { SmartCityMetric } from "@/modules/content/domain/smartcity-types";
+export function getMockPayload(path: string) {
+    switch (path) {
+        case "/news":
+            return musterstadtExternalNews;
+        case "/events":
+            return musterstadtExternalEvents;
+        case "/services":
+            return musterstadtExternalServices;
+        case "/contacts":
+            return musterstadtExternalContacts;
+        case "/opening-hours":
+            return musterstadtExternalOpeningHours;
+        case "/metrics":
+            return musterstadtExternalSmartCityMetrics;
+        case "/service-details":
+            return musterstadtExternalServiceDetails;
+        case "/council-bodies":
+            return musterstadtExternalCouncilBodies;
+        case "/waste":
+            return musterstadtExternalWasteEntries;
+        case "/alerts":
+            return musterstadtExternalAlerts;
+        case "/departments":
+            return musterstadtExternalDepartments;
+        default:
+            return null;
+    }
+}
 
-/**
- * Realistic demo content for the fictional municipality "Musterstadt".
- * Shared by the mock data provider (for local development / the builder
- * preview) and the Prisma seed script (for persisted demo websites).
- */
-
-export const musterstadtNews: NewsItem[] = [
+export const musterstadtExternalNews = [
     {
-        id: "news-1",
-        title: "Neuer Radweg entlang der Uferpromenade eröffnet",
-        slug: "neuer-radweg-uferpromenade",
-        excerpt:
-            "Der Ausbau des Radwegnetzes geht in die nächste Phase: Die neue Verbindung entlang der Uferpromenade verkürzt den Weg vom Bahnhof zur Altstadt deutlich.",
-        content:
-            "Der Ausbau des Radwegnetzes geht in die nächste Phase: Die neue Verbindung entlang der Uferpromenade verkürzt den Weg vom Bahnhof zur Altstadt deutlich. Der 2,3 Kilometer lange Abschnitt wurde mit Fördermitteln des Landes finanziert und schließt eine bislang gefährliche Lücke im Radwegenetz.",
-        imageUrl: "https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=800&q=80",
-        publishedAt: new Date("2026-08-18"),
-        category: "Mobilität",
+        "id": "news-1",
+        "headline": "Neuer Radweg entlang der Uferpromenade eröffnet",
+        "slug_url": "neuer-radweg-uferpromenade",
+        "summary": "Der Ausbau des Radwegnetzes geht in die nächste Phase: Die neue Verbindung entlang der Uferpromenade verkürzt den Weg vom Bahnhof zur Altstadt deutlich.",
+        "body_html": "Der Ausbau des Radwegnetzes geht in die nächste Phase: Die neue Verbindung entlang der Uferpromenade verkürzt den Weg vom Bahnhof zur Altstadt deutlich. Der 2,3 Kilometer lange Abschnitt wurde mit Fördermitteln des Landes finanziert und schließt eine bislang gefährliche Lücke im Radwegenetz.",
+        "image": { "url": "https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=800&q=80" },
+        "date_published": "2026-08-18",
+        "topic": "Mobilität"
     },
     {
-        id: "news-2",
-        title: "Bürgerhaushalt 2027: Jetzt Vorschläge einreichen",
-        slug: "buergerhaushalt-2027",
-        excerpt:
-            "Musterstadt startet die Beteiligungsphase für den Bürgerhaushalt 2027. Bis zum 15. Oktober können Einwohnerinnen und Einwohner ihre Ideen einreichen.",
-        content:
-            "Musterstadt startet die Beteiligungsphase für den Bürgerhaushalt 2027. Bis zum 15. Oktober können Einwohnerinnen und Einwohner ihre Ideen einreichen. Ein Budget von 250.000 Euro steht für Bürgerprojekte zur Verfügung.",
-        imageUrl: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80",
-        publishedAt: new Date("2026-09-02"),
-        category: "Verwaltung",
+        "id": "news-2",
+        "headline": "Bürgerhaushalt 2027: Jetzt Vorschläge einreichen",
+        "slug_url": "buergerhaushalt-2027",
+        "summary": "Musterstadt startet die Beteiligungsphase für den Bürgerhaushalt 2027. Bis zum 15. Oktober können Einwohnerinnen und Einwohner ihre Ideen einreichen.",
+        "body_html": "Musterstadt startet die Beteiligungsphase für den Bürgerhaushalt 2027. Bis zum 15. Oktober können Einwohnerinnen und Einwohner ihre Ideen einreichen. Ein Budget von 250.000 Euro steht für Bürgerprojekte zur Verfügung.",
+        "image": { "url": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80" },
+        "date_published": "2026-09-02",
+        "topic": "Verwaltung"
     },
     {
-        id: "news-3",
-        title: "Photovoltaik-Förderprogramm für Vereine gestartet",
-        slug: "photovoltaik-foerderprogramm-vereine",
-        excerpt:
-            "Vereine und gemeinnützige Organisationen können ab sofort Zuschüsse für Photovoltaikanlagen auf Vereinsgebäuden beantragen.",
-        content:
-            "Vereine und gemeinnützige Organisationen können ab sofort Zuschüsse für Photovoltaikanlagen auf Vereinsgebäuden beantragen. Die Stadt übernimmt bis zu 40 Prozent der Installationskosten im Rahmen der Klimaschutzinitiative.",
-        imageUrl: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80",
-        publishedAt: new Date("2026-08-27"),
-        category: "Klimaschutz",
+        "id": "news-3",
+        "headline": "Photovoltaik-Förderprogramm für Vereine gestartet",
+        "slug_url": "photovoltaik-foerderprogramm-vereine",
+        "summary": "Vereine und gemeinnützige Organisationen können ab sofort Zuschüsse für Photovoltaikanlagen auf Vereinsgebäuden beantragen.",
+        "body_html": "Vereine und gemeinnützige Organisationen können ab sofort Zuschüsse für Photovoltaikanlagen auf Vereinsgebäuden beantragen. Die Stadt übernimmt bis zu 40 Prozent der Installationskosten im Rahmen der Klimaschutzinitiative.",
+        "image": { "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80" },
+        "date_published": "2026-08-27",
+        "topic": "Klimaschutz"
     },
     {
-        id: "news-4",
-        title: "Neues Familienzentrum im Stadtteil Nordstadt",
-        slug: "familienzentrum-nordstadt",
-        excerpt:
-            "Ab September bietet das neue Familienzentrum in der Nordstadt Beratung, offene Treffs und Kursangebote für Familien mit kleinen Kindern.",
-        imageUrl: "https://images.unsplash.com/photo-1544776193-2f74dfd97e91?w=800&q=80",
-        publishedAt: new Date("2026-09-05"),
-        category: "Familie",
+        "id": "news-4",
+        "headline": "Neues Familienzentrum im Stadtteil Nordstadt",
+        "slug_url": "familienzentrum-nordstadt",
+        "summary": "Ab September bietet das neue Familienzentrum in der Nordstadt Beratung, offene Treffs und Kursangebote für Familien mit kleinen Kindern.",
+        "image": { "url": "https://images.unsplash.com/photo-1544776193-2f74dfd97e91?w=800&q=80" },
+        "date_published": "2026-09-05",
+        "topic": "Familie"
     },
     {
-        id: "news-5",
-        title: "Wochenmarkt zieht für Sanierung auf den Rathausplatz um",
-        slug: "wochenmarkt-umzug-rathausplatz",
-        excerpt:
-            "Während der Sanierung des Marktplatzes findet der Wochenmarkt ab dem 22. September übergangsweise auf dem Rathausplatz statt.",
-        publishedAt: new Date("2026-09-08"),
-        category: "Verwaltung",
+        "id": "news-5",
+        "headline": "Wochenmarkt zieht für Sanierung auf den Rathausplatz um",
+        "slug_url": "wochenmarkt-umzug-rathausplatz",
+        "summary": "Während der Sanierung des Marktplatzes findet der Wochenmarkt ab dem 22. September übergangsweise auf dem Rathausplatz statt.",
+        "date_published": "2026-09-08",
+        "topic": "Verwaltung"
     },
     {
-        id: "news-6",
-        title: "Stadtbücherei erweitert Öffnungszeiten am Samstag",
-        slug: "stadtbuecherei-oeffnungszeiten",
-        excerpt:
-            "Ab Oktober ist die Stadtbücherei samstags bereits ab 9 Uhr statt bisher 10 Uhr geöffnet — eine Reaktion auf zahlreiche Bürgeranfragen.",
-        publishedAt: new Date("2026-08-30"),
-        category: "Kultur",
-    },
+        "id": "news-6",
+        "headline": "Stadtbücherei erweitert Öffnungszeiten am Samstag",
+        "slug_url": "stadtbuecherei-oeffnungszeiten",
+        "summary": "Ab Oktober ist die Stadtbücherei samstags bereits ab 9 Uhr statt bisher 10 Uhr geöffnet — eine Reaktion auf zahlreiche Bürgeranfragen.",
+        "date_published": "2026-08-30",
+        "topic": "Kultur"
+    }
 ];
 
-export const musterstadtEvents: CivicEvent[] = [
+export const musterstadtExternalEvents = [
     {
-        id: "event-1",
-        title: "Herbstmarkt auf dem Rathausplatz",
-        description:
-            "Regionale Erzeuger, Kunsthandwerk und ein Kinderprogramm rund um den historischen Rathausplatz.",
-        startDate: new Date("2026-09-27T10:00:00"),
-        endDate: new Date("2026-09-27T18:00:00"),
-        location: "Rathausplatz",
-        category: "Markt",
-        imageUrl: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80",
+        "id": "event-1",
+        "event_name": "Herbstmarkt auf dem Rathausplatz",
+        "desc": "Regionale Erzeuger, Kunsthandwerk und ein Kinderprogramm rund um den historischen Rathausplatz.",
+        "start": "2026-09-27T10:00:00",
+        "end": "2026-09-27T18:00:00",
+        "loc": "Rathausplatz",
+        "type": "Markt",
+        "img": "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80"
     },
     {
-        id: "event-2",
-        title: "Bürgersprechstunde des Oberbürgermeisters",
-        description: "Offene Sprechstunde ohne Anmeldung, Themen jeder Art willkommen.",
-        startDate: new Date("2026-09-24T16:00:00"),
-        endDate: new Date("2026-09-24T18:00:00"),
-        location: "Rathaus, Raum 1.12",
-        category: "Verwaltung",
+        "id": "event-2",
+        "event_name": "Bürgersprechstunde des Oberbürgermeisters",
+        "desc": "Offene Sprechstunde ohne Anmeldung, Themen jeder Art willkommen.",
+        "start": "2026-09-24T16:00:00",
+        "end": "2026-09-24T18:00:00",
+        "loc": "Rathaus, Raum 1.12",
+        "type": "Verwaltung"
     },
     {
-        id: "event-3",
-        title: "Fahrrad-Codierung mit der Polizei",
-        description: "Kostenlose Codierung gegen Fahrraddiebstahl in Zusammenarbeit mit dem Polizeipräsidium.",
-        startDate: new Date("2026-10-03T09:00:00"),
-        endDate: new Date("2026-10-03T13:00:00"),
-        location: "Marktplatz",
-        category: "Mobilität",
+        "id": "event-3",
+        "event_name": "Fahrrad-Codierung mit der Polizei",
+        "desc": "Kostenlose Codierung gegen Fahrraddiebstahl in Zusammenarbeit mit dem Polizeipräsidium.",
+        "start": "2026-10-03T09:00:00",
+        "end": "2026-10-03T13:00:00",
+        "loc": "Marktplatz",
+        "type": "Mobilität"
     },
     {
-        id: "event-4",
-        title: "Tag der offenen Tür: Feuerwehr Musterstadt",
-        description: "Fahrzeugschau, Vorführungen und Informationen zur freiwilligen Feuerwehr.",
-        startDate: new Date("2026-10-10T10:00:00"),
-        endDate: new Date("2026-10-10T16:00:00"),
-        location: "Feuerwache Nord",
-        category: "Sicherheit",
-        imageUrl: "https://images.unsplash.com/photo-1553864250-08542b5aa8dd?w=800&q=80",
+        "id": "event-4",
+        "event_name": "Tag der offenen Tür: Feuerwehr Musterstadt",
+        "desc": "Fahrzeugschau, Vorführungen und Informationen zur freiwilligen Feuerwehr.",
+        "start": "2026-10-10T10:00:00",
+        "end": "2026-10-10T16:00:00",
+        "loc": "Feuerwache Nord",
+        "type": "Sicherheit",
+        "img": "https://images.unsplash.com/photo-1553864250-08542b5aa8dd?w=800&q=80"
     },
     {
-        id: "event-5",
-        title: "Info-Abend: Energetische Sanierung für Eigentümer",
-        description: "Die Klimaschutzagentur informiert über Fördermöglichkeiten und Ablauf.",
-        startDate: new Date("2026-10-14T18:30:00"),
-        location: "Stadtbücherei, Vortragssaal",
-        category: "Klimaschutz",
-    },
+        "id": "event-5",
+        "event_name": "Info-Abend: Energetische Sanierung für Eigentümer",
+        "desc": "Die Klimaschutzagentur informiert über Fördermöglichkeiten und Ablauf.",
+        "start": "2026-10-14T18:30:00",
+        "loc": "Stadtbücherei, Vortragssaal",
+        "type": "Klimaschutz"
+    }
 ];
 
-export const musterstadtServices: Service[] = [
-    { id: "svc-1", title: "Personalausweis beantragen", href: "/leistungen/personalausweis", icon: "id-card" },
-    { id: "svc-2", title: "Wohnsitz anmelden", href: "/leistungen/wohnsitz-anmelden", icon: "home" },
-    { id: "svc-3", title: "Kfz-Zulassung", href: "/leistungen/kfz-zulassung", icon: "car" },
-    { id: "svc-4", title: "Bauantrag stellen", href: "/leistungen/bauantrag", icon: "hammer" },
-    { id: "svc-5", title: "Termin online buchen", href: "/leistungen/termin-buchen", icon: "calendar" },
-    { id: "svc-6", title: "Müllabfuhrtermine", href: "/leistungen/muellabfuhr", icon: "trash-2" },
+export const musterstadtExternalServices = [
+    { "svc_id": "svc-1", "name": "Personalausweis beantragen", "url": "/leistungen/personalausweis", "icon_name": "id-card" },
+    { "svc_id": "svc-2", "name": "Wohnsitz anmelden", "url": "/leistungen/wohnsitz-anmelden", "icon_name": "home" },
+    { "svc_id": "svc-3", "name": "Kfz-Zulassung", "url": "/leistungen/kfz-zulassung", "icon_name": "car" },
+    { "svc_id": "svc-4", "name": "Bauantrag stellen", "url": "/leistungen/bauantrag", "icon_name": "hammer" },
+    { "svc_id": "svc-5", "name": "Termin online buchen", "url": "/leistungen/termin-buchen", "icon_name": "calendar" },
+    { "svc_id": "svc-6", "name": "Müllabfuhrtermine", "url": "/leistungen/muellabfuhr", "icon_name": "trash-2" }
 ];
 
-export const musterstadtContacts: Contact[] = [
-    {
-        id: "contact-1",
-        name: "Bürgerbüro",
-        role: "Anmeldungen, Ausweise, Termine",
-        email: "buergerbuero@musterstadt.de",
-        phone: "+49 7541 000-100",
-    },
-    {
-        id: "contact-2",
-        name: "Bauamt",
-        role: "Bauanträge, Stadtplanung",
-        email: "bauamt@musterstadt.de",
-        phone: "+49 7541 000-220",
-    },
-    {
-        id: "contact-3",
-        name: "Presse- und Öffentlichkeitsarbeit",
-        role: "Medienanfragen",
-        email: "presse@musterstadt.de",
-        phone: "+49 7541 000-310",
-    },
+export const musterstadtExternalContacts = [
+    { "id": "contact-1", "full_name": "Bürgerbüro", "position": "Anmeldungen, Ausweise, Termine", "email_addr": "buergerbuero@musterstadt.de", "tel": "+49 7541 000-100" },
+    { "id": "contact-2", "full_name": "Bauamt", "position": "Bauanträge, Stadtplanung", "email_addr": "bauamt@musterstadt.de", "tel": "+49 7541 000-220" },
+    { "id": "contact-3", "full_name": "Presse- und Öffentlichkeitsarbeit", "position": "Medienanfragen", "email_addr": "presse@musterstadt.de", "tel": "+49 7541 000-310" }
 ];
 
-export const musterstadtOpeningHours: OpeningHoursEntry[] = [
-    { day: "mon", opensAt: "08:00", closesAt: "16:00" },
-    { day: "tue", opensAt: "08:00", closesAt: "16:00" },
-    { day: "wed", opensAt: "08:00", closesAt: "12:30" },
-    { day: "thu", opensAt: "08:00", closesAt: "18:00" },
-    { day: "fri", opensAt: "08:00", closesAt: "12:30" },
-    { day: "sat", closed: true },
-    { day: "sun", closed: true },
+export const musterstadtExternalOpeningHours = [
+    { "weekday": "mon", "open": "08:00", "close": "16:00" },
+    { "weekday": "tue", "open": "08:00", "close": "16:00" },
+    { "weekday": "wed", "open": "08:00", "close": "12:30" },
+    { "weekday": "thu", "open": "08:00", "close": "18:00" },
+    { "weekday": "fri", "open": "08:00", "close": "12:30" },
+    { "weekday": "sat", "is_closed": true },
+    { "weekday": "sun", "is_closed": true }
 ];
 
-export const musterstadtSmartCityMetrics: SmartCityMetric[] = [
+export const musterstadtExternalSmartCityMetrics = [
     {
-        id: "kpi-1",
-        label: "CO₂-Reduktion ggü. 2020",
-        value: 18.4,
-        unit: "%",
-        category: "sustainability",
-        trend: "up",
-        changePercent: 3.1,
-        series: [
-            { date: "2023-01", value: 12.1 },
-            { date: "2023-04", value: 14.5 },
-            { date: "2023-07", value: 16.2 },
-            { date: "2023-10", value: 17.8 },
-            { date: "2024-01", value: 18.4 },
-        ],
-        breakdown: [
-            { label: "Verkehr", value: 45 },
-            { label: "Gebäude", value: 35 },
-            { label: "Industrie", value: 20 },
-        ],
-        target: 25,
+        "kpi_id": "kpi-1", "source_lbl": "Beispieldaten (Demo)", "title": "CO₂-Reduktion ggü. 2020",
+        "current_val": 18.4, "measure_unit": "%", "topic": "sustainability", "direction": "up", "pct_change": 3.1,
+        "history": [{ "t": "2023-01", "v": 12.1 }, { "t": "2023-04", "v": 14.5 }, { "t": "2023-07", "v": 16.2 }, { "t": "2023-10", "v": 17.8 }, { "t": "2024-01", "v": 18.4 }],
+        "segments": [{ "n": "Verkehr", "v": 45 }, { "n": "Gebäude", "v": 35 }, { "n": "Industrie", "v": 20 }],
+        "goal": 25
     },
-    {
-        id: "kpi-2",
-        label: "Radverkehrsanteil",
-        value: 27,
-        unit: "%",
-        category: "mobility",
-        trend: "up",
-        changePercent: 2.4,
-    },
-    {
-        id: "kpi-3",
-        label: "Photovoltaik-Leistung",
-        value: 4.2,
-        unit: "MWp",
-        category: "energy",
-        trend: "up",
-        changePercent: 12.5,
-    },
-    {
-        id: "kpi-4",
-        label: "Ladepunkte E-Mobilität",
-        value: 58,
-        unit: "Standorte",
-        category: "mobility",
-        trend: "up",
-        changePercent: 9.0,
-    },
-    {
-        id: "kpi-5",
-        label: "Kommunaler Energieverbrauch",
-        value: -6.8,
-        unit: "% ggü. Vorjahr",
-        category: "energy",
-        trend: "down",
-        changePercent: -6.8,
-    },
-    {
-        id: "kpi-6",
-        label: "Grünflächenanteil",
-        value: 34,
-        unit: "%",
-        category: "sustainability",
-        trend: "flat",
-        changePercent: 0.2,
-    },
+    { "kpi_id": "kpi-2", "source_lbl": "Beispieldaten (Demo)", "title": "Radverkehrsanteil", "current_val": 27, "measure_unit": "%", "topic": "mobility", "direction": "up", "pct_change": 2.4 },
+    { "kpi_id": "kpi-3", "source_lbl": "Beispieldaten (Demo)", "title": "Photovoltaik-Leistung", "current_val": 4.2, "measure_unit": "MWp", "topic": "energy", "direction": "up", "pct_change": 12.5 },
+    { "kpi_id": "kpi-4", "source_lbl": "Beispieldaten (Demo)", "title": "Ladepunkte E-Mobilität", "current_val": 58, "measure_unit": "Standorte", "topic": "mobility", "direction": "up", "pct_change": 9.0 },
+    { "kpi_id": "kpi-5", "source_lbl": "Beispieldaten (Demo)", "title": "Kommunaler Energieverbrauch", "current_val": -6.8, "measure_unit": "% ggü. Vorjahr", "topic": "energy", "direction": "down", "pct_change": -6.8 },
+    { "kpi_id": "kpi-6", "source_lbl": "Beispieldaten (Demo)", "title": "Grünflächenanteil", "current_val": 34, "measure_unit": "%", "topic": "sustainability", "direction": "flat", "pct_change": 0.2 }
 ];
 
-export const musterstadtServiceDetails: ServiceDetail[] = [
-    { id: "sd-1", title: "Personalausweis beantragen", href: "/services/ausweis", category: "Ausweise", icon: "CreditCard", department: "Bürgerbüro" },
-    { id: "sd-2", title: "Wohnsitz ummelden", href: "/services/ummelden", category: "Meldewesen", icon: "Home", department: "Bürgerbüro" },
-    { id: "sd-3", title: "Hundeanmeldung", href: "/services/hund", category: "Steuern", icon: "Dog", department: "Kämmerei" },
-    { id: "sd-4", title: "Baugenehmigung", href: "/services/bau", category: "Bauen & Wohnen", icon: "Hammer", department: "Bauamt" },
-    { id: "sd-5", title: "Gewerbe anmelden", href: "/services/gewerbe", category: "Wirtschaft", icon: "Briefcase", department: "Gewerbeamt" },
-    { id: "sd-6", title: "Elterngeld beantragen", href: "/services/elterngeld", category: "Familie", icon: "Baby", department: "Jugendamt" },
+export const musterstadtExternalServiceDetails = [
+    { "id": "sd-1", "name": "Personalausweis beantragen", "url": "/services/ausweis", "group": "Ausweise", "icon_name": "CreditCard", "dept": "Bürgerbüro" },
+    { "id": "sd-2", "name": "Wohnsitz ummelden", "url": "/services/ummelden", "group": "Meldewesen", "icon_name": "Home", "dept": "Bürgerbüro" },
+    { "id": "sd-3", "name": "Hundeanmeldung", "url": "/services/hund", "group": "Steuern", "icon_name": "Dog", "dept": "Kämmerei" },
+    { "id": "sd-4", "name": "Baugenehmigung", "url": "/services/bau", "group": "Bauen & Wohnen", "icon_name": "Hammer", "dept": "Bauamt" },
+    { "id": "sd-5", "name": "Gewerbe anmelden", "url": "/services/gewerbe", "group": "Wirtschaft", "icon_name": "Briefcase", "dept": "Gewerbeamt" },
+    { "id": "sd-6", "name": "Elterngeld beantragen", "url": "/services/elterngeld", "group": "Familie", "icon_name": "Baby", "dept": "Jugendamt" }
 ];
 
-export const musterstadtCouncilBodies: CouncilBody[] = [
+export const musterstadtExternalCouncilBodies = [
     {
-        id: "cb-1",
-        name: "Gemeinderat",
-        description: "Oberstes Organ der Stadt",
-        members: [
-            { id: "m-1", name: "Erika Musterfrau", role: "Vorsitzende", party: "CDU" },
-            { id: "m-2", name: "Max Mustermann", party: "SPD" },
-            { id: "m-3", name: "Julia Sommer", party: "Grüne" },
-            { id: "m-4", name: "Thomas Winter", party: "FDP" }
+        "id": "cb-1", "title": "Gemeinderat", "desc": "Oberstes Organ der Stadt", "people": [
+            { "id": "m-1", "full_name": "Erika Musterfrau", "position": "Vorsitzende", "faction": "CDU" },
+            { "id": "m-2", "full_name": "Max Mustermann", "faction": "SPD" },
+            { "id": "m-3", "full_name": "Julia Sommer", "faction": "Grüne" },
+            { "id": "m-4", "full_name": "Thomas Winter", "faction": "FDP" }
         ]
     },
     {
-        id: "cb-2",
-        name: "Bauausschuss",
-        description: "Zuständig für Stadtentwicklung und Bauanträge",
-        members: [
-            { id: "m-5", name: "Heinrich Weber", role: "Vorsitzender", party: "SPD" },
-            { id: "m-6", name: "Sarah Meyer", party: "CDU" }
+        "id": "cb-2", "title": "Bauausschuss", "desc": "Zuständig für Stadtentwicklung und Bauanträge", "people": [
+            { "id": "m-5", "full_name": "Heinrich Weber", "position": "Vorsitzender", "faction": "SPD" },
+            { "id": "m-6", "full_name": "Sarah Meyer", "faction": "CDU" }
         ]
     }
 ];
 
-export const musterstadtWasteEntries: WasteCollectionEntry[] = [
-    { id: "w-1", date: new Date(), wasteType: "restmuell", district: "Bezirk Mitte" },
-    { id: "w-2", date: new Date(Date.now() + 86400000 * 2), wasteType: "biomuell", district: "Bezirk Nord" },
-    { id: "w-3", date: new Date(Date.now() + 86400000 * 4), wasteType: "papier", district: "Alle Bezirke" },
-    { id: "w-4", date: new Date(Date.now() + 86400000 * 7), wasteType: "gelberSack", district: "Bezirk Süd" },
-    { id: "w-5", date: new Date(Date.now() + 86400000 * 9), wasteType: "restmuell", district: "Bezirk Nord" },
-    { id: "w-6", date: new Date(Date.now() + 86400000 * 11), wasteType: "biomuell", district: "Bezirk Mitte" },
-    { id: "w-7", date: new Date(Date.now() + 86400000 * 14), wasteType: "gelberSack", district: "Bezirk Nord" },
+export const musterstadtExternalWasteEntries = [
+    { "id": "w-1", "d": new Date().toISOString(), "type": "restmuell", "area": "Bezirk Mitte" },
+    { "id": "w-2", "d": new Date(Date.now() + 86400000 * 2).toISOString(), "type": "biomuell", "area": "Bezirk Nord" },
+    { "id": "w-3", "d": new Date(Date.now() + 86400000 * 4).toISOString(), "type": "papier", "area": "Alle Bezirke" },
+    { "id": "w-4", "d": new Date(Date.now() + 86400000 * 7).toISOString(), "type": "gelberSack", "area": "Bezirk Süd" },
+    { "id": "w-5", "d": new Date(Date.now() + 86400000 * 9).toISOString(), "type": "restmuell", "area": "Bezirk Nord" },
+    { "id": "w-6", "d": new Date(Date.now() + 86400000 * 11).toISOString(), "type": "biomuell", "area": "Bezirk Mitte" },
+    { "id": "w-7", "d": new Date(Date.now() + 86400000 * 14).toISOString(), "type": "gelberSack", "area": "Bezirk Nord" }
 ];
 
-export const musterstadtAlerts: Alert[] = [
-    { id: "a-1", title: "Straßensperrung Hauptstraße", message: "Aufgrund von Bauarbeiten bis Freitag gesperrt.", severity: "warning", active: true },
-    { id: "a-2", title: "Trinkwasserverunreinigung", message: "Bitte Wasser vor dem Verzehr abkochen.", severity: "urgent", active: true },
-    { id: "a-3", title: "Neue Bürger-App verfügbar", severity: "info", active: true },
+export const musterstadtExternalAlerts = [
+    { "id": "a-1", "headline": "Straßensperrung Hauptstraße", "body": "Aufgrund von Bauarbeiten bis Freitag gesperrt.", "level": "warning", "is_active": true },
+    { "id": "a-2", "headline": "Trinkwasserverunreinigung", "body": "Bitte Wasser vor dem Verzehr abkochen.", "level": "urgent", "is_active": true },
+    { "id": "a-3", "headline": "Neue Bürger-App verfügbar", "level": "info", "is_active": true }
 ];
 
-export const musterstadtDepartments: Department[] = [
+export const musterstadtExternalDepartments = [
     {
-        id: "d-1",
-        name: "Bürgerbüro",
-        description: "Ihre erste Anlaufstelle für Ausweise und Meldewesen",
-        href: "/aemter/buergerbuero",
-        contacts: [
-            { id: "c-1", name: "Petra Schmitz", email: "p.schmitz@musterstadt.de", phone: "07541 123-100" },
-            { id: "c-2", name: "Klaus Wagner", email: "k.wagner@musterstadt.de", phone: "07541 123-101" }
+        "id": "d-1", "name": "Bürgerbüro", "desc": "Ihre erste Anlaufstelle für Ausweise und Meldewesen", "url": "/aemter/buergerbuero", "staff": [
+            { "id": "c-1", "full_name": "Petra Schmitz", "email_addr": "p.schmitz@musterstadt.de", "tel": "07541 123-100" },
+            { "id": "c-2", "full_name": "Klaus Wagner", "email_addr": "k.wagner@musterstadt.de", "tel": "07541 123-101" }
         ]
     },
     {
-        id: "d-2",
-        name: "Bauamt",
-        description: "Ansprechpartner für Bauanträge, Bebauungspläne und Stadtentwicklung",
-        href: "/aemter/bauamt",
-        contacts: [
-            { id: "c-3", name: "Sabine Müller", email: "bauamt@musterstadt.de", phone: "07541 123-200" }
+        "id": "d-2", "name": "Bauamt", "desc": "Ansprechpartner für Bauanträge, Bebauungspläne und Stadtentwicklung", "url": "/aemter/bauamt", "staff": [
+            { "id": "c-3", "full_name": "Sabine Müller", "email_addr": "bauamt@musterstadt.de", "tel": "07541 123-200" }
         ]
     },
     {
-        id: "d-3",
-        name: "Standesamt",
-        description: "Geburten, Eheschließungen, Sterbefälle",
-        href: "/aemter/standesamt",
-        contacts: [
-            { id: "c-4", name: "Michael Schmidt", email: "standesamt@musterstadt.de", phone: "07541 123-300" }
+        "id": "d-3", "name": "Standesamt", "desc": "Geburten, Eheschließungen, Sterbefälle", "url": "/aemter/standesamt", "staff": [
+            { "id": "c-4", "full_name": "Michael Schmidt", "email_addr": "standesamt@musterstadt.de", "tel": "07541 123-300" }
         ]
+    }
+];
+
+export const MOCK_DATASETS = [
+    {
+        slug: "ds-news",
+        name: "Aktuelle Meldungen",
+        canonicalType: "NewsItem",
+        mapping: {
+            id: "$.id",
+            title: "$.headline",
+            slug: "$.slug_url",
+            excerpt: "$.summary",
+            content: "$.body_html",
+            imageUrl: "$.image.url",
+            publishedAt: "$.date_published",
+            category: "$.topic"
+        },
+        path: "/news"
+    },
+    {
+        slug: "ds-events",
+        name: "Veranstaltungen",
+        canonicalType: "Event",
+        mapping: {
+            id: "$.id",
+            title: "$.event_name",
+            description: "$.desc",
+            startDate: "$.start",
+            endDate: "$.end",
+            location: "$.loc",
+            category: "$.type",
+            imageUrl: "$.img"
+        },
+        path: "/events"
+    },
+    {
+        slug: "ds-services",
+        name: "Dienstleistungen",
+        canonicalType: "Service",
+        mapping: {
+            id: "$.svc_id",
+            title: "$.name",
+            href: "$.url",
+            icon: "$.icon_name"
+        },
+        path: "/services"
+    },
+    {
+        slug: "ds-contacts",
+        name: "Kontakte",
+        canonicalType: "Contact",
+        mapping: {
+            id: "$.id",
+            name: "$.full_name",
+            role: "$.position",
+            email: "$.email_addr",
+            phone: "$.tel"
+        },
+        path: "/contacts"
+    },
+    {
+        slug: "ds-opening-hours",
+        name: "Öffnungszeiten",
+        canonicalType: "OpeningHoursEntry",
+        mapping: {
+            day: "$.weekday",
+            opensAt: "$.open",
+            closesAt: "$.close",
+            closed: "$.is_closed"
+        },
+        path: "/opening-hours"
+    },
+    {
+        slug: "ds-metrics",
+        name: "Smart-City-Kennzahlen",
+        canonicalType: "SmartCityMetric",
+        mapping: {
+            id: "$.kpi_id",
+            label: "$.title",
+            value: "$.current_val",
+            unit: "$.measure_unit",
+            category: "$.topic",
+            trend: "$.direction",
+            changePercent: "$.pct_change",
+            series: {
+                _array: "$.history",
+                date: "$.t",
+                value: "$.v"
+            },
+            breakdown: {
+                _array: "$.segments",
+                label: "$.n",
+                value: "$.v"
+            },
+            target: "$.goal"
+        },
+        path: "/metrics"
+    },
+    {
+        slug: "ds-service-details",
+        name: "Dienstleistungsdetails",
+        canonicalType: "ServiceDetail",
+        mapping: {
+            id: "$.id",
+            title: "$.name",
+            href: "$.url",
+            icon: "$.icon_name",
+            category: "$.group",
+            department: "$.dept"
+        },
+        path: "/service-details"
+    },
+    {
+        slug: "ds-council",
+        name: "Gremien",
+        canonicalType: "CouncilBody",
+        mapping: {
+            id: "$.id",
+            name: "$.title",
+            description: "$.desc",
+            members: {
+                _array: "$.people",
+                id: "$.id",
+                name: "$.full_name",
+                role: "$.position",
+                party: "$.faction"
+            }
+        },
+        path: "/council-bodies"
+    },
+    {
+        slug: "ds-waste",
+        name: "Abfallkalender",
+        canonicalType: "WasteCollectionEntry",
+        mapping: {
+            id: "$.id",
+            date: "$.d",
+            wasteType: "$.type",
+            district: "$.area"
+        },
+        path: "/waste"
+    },
+    {
+        slug: "ds-alerts",
+        name: "Warnungen",
+        canonicalType: "Alert",
+        mapping: {
+            id: "$.id",
+            title: "$.headline",
+            message: "$.body",
+            severity: "$.level",
+            active: "$.is_active"
+        },
+        path: "/alerts"
+    },
+    {
+        slug: "ds-departments",
+        name: "Abteilungen",
+        canonicalType: "Department",
+        mapping: {
+            id: "$.id",
+            name: "$.name",
+            description: "$.desc",
+            href: "$.url",
+            contacts: {
+                _array: "$.staff",
+                id: "$.id",
+                name: "$.full_name",
+                email: "$.email_addr",
+                phone: "$.tel"
+            }
+        },
+        path: "/departments"
     }
 ];

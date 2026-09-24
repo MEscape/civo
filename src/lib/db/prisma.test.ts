@@ -45,18 +45,37 @@ describe("prisma client", () => {
     });
 
     it("creates a PrismaPg adapter using DATABASE_URL", async () => {
-        await import("./prisma");
+        await import("@/lib/db/prisma");
 
         expect(mocks.PrismaPg).toHaveBeenCalledTimes(1);
 
         expect(mocks.PrismaPg).toHaveBeenCalledWith({
             connectionString:
                 "postgresql://test:test@localhost:5432/test",
+            max: 25,
         });
     });
 
+    it("defaults the pool size to 25 when DATABASE_POOL_MAX is unset", async () => {
+        await import("@/lib/db/prisma");
+
+        expect(mocks.PrismaPg).toHaveBeenCalledWith(
+            expect.objectContaining({ max: 25 }),
+        );
+    });
+
+    it("honors DATABASE_POOL_MAX when a deployment sets it", async () => {
+        vi.stubEnv("DATABASE_POOL_MAX", "50");
+
+        await import("@/lib/db/prisma");
+
+        expect(mocks.PrismaPg).toHaveBeenCalledWith(
+            expect.objectContaining({ max: 50 }),
+        );
+    });
+
     it("creates a PrismaClient using the adapter", async () => {
-        await import("./prisma");
+        await import("@/lib/db/prisma");
 
         expect(mocks.PrismaClient).toHaveBeenCalledTimes(1);
 
@@ -70,7 +89,7 @@ describe("prisma client", () => {
     it("uses warn and error logging in development", async () => {
         vi.stubEnv("NODE_ENV", "development");
 
-        await import("./prisma");
+        await import("@/lib/db/prisma");
 
         expect(mocks.PrismaClient).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -82,7 +101,7 @@ describe("prisma client", () => {
     it("uses only error logging outside development", async () => {
         vi.stubEnv("NODE_ENV", "test");
 
-        await import("./prisma");
+        await import("@/lib/db/prisma");
 
         expect(mocks.PrismaClient).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -92,7 +111,7 @@ describe("prisma client", () => {
     });
 
     it("exports the created PrismaClient instance", async () => {
-        const { prisma } = await import("./prisma");
+        const { prisma } = await import("@/lib/db/prisma");
 
         expect(prisma).toBeDefined();
 
@@ -104,7 +123,7 @@ describe("prisma client", () => {
     it("stores the PrismaClient on globalThis in development", async () => {
         vi.stubEnv("NODE_ENV", "development");
 
-        const { prisma } = await import("./prisma");
+        const { prisma } = await import("@/lib/db/prisma");
 
         expect(
             (globalThis as { prisma?: unknown }).prisma,
@@ -114,7 +133,7 @@ describe("prisma client", () => {
     it("does not store the PrismaClient on globalThis in production", async () => {
         vi.stubEnv("NODE_ENV", "production");
 
-        const { prisma } = await import("./prisma");
+        const { prisma } = await import("@/lib/db/prisma");
 
         expect(
             (globalThis as { prisma?: unknown }).prisma,
@@ -132,7 +151,7 @@ describe("prisma client", () => {
 
         (globalThis as { prisma?: unknown }).prisma = existingPrisma;
 
-        const { prisma } = await import("./prisma");
+        const { prisma } = await import("@/lib/db/prisma");
 
         expect(prisma).toBe(existingPrisma);
 
@@ -142,7 +161,7 @@ describe("prisma client", () => {
     it("creates a new PrismaClient when no global instance exists", async () => {
         vi.stubEnv("NODE_ENV", "development");
 
-        const { prisma } = await import("./prisma");
+        const { prisma } = await import("@/lib/db/prisma");
 
         expect(mocks.PrismaClient).toHaveBeenCalledTimes(1);
 

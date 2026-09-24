@@ -7,6 +7,8 @@
  * not free-form values, which keeps the visual system coherent across
  * every website built on the platform.
  */
+import { ensureContrast, readableForeground, PAGE_BACKGROUND } from "./contrast";
+
 export type ThemeRadius = "none" | "sm" | "md" | "lg";
 export type ThemeSpacingScale = "compact" | "comfortable" | "spacious";
 
@@ -157,12 +159,28 @@ function resolveFontVariable(familyName: string, fallback: keyof typeof FONT_VAR
  * `src/lib/fonts/local-fonts.ts`) rather than bare family-name strings,
  * so a selected theme font is always backed by a font file this
  * deployment actually serves — never a request to an external font CDN.
+ *
+ * Each brand color yields three variables, because a municipality's color
+ * cannot be assumed readable in every role:
+ *  - `--civo-color-X`             the color itself (fills, borders, backgrounds)
+ *  - `--civo-color-X-foreground`  white or black text to put ON that color
+ *  - `--civo-color-X-copy`        the color as text/icon ON the page, darkened
+ *                                 just enough to meet WCAG AA (4.5:1) and
+ *                                 unchanged when it already does
+ * Components pick the variable for the role; none of them assume the raw
+ * brand color is legible.
  */
 export function themeToCssVariables(theme: WebsiteTheme): Record<string, string> {
     return {
         "--civo-color-primary": theme.colors.primary,
         "--civo-color-secondary": theme.colors.secondary,
         "--civo-color-accent": theme.colors.accent,
+        "--civo-color-primary-foreground": readableForeground(theme.colors.primary),
+        "--civo-color-secondary-foreground": readableForeground(theme.colors.secondary),
+        "--civo-color-accent-foreground": readableForeground(theme.colors.accent),
+        "--civo-color-primary-copy": ensureContrast(theme.colors.primary, PAGE_BACKGROUND),
+        "--civo-color-secondary-copy": ensureContrast(theme.colors.secondary, PAGE_BACKGROUND),
+        "--civo-color-accent-copy": ensureContrast(theme.colors.accent, PAGE_BACKGROUND),
         "--civo-font-heading": `${resolveFontVariable(theme.typography.headingFont, "Source Serif 4")}, ui-serif, Georgia, serif`,
         "--civo-font-body": `${resolveFontVariable(theme.typography.bodyFont, "Inter")}, ui-sans-serif, system-ui, sans-serif`,
         "--civo-radius": radiusValues[theme.radius],

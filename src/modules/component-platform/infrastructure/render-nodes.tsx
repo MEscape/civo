@@ -1,7 +1,8 @@
-import React, { createElement, type ComponentType } from "react";
+import React, { createElement, Suspense, type ComponentType } from "react";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import { type PageComponentProps, isRegisteredComponentType } from "@/modules/component-platform/domain";
 import { componentMap } from "./registry";
+import { SKELETONS, WidgetSkeleton } from "./widget-skeleton";
 // Side-effect import: registers every feature module's component
 // definitions into the domain registry (see that file's own comment on
 // why this aggregation cannot live in domain/**). This file is the
@@ -28,20 +29,18 @@ import "./definitions";
  * components can resolve the correct per-website data source without
  * every non-data component needing to opt in.
  */
-export function renderPageNodes(nodes: PageNode[], editMode = false, websiteId?: string) {
+export function renderPageNodes(nodes: PageNode[], editMode = false) {
     return nodes.map((node) => (
-        <PageNodeRenderer key={node.id} node={node} editMode={editMode} websiteId={websiteId} />
+        <PageNodeRenderer key={node.id} node={node} editMode={editMode} />
     ));
 }
 
 export function PageNodeRenderer({
-                                     node,
-                                     editMode = false,
-                                     websiteId,
-                                 }: {
+    node,
+    editMode = false,
+}: {
     node: PageNode;
     editMode?: boolean;
-    websiteId?: string;
 }) {
     // Respect the `visible` prop (spec §41): hidden nodes are suppressed on
     // the public render path. In edit mode we still render them (dimmed) so
@@ -56,7 +55,21 @@ export function PageNodeRenderer({
         rendered = <UnknownComponentPlaceholder type={node.type} />;
     } else {
         const Component = componentMap[node.type] as ComponentType<PageComponentProps>;
-        rendered = createElement(Component, { props: node.props, editMode, websiteId }, node.children as never);
+        rendered = createElement(Component, { props: node.props, editMode }, node.children as never);
+
+        // A data widget (one with an entry in SKELETONS) is an async Server
+        // Component that awaits its own fetch. Wrapping just that node in
+        // Suspense lets the rest of the page — and every OTHER widget on it —
+        // stream in without waiting on the slowest one; without this, one
+        // slow data source blocked the entire page. Static components (Hero,
+        // Text, layout) render synchronously and need no boundary.
+        //
+        // Not wrapped in edit mode: the builder canvas measures and outlines
+        // nodes by their rendered DOM (use-canvas-hit-testing.ts), and a node
+        // that is still suspended has no DOM to measure yet.
+        if (!editMode && node.type in SKELETONS) {
+            rendered = <Suspense fallback={<WidgetSkeleton type={node.type} />}>{rendered}</Suspense>;
+        }
     }
 
     if (!editMode) return rendered;
@@ -83,7 +96,7 @@ export function PageNodeRenderer({
 function UnknownComponentPlaceholder({ type }: { type: string }) {
     return (
         <div className="mx-auto w-full max-w-5xl px-6 py-8">
-            <div className="rounded-[var(--civo-radius)] border border-dashed border-[var(--civo-color-secondary)] px-4 py-3 text-sm text-[var(--civo-color-secondary)]">
+            <div className="rounded-token border border-dashed border-secondary px-4 py-3 text-sm text-secondary-copy">
                 Unbekannte Komponente: <code className="font-mono">{type}</code>
             </div>
         </div>

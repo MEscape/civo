@@ -28,7 +28,7 @@ export function ComponentPreviewPopover({ hoveredType, anchorRect, websiteId, th
 
     useEffect(() => {
         if (!node || !contentRef.current) return;
-        
+
         const observer = new ResizeObserver((entries) => {
             const entry = entries[0];
             if (!entry) return;
@@ -37,7 +37,7 @@ export function ComponentPreviewPopover({ hoveredType, anchorRect, websiteId, th
             setScale(currentScale);
             setHeight(unscaledHeight * currentScale);
         });
-        
+
         observer.observe(contentRef.current);
         return () => observer.disconnect();
     }, [node]);
@@ -63,9 +63,9 @@ export function ComponentPreviewPopover({ hoveredType, anchorRect, websiteId, th
     }
 
     const popover = (
-        <div 
-            className="civo-preview-popover" 
-            style={{ 
+        <div
+            className="civo-preview-popover"
+            style={{
                 position: "fixed",
                 top: `${top}px`,
                 left: `${anchorRect.right + 10}px`,
@@ -77,7 +77,7 @@ export function ComponentPreviewPopover({ hoveredType, anchorRect, websiteId, th
                     <div className="civo-preview-popover__description">{definition.description}</div>
                 )}
             </div>
-            
+
             <div className="civo-preview-popover__stage">
                 {isLoading && (
                     <div className="civo-preview-popover__status">
@@ -85,12 +85,12 @@ export function ComponentPreviewPopover({ hoveredType, anchorRect, websiteId, th
                     </div>
                 )}
                 {error && (
-                    <div className="civo-preview-popover__status text-red-700">
+                    <div className="civo-preview-popover__status text-danger">
                         {error}
                     </div>
                 )}
                 {!isLoading && !error && node && (
-                    <div 
+                    <div
                         className="civo-preview-popover__scale-outer"
                         style={{
                             "--civo-preview-scale": scale,

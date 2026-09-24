@@ -1,6 +1,20 @@
 @import "tailwindcss";
 
 /*
+ * Tailwind builds this stylesheet from every non-ignored file in the repo and
+ * treats any class-looking string as a class, in prose too. Documentation
+ * quotes forbidden classes and placeholders as examples, and one such example
+ * once generated an invalid rule that broke every page. Docs are not sources.
+ * Neither are tests: they quote forbidden classes as fixtures, and Tailwind
+ * would ship those as real rules. (globals-css.test.ts fails if any other file
+ * poisons the build.)
+ */
+@source not "../../.agents";
+@source not "../../**/*.md";
+@source not "../../**/*.test.ts";
+@source not "../../**/*.test.tsx";
+
+/*
  * Civo design tokens.
  *
  * Two layers:
@@ -17,18 +31,55 @@
  * without touching component code.
  */
 :root {
+    /*
+     * Brand colors, as the platform default theme. A website's ThemeProvider
+     * overrides all nine, so nothing here is fixed. For each color:
+     *   X            fills, borders, backgrounds
+     *   X-foreground text ON the fill (white or black, whichever is legible)
+     *   X-copy       the color used AS text or an icon on the page, darkened
+     *                to meet 4.5:1 where the raw color would not
+     * These literals are what themeToCssVariables(defaultTheme) emits, so
+     * chrome outside any ThemeProvider matches; a test enforces it.
+     */
     --civo-color-primary: #1f3a34;
     --civo-color-primary-foreground: #ffffff;
+    --civo-color-primary-copy: #1f3a34;
     --civo-color-secondary: #7a8b85;
-    --civo-color-secondary-foreground: #ffffff;
+    --civo-color-secondary-foreground: #000000;
+    --civo-color-secondary-copy: #64726d;
     --civo-color-accent: #c9782f;
-    --civo-color-accent-foreground: #ffffff;
+    --civo-color-accent-foreground: #000000;
+    --civo-color-accent-copy: #a16026;
 
     --civo-color-background: #f6f4ee;
     --civo-color-surface: #ffffff;
     --civo-color-text: #2e2a24;
     --civo-color-text-muted: #5b564c;
     --civo-color-border: #e4e0d5;
+    /* Boundary of interactive controls (inputs, toggles). WCAG 1.4.11 needs
+       3:1 against adjacent colors; --civo-color-border is decorative only. */
+    --civo-color-border-strong: #857f72;
+
+    /*
+     * Semantic status tokens. Deliberately STATIC (never set by a website
+     * theme): a municipality's brand color must not be able to redefine
+     * what "danger" or "success" looks like. Each status has a solid
+     * (text/icon), a subtle (background) and a border value; solid meets
+     * WCAG AA (4.5:1) on surface, subtle and page background.
+     */
+    --civo-color-success: #1a6b3c;
+    --civo-color-success-subtle: #e8f4ec;
+    --civo-color-success-border: #a8d5b8;
+    --civo-color-warning: #8a5100;
+    --civo-color-warning-subtle: #fdf3dc;
+    --civo-color-warning-border: #e8c777;
+    --civo-color-danger: #b42318;
+    --civo-color-danger-subtle: #fdecea;
+    --civo-color-danger-border: #f0a8a1;
+    --civo-color-info: #1d5a99;
+    --civo-color-info-subtle: #e8f1fb;
+    --civo-color-info-border: #a3c4ea;
+    --civo-color-status-foreground: #ffffff;
 
     --civo-font-heading: var(--font-source-serif), ui-serif, Georgia, serif;
     --civo-font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -36,15 +87,155 @@
     --civo-radius: 6px;
     --civo-section-spacing: 4rem;
 
+    /* Height of the internal app header. Full-height workspaces (builder,
+       settings) size themselves to the space below it via `h-app-body`. */
+    --civo-app-header-height: 3.5rem;
+
     --background: var(--civo-color-background);
     --foreground: var(--civo-color-text);
 }
 
+/*
+ * Categorical chart palette. Derived from the brand colors so a website theme
+ * drives it. Built from the -copy variants, not the raw brand colors, because a
+ * raw accent such as cyan is only 1.5:1 against the page.
+ *
+ * Contrast, measured on a real site: the full-strength slots (1, 2, 5) reach
+ * 3:1 against the page or better; the TINTED slots (3, 4, 6) are lighter on
+ * purpose, to keep neighbors distinct, and measured 1.8-3.0:1. Four or more
+ * categories cannot all be both dark enough for 3:1 and different in lightness.
+ * That is acceptable only because color never carries the meaning (WCAG 1.4.1):
+ * every chart also states each value as text and separates segments with a
+ * page-colored stroke. Do not add a chart that identifies data by color alone.
+ *
+ * ORDER MATTERS. Segments are used in this order, and most charts have three
+ * or four, so slots 1-4 alternate dark / mid / light / light-tint. Neighbors
+ * therefore differ in LIGHTNESS, not just hue, even when a municipality picks
+ * primary and secondary colors that are nearly identical (a real case: #1A1A1A
+ * and #333333). The secondary color only enters at slot 5 for that reason.
+ *
+ * WHY THIS IS NOT INSIDE :root. `var()` in a custom property is resolved
+ * where the property is DECLARED, then inherited as a finished value. Declared
+ * on :root it would capture the DEFAULT theme's colors once, and a website's
+ * ThemeProvider (which overrides --civo-color-primary on its own wrapper)
+ * would never reach the chart. Declaring it on the wrapper as well
+ * makes it resolve again against that site's colors. Any token derived from
+ * another themable token needs the same treatment.
+ */
+:root,
+[data-civo-theme] {
+    --civo-chart-1: var(--civo-color-primary-copy);
+    --civo-chart-2: var(--civo-color-accent-copy);
+    --civo-chart-3: color-mix(in oklab, var(--civo-color-primary-copy) 45%, var(--civo-color-surface));
+    --civo-chart-4: color-mix(in oklab, var(--civo-color-accent-copy) 45%, var(--civo-color-surface));
+    --civo-chart-5: var(--civo-color-secondary-copy);
+    --civo-chart-6: color-mix(in oklab, var(--civo-color-secondary-copy) 45%, var(--civo-color-surface));
+}
+
+/*
+ * Registers the --civo-* tokens with Tailwind so components can write
+ * `bg-primary text-primary-foreground rounded-token` instead of arbitrary
+ * `bg-[var(--civo-color-primary)]` values or the default Tailwind palette.
+ * `inline` is required: it keeps every utility pointing at the live CSS
+ * variable, so a per-website theme override still flows through at runtime.
+ */
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+
+    --color-primary: var(--civo-color-primary);
+    --color-primary-foreground: var(--civo-color-primary-foreground);
+    --color-primary-copy: var(--civo-color-primary-copy);
+    --color-secondary: var(--civo-color-secondary);
+    --color-secondary-foreground: var(--civo-color-secondary-foreground);
+    --color-secondary-copy: var(--civo-color-secondary-copy);
+    --color-accent: var(--civo-color-accent);
+    --color-accent-foreground: var(--civo-color-accent-foreground);
+    --color-accent-copy: var(--civo-color-accent-copy);
+
+    /* Naming rule: a token name says what the color is FOR. Text colors
+       are named for text (`text-copy`, `text-copy-muted`), surfaces for
+       surfaces (`bg-surface`, `bg-canvas`). Never reuse shadcn's names
+       (muted, destructive, input, ring) for a different role: shadcn's
+       `bg-muted` is a surface, so a text color called `muted` would paint
+       a dark background wherever a shadcn snippet is pasted in. */
+    --color-canvas: var(--civo-color-background);
+    --color-surface: var(--civo-color-surface);
+    --color-copy: var(--civo-color-text);
+    --color-copy-muted: var(--civo-color-text-muted);
+    --color-border: var(--civo-color-border);
+    --color-border-strong: var(--civo-color-border-strong);
+
+    --color-success: var(--civo-color-success);
+    --color-success-subtle: var(--civo-color-success-subtle);
+    --color-success-border: var(--civo-color-success-border);
+    --color-warning: var(--civo-color-warning);
+    --color-warning-subtle: var(--civo-color-warning-subtle);
+    --color-warning-border: var(--civo-color-warning-border);
+    --color-danger: var(--civo-color-danger);
+    --color-danger-subtle: var(--civo-color-danger-subtle);
+    --color-danger-border: var(--civo-color-danger-border);
+    --color-info: var(--civo-color-info);
+    --color-info-subtle: var(--civo-color-info-subtle);
+    --color-info-border: var(--civo-color-info-border);
+    --color-status-foreground: var(--civo-color-status-foreground);
+
+    --color-chart-1: var(--civo-chart-1);
+    --color-chart-2: var(--civo-chart-2);
+    --color-chart-3: var(--civo-chart-3);
+    --color-chart-4: var(--civo-chart-4);
+    --color-chart-5: var(--civo-chart-5);
+    --color-chart-6: var(--civo-chart-6);
+
+    --spacing-section: var(--civo-section-spacing);
+    --spacing-app-header: var(--civo-app-header-height);
+
+    --radius-token: var(--civo-radius);
+    --radius-token-sm: calc(var(--civo-radius) - 2px);
+
     --font-sans: var(--civo-font-body);
     --font-serif: var(--civo-font-heading);
+    --font-heading: var(--civo-font-heading);
+    --font-body: var(--civo-font-body);
+}
+
+/*
+ * Full-height workspace below the app header. `dvh` follows the mobile
+ * browser's collapsing toolbar (plain `vh` does not, and overflows behind
+ * it); the first declaration is the fallback for browsers without `dvh`.
+ */
+@utility h-app-body {
+    height: calc(100vh - var(--civo-app-header-height));
+    height: calc(100dvh - var(--civo-app-header-height));
+}
+
+/* Overlay + side-sheet entrances. Values are not variable references, so
+   this block is a plain (non-inline) @theme. Exits are deliberately
+   instant: fewer moving parts, and reduced-motion users get the same. */
+@theme {
+    --animate-sheet-overlay: sheet-overlay-in 150ms ease-out;
+    --animate-sheet-left: sheet-in-left 200ms ease-out;
+    --animate-sheet-right: sheet-in-right 200ms ease-out;
+}
+
+/*
+ * German municipal vocabulary has very long compounds ("Bürgerbeteiligungs-
+ * verfahrensordnung"). Without a wrapping rule one such word in a heading
+ * pushed a 320px phone's page 159px wider than the screen. `anywhere` (unlike
+ * `break-word`) also counts the break opportunities when a flex or grid item
+ * computes its minimum width, so a heading can no longer force its container
+ * wider. `hyphens: auto` breaks at proper syllables where the browser has a
+ * dictionary (needs lang="de" on <html>). In @layer base so any utility can
+ * still override it.
+ */
+@layer base {
+    h1,
+    h2,
+    h3,
+    h4 {
+        overflow-wrap: anywhere;
+        hyphens: auto;
+    }
 }
 
 body {
@@ -64,6 +255,33 @@ h4 {
 :focus-visible {
     outline: 2px solid var(--civo-color-accent);
     outline-offset: 2px;
+}
+
+@keyframes sheet-overlay-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes sheet-in-left {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes sheet-in-right {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
 }
 
 @keyframes accordion-down {

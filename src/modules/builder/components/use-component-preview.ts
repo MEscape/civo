@@ -105,8 +105,7 @@ export function useComponentPreview(
                 {
                     type: "page",
                     children: [defaultNode],
-                },
-                websiteId
+                }
             )
                 .then((result) => {
                     if (requestId !== requestIdRef.current) return;

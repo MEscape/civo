@@ -85,10 +85,6 @@ export async function deleteDatasetAction(datasetId: string, websiteId: string):
 /* Mapping workflow                                                           */
 /* -------------------------------------------------------------------------- */
 
-export type PreviewMappingActionResult =
-    | { ok: true; value: Record<string, unknown> }
-    | { ok: false; message: string };
-
 export type DiscoverDatasetActionResult =
     | { ok: true; data: import("@/modules/data-sources/domain/data-source-adapter").DataDiscoveryResult }
     | { ok: false; category: ConnectionDiagnosticCategory; message: string };
@@ -114,7 +110,7 @@ export async function previewDatasetMappingAction(
     datasetId: string,
     websiteId: string,
     mapping: DatasetMapping
-): Promise<PreviewMappingActionResult> {
+): Promise<ActionResult<Record<string, unknown>>> {
     const result = await datasetService.previewMapping(datasetId, websiteId, mapping);
 
     if (!result.ok) {
@@ -124,7 +120,7 @@ export async function previewDatasetMappingAction(
         return { ok: false, message: result.error.errors[0]?.message ?? "Das Mapping konnte nicht angewandt werden." };
     }
 
-    return { ok: true, value: result.data };
+    return { ok: true, data: result.data };
 }
 
 export async function saveDatasetMappingAction(
