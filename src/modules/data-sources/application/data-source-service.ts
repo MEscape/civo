@@ -3,9 +3,8 @@ import { ok, err } from "@/lib/result/result";
 import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
 import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
-import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
 import type { DataSourceAdapter, DataSourceError, DataDiscoveryResult } from "@/modules/data-sources/domain/data-source-adapter";
-import { createDataSourceSchema, type DataSourceKind, type DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
+import { createDataSourceSchema, type DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 import { resolveRestUrl } from "@/modules/data-sources/domain/resolve-rest-url";
 import { adapterForKind, connectionFailure } from "./adapter-helpers";
 

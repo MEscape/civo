@@ -331,7 +331,7 @@ function applyTransform(
 
             if (Number.isNaN(date.getTime())) return err(`"${String(rawValue)}" ist kein gültiges Datum.`);
 
-            return ok(date);
+            return ok(date.toISOString());
         }
 
         case "url": {

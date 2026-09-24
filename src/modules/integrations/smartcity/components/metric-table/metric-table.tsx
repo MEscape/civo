@@ -6,7 +6,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { logger } from "@/lib/logger/logger";
 import { MetricChange } from "../metric-change";
 import { MetricFreshness } from "../metric-freshness";
-import {formatNumber} from "tinybench";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
+import { formatNumber } from "@/lib/utils/formatters";
 
 /**
  * MetricTable — tabular view of KPIs (spec: Smart City viz batch), for
@@ -16,13 +17,11 @@ import {formatNumber} from "tinybench";
  * grid of divs, per spec §27's guidance to use library primitives over
  * rebuilding them.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function MetricTable({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = metricTablePropsSchema.safeParse(props);
     const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Kennzahlen im Überblick", category: undefined , datasetId: undefined};
+        : { heading: "Kennzahlen im Überblick", category: undefined, datasetId: undefined };
 
     const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });

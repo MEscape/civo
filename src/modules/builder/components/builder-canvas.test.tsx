@@ -35,7 +35,7 @@ vi.mock("@/modules/builder/application/canvas-render-action", async () => {
     return {
         renderCanvasAction: vi.fn(async () => ({
             ok: true,
-            node: React.createElement("div", { "data-civo-node-id": "hero-1", "data-testid": "hero-1" }, "Hero"),
+            data: React.createElement("div", { "data-civo-node-id": "hero-1", "data-testid": "hero-1" }, "Hero"),
         })),
     };
 });

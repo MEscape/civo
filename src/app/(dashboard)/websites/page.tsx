@@ -4,8 +4,6 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/layout-primitives";
 
-export const dynamic = "force-dynamic"; // dashboard always reflects latest DB state
-
 export default async function WebsitesPage() {
     const result = await websiteService.list();
 

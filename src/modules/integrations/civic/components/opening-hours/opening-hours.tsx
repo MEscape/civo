@@ -5,6 +5,7 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 import type { OpeningHoursEntry } from "@/modules/content/domain/civic-types";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 const dayLabels: Record<OpeningHoursEntry["day"], string> = {
     mon: "Montag",
@@ -16,11 +17,9 @@ const dayLabels: Record<OpeningHoursEntry["day"], string> = {
     sun: "Sonntag",
 };
 
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function OpeningHours({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = openingHoursPropsSchema.safeParse(props);
-    const { heading, datasetId } = parsed.success ? parsed.data : { heading: "Öffnungszeiten" , datasetId: undefined};
+    const { heading, datasetId } = parsed.success ? parsed.data : { heading: "Öffnungszeiten", datasetId: undefined };
 
     const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getOpeningHours();

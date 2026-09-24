@@ -34,9 +34,9 @@ export async function EventsGrid({ props, editMode }: { props: Record<string, un
                             <CardHeader>
                                 <div className="flex items-start gap-3">
                                     <div className="flex shrink-0 flex-col items-center rounded-token-sm border border-border px-3 py-1.5 text-center">
-                    <span className="text-xs uppercase text-copy-muted">
+                                        <span className="text-xs uppercase text-copy-muted">
                                             {formatDate(event.startDate, "short")}
-                    </span>
+                                        </span>
                                     </div>
                                     <div>
                                         <CardTitle>{event.title}</CardTitle>

@@ -4,13 +4,7 @@ import { resolveDataset } from "@/modules/data-sources/infrastructure/data-sourc
 import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
 import { ok, err } from "@/lib/result/result";
 import { AppErrors } from "@/lib/errors/app-error";
-import { applyMapping, datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
-import { deriveMappedRecordId } from "@/modules/data-sources/infrastructure/derive-mapped-record-id";
-import { 
-    newsItemSchema, civicEventSchema, serviceSchema, contactSchema, 
-    openingHoursEntrySchema, serviceDetailSchema, councilBodySchema, 
-    wasteCollectionEntrySchema, alertSchema, departmentSchema 
-} from "@/modules/content/domain/civic-schema";
+import { PreviewCivicDataProvider } from "./preview-civic-provider";
 
 export type { CivicDataProvider };
 
@@ -39,61 +33,7 @@ function emptyProvider(): CivicDataProvider {
     return emptyInstance;
 }
 
-class PreviewCivicDataProvider implements CivicDataProvider {
-    private async getMapped<T>(canonicalType: string, schema: any): Promise<T[]> {
-        const { MOCK_DATASETS, getMockPayload } = await import("@/data/musterstadt");
-        const ds = MOCK_DATASETS.find(d => d.canonicalType === canonicalType);
-        if (!ds) return [];
-        const payload = getMockPayload(ds.path);
-        if (!payload || !Array.isArray(payload)) return [];
-        const mappingParsed = datasetMappingSchema.safeParse(ds.mapping);
-        if (!mappingParsed.success) return [];
-        const items: T[] = [];
-        for (const raw of payload) {
-            const mapped = applyMapping(mappingParsed.data, raw);
-            if (!mapped.ok) continue;
-            const candidate = { id: deriveMappedRecordId(raw, mapped.data), ...mapped.data };
-            const validated = schema.safeParse(candidate);
-            if (validated.success) items.push(validated.data as T);
-        }
-        return items;
-    }
 
-    async getNews(options?: { limit?: number; category?: string }) {
-        let items = await this.getMapped<any>("NewsItem", newsItemSchema);
-        if (options?.category) items = items.filter(i => i.category === options.category);
-        if (options?.limit) items = items.slice(0, options.limit);
-        return ok(items);
-    }
-    async getNewsBySlug(slug: string) {
-        const items = await this.getMapped<any>("NewsItem", newsItemSchema);
-        const item = items.find(i => i.slug === slug);
-        return item ? ok(item) : err(AppErrors.notFound("Meldung"));
-    }
-    async getEvents(options?: { limit?: number; category?: string }) {
-        let items = await this.getMapped<any>("Event", civicEventSchema);
-        if (options?.category) items = items.filter(i => i.category === options.category);
-        if (options?.limit) items = items.slice(0, options.limit);
-        return ok(items);
-    }
-    async getServices(options?: { limit?: number }) {
-        let items = await this.getMapped<any>("Service", serviceSchema);
-        if (options?.limit) items = items.slice(0, options.limit);
-        return ok(items);
-    }
-    async getContacts(options?: { limit?: number }) {
-        let items = await this.getMapped<any>("Contact", contactSchema);
-        if (options?.limit) items = items.slice(0, options.limit);
-        return ok(items);
-    }
-    async getOpeningHours() { return ok(await this.getMapped<any>("OpeningHoursEntry", openingHoursEntrySchema)); }
-    async getServiceDetails() { return ok(await this.getMapped<any>("ServiceDetail", serviceDetailSchema)); }
-    async getCouncilBodies() { return ok(await this.getMapped<any>("CouncilBody", councilBodySchema)); }
-    async getWasteCollection() { return ok(await this.getMapped<any>("WasteCollectionEntry", wasteCollectionEntrySchema)); }
-    async getWasteCollectionEntries() { return ok(await this.getMapped<any>("WasteCollectionEntry", wasteCollectionEntrySchema)); }
-    async getAlerts() { return ok(await this.getMapped<any>("Alert", alertSchema)); }
-    async getDepartments() { return ok(await this.getMapped<any>("Department", departmentSchema)); }
-}
 
 let previewInstance: CivicDataProvider | null = null;
 function previewProvider(): CivicDataProvider {

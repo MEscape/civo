@@ -28,8 +28,8 @@ export function DataSourcesPanel({ websiteId, initialSources }: DataSourcesPanel
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-xl font-semibold text-[var(--civo-color-text)]">Datenquellen</h2>
-                    <p className="mt-1 text-sm text-[var(--civo-color-text-muted)]">
+                    <h2 className="text-xl font-semibold text-copy">Datenquellen</h2>
+                    <p className="mt-1 text-sm text-copy-muted">
                         Verbinden Sie kommunale und Smart-City-Datenquellen, um Ihren Website-Komponenten echte Daten
                         zur Verfügung zu stellen.
                     </p>
@@ -63,7 +63,7 @@ export function DataSourcesPanel({ websiteId, initialSources }: DataSourcesPanel
             ))}
             
             {initialSources.length === 0 && !isCreating && (
-                <div className="rounded-lg border border-dashed p-8 text-center text-sm text-[var(--civo-color-text-muted)]">
+                <div className="rounded-token border border-dashed p-8 text-center text-sm text-copy-muted">
                     Keine Datenquellen konfiguriert. Es werden Beispieldaten angezeigt.
                 </div>
             )}
@@ -128,24 +128,24 @@ function ConfiguredSourceCard({
                 <div className="space-y-4">
                     <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
                         <div>
-                            <dt className="text-[var(--civo-color-text-muted)]">Typ</dt>
-                            <dd className="text-[var(--civo-color-text)]">{source.kind === "REST" ? "REST / JSON" : "Mock (Beispieldaten)"}</dd>
+                            <dt className="text-copy-muted">Typ</dt>
+                            <dd className="text-copy">{source.kind === "REST" ? "REST / JSON" : "Mock (Beispieldaten)"}</dd>
                         </div>
                         <div>
-                            <dt className="text-[var(--civo-color-text-muted)]">Zuletzt geprüft</dt>
-                            <dd className="text-[var(--civo-color-text)]">
+                            <dt className="text-copy-muted">Zuletzt geprüft</dt>
+                            <dd className="text-copy">
                                 {source.lastCheckedAt ? formatRelativeTime(new Date(source.lastCheckedAt)) : "Noch nie"}
                             </dd>
                         </div>
                     </dl>
 
                     {source.status === "ERROR" && source.lastError && (
-                        <p className="rounded-[var(--civo-radius)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+                        <p className="rounded-token border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger">
                             {source.lastError}
                         </p>
                     )}
-                    {testMessage && <p className="text-sm text-[var(--civo-color-text)]">{testMessage}</p>}
-                    {deleteError && <p className="text-sm text-red-700">{deleteError}</p>}
+                    {testMessage && <p className="text-sm text-copy">{testMessage}</p>}
+                    {deleteError && <p className="text-sm text-danger">{deleteError}</p>}
 
                     <div className="flex flex-wrap gap-2">
                         <Button type="button" variant="outline" size="sm" onClick={handleTestConnection} disabled={isPending}>
@@ -243,13 +243,13 @@ function DataSourceForm({
             </div>
 
             {authMode !== "NONE" && (
-                <p className="text-xs text-[var(--civo-color-text-muted)]">
+                <p className="text-xs text-copy-muted">
                     Das Zugangs-Credential wird nicht hier gespeichert, sondern muss serverseitig als
                     Umgebungsvariable hinterlegt werden. Wenden Sie sich dazu an Ihren Administrator.
                 </p>
             )}
 
-            {error && <p className="text-sm text-red-700">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <div className="flex gap-2">
                 <Button type="submit" size="sm" disabled={isPending}>

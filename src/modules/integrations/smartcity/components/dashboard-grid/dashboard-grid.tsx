@@ -8,6 +8,7 @@ import { MetricCard } from "../metric-card";
 import { MetricFreshness } from "../metric-freshness";
 import { TrendChartClient } from "../metric-trend-chart/trend-chart-client";
 import { DonutChartClient } from "../metric-donut/donut-chart-client";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * DashboardGrid — the "Smart-City-Dashboard" composite (spec: Smart City
@@ -18,13 +19,11 @@ import { DonutChartClient } from "../metric-donut/donut-chart-client";
  * Reuses the same client chart leaves as the standalone components
  * (TrendChartClient, DonutChartClient) — no duplicated charting logic.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function DashboardGrid({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = dashboardGridPropsSchema.safeParse(props);
     const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Smart-City-Dashboard", category: undefined , datasetId: undefined};
+        : { heading: "Smart-City-Dashboard", category: undefined, datasetId: undefined };
 
     const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });

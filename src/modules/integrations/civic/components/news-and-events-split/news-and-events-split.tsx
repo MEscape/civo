@@ -5,6 +5,7 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
 import { formatDate } from "@/lib/utils/formatters";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * NewsAndEventsSplit — the extremely common municipal-homepage pattern
@@ -14,8 +15,6 @@ import { formatDate } from "@/lib/utils/formatters";
  * Internally still just calls the same provider methods newsGrid/
  * eventsGrid use — no new data-fetching logic, just a different layout.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function NewsAndEventsSplit({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = newsAndEventsSplitPropsSchema.safeParse(props);
     const { heading, newsLimit, eventsLimit, eventsDatasetId, newsDatasetId } = parsed.success

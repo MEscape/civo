@@ -59,7 +59,7 @@ export function useComponentPreview(
 
     useEffect(() => {
         if (!hoveredType) {
-            setState(emptyState);
+            setTimeout(() => setState(emptyState), 0);
             return;
         }
 
@@ -67,11 +67,11 @@ export function useComponentPreview(
         const cached = previewCache.get(cacheKey);
 
         if (cached !== undefined) {
-            setState({
+            setTimeout(() => setState({
                 node: cached,
                 isLoading: false,
                 error: null,
-            });
+            }), 0);
             return;
         }
 

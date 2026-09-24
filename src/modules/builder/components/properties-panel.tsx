@@ -9,6 +9,8 @@ import { ChevronRight } from "@/components/ui/icons";
 import type { PropField } from "@/modules/component-platform/domain/types";
 import { hasCapability } from "@/modules/builder/domain/editor-capabilities";
 import { CanonicalType } from "@/modules/data-sources/domain/dataset-schema";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
 
 const groupLabels = {
     data: "Daten",
@@ -126,26 +128,34 @@ function GroupedFields({
     const appearance = fields.filter((f) => f.group === "appearance");
 
     const hasGroups = data.length > 0 || content.length > 0 || appearance.length > 0;
+    const defaultValues = [];
+    if (data.length > 0) defaultValues.push(groupLabels.data);
+    if (content.length > 0) defaultValues.push(groupLabels.content);
+    if (appearance.length > 0) defaultValues.push(groupLabels.appearance);
 
     return (
         <div className="flex flex-col gap-6">
             {ungrouped.length > 0 && (
                 <FieldList nodeId={nodeId} fields={ungrouped} props={props} websiteId={websiteId} canonicalType={canonicalType} />
             )}
-            {hasGroups && data.length > 0 && (
-                <FieldGroup label={groupLabels.data}>
-                    <FieldList nodeId={nodeId} fields={data} props={props} websiteId={websiteId} canonicalType={canonicalType} />
-                </FieldGroup>
-            )}
-            {hasGroups && content.length > 0 && (
-                <FieldGroup label={groupLabels.content}>
-                    <FieldList nodeId={nodeId} fields={content} props={props} websiteId={websiteId} canonicalType={canonicalType} />
-                </FieldGroup>
-            )}
-            {hasGroups && appearance.length > 0 && (
-                <FieldGroup label={groupLabels.appearance}>
-                    <FieldList nodeId={nodeId} fields={appearance} props={props} websiteId={websiteId} canonicalType={canonicalType} />
-                </FieldGroup>
+            {hasGroups && (
+                <Accordion type="multiple" defaultValue={defaultValues} className="w-full">
+                    {data.length > 0 && (
+                        <FieldGroup label={groupLabels.data}>
+                            <FieldList nodeId={nodeId} fields={data} props={props} websiteId={websiteId} canonicalType={canonicalType} />
+                        </FieldGroup>
+                    )}
+                    {content.length > 0 && (
+                        <FieldGroup label={groupLabels.content}>
+                            <FieldList nodeId={nodeId} fields={content} props={props} websiteId={websiteId} canonicalType={canonicalType} />
+                        </FieldGroup>
+                    )}
+                    {appearance.length > 0 && (
+                        <FieldGroup label={groupLabels.appearance}>
+                            <FieldList nodeId={nodeId} fields={appearance} props={props} websiteId={websiteId} canonicalType={canonicalType} />
+                        </FieldGroup>
+                    )}
+                </Accordion>
             )}
         </div>
     );
@@ -153,12 +163,14 @@ function GroupedFields({
 
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-copy-muted">
+        <AccordionItem value={label} className="border-border-strong border-b-0 border-t">
+            <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wide text-copy-muted hover:text-copy hover:no-underline">
                 {label}
-            </p>
-            <div className="flex flex-col gap-4">{children}</div>
-        </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-1 pb-4">
+                <div className="flex flex-col gap-4">{children}</div>
+            </AccordionContent>
+        </AccordionItem>
     );
 }
 
@@ -228,19 +240,16 @@ function FieldRow({
 function VisibilityToggle({ nodeId, visible }: { nodeId: string; visible: boolean }) {
     const dispatch = useAppDispatch();
     return (
-        <label className="mb-4 flex cursor-pointer items-center gap-2 text-sm">
-            <input
-                type="checkbox"
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-token-md border border-border-strong bg-surface p-3">
+            <span className="text-sm font-medium text-copy">Sichtbar auf Website</span>
+            <Switch
                 checked={visible}
-                onChange={(e) => {
-                    dispatch(updateNodePropsAction({ nodeId, props: { visible: e.target.checked } }));
+                onCheckedChange={(checked) => {
+                    dispatch(updateNodePropsAction({ nodeId, props: { visible: checked } }));
                     dispatch(commitPropsHistory());
                 }}
-                className="h-4 w-4 rounded accent-accent"
-                id={`visibility-${nodeId}`}
             />
-            <span className="text-copy">Sichtbar</span>
-        </label>
+        </div>
     );
 }
 

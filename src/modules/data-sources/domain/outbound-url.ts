@@ -155,15 +155,15 @@ export function checkOutboundUrl(rawUrl: string): OutboundUrlCheck {
     try {
         url = new URL(rawUrl);
     } catch {
-        return err("Not a valid URL.");
+        return err("Keine gültige URL.");
     }
 
     if (url.protocol !== "https:" && url.protocol !== "http:") {
-        return err("Only http and https URLs are allowed.");
+        return err("Es sind nur http- und https-URLs erlaubt.");
     }
 
     if (url.username !== "" || url.password !== "") {
-        return err("URLs containing credentials are not allowed.");
+        return err("URLs mit eingebetteten Zugangsdaten sind nicht erlaubt.");
     }
 
     const hostname = url.hostname.toLowerCase();

@@ -85,6 +85,7 @@ export type ComponentDataBinding = {
  * Takes an optional generic TProps so that fields and municipalFields
  * can be strictly typed to only allow valid keys of the component's props.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ComponentDefinition<TProps extends Record<string, unknown> = any> = {
     type: string; // The registered component type string (e.g. "hero")
     label: string;

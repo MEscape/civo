@@ -4,6 +4,7 @@ import { Section, Container, Grid, SectionHeading } from "@/components/layout/la
 import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * NewsGrid — a canonical example of the "components never see the
@@ -13,13 +14,11 @@ import { logger } from "@/lib/logger/logger";
  * the mock provider, a future REST adapter, or a database query is
  * invisible here.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function NewsGrid({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = newsGridPropsSchema.safeParse(props);
     const { heading, columns, limit, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Aktuelles", columns: 3 as const, limit: 6, category: undefined , datasetId: undefined};
+        : { heading: "Aktuelles", columns: 3 as const, limit: 6, category: undefined, datasetId: undefined };
 
     const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getNews({ limit, category });

@@ -18,6 +18,10 @@ vi.mock("./data-source-service", () => {
     };
 });
 
+vi.mock("next/cache", () => ({
+    revalidatePath: vi.fn()
+}));
+
 describe("DataSource Actions", () => {
     const mockService = vi.mocked(dataSourceService) as any;
     const websiteId = "website-1";

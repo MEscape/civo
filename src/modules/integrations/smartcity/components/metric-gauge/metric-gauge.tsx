@@ -5,13 +5,12 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { MetricFreshness } from "../metric-freshness";
 import { logger } from "@/lib/logger/logger";
 import { GaugeChartClient } from "./gauge-chart-client";
-import {formatNumber} from "@/lib/utils/formatters";
-
+import { formatNumber } from "@/lib/utils/formatters";
 import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 export async function MetricGauge({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = metricGaugePropsSchema.safeParse(props);
-    const { heading, metricId, datasetId } = parsed.success ? parsed.data : { heading: undefined, metricId: undefined , datasetId: undefined};
+    const { heading, metricId, datasetId } = parsed.success ? parsed.data : { heading: undefined, metricId: undefined, datasetId: undefined };
     // The heading is optional and normally falls back to the metric's own label,
     // which does not exist when there is no data. The fallback state still has to say what it is.
     const stateHeading = heading ?? "Zielerreichung";

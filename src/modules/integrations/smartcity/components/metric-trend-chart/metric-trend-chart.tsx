@@ -5,6 +5,7 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { MetricFreshness } from "../metric-freshness";
 import { logger } from "@/lib/logger/logger";
 import { TrendChartClient } from "./trend-chart-client";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * MetricTrendChart — line/area chart of a single metric's `series` over
@@ -12,13 +13,11 @@ import { TrendChartClient } from "./trend-chart-client";
  * metricChart, which only ever compares metrics side by side at a single
  * point in time and can't show change over time at all.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function MetricTrendChart({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = metricTrendChartPropsSchema.safeParse(props);
     const { heading, metricId, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Entwicklung über Zeit", metricId: undefined, category: undefined , datasetId: undefined};
+        : { heading: "Entwicklung über Zeit", metricId: undefined, category: undefined, datasetId: undefined };
 
     const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });

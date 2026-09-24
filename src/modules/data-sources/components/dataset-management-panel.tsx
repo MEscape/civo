@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { 
     createDatasetAction, 
@@ -11,7 +11,7 @@ import { Input, Label } from "@/components/ui/input";
 import { DataSourceMappingPanel } from "@/modules/data-sources/components/data-source-mapping-panel";
 import type { DataSourceView } from "@/modules/data-sources/domain/data-source-schema";
 import { CANONICAL_TYPE_LABELS, type DatasetView, type CanonicalType } from "@/modules/data-sources/domain/dataset-schema";
-import { datasetMappingSchema, type DatasetMapping } from "@/modules/data-sources/domain/field-mapping-schema";
+import { datasetMappingSchema } from "@/modules/data-sources/domain/field-mapping-schema";
 
 export function DatasetManagementPanel({
     websiteId,
@@ -48,14 +48,14 @@ export function DatasetManagementPanel({
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-base font-medium text-[var(--civo-color-text)]">Datensätze</h3>
+                <h3 className="text-base font-medium text-copy">Datensätze</h3>
                 <Button variant="outline" size="sm" onClick={() => setIsCreating(true)} disabled={isCreating || isPending}>
                     + Datensatz hinzufügen
                 </Button>
             </div>
 
             {datasets.length === 0 && !isCreating ? (
-                <div className="rounded-md border border-dashed p-4 text-center text-sm text-[var(--civo-color-text-muted)]">
+                <div className="rounded-md border border-dashed p-4 text-center text-sm text-copy-muted">
                     Diese Quelle stellt noch keine Datensätze bereit. Fügen Sie einen Datensatz hinzu.
                 </div>
             ) : (
@@ -64,8 +64,8 @@ export function DatasetManagementPanel({
                         <div key={dataset.id} className="rounded-md border p-4 space-y-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h4 className="font-medium text-[var(--civo-color-text)]">{dataset.name}</h4>
-                                    <p className="text-sm text-[var(--civo-color-text-muted)]">
+                                    <h4 className="font-medium text-copy">{dataset.name}</h4>
+                                    <p className="text-sm text-copy-muted">
                                         Typ: {CANONICAL_TYPE_LABELS[dataset.canonicalType as CanonicalType] ?? dataset.canonicalType}
                                     </p>
                                 </div>
@@ -181,7 +181,7 @@ function DatasetForm({
                     </select>
                 </div>
             </div>
-            {error && <p className="text-sm text-red-700">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
             <div className="flex gap-2">
                 <Button type="submit" size="sm" disabled={isPending}>
                     {isPending ? "Speichert..." : "Hinzufügen"}

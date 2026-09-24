@@ -51,7 +51,7 @@ export function DatasetSelectField({
 
     if (!websiteId || !canonicalType) {
         return (
-            <div className="rounded-[calc(var(--civo-radius)_-_2px)] border border-dashed border-[var(--civo-color-border)] bg-[var(--civo-color-surface-muted)] p-2 text-xs text-[var(--civo-color-text-muted)]">
+            <div className="rounded-token-sm border border-dashed border-border bg-canvas p-2 text-xs text-copy-muted">
                 Kontext fehlt.
             </div>
         );
@@ -59,7 +59,7 @@ export function DatasetSelectField({
 
     if (error) {
         return (
-            <div className="rounded-[calc(var(--civo-radius)_-_2px)] border border-red-200 bg-red-50 p-2 text-xs text-red-600">
+            <div className="rounded-token-sm border border-danger-border bg-danger-subtle p-2 text-xs text-danger">
                 Ladefehler: {error}
             </div>
         );
@@ -67,7 +67,7 @@ export function DatasetSelectField({
 
     if (loading) {
         return (
-            <div className="rounded-[calc(var(--civo-radius)_-_2px)] border border-[var(--civo-color-border)] bg-[var(--civo-color-surface-muted)] p-2 text-xs text-[var(--civo-color-text-muted)] animate-pulse">
+            <div className="rounded-token-sm border border-border bg-canvas p-2 text-xs text-copy-muted animate-pulse">
                 Datensätze werden geladen...
             </div>
         );

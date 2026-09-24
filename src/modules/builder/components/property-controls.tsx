@@ -3,6 +3,8 @@
 import type { PropField } from "@/modules/component-platform/domain";
 import type { CanonicalType } from "@/modules/data-sources/application/dataset-service";
 import { Input, Label, Textarea } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils/cn";
 import { DatasetSelectField } from "./dataset-select-field";
 
@@ -69,26 +71,24 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
                 />
             );
         case "select":
-            return (
-                <select
-                    id={`prop-${field.key}`}
+                <Select
                     value={String(value ?? "")}
-                    onChange={(e) => {
-                        onChange(e.target.value);
+                    onValueChange={(val) => {
+                        onChange(val);
                         onCommit();
                     }}
-                    className="h-9 w-full rounded-token-sm border border-border bg-surface px-2 text-sm text-copy focus-visible:outline-2 focus-visible:outline-accent"
                 >
-                    <option value="" disabled>
-                        Auswählen…
-                    </option>
-                    {field.options?.map((option) => (
-                        <option key={String(option.value)} value={String(option.value)}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
-            );
+                    <SelectTrigger id={`prop-${field.key}`} className="w-full h-9">
+                        <SelectValue placeholder="Auswählen…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {field.options?.map((option) => (
+                            <SelectItem key={String(option.value)} value={String(option.value)}>
+                                {option.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
         case "columns":
             return (
                 <div role="group" aria-label={field.label} className="flex gap-1">
@@ -115,26 +115,13 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
             );
         case "switch":
             return (
-                <button
-                    type="button"
-                    role="switch"
-                    aria-checked={Boolean(value)}
-                    onClick={() => {
-                        onChange(!value);
+                <Switch
+                    checked={Boolean(value)}
+                    onCheckedChange={(checked) => {
+                        onChange(checked);
                         onCommit();
                     }}
-                    className={cn(
-                        "relative h-5 w-9 rounded-full transition-colors",
-                        value ? "bg-accent" : "bg-border-strong"
-                    )}
-                >
-                    <span
-                        className={cn(
-                            "absolute top-0.5 h-4 w-4 rounded-full bg-surface transition-transform",
-                            value ? "translate-x-4" : "translate-x-0.5"
-                        )}
-                    />
-                </button>
+                />
             );
         default:
             return null;

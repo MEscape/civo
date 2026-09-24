@@ -5,15 +5,15 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { DynamicIcon } from "@/components/ui/dynamic-icon";
 import { logger } from "@/lib/logger/logger";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 const FALLBACK_ICON = "arrow-right" as const;
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 export async function ServiceGrid({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = serviceGridPropsSchema.safeParse(props);
     const { heading, columns, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Online-Leistungen", columns: 3 as const , datasetId: undefined};
+        : { heading: "Online-Leistungen", columns: 3 as const, datasetId: undefined };
 
     const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getServices();

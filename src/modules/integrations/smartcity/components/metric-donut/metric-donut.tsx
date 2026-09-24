@@ -5,6 +5,7 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { MetricFreshness } from "../metric-freshness";
 import { logger } from "@/lib/logger/logger";
 import { DonutChartClient } from "./donut-chart-client";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * MetricDonut — composition/share chart (spec: Smart City viz batch),
@@ -13,11 +14,9 @@ import { DonutChartClient } from "./donut-chart-client";
  * no explicit metricId is given, matching metricTrendChart's fallback
  * pattern for consistency.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function MetricDonut({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = metricDonutPropsSchema.safeParse(props);
-    const { heading, metricId, datasetId } = parsed.success ? parsed.data : { heading: "Verteilung", metricId: undefined , datasetId: undefined};
+    const { heading, metricId, datasetId } = parsed.success ? parsed.data : { heading: "Verteilung", metricId: undefined, datasetId: undefined };
 
     const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({});

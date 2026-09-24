@@ -4,6 +4,7 @@ import { Section, Container, SectionHeading } from "@/components/layout/layout-p
 import { WidgetState } from "@/components/layout/widget-state";
 import { logger } from "@/lib/logger/logger";
 import { ServiceFinderClient } from "./service-finder-client";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * ServiceFinder — searchable/filterable Bürgerservice directory (spec:
@@ -14,13 +15,12 @@ import { ServiceFinderClient } from "./service-finder-client";
  * to just the interactive list (spec §14), while the data-fetching stays
  * server-side and provider-abstracted like every other civic component.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 export async function ServiceFinder({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = serviceFinderPropsSchema.safeParse(props);
     const { heading, description, placeholder, initialCategory, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Leistungen finden", description: undefined, placeholder: "Leistung suchen…", initialCategory: undefined , datasetId: undefined};
+        : { heading: "Leistungen finden", description: undefined, placeholder: "Leistung suchen…", initialCategory: undefined, datasetId: undefined };
 
     const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getServiceDetails();

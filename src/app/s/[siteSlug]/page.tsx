@@ -20,8 +20,8 @@ import { toDomainTheme } from "@/modules/website/domain/theme";
  */
 // NOTE on routing: Moved from (site) to s/ to avoid sibling route group collisions.
 export default async function PublicWebsitePage({
-                                                    params,
-                                                }: {
+    params,
+}: {
     params: Promise<{ siteSlug: string }>;
 }) {
     const { siteSlug } = await params;
@@ -41,15 +41,15 @@ export default async function PublicWebsitePage({
         <ThemeProvider theme={theme}>
             {/* The public site has no dashboard layout above it, so it owns the page's main landmark. */}
             <main>
-                <PageRenderer config={configResult.data} websiteId={websiteResult.data.id} />
+                <PageRenderer config={configResult.data} />
             </main>
         </ThemeProvider>
     );
 }
 
 export async function generateMetadata({
-                                           params,
-                                       }: {
+    params,
+}: {
     params: Promise<{ siteSlug: string }>;
 }): Promise<Metadata> {
     const { siteSlug } = await params;

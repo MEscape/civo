@@ -13,6 +13,7 @@ import { wasteCalendarDefinition } from "./waste-calendar/waste-calendar.definit
 import { newsAndEventsSplitDefinition } from "./news-and-events-split/news-and-events-split.definition";
 import { departmentDirectoryDefinition } from "./department-directory/department-directory.definition";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const civicComponents: ComponentDefinition<any>[] = [
     newsGridDefinition,
     eventsGridDefinition,

@@ -40,6 +40,6 @@ describe("resolveRestUrl", () => {
     it("rejects an unparseable baseUrl with a stable message", () => {
         const result = resolveRestUrl({ baseUrl: "not a url", path: "/" });
 
-        expect(result).toEqual({ ok: false, error: "The configured URL is invalid." });
+        expect(result).toEqual({ ok: false, error: "Die konfigurierte URL ist ungültig." });
     });
 });

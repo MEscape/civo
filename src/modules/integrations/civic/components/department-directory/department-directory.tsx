@@ -5,6 +5,7 @@ import { Section, Container, Grid, SectionHeading } from "@/components/layout/la
 import { WidgetState } from "@/components/layout/widget-state";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { logger } from "@/lib/logger/logger";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * DepartmentDirectory — Ämter & Fachbereiche. Richer than `contactCard`
@@ -12,8 +13,6 @@ import { logger } from "@/lib/logger/logger";
  * with its own description and optional link to a dedicated department
  * page, rather than a flat list of individual people.
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function DepartmentDirectory({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = departmentDirectoryPropsSchema.safeParse(props);
     const { heading, columns, datasetId } = parsed.success

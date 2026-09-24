@@ -1,7 +1,7 @@
 import { datasetRepository } from "@/modules/data-sources/infrastructure/dataset-repository";
 import { logger } from "@/lib/logger/logger";
 import type { DatasetView } from "@/modules/data-sources/domain/dataset-schema";
-import type { DataSourceView, DataSourceKind } from "@/modules/data-sources/domain/data-source-schema";
+import type { DataSourceKind } from "@/modules/data-sources/domain/data-source-schema";
 
 /**
  * Resolves a Dataset by ID, returning the dataset and its parent DataSource.

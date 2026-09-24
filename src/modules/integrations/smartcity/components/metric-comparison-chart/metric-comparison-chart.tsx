@@ -5,14 +5,13 @@ import { WidgetState } from "@/components/layout/widget-state";
 import { MetricFreshness } from "../metric-freshness";
 import { logger } from "@/lib/logger/logger";
 import { ComparisonChartClient } from "./comparison-chart-client";
-
 import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 export async function MetricComparisonChart({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = metricComparisonChartPropsSchema.safeParse(props);
     const { heading, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Vergleich", category: undefined , datasetId: undefined};
+        : { heading: "Vergleich", category: undefined, datasetId: undefined };
 
     const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });

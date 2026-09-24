@@ -7,7 +7,7 @@ export const newsItemSchema = z.object({
     excerpt: z.string().optional(),
     content: z.string().optional(),
     imageUrl: z.string().url().optional(),
-    publishedAt: z.coerce.date().optional(),
+    publishedAt: z.string().optional(),
     category: z.string().optional(),
 });
 
@@ -15,8 +15,8 @@ export const civicEventSchema = z.object({
     id: z.string().min(1),
     title: z.string().min(1),
     description: z.string().optional(),
-    startDate: z.coerce.date(),
-    endDate: z.coerce.date().optional(),
+    startDate: z.string(),
+    endDate: z.string().optional(),
     location: z.string().optional(),
     category: z.string().optional(),
     imageUrl: z.string().url().optional(),
@@ -70,7 +70,7 @@ export const wasteTypeSchema = z.enum(["restmuell", "biomuell", "papier", "gelbe
 
 export const wasteCollectionEntrySchema = z.object({
     id: z.string().min(1),
-    date: z.coerce.date(),
+    date: z.string(),
     wasteType: wasteTypeSchema,
     district: z.string().optional(),
 });

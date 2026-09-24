@@ -11,6 +11,8 @@ export const smartCityMetricSchema = z.object({
     series: z.array(z.object({ date: z.string(), value: z.number() })).optional(),
     breakdown: z.array(z.object({ label: z.string(), value: z.number() })).optional(),
     target: z.number().optional(),
+    updatedAt: z.string().optional(),
+    source: z.string().optional(),
 });
 
 export const smartCityMetricListSchema = z.array(smartCityMetricSchema);

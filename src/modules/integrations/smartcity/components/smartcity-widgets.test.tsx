@@ -11,14 +11,14 @@ vi.mock("@/modules/integrations/smartcity/infrastructure/adapters", () => ({
 const logError = vi.fn();
 vi.mock("@/lib/logger/logger", () => ({ logger: { error: (...a: unknown[]) => logError(...a), warn: vi.fn(), info: vi.fn() } }));
 
-import { KpiGrid } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/kpi-grid/kpi-grid";
-import { DashboardGrid } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/dashboard-grid/dashboard-grid";
-import { MetricChart } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/metric-chart/metric-chart";
-import { MetricComparisonChart } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/metric-comparison-chart/metric-comparison-chart";
-import { MetricDonut } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/metric-donut/metric-donut";
-import { MetricGauge } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/metric-gauge/metric-gauge";
-import { MetricTable } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/metric-table/metric-table";
-import { MetricTrendChart } from "../../../../../../../../Downloads/civo-changes/src/modules/integrations/smartcity/components/metric-trend-chart/metric-trend-chart";
+import { KpiGrid } from "./kpi-grid/kpi-grid";
+import { DashboardGrid } from "./dashboard-grid/dashboard-grid";
+import { MetricChart } from "./metric-chart/metric-chart";
+import { MetricComparisonChart } from "./metric-comparison-chart/metric-comparison-chart";
+import { MetricDonut } from "./metric-donut/metric-donut";
+import { MetricGauge } from "./metric-gauge/metric-gauge";
+import { MetricTable } from "./metric-table/metric-table";
+import { MetricTrendChart } from "./metric-trend-chart/metric-trend-chart";
 
 type Widget = (args: { props: Record<string, unknown>; editMode?: boolean }) => Promise<React.ReactElement | null>;
 

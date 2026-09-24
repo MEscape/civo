@@ -37,6 +37,20 @@ import { MetricGauge } from "@/modules/integrations/smartcity/components/metric-
 import { MetricTable } from "@/modules/integrations/smartcity/components/metric-table/metric-table";
 import { MetricTrendChart } from "@/modules/integrations/smartcity/components/metric-trend-chart/metric-trend-chart";
 
+// Skeletons
+import { DashboardGridSkeleton } from "@/modules/integrations/smartcity/components/dashboard-grid/dashboard-grid.skeleton";
+import { KpiGridSkeleton } from "@/modules/integrations/smartcity/components/kpi-grid/kpi-grid.skeleton";
+import { MetricChartSkeleton } from "@/modules/integrations/smartcity/components/metric-chart/metric-chart.skeleton";
+import { MetricComparisonChartSkeleton } from "@/modules/integrations/smartcity/components/metric-comparison-chart/metric-comparison-chart.skeleton";
+import { MetricDonutSkeleton } from "@/modules/integrations/smartcity/components/metric-donut/metric-donut.skeleton";
+import { MetricGaugeSkeleton } from "@/modules/integrations/smartcity/components/metric-gauge/metric-gauge.skeleton";
+import { MetricTableSkeleton } from "@/modules/integrations/smartcity/components/metric-table/metric-table.skeleton";
+import { MetricTrendChartSkeleton } from "@/modules/integrations/smartcity/components/metric-trend-chart/metric-trend-chart.skeleton";
+import { NewsGridSkeleton } from "@/modules/integrations/civic/components/news-grid/news-grid.skeleton";
+import { EventsGridSkeleton } from "@/modules/integrations/civic/components/events-grid/events-grid.skeleton";
+import { ServiceGridSkeleton } from "@/modules/integrations/civic/components/service-grid/service-grid.skeleton";
+import { NewsAndEventsSplitSkeleton } from "@/modules/integrations/civic/components/news-and-events-split/news-and-events-split.skeleton";
+
 export const componentMap: Record<string, ComponentType<PageComponentProps>> = {
     // Civic
     "alertBanner": AlertBanner as ComponentType<PageComponentProps>,
@@ -73,4 +87,19 @@ export const componentMap: Record<string, ComponentType<PageComponentProps>> = {
     "metricGauge": MetricGauge as ComponentType<PageComponentProps>,
     "metricTable": MetricTable as ComponentType<PageComponentProps>,
     "metricTrendChart": MetricTrendChart as ComponentType<PageComponentProps>,
+};
+
+export const skeletonMap: Record<string, ComponentType> = {
+    "dashboardGrid": DashboardGridSkeleton,
+    "kpiGrid": KpiGridSkeleton,
+    "metricChart": MetricChartSkeleton,
+    "metricComparisonChart": MetricComparisonChartSkeleton,
+    "metricDonut": MetricDonutSkeleton,
+    "metricGauge": MetricGaugeSkeleton,
+    "metricTable": MetricTableSkeleton,
+    "metricTrendChart": MetricTrendChartSkeleton,
+    "newsGrid": NewsGridSkeleton,
+    "eventsGrid": EventsGridSkeleton,
+    "serviceGrid": ServiceGridSkeleton,
+    "newsAndEventsSplit": NewsAndEventsSplitSkeleton,
 };

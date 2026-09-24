@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, type RefObject } from "react";
+import { useState, useCallback, type RefObject } from "react";
 
 export type NodeRect = { top: number; left: number; width: number; height: number };
 
@@ -66,11 +66,11 @@ export function useCanvasHitTesting(
         options.onHover(null);
     };
 
-    return { 
-        measure, 
-        selectedRect, 
-        setSelectedRect, 
-        hoveredRect, 
+    return {
+        measure,
+        selectedRect,
+        setSelectedRect,
+        hoveredRect,
         setHoveredRect,
         handlers: {
             onClickCapture: handleClick,

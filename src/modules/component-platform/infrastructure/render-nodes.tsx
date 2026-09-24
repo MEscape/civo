@@ -1,8 +1,7 @@
 import React, { createElement, Suspense, type ComponentType } from "react";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import { type PageComponentProps, isRegisteredComponentType } from "@/modules/component-platform/domain";
-import { componentMap } from "./registry";
-import { SKELETONS, WidgetSkeleton } from "./widget-skeleton";
+import { componentMap, skeletonMap } from "./registry";
 // Side-effect import: registers every feature module's component
 // definitions into the domain registry (see that file's own comment on
 // why this aggregation cannot live in domain/**). This file is the
@@ -67,8 +66,9 @@ export function PageNodeRenderer({
         // Not wrapped in edit mode: the builder canvas measures and outlines
         // nodes by their rendered DOM (use-canvas-hit-testing.ts), and a node
         // that is still suspended has no DOM to measure yet.
-        if (!editMode && node.type in SKELETONS) {
-            rendered = <Suspense fallback={<WidgetSkeleton type={node.type} />}>{rendered}</Suspense>;
+        if (!editMode && node.type in skeletonMap) {
+            const SkeletonBody = skeletonMap[node.type];
+            rendered = <Suspense fallback={<SkeletonBody />}>{rendered}</Suspense>;
         }
     }
 

@@ -4,15 +4,12 @@ import type { AppError } from "@/lib/errors/app-error";
 import { AppErrors } from "@/lib/errors/app-error";
 import { datasetRepository } from "@/modules/data-sources/infrastructure/dataset-repository";
 import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
-import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
-import type { DataSourceAdapter, DataSourceError, DataDiscoveryResult } from "@/modules/data-sources/domain/data-source-adapter";
+import type { DataSourceError, DataDiscoveryResult } from "@/modules/data-sources/domain/data-source-adapter";
 import {
     createDatasetSchema,
     updateDatasetSchema,
     type DatasetView,
     type CanonicalType,
-    type CreateDatasetInput,
-    type UpdateDatasetInput,
 } from "@/modules/data-sources/domain/dataset-schema";
 import { applyMapping, datasetMappingSchema, type DatasetMapping, type MappingFieldError } from "@/modules/data-sources/domain/field-mapping-schema";
 import { adapterForKind, connectionFailure } from "./adapter-helpers";

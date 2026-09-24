@@ -3,7 +3,6 @@ import { dataSourceRepository } from "./data-source-repository";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger/logger";
 import { isUniqueConstraintError, isNotFoundError } from "@/lib/db/prisma-errors";
-import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db/prisma", () => ({
     prisma: {

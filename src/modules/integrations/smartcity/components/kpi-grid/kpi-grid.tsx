@@ -11,7 +11,7 @@ export async function KpiGrid({ props, editMode }: { props: Record<string, unkno
     const parsed = kpiGridPropsSchema.safeParse(props);
     const { heading, columns, category, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Stadt in Zahlen", columns: 3 as const, category: undefined , datasetId: undefined};
+        : { heading: "Stadt in Zahlen", columns: 3 as const, category: undefined, datasetId: undefined };
 
     const provider = await getSmartCityDataProvider(datasetId, editMode);
     const result = await provider.getMetrics({ category });

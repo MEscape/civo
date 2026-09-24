@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger/logger";
 import type { WasteType } from "@/modules/content/domain/civic-types";
 import { formatDate } from "@/lib/utils/formatters";
+import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
 
 /**
  * Human-readable German labels for waste types. Exported from this index
@@ -36,13 +37,11 @@ const wasteBadgeVariant: Record<WasteType, "default" | "muted" | "warning"> = {
  * models well, since it needs date + waste-type + district together with
  * expect from real Abfuhrkalender apps/flyers).
  */
-import { PreviewStatusBadge } from "@/modules/builder/components/preview-status-badge";
-
 export async function WasteCalendar({ props, editMode }: { props: Record<string, unknown>; editMode?: boolean }) {
     const parsed = wasteCalendarPropsSchema.safeParse(props);
     const { heading, district, limit, datasetId } = parsed.success
         ? parsed.data
-        : { heading: "Abfuhrkalender", district: undefined, limit: 10 , datasetId: undefined};
+        : { heading: "Abfuhrkalender", district: undefined, limit: 10, datasetId: undefined };
 
     const provider = await getCivicDataProvider(datasetId, editMode);
     const result = await provider.getWasteCollectionEntries({ district, from: new Date() });

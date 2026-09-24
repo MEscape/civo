@@ -17,7 +17,7 @@ export type NewsItem = {
     excerpt?: string;
     content?: string;
     imageUrl?: string;
-    publishedAt?: Date;
+    publishedAt?: string;
     category?: string;
 };
 
@@ -25,8 +25,8 @@ export type CivicEvent = {
     id: string;
     title: string;
     description?: string;
-    startDate: Date;
-    endDate?: Date;
+    startDate: string;
+    endDate?: string;
     location?: string;
     category?: string;
     imageUrl?: string;
@@ -80,7 +80,7 @@ export type WasteType = "restmuell" | "biomuell" | "papier" | "gelberSack" | "sp
 
 export type WasteCollectionEntry = {
     id: string;
-    date: Date;
+    date: string;
     wasteType: WasteType;
     district?: string;
 };

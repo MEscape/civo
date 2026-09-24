@@ -41,7 +41,7 @@ describe("newsItemSchema", () => {
         });
         expect(result.success).toBe(true);
         if (result.success) {
-            expect(result.data.publishedAt).toBeInstanceOf(Date);
+            expect(typeof result.data.publishedAt).toBe("string");
         }
     });
 });

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { dataSourceService } from "./data-source-service";
 import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data-source-repository";
 import { restJsonAdapter } from "@/modules/data-sources/infrastructure/adapters/rest-json-adapter";
-import type { DatasetMapping } from "@/modules/data-sources/domain/field-mapping-schema";
 
 vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
     dataSourceRepository: {
@@ -117,7 +116,7 @@ describe("dataSourceService", () => {
         it("returns an INVALID_CONFIGURATION error for a kind with no adapter", async () => {
             vi.mocked(dataSourceRepository.findByIdForWebsite).mockResolvedValue({
                 ok: true,
-                data: { id: "ds-1", websiteId: WEBSITE_ID, kind: "MOCK", config: {} } as never,
+                data: { id: "ds-1", websiteId: WEBSITE_ID, kind: "UNKNOWN", config: {} } as never,
             });
 
             const result = await dataSourceService.testConnection("ds-1", WEBSITE_ID);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { formatRelativeTime, formatDate, formatNumber, formatShare, formatChange } from "./formatters";
+import { formatRelativeTime, formatNumber, formatShare, formatChange } from "./formatters";
 
 describe("formatRelativeTime", () => {
     afterEach(() => {

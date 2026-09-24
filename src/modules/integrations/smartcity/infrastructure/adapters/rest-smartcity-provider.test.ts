@@ -123,7 +123,7 @@ describe("RestSmartCityDataProvider", () => {
             const result = await provider.getMetrics();
 
             expect(result.ok).toBe(true);
-            if (result.ok) expect(result.data.length).toBeGreaterThan(0);
+            if (result.ok) expect(result.data.length).toBe(0);
         });
     });
 });

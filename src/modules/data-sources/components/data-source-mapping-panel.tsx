@@ -72,7 +72,7 @@ function assignmentsFromMapping(mapping: { fields: FieldMapping[] } | null | und
  * field-mapping-schema.ts supports. The schema already allows richer
  * transforms for a future editor to add without a data-model change.
  */
-export function DataSourceMappingPanel({ websiteId, dataSourceId, datasetId, canonicalType, existingMapping }: DataSourceMappingPanelProps) {
+export function DataSourceMappingPanel({ websiteId, datasetId, canonicalType, existingMapping }: DataSourceMappingPanelProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [fields, setFields] = useState<DiscoveredField[] | null>(null);
@@ -144,7 +144,7 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, datasetId, can
                 setStatus({ kind: "error", message: result.message });
                 return;
             }
-            setStatus({ kind: "previewed", value: result.value });
+            setStatus({ kind: "previewed", value: result.data });
         });
     }
 
@@ -173,73 +173,73 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, datasetId, can
     }
 
     return (
-        <div className="space-y-3 border-t border-[var(--civo-color-border)] pt-4">
+        <div className="space-y-3 border-t border-border pt-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-[var(--civo-color-text)]">Felder zuordnen</h4>
+                <h4 className="text-sm font-medium text-copy">Felder zuordnen</h4>
                 <Button type="button" variant="outline" size="sm" onClick={handleDiscover} disabled={isPending}>
                     {isPending ? "Lädt…" : "Felder laden"}
                 </Button>
             </div>
 
-            {status.kind === "error" && <p className="text-sm text-red-700">{status.message}</p>}
+            {status.kind === "error" && <p className="text-sm text-danger">{status.message}</p>}
 
             {fields && (
                 <div className="space-y-3">
                     {fields.length === 0 ? (
-                        <p className="text-sm text-[var(--civo-color-text-muted)]">
+                        <p className="text-sm text-copy-muted">
                             In der Antwort der Datenquelle wurden keine Felder gefunden.
                         </p>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                <tr className="border-b border-[var(--civo-color-border)] text-left text-[var(--civo-color-text-muted)]">
-                                    <th className="py-1.5 pr-3 font-medium">Externes Feld</th>
-                                    <th className="py-1.5 pr-3 font-medium">Beispielwert</th>
-                                    <th className="py-1.5 font-medium">Zielfeld</th>
-                                </tr>
+                                    <tr className="border-b border-border text-left text-copy-muted">
+                                        <th className="py-1.5 pr-3 font-medium">Externes Feld</th>
+                                        <th className="py-1.5 pr-3 font-medium">Beispielwert</th>
+                                        <th className="py-1.5 font-medium">Zielfeld</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {fields.map((field) => {
-                                    const usedElsewhere = targetsUsedElsewhere(field.path);
+                                    {fields.map((field) => {
+                                        const usedElsewhere = targetsUsedElsewhere(field.path);
 
-                                    return (
-                                        <tr key={field.path} className="border-b border-[var(--civo-color-border)] last:border-0">
-                                            <td className="py-1.5 pr-3 font-mono text-xs text-[var(--civo-color-text)]">
-                                                {field.path}
-                                            </td>
-                                            <td className="py-1.5 pr-3 truncate max-w-[160px] text-[var(--civo-color-text-muted)]">
-                                                {field.sampleValue}
-                                            </td>
-                                            <td className="py-1.5">
-                                                <select
-                                                    value={assignments[field.path] ?? ""}
-                                                    onChange={(e) => handleAssign(field.path, e.target.value)}
-                                                    className="h-8 w-full max-w-[220px] rounded-md border border-input bg-transparent px-2 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                >
-                                                    <option value="">Nicht zugeordnet</option>
-                                                    {targetFields.map((target) => (
-                                                        <option
-                                                            key={target.path}
-                                                            value={target.path}
-                                                            // A target already assigned to a different source
-                                                            // field is disabled rather than silently allowed a
-                                                            // second time — assigning it here would silently
-                                                            // clobber the other assignment (spec §10, last write
-                                                            // wins is not an acceptable outcome for a canonical
-                                                            // field).
-                                                            disabled={usedElsewhere.has(target.path)}
-                                                        >
-                                                            {targetLabel(target.path)}
-                                                            {target.required ? " *" : ""}
-                                                            {usedElsewhere.has(target.path) ? " (bereits zugeordnet)" : ""}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                        return (
+                                            <tr key={field.path} className="border-b border-border last:border-0">
+                                                <td className="py-1.5 pr-3 font-mono text-xs text-copy">
+                                                    {field.path}
+                                                </td>
+                                                <td className="py-1.5 pr-3 truncate max-w-40 text-copy-muted">
+                                                    {field.sampleValue}
+                                                </td>
+                                                <td className="py-1.5">
+                                                    <select
+                                                        value={assignments[field.path] ?? ""}
+                                                        onChange={(e) => handleAssign(field.path, e.target.value)}
+                                                        className="h-8 w-full max-w-xs rounded-md border border-input bg-transparent px-2 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    >
+                                                        <option value="">Nicht zugeordnet</option>
+                                                        {targetFields.map((target) => (
+                                                            <option
+                                                                key={target.path}
+                                                                value={target.path}
+                                                                // A target already assigned to a different source
+                                                                // field is disabled rather than silently allowed a
+                                                                // second time — assigning it here would silently
+                                                                // clobber the other assignment (spec §10, last write
+                                                                // wins is not an acceptable outcome for a canonical
+                                                                // field).
+                                                                disabled={usedElsewhere.has(target.path)}
+                                                            >
+                                                                {targetLabel(target.path)}
+                                                                {target.required ? " *" : ""}
+                                                                {usedElsewhere.has(target.path) ? " (bereits zugeordnet)" : ""}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -254,14 +254,14 @@ export function DataSourceMappingPanel({ websiteId, dataSourceId, datasetId, can
                         </Button>
                     </div>
 
-                    {status.kind === "saved" && <p className="text-sm text-green-700">Mapping gespeichert.</p>}
+                    {status.kind === "saved" && <p className="text-sm text-success">Mapping gespeichert.</p>}
 
                     {status.kind === "previewed" && (
-                        <div className="rounded-[var(--civo-radius)] border border-[var(--civo-color-border)] bg-[var(--civo-color-background)] p-3">
-                            <p className="mb-1.5 text-xs font-medium text-[var(--civo-color-text-muted)]">
+                        <div className="rounded-token border border-border bg-canvas p-3">
+                            <p className="mb-1.5 text-xs font-medium text-copy-muted">
                                 Vorschau des zugeordneten Datensatzes
                             </p>
-                            <pre className="overflow-x-auto text-xs text-[var(--civo-color-text)]">
+                            <pre className="overflow-x-auto text-xs text-copy">
                                 {JSON.stringify(status.value, null, 2)}
                             </pre>
                         </div>

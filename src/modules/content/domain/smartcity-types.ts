@@ -21,4 +21,6 @@ export type SmartCityMetric = {
     series?: { date: string; value: number }[];
     breakdown?: { label: string; value: number }[];
     target?: number;
+    updatedAt?: string;
+    source?: string;
 };

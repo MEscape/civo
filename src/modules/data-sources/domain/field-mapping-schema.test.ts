@@ -231,8 +231,8 @@ describe("applyMapping", () => {
 
         if (success.ok) {
             expect(
-                success.data.startDate
-            ).toBeInstanceOf(Date);
+                typeof success.data.startDate
+            ).toBe("string");
         }
 
         const failure = applyMapping(

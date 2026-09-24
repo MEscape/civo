@@ -73,7 +73,6 @@ describe("website actions", () => {
 
     describe("updateThemeAction", () => {
         it("returns success and revalidates when update succeeds", async () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             vi.mocked(websiteService.updateTheme).mockResolvedValue(ok({} as any));
 
             const result = await updateThemeAction("t1", { primaryColor: "#000000" }, "w1");

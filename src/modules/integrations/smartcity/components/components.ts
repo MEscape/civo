@@ -8,6 +8,7 @@ import { metricGaugeDefinition } from "./metric-gauge/metric-gauge.definition";
 import { metricTableDefinition } from "./metric-table/metric-table.definition";
 import { dashboardGridDefinition } from "./dashboard-grid/dashboard-grid.definition";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const smartcityComponents: ComponentDefinition<any>[] = [
     kpiGridDefinition,
     metricChartDefinition,

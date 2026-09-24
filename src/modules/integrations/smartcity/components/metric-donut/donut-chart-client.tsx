@@ -1,6 +1,6 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils/cn";
 import { TOOLTIP_STYLE, useChartAnimation } from "../chart-style";
 import {formatNumber, formatShare} from "@/lib/utils/formatters";
@@ -32,6 +32,10 @@ const SEGMENTS = [
 export function DonutChartClient({ data }: { data: DonutDatum[] }) {
     const animate = useChartAnimation();
     const total = data.reduce((sum, d) => sum + d.value, 0);
+    const chartData = data.map((entry, index) => ({
+        ...entry,
+        fill: SEGMENTS[index % SEGMENTS.length].fill,
+    }));
 
     return (
         <div>
@@ -44,7 +48,7 @@ export function DonutChartClient({ data }: { data: DonutDatum[] }) {
                         The list below is the accessible version of the chart. */}
                     <PieChart accessibilityLayer={false}>
                         <Pie
-                            data={data}
+                            data={chartData}
                             dataKey="value"
                             nameKey="label"
                             innerRadius="55%"
@@ -54,11 +58,7 @@ export function DonutChartClient({ data }: { data: DonutDatum[] }) {
                             strokeWidth={2}
                             rootTabIndex={-1}
                             isAnimationActive={animate}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell key={entry.label} fill={SEGMENTS[index % SEGMENTS.length].fill} />
-                            ))}
-                        </Pie>
+                        />
                         <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => formatNumber(Number(value))} />
                     </PieChart>
                 </ResponsiveContainer>

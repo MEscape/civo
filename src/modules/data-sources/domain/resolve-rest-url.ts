@@ -20,7 +20,7 @@ export function resolveRestUrl(config: Pick<RestDataSourceConfig, "baseUrl" | "p
     try {
         target = new URL(config.path, config.baseUrl);
     } catch {
-        return err("The configured URL is invalid.");
+        return err("Die konfigurierte URL ist ungültig.");
     }
 
     const check = checkOutboundUrl(target.toString());
