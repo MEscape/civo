@@ -133,8 +133,12 @@ export function toDomainTheme(rawTheme: RawThemeRow | null | undefined): Website
             headingFont: rawTheme.headingFont || defaultTheme.typography.headingFont,
             bodyFont: rawTheme.bodyFont || defaultTheme.typography.bodyFont,
         },
-        radius: (rawTheme.radius as ThemeRadius) || defaultTheme.radius,
-        spacingScale: (rawTheme.spacingScale as ThemeSpacingScale) || defaultTheme.spacingScale,
+        radius: (rawTheme.radius && rawTheme.radius in radiusValues)
+            ? (rawTheme.radius as ThemeRadius)
+            : defaultTheme.radius,
+        spacingScale: (rawTheme.spacingScale && rawTheme.spacingScale in spacingSectionValues)
+            ? (rawTheme.spacingScale as ThemeSpacingScale)
+            : defaultTheme.spacingScale,
     };
 }
 
