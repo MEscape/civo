@@ -71,6 +71,7 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
                 />
             );
         case "select":
+            return (
                 <Select
                     value={String(value ?? "")}
                     onValueChange={(val) => {
@@ -89,6 +90,7 @@ export function PropertyControl({ field, value, onChange, onCommit, websiteId, c
                         ))}
                     </SelectContent>
                 </Select>
+            );
         case "columns":
             return (
                 <div role="group" aria-label={field.label} className="flex gap-1">

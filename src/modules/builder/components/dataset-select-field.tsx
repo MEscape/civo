@@ -81,16 +81,18 @@ export function DatasetSelectField({
                 onCommit();
             }}
         >
-            <SelectTrigger id={id} className="w-full h-9">
+            <SelectTrigger id={id} className="w-full h-9 bg-surface">
                 <SelectValue placeholder="Beispieldaten (kein Datensatz)" />
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="none">Beispieldaten (kein Datensatz)</SelectItem>
-                {options.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                        {option.name} ({option.sourceName})
-                    </SelectItem>
-                ))}
+                {options
+                    .filter((option) => option.sourceKind !== "MOCK")
+                    .map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                            {option.name} ({option.sourceName})
+                        </SelectItem>
+                    ))}
             </SelectContent>
         </Select>
     );

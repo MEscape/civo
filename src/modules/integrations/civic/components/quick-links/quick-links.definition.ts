@@ -20,7 +20,13 @@ export const quickLinksDefinition: ComponentDefinition<z.infer<typeof quickLinks
     createDefaultNode: () => ({
         id: generateNodeId("quickLinks"),
         type: "quickLinks",
-        props: { heading: "Schnellzugriff", links: [] },
+        props: { 
+            heading: "Schnellzugriff", 
+            links: [
+                { label: "Beispiellink 1", href: "#" },
+                { label: "Beispiellink 2", href: "#" }
+            ] 
+        },
     }),
     propsSchema: quickLinksPropsSchema,
     fields: quickLinksFields,
