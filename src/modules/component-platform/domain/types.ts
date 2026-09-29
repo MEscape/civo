@@ -1,6 +1,7 @@
 import type { ZodType } from "zod";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import type { CanonicalType } from "@/modules/data-sources/domain/dataset-schema";
+import type { ContractName } from "@/modules/content/domain/contract-versions";
 
 /**
  * Valid UI controls for the properties panel.
@@ -88,6 +89,26 @@ export type ComponentDataBinding = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ComponentDefinition<TProps extends Record<string, unknown> = any> = {
     type: string; // The registered component type string (e.g. "hero")
+    /**
+     * Component implementation version (Phase 4 Rule 3 / Phase 3).
+     * Optional and defaults to `1` when omitted — every existing
+     * definition file needs no change to remain a valid, implicitly
+     * version-1 component. Bump this only when the component's rendering
+     * behavior or prop shape changes in a way that an existing published
+     * release must NOT be silently upgraded to (see
+     * component-platform/domain/registry.ts for how multiple versions of
+     * the same `type` coexist).
+     *
+     * This is deliberately a plain number on the definition object, not
+     * baked into the `type` string PageNode.type stores (e.g. NOT
+     * `"eventsGrid@2"`). Every existing stored PageConfig references
+     * components by bare type, and pageConfigSchema intentionally never
+     * validates `type` against the registry (see that schema's own
+     * comment on ADR-003) — versioning by a separate field preserves
+     * both of those invariants instead of requiring a data migration for
+     * every historical page just to introduce versioning at all.
+     */
+    version?: number;
     label: string;
     category: ComponentCategory;
     description: string;
@@ -110,6 +131,22 @@ export type ComponentDefinition<TProps extends Record<string, unknown> = any> = 
      * restricted component palette (spec §37).
      */
     municipallyEditable?: boolean;
+    /**
+     * Canonical data contract(s) this component's data-fetching depends
+     * on, with the minimum contract version its rendering code was
+     * written to understand (Phase 4 Rule 4 / Phase 46). E.g. a future
+     * `EventsGrid@3` that requires a `CivicEvent` field only added in
+     * contract version 2 would declare
+     * `dependsOnContracts: [{ contract: "CivicEvent", minVersion: 2 }]`.
+     *
+     * Absent for components that don't consume canonical content data
+     * (layout/structural components, and any component whose data need
+     * isn't yet expressed this way) — absence means "no declared
+     * contract dependency to check," not "compatible with everything."
+     * See isComponentContractCompatible for how this is checked.
+     */
+    dependsOnContracts?: readonly { contract: ContractName; minVersion: number }[];
+
     /**
      * Declares which canonical data type this component consumes (Phase 3.5).
      * Required on any component with a "dataset" control field.

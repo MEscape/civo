@@ -4,6 +4,8 @@ import { ThemeSettingsForm } from "@/modules/website/components/theme-settings-f
 import { toDomainTheme } from "@/modules/website/domain/theme";
 import { dataSourceService } from "@/modules/data-sources/application/data-source-service";
 import { DataSourcesPanel } from "@/modules/data-sources/components/data-sources-panel";
+import { releaseService } from "@/modules/release/application/release-service";
+import { ReleaseHistoryPanel } from "@/modules/release/components/release-history-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { ToolbarLink } from "@/components/ui/toolbar-link";
@@ -20,6 +22,13 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
 
     const dataSourcesResult = await dataSourceService.listForWebsite(id);
     const dataSources = dataSourcesResult.ok ? dataSourcesResult.data.filter((ds) => ds.kind !== "MOCK") : [];
+
+    // Load release history server-side so the Releases tab renders
+    // without a client-side fetch (Phase 42: publish-time freeze, not
+    // per-request resolution — the list is read-only here).
+    const releasesResult = await releaseService.getReleaseHistory(id);
+    const releases = releasesResult.ok ? releasesResult.data : [];
+    const currentReleaseId = websiteResult.data.publishedReleaseId ?? null;
 
     return (
         <div className="flex h-app-body flex-col">
@@ -59,6 +68,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
                         <TabsList>
                             <TabsTrigger value="theme">Theme</TabsTrigger>
                             <TabsTrigger value="data-sources">Datenquellen</TabsTrigger>
+                            <TabsTrigger value="releases">Releases</TabsTrigger>
                         </TabsList>
                         <TabsContent value="theme">
                             <ThemeSettingsForm
@@ -69,6 +79,21 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
                         </TabsContent>
                         <TabsContent value="data-sources">
                             <DataSourcesPanel websiteId={websiteResult.data.id} initialSources={dataSources} />
+                        </TabsContent>
+                        <TabsContent value="releases">
+                            <div className="mt-4">
+                                <h2 className="mb-1 text-base font-semibold text-copy">Release-Verlauf</h2>
+                                <p className="mb-4 text-sm text-copy-muted">
+                                    Jedes Release ist eine unveränderliche Momentaufnahme der
+                                    Website. Stellen Sie bei Bedarf eine frühere Version wieder her
+                                    — ohne Neuerstellung.
+                                </p>
+                                <ReleaseHistoryPanel
+                                    websiteId={websiteResult.data.id}
+                                    releases={releases}
+                                    currentReleaseId={currentReleaseId}
+                                />
+                            </div>
                         </TabsContent>
                     </Tabs>
                 </div>

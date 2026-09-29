@@ -47,11 +47,11 @@ export const mockDataAdapter: DataSourceAdapter<Record<string, unknown>> = {
         return ok(rawConfig as Record<string, unknown>);
     },
 
-    async testConnection(_config: Record<string, unknown>, _context: DataSourceContext) {
+    async testConnection() {
         return ok({ statusCode: 200, responseTimeMs: 12 });
     },
 
-    async fetch(config: Record<string, unknown>, _context: DataSourceContext): Promise<Result<unknown, DataSourceError>> {
+    async fetch(config: Record<string, unknown>): Promise<Result<unknown, DataSourceError>> {
         const { getMockPayload } = await import("@/data/musterstadt");
         const path = config.path as string || "";
         const payload = getMockPayload(path);

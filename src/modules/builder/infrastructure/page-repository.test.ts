@@ -373,7 +373,7 @@ describe("pageRepository", () => {
                 id: "config-1",
                 pageId: "page-1",
                 version: 1,
-                status: "PUBLISHED",
+                status: "DRAFT",
                 content,
             };
 
@@ -405,7 +405,7 @@ describe("pageRepository", () => {
                     pageId: "page-1",
                     content,
                     version: 1,
-                    status: "PUBLISHED",
+                    status: "DRAFT",
                 },
             });
         });
@@ -421,7 +421,7 @@ describe("pageRepository", () => {
                 id: "config-new",
                 pageId: "page-1",
                 version: 5,
-                status: "PUBLISHED",
+                status: "DRAFT",
                 content,
             };
 
@@ -444,7 +444,7 @@ describe("pageRepository", () => {
                     pageId: "page-1",
                     content,
                     version: 5,
-                    status: "PUBLISHED",
+                    status: "DRAFT",
                 },
             });
         });

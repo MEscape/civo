@@ -91,6 +91,8 @@ export type WebsiteView = {
     createdAt: Date;
     updatedAt: Date;
     theme: ThemeView | null;
+    /** The ID of the currently active published WebsiteRelease, or null if never published. */
+    publishedReleaseId: string | null;
 };
 
 export type ThemeRow = {
@@ -130,6 +132,7 @@ export type WebsiteRow = {
     createdAt: Date;
     updatedAt: Date;
     theme?: ThemeRow | null;
+    publishedReleaseId?: string | null;
 };
 
 export function toWebsiteView(row: WebsiteRow): WebsiteView {
@@ -142,5 +145,6 @@ export function toWebsiteView(row: WebsiteRow): WebsiteView {
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
         theme: row.theme ? toThemeView(row.theme) : null,
+        publishedReleaseId: row.publishedReleaseId ?? null,
     };
 }

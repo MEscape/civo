@@ -1,1 +1,3 @@
 https://claude.ai/chat/4fc5ea05-1b87-400f-be36-47358025aecd the missing components that are not adjusted to  our new styling, accesibility, etc...
+
+https://claude.ai/chat/d4cbbb91-586b-4103-8a60-3c684725c4e6 continuation of release feature

@@ -12,6 +12,12 @@ import type { PageView } from "@/modules/builder/domain/page-schema";
  * plain PageConfig JSON, built from Redux's `draftChildren`), the server
  * re-validates it with the exact same Zod schema used for persisted
  * config — client-side validation is never trusted.
+ *
+ * This only ever writes a draft (see pageRepository.saveConfig) and only
+ * revalidates the builder route. It never revalidates the public route —
+ * making a save visible on the public site is publishReleaseAction's job
+ * (Phase 4 Rule 1 / Rule 2): revalidating /s/[siteSlug] here would
+ * invalidate the public cache for content nobody published yet.
  */
 export async function savePageConfigAction(
     pageId: string,
@@ -21,13 +27,6 @@ export async function savePageConfigAction(
     const result = await pageService.saveConfig(pageId, config);
     if (result.ok) {
         revalidatePath(`/websites/${websiteId}/builder`);
-        // The public route is /s/[siteSlug] (src/app/s/[siteSlug]/page.tsx),
-        // which despite its folder name is actually keyed by the
-        // website's id, not a slug — see that route's own data fetch.
-        // The previous `revalidatePath(`/${websiteId}`)` targeted a path
-        // that was never rendered by any route, so a save never actually
-        // invalidated the public page's cache (spec §48).
-        revalidatePath(`/s/${websiteId}`);
     }
     return toActionResult(result);
 }

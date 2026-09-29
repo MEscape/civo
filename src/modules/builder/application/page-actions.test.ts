@@ -35,13 +35,6 @@ describe("page actions", () => {
                 expect(result.data).toEqual(mockConfig);
             }
             expect(revalidatePath).toHaveBeenCalledWith("/websites/w1/builder");
-            // Public route is /s/[siteSlug] (src/app/s/[siteSlug]/page.tsx),
-            // keyed by website id despite the folder name — see that
-            // route's data fetch. Previously this asserted "/w1", which
-            // matched the ORIGINAL (buggy) implementation rather than a
-            // path any route actually renders; fixed alongside the bug in
-            // page-actions.ts (Phase 3 audit, spec §48).
-            expect(revalidatePath).toHaveBeenCalledWith("/s/w1");
         });
 
         it("returns error and does not revalidate when save fails", async () => {

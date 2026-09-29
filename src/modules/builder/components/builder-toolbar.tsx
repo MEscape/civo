@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { undo, redo } from "@/modules/builder/application/document-slice";
 import { setMode, setViewport } from "@/modules/builder/application/ui-slice";
@@ -19,9 +19,24 @@ import {
     selectEditorMode,
 } from "@/modules/builder/application/builder-selectors";
 import { savePageConfigAction } from "@/modules/builder/application/page-actions";
+import { publishReleaseAction } from "@/modules/release/application/release-actions";
 import { Button } from "@/components/ui/button";
 import { ToolbarLink } from "@/components/ui/toolbar-link";
-import { Undo2, Redo2, Eye, Pencil, Monitor, Tablet, Smartphone, Settings, ArrowLeft, ExternalLink, PanelLeft, PanelRight } from "@/components/ui/icons";
+import {
+    Undo2,
+    Redo2,
+    Eye,
+    Pencil,
+    Monitor,
+    Tablet,
+    Smartphone,
+    Settings,
+    ArrowLeft,
+    ExternalLink,
+    PanelLeft,
+    PanelRight,
+    UploadCloud,
+} from "@/components/ui/icons";
 import type { WebsiteTheme } from "@/modules/website/domain/theme";
 import { cn } from "@/lib/utils/cn";
 
@@ -41,6 +56,8 @@ const saveStatusLabel: Record<string, string> = {
     error: "Speichern fehlgeschlagen",
 };
 
+type PublishStatus = "idle" | "publishing" | "published" | "error";
+
 export function BuilderToolbar({ website, page, onOpenPalette, onOpenProperties }: BuilderToolbarProps) {
     const dispatch = useAppDispatch();
     const draftChildren = useAppSelector(selectDraftChildren);
@@ -55,6 +72,14 @@ export function BuilderToolbar({ website, page, onOpenPalette, onOpenProperties 
 
     const canManageTheme = hasCapability(editorMode, "manageTheme");
 
+    // Publishing is a distinct lifecycle from saving a draft (Phase 4
+    // Rule 5) — it doesn't track "dirty" the way document edits do, and
+    // isn't shared with any other component, so it stays local state
+    // rather than living in save-state-slice alongside draft-dirty
+    // tracking.
+    const [publishStatus, setPublishStatus] = useState<PublishStatus>("idle");
+    const [publishError, setPublishError] = useState<string | null>(null);
+
     const handleSave = () => {
         dispatch(saveStarted());
         const config = { type: "page" as const, children: draftChildren };
@@ -64,6 +89,19 @@ export function BuilderToolbar({ website, page, onOpenPalette, onOpenProperties 
                 return;
             }
             dispatch(saveSucceeded());
+        });
+    };
+
+    const handlePublish = () => {
+        setPublishStatus("publishing");
+        setPublishError(null);
+        publishReleaseAction(website.id).then((result) => {
+            if (!result.ok) {
+                setPublishStatus("error");
+                setPublishError(result.message);
+                return;
+            }
+            setPublishStatus("published");
         });
     };
 
@@ -198,6 +236,20 @@ export function BuilderToolbar({ website, page, onOpenPalette, onOpenProperties 
                         <ToolbarLink href={`/websites/${website.id}/settings`} label="Einstellungen" icon={<Settings className="size-4" />} />
                     )}
 
+                    <PublishIndicator status={publishStatus} error={publishError} />
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePublish}
+                        disabled={publishStatus === "publishing"}
+                    >
+                        <UploadCloud className="size-4" />
+                        <span className="sr-only sm:not-sr-only">
+                            {publishStatus === "publishing" ? "Veröffentlicht wird…" : "Veröffentlichen"}
+                        </span>
+                    </Button>
+
                     <Button size="sm" onClick={handleSave} disabled={saveStatus === "saving" || !isDirty}>
                         {saveStatus === "saving" ? "Speichert…" : "Speichern"}
                     </Button>
@@ -271,6 +323,31 @@ function SaveIndicator({
     }
     return (
         <div role="status" className="min-w-0 max-w-2/5 truncate lg:max-w-xs">
+            {content}
+        </div>
+    );
+}
+
+/**
+ * Mirrors SaveIndicator's a11y pattern: always mounted, errors interrupt
+ * via role="alert", success/idle states are polite. Publishing is a
+ * separate lifecycle from saving (Phase 4 Rule 5), so it gets its own
+ * live region rather than sharing SaveIndicator's.
+ */
+function PublishIndicator({ status, error }: { status: PublishStatus; error: string | null }) {
+    let content: React.ReactNode = null;
+    if (status === "error") {
+        const message = error ?? "Veröffentlichung fehlgeschlagen";
+        content = (
+            <span role="alert" title={message} className="block truncate text-xs text-danger">
+                {message}
+            </span>
+        );
+    } else if (status === "published") {
+        content = <span className="text-xs text-copy-muted">Veröffentlicht</span>;
+    }
+    return (
+        <div role="status" className="hidden min-w-0 truncate sm:block sm:max-w-32">
             {content}
         </div>
     );

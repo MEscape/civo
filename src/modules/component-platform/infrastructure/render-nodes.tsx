@@ -2,6 +2,7 @@ import React, { createElement, Suspense, type ComponentType } from "react";
 import type { PageNode } from "@/modules/builder/domain/page-node";
 import { type PageComponentProps, isRegisteredComponentType } from "@/modules/component-platform/domain";
 import { componentMap, skeletonMap } from "./registry";
+import { ComponentErrorBoundary } from "./component-error-boundary";
 // Side-effect import: registers every feature module's component
 // definitions into the domain registry (see that file's own comment on
 // why this aggregation cannot live in domain/**). This file is the
@@ -72,7 +73,13 @@ export function PageNodeRenderer({
         }
     }
 
-    if (!editMode) return rendered;
+    if (!editMode) {
+        return (
+            <ComponentErrorBoundary componentType={node.type} showDetails={false}>
+                {rendered}
+            </ComponentErrorBoundary>
+        );
+    }
 
     return (
         <div
@@ -81,7 +88,9 @@ export function PageNodeRenderer({
             style={isHidden ? { opacity: 0.35, pointerEvents: "none" } : undefined}
             aria-hidden={isHidden ? true : undefined}
         >
-            {rendered}
+            <ComponentErrorBoundary componentType={node.type} showDetails>
+                {rendered}
+            </ComponentErrorBoundary>
         </div>
     );
 }

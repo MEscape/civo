@@ -22,6 +22,18 @@ enum DataSourceStatus {
   ERROR
 }
 
+enum ReleaseStatus {
+  DRAFT
+  PUBLISHED
+  FAILED
+  ROLLED_BACK
+}
+
+enum MigrationStatus {
+  PROPOSED
+  APPLIED
+}
+
 model Theme {
   id             String   @id @default(uuid())
   primaryColor   String   @default("#0F172A")
@@ -39,19 +51,23 @@ model Theme {
 }
 
 model Website {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  description String?
-  templateKey String?
-  themeId     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  name               String
+  slug               String   @unique
+  description        String?
+  templateKey        String?
+  themeId            String?
+  publishedReleaseId String?  @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   // Relations
-  theme       Theme?       @relation(fields: [themeId], references: [id], onDelete: SetNull)
-  pages       Page[]
-  dataSources DataSource[]
+  theme            Theme?           @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  pages            Page[]
+  dataSources      DataSource[]
+  releases         WebsiteRelease[] @relation("WebsiteReleases")
+  publishedRelease WebsiteRelease?  @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
+  migrations       Migration[]
 }
 
 model Page {
@@ -82,17 +98,12 @@ model PageConfig {
   page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
 }
 
-/**
- * Represents an external data connection (REST endpoint, mock, future: CKAN, GeoJSON, ...).
- * A website can have many DataSources. Each DataSource can expose many Datasets.
- * Credentials are never stored here — they live in server-only env config.
- */
 model DataSource {
   id            String           @id @default(uuid())
   websiteId     String
   name          String
   kind          DataSourceKind
-  config        Json             // Kind-specific connection config (e.g. baseUrl, authMode)
+  config        Json // Kind-specific connection config (e.g. baseUrl, authMode)
   status        DataSourceStatus @default(UNKNOWN)
   lastCheckedAt DateTime?
   lastError     String?
@@ -104,19 +115,13 @@ model DataSource {
   datasets Dataset[]
 }
 
-/**
- * A specific canonical dataset exposed by a DataSource.
- * Each Dataset has a single canonicalType (e.g. "Event", "NewsItem") and its own
- * field mapping from the external record shape to that canonical type.
- * Components reference a Dataset by ID — never the DataSource directly.
- */
 model Dataset {
   id            String           @id @default(uuid())
   dataSourceId  String
-  name          String           // Human-readable e.g. "Würzburg Veranstaltungen"
-  slug          String           // URL-safe key e.g. "events"
-  canonicalType String           // "Event" | "NewsItem" | "Service" | ... (see CanonicalType in domain)
-  mapping       Json?            // Field mapping from external shape to canonical type
+  name          String // Human-readable e.g. "Würzburg Veranstaltungen"
+  slug          String // URL-safe key e.g. "events"
+  canonicalType String // "Event" | "NewsItem" | "Service" | ... (see CanonicalType in domain)
+  mapping       Json? // Field mapping from external shape to canonical type
   status        DataSourceStatus @default(UNKNOWN)
   lastFetchedAt DateTime?
   createdAt     DateTime         @default(now())
@@ -127,4 +132,39 @@ model Dataset {
 
   // One dataset per slug per source (e.g. a source can't have two "events" datasets)
   @@unique([dataSourceId, slug])
+}
+
+model WebsiteRelease {
+  id            String        @id @default(uuid())
+  websiteId     String
+  releaseNumber Int
+  status        ReleaseStatus @default(DRAFT)
+  snapshot      Json
+  snapshotHash  String
+  createdAt     DateTime      @default(now())
+  publishedAt   DateTime?
+
+  // Relations
+  website            Website     @relation("WebsiteReleases", fields: [websiteId], references: [id], onDelete: Cascade)
+  publishedByWebsite Website?    @relation("PublishedRelease")
+  migrations         Migration[]
+
+  @@unique([websiteId, releaseNumber])
+}
+
+model Migration {
+  id              String          @id @default(uuid())
+  websiteId       String
+  sourceReleaseId String
+  status          MigrationStatus @default(PROPOSED)
+  planSnapshot    Json
+  resolutions     Json
+  createdAt       DateTime        @default(now())
+  appliedAt       DateTime?
+
+  // Relations
+  website       Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  sourceRelease WebsiteRelease @relation(fields: [sourceReleaseId], references: [id])
+
+  @@index([websiteId])
 }

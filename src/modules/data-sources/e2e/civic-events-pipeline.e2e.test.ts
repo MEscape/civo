@@ -28,16 +28,17 @@ import type { DataSourceView } from "@/modules/data-sources/domain/data-source-s
  * runtime needed since React resolves the async component during render.
  */
 
-vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
-    dataSourceRepository: {
+vi.mock("@/modules/data-sources/infrastructure/dataset-repository", () => ({
+    datasetRepository: {
+        findByIdWithDataSource: vi.fn(),
         findById: vi.fn(),
-        findByWebsiteWithDatasets: vi.fn(),
     },
 }));
 
-vi.mock("@/modules/data-sources/infrastructure/dataset-repository", () => ({
-    datasetRepository: {
+vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
+    dataSourceRepository: {
         findById: vi.fn(),
+        findByIdForWebsite: vi.fn(),
     },
 }));
 
@@ -62,7 +63,7 @@ import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data
 import { datasetRepository } from "@/modules/data-sources/infrastructure/dataset-repository";
 import { EventsGrid } from "@/modules/integrations/civic/components/events-grid/events-grid";
 
-function configuredEventsSource(): DataSourceView {
+function configuredEventsSource(): any {
     return {
         id: "e2e-events-source",
         websiteId: "website-e2e",

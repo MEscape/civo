@@ -8,6 +8,7 @@ import {
     getComponentDefinition,
     tryGetComponentDefinition,
     canInsertChild,
+    clearComponentRegistry,
 } from "./registry";
 
 /**
@@ -37,7 +38,7 @@ function makeDefinition(overrides: Partial<ComponentDefinition> = {}): Component
 
 describe("registerComponentDefinitions", () => {
     beforeEach(() => {
-        componentDefinitionRegistry.clear();
+        clearComponentRegistry();
     });
 
     it("registers a definition and makes it queryable", () => {
@@ -70,7 +71,7 @@ describe("registerComponentDefinitions", () => {
 
 describe("getComponentDefinition", () => {
     beforeEach(() => {
-        componentDefinitionRegistry.clear();
+        clearComponentRegistry();
     });
 
     it("throws for an unknown type (structural error, not a user-facing one)", () => {
@@ -80,7 +81,7 @@ describe("getComponentDefinition", () => {
 
 describe("tryGetComponentDefinition", () => {
     beforeEach(() => {
-        componentDefinitionRegistry.clear();
+        clearComponentRegistry();
     });
 
     it("returns undefined instead of throwing for an unknown type", () => {
@@ -90,7 +91,7 @@ describe("tryGetComponentDefinition", () => {
 
 describe("canInsertChild", () => {
     beforeEach(() => {
-        componentDefinitionRegistry.clear();
+        clearComponentRegistry();
         registerComponentDefinitions([
             makeDefinition({ type: "container", canHaveChildren: true }),
             makeDefinition({ type: "restrictedContainer", canHaveChildren: true, acceptsChildTypes: ["leafA"] }),

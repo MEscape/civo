@@ -87,9 +87,12 @@ export const pageRepository = {
 
     /**
      * Saves a new PageConfig content snapshot for a page. Increments the
-     * version number. In the MVP there is no separate "publish" step — this
-     * is effectively both draft-save and publish — but the shape (an
-     * explicit version increment) keeps a future revision history additive.
+     * version number. This is the builder's draft-save path only — it
+     * always writes status DRAFT and never affects the public site. Making
+     * a page's current content publicly visible is releaseService.publish's
+     * job, which reads this same PageConfig table but materializes an
+     * immutable WebsiteRelease snapshot from it rather than flipping a
+     * status flag in place (Phase 4 Rule 1 / Rule 2).
      */
     async saveConfig(
         pageId: string,
@@ -106,7 +109,7 @@ export const pageRepository = {
                     pageId,
                     content,
                     version: (latest?.version ?? 0) + 1,
-                    status: "PUBLISHED",
+                    status: "DRAFT",
                 },
             });
             return ok(toPageConfigView(config));

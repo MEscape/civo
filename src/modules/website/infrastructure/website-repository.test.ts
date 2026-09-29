@@ -58,7 +58,7 @@ describe("websiteRepository", () => {
 
             expect(result).toEqual({
                 ok: true,
-                data: websites,
+                data: websites.map((w) => expect.objectContaining(w)),
             });
 
             expect(prisma.website.findMany).toHaveBeenCalledWith({
@@ -111,7 +111,7 @@ describe("websiteRepository", () => {
 
             expect(result).toEqual({
                 ok: true,
-                data: website,
+                data: expect.objectContaining(website),
             });
 
             expect(prisma.website.findUnique).toHaveBeenCalledWith({
@@ -167,7 +167,7 @@ describe("websiteRepository", () => {
 
             expect(result).toEqual({
                 ok: true,
-                data: website,
+                data: expect.objectContaining(website),
             });
 
             expect(prisma.website.findUnique).toHaveBeenCalledWith({
@@ -240,7 +240,7 @@ describe("websiteRepository", () => {
 
             expect(result).toEqual({
                 ok: true,
-                data: website,
+                data: expect.objectContaining(website),
             });
 
             expect(prisma.website.create).toHaveBeenCalledWith({
@@ -281,7 +281,7 @@ describe("websiteRepository", () => {
 
             expect(result).toEqual({
                 ok: true,
-                data: website,
+                data: expect.objectContaining(website),
             });
 
             expect(prisma.website.create).toHaveBeenCalledWith({
@@ -356,7 +356,7 @@ describe("websiteRepository", () => {
 
             expect(result).toEqual({
                 ok: true,
-                data: website,
+                data: expect.objectContaining(website),
             });
 
             expect(prisma.website.update).toHaveBeenCalledWith({

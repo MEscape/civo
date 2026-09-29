@@ -10,16 +10,17 @@ import type { DataSourceView } from "@/modules/data-sources/domain/data-source-s
  * every real module in between" rather than a browser-driven e2e test.
  */
 
-vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
-    dataSourceRepository: {
+vi.mock("@/modules/data-sources/infrastructure/dataset-repository", () => ({
+    datasetRepository: {
+        findByIdWithDataSource: vi.fn(),
         findById: vi.fn(),
-        findByWebsiteWithDatasets: vi.fn(),
     },
 }));
 
-vi.mock("@/modules/data-sources/infrastructure/dataset-repository", () => ({
-    datasetRepository: {
+vi.mock("@/modules/data-sources/infrastructure/data-source-repository", () => ({
+    dataSourceRepository: {
         findById: vi.fn(),
+        findByIdForWebsite: vi.fn(),
     },
 }));
 
@@ -41,7 +42,7 @@ import { dataSourceRepository } from "@/modules/data-sources/infrastructure/data
 import { datasetRepository } from "@/modules/data-sources/infrastructure/dataset-repository";
 import { KpiGrid } from "@/modules/integrations/smartcity/components/kpi-grid/kpi-grid";
 
-function configuredParkingSource(): DataSourceView {
+function configuredParkingSource(): any {
     return {
         id: "e2e-parking-source",
         websiteId: "website-e2e",

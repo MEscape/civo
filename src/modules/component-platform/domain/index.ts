@@ -23,20 +23,25 @@
  */
 export type {
     ComponentDefinition,
-    ComponentDataBinding,
     ComponentCategory,
     PropField,
     PropFieldControl,
-    PropFieldGroup,
     PageComponentProps,
 } from "./types";
+
+export type { ContractCompatibilityIssue } from "./registry";
 
 export {
     componentDefinitionRegistry,
 
     registerComponentDefinitions,
+    clearComponentRegistry,
     isRegisteredComponentType,
     getComponentDefinition,
     tryGetComponentDefinition,
+    tryGetComponentDefinitionVersion,
+    getComponentVersionHistory,
+    getCurrentComponentVersion,
     canInsertChild,
+    checkComponentContractCompatibility,
 } from "./registry";
