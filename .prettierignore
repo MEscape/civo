@@ -1,0 +1,34 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+coverage/
+.turbo/
+.vercel/
+
+# Generated / vendored
+next-env.d.ts
+*.min.js
+*.min.css
+CHANGELOG.md
+generated/
+.contentlayer/
+
+# Database
+prisma/migrations/
+# Emitted by `npm run db:generate`; CI checks they match its output byte for byte.
+src/lib/db/contract.json
+src/lib/db/contract.d.ts
+
+# Lockfiles (never hand-format; owned by the package manager)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Misc
+.DS_Store
+*.log
