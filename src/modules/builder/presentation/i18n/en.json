@@ -1,0 +1,151 @@
+{
+  "builder": {
+    "metadata": {
+      "title": "Edit {pageTitle}",
+      "fallbackTitle": "Page editor"
+    },
+    "errors": {
+      "pageNotFound": "The page was not found.",
+      "websiteNotFound": "The website was not found.",
+      "nodeNotFound": "The component was not found.",
+      "pagePathTaken": "A page with this path already exists on this website.",
+      "versionConflict": "The page was changed by someone else in the meantime.",
+      "validationFailed": "The input is invalid.",
+      "placementRejected": "The component cannot be placed there.",
+      "structureNotPermitted": "You are not allowed to change the page structure.",
+      "propsNotPermitted": "You are not allowed to change these properties.",
+      "pageCorrupted": "The stored page is damaged and cannot be opened.",
+      "persistenceFailed": "The page could not be saved. Please try again.",
+      "pageLimitExceeded": "This website has more pages than can be processed at once.",
+      "unexpected": "An unexpected error occurred."
+    },
+    "validation": {
+      "contentInvalid": "The page content is invalid.",
+      "contentTooLarge": "The page content is too large.",
+      "componentUnknown": "The page contains an unknown component.",
+      "nestingNotAllowed": "A component is not allowed at this position.",
+      "nodeLimit": "A page may contain at most {maxNodes} components.",
+      "depthLimit": "Components may be nested at most {maxDepth} levels deep.",
+      "titleTooShort": "The title must be at least {titleMin} characters long.",
+      "titleTooLong": "The title may be at most {titleMax} characters long.",
+      "pathInvalid": "The path may only contain lowercase letters, digits, hyphens and slashes.",
+      "pathTooLong": "The path may be at most {pathMax} characters long."
+    },
+    "toolbar": {
+      "breadcrumb": "Breadcrumb",
+      "websites": "Websites",
+      "history": "History",
+      "undo": "Undo",
+      "redo": "Redo",
+      "viewports": "Viewport size",
+      "viewport": {
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "mobile": "Mobile"
+      },
+      "preview": "Preview",
+      "edit": "Edit",
+      "publicSite": "Public site",
+      "opensInNewTab": "(opens in a new tab)",
+      "settings": "Settings",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "save": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "unsaved": "Unsaved changes",
+      "reload": "Reload"
+    },
+    "notice": {
+      "dismiss": "Dismiss notice"
+    },
+    "canvas": {
+      "label": "Page canvas",
+      "empty": {
+        "title": "This page is still empty.",
+        "hint": "Add a component from the list on the left to get started."
+      },
+      "rendering": "Rendering…",
+      "unknownComponent": "Component",
+      "actions": {
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      },
+      "handle": {
+        "move": "Move {label}",
+        "moving": "Moving {label}. Arrow keys to move, Enter to drop, Escape to cancel."
+      }
+    },
+    "drag": {
+      "pickedUp": "{label} picked up.",
+      "before": "{label} before {target}.",
+      "after": "{label} after {target}.",
+      "inside": "{label} inside {target}.",
+      "root": "{label} at the start of the page."
+    },
+    "preview": {
+      "empty": "Nothing to see: the page is empty.",
+      "rendering": "Rendering…"
+    },
+    "palette": {
+      "label": "Components",
+      "title": "Components",
+      "categories": {
+        "layout": "Layout",
+        "content": "Content",
+        "civic": "Municipal",
+        "smartcity": "Smart City"
+      }
+    },
+    "properties": {
+      "label": "Properties",
+      "title": "Properties",
+      "empty": "Select a component to edit its properties.",
+      "noFields": "This component has no editable properties.",
+      "visible": "Visible",
+      "selectPlaceholder": "Select…",
+      "breadcrumb": "Component hierarchy",
+      "page": "Page",
+      "groups": {
+        "data": "Data",
+        "content": "Content",
+        "appearance": "Appearance"
+      },
+      "dataset": {
+        "placeholder": "Sample data (no dataset)",
+        "unavailable": "Context missing.",
+        "option": "{name} ({source})"
+      },
+      "items": {
+        "empty": "No entries yet.",
+        "entry": "Entry {number}",
+        "add": "Add entry",
+        "remove": "Remove entry {number}",
+        "limit": "This list holds at most {max} entries."
+      }
+    },
+    "pages": {
+      "list": {
+        "title": "Pages",
+        "description": "The pages of this website. Open one to edit it.",
+        "label": "Pages of this website",
+        "empty": "No pages yet",
+        "emptyDescription": "Create the first page below.",
+        "homePage": "Home page",
+        "createTitle": "Create a page"
+      },
+      "createForm": {
+        "title": "Title",
+        "titlePlaceholder": "About us",
+        "path": "Path",
+        "pathPlaceholder": "about-us",
+        "pathHint": "Lowercase letters, digits, hyphens and slashes. Leave empty for the home page.",
+        "submit": "Create page",
+        "submitting": "Creating…"
+      }
+    }
+  }
+}

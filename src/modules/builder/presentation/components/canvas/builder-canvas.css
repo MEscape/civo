@@ -1,0 +1,144 @@
+/**
+ * Styles for the builder canvas overlay (selection/hover outlines, drag
+ * handles). Scoped under .civo-canvas so nothing here can leak into or
+ * be affected by the real rendered component styles it sits on top of.
+ */
+
+.civo-canvas {
+  position: relative;
+}
+
+.civo-canvas-content {
+  position: relative;
+}
+
+.civo-canvas-content [data-civo-node-id] {
+  position: relative;
+  cursor: pointer;
+  outline-offset: -1px;
+  transition: outline-color 120ms ease;
+}
+
+.civo-canvas-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.civo-canvas-outline {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 2px;
+  transition:
+    top 80ms ease,
+    left 80ms ease,
+    width 80ms ease,
+    height 80ms ease;
+}
+
+.civo-canvas-outline--hover {
+  outline: 1.5px solid var(--civo-color-secondary);
+}
+
+.civo-canvas-outline--selected {
+  outline: 2px solid var(--civo-color-accent);
+}
+
+.civo-canvas-label {
+  position: absolute;
+  top: -1.5rem;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 3px;
+  background: var(--civo-color-accent);
+  color: var(--civo-color-accent-foreground);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.civo-canvas-label--hover {
+  background: var(--civo-color-secondary);
+  opacity: 0.8;
+  pointer-events: none; /* Let clicks pass through to select the node */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .civo-canvas-outline {
+    transition: none;
+  }
+}
+
+/**
+* Drop-position feedback (Phase 3 spec §9). A restrained insertion line
+* for before/after, and a filled, dashed-border highlight for dropping
+* inside a container — both intentionally distinct from the
+* selection/hover outline colors above so a user never confuses "this is
+* selected" with "this is where your drag will land".
+*/
+.civo-drop-indicator {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  border-radius: 2px;
+}
+
+.civo-drop-indicator--line {
+  background: var(--civo-color-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--civo-color-accent) 40%, transparent);
+}
+
+.civo-drop-indicator--inside {
+  background: color-mix(in srgb, var(--civo-color-accent) 12%, transparent);
+  outline: 2px dashed var(--civo-color-accent);
+  outline-offset: -2px;
+}
+
+/**
+* Keyboard-accessible move handles (spec §12). Real, individually
+* focusable <button>s positioned over each node's measured rect — unlike
+* the removed sr-only sortable proxy, these are visible on focus (so
+* keyboard users can see where they are) and drive the exact same
+* useCanvasDnd state machine pointer dragging uses, rather than a
+* disconnected dnd-kit sortable list.
+*/
+.civo-drag-handle {
+  position: absolute;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--civo-color-text-muted);
+  cursor: grab;
+  pointer-events: auto;
+  opacity: 0;
+}
+
+.civo-drag-handle:focus-visible {
+  opacity: 1;
+  background: var(--civo-color-surface);
+  border-color: var(--civo-color-border);
+}
+
+.civo-drag-handle:focus-visible {
+  outline: 2px solid var(--civo-color-accent);
+  outline-offset: 1px;
+}
+
+.civo-drag-handle[aria-pressed='true'] {
+  opacity: 1;
+  color: var(--civo-color-accent-foreground);
+  background: var(--civo-color-accent);
+  cursor: grabbing;
+}

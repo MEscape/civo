@@ -1,0 +1,151 @@
+{
+  "builder": {
+    "metadata": {
+      "title": "{pageTitle} bearbeiten",
+      "fallbackTitle": "Seiteneditor"
+    },
+    "errors": {
+      "pageNotFound": "Die Seite wurde nicht gefunden.",
+      "websiteNotFound": "Die Website wurde nicht gefunden.",
+      "nodeNotFound": "Die Komponente wurde nicht gefunden.",
+      "pagePathTaken": "Eine Seite mit diesem Pfad existiert bereits auf dieser Website.",
+      "versionConflict": "Die Seite wurde in der Zwischenzeit von jemand anderem geändert.",
+      "validationFailed": "Die Eingabe ist ungültig.",
+      "placementRejected": "Die Komponente kann dort nicht eingefügt werden.",
+      "structureNotPermitted": "Sie dürfen die Seitenstruktur nicht ändern.",
+      "propsNotPermitted": "Sie dürfen diese Eigenschaften nicht ändern.",
+      "pageCorrupted": "Die gespeicherte Seite ist beschädigt und kann nicht geöffnet werden.",
+      "persistenceFailed": "Die Seite konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "pageLimitExceeded": "Diese Website hat mehr Seiten, als auf einmal verarbeitet werden können.",
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "validation": {
+      "contentInvalid": "Der Seiteninhalt ist ungültig.",
+      "contentTooLarge": "Der Seiteninhalt ist zu groß.",
+      "componentUnknown": "Die Seite enthält eine unbekannte Komponente.",
+      "nestingNotAllowed": "Eine Komponente ist an dieser Stelle nicht erlaubt.",
+      "nodeLimit": "Eine Seite darf höchstens {maxNodes} Komponenten enthalten.",
+      "depthLimit": "Komponenten dürfen höchstens {maxDepth} Ebenen tief verschachtelt sein.",
+      "titleTooShort": "Der Titel muss mindestens {titleMin} Zeichen lang sein.",
+      "titleTooLong": "Der Titel darf höchstens {titleMax} Zeichen lang sein.",
+      "pathInvalid": "Der Pfad darf nur Kleinbuchstaben, Ziffern, Bindestriche und Schrägstriche enthalten.",
+      "pathTooLong": "Der Pfad darf höchstens {pathMax} Zeichen lang sein."
+    },
+    "toolbar": {
+      "breadcrumb": "Navigationspfad",
+      "websites": "Websites",
+      "history": "Verlauf",
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
+      "viewports": "Ansichtsgröße",
+      "viewport": {
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "mobile": "Mobil"
+      },
+      "preview": "Vorschau",
+      "edit": "Bearbeiten",
+      "publicSite": "Öffentliche Seite",
+      "opensInNewTab": "(öffnet in neuem Tab)",
+      "settings": "Einstellungen",
+      "save": "Speichern",
+      "saving": "Speichert…"
+    },
+    "save": {
+      "saving": "Speichert…",
+      "saved": "Gespeichert",
+      "unsaved": "Ungespeicherte Änderungen",
+      "reload": "Neu laden"
+    },
+    "notice": {
+      "dismiss": "Hinweis schließen"
+    },
+    "canvas": {
+      "label": "Seitenansicht",
+      "empty": {
+        "title": "Diese Seite ist noch leer.",
+        "hint": "Komponente aus der linken Liste hinzufügen, um zu beginnen."
+      },
+      "rendering": "Wird gerendert…",
+      "unknownComponent": "Komponente",
+      "actions": {
+        "moveUp": "Nach oben verschieben",
+        "moveDown": "Nach unten verschieben",
+        "duplicate": "Duplizieren",
+        "delete": "Löschen"
+      },
+      "handle": {
+        "move": "{label} verschieben",
+        "moving": "{label} wird verschoben. Pfeiltasten zum Verschieben, Eingabe zum Ablegen, Escape zum Abbrechen."
+      }
+    },
+    "drag": {
+      "pickedUp": "{label} aufgenommen.",
+      "before": "{label} vor {target}.",
+      "after": "{label} nach {target}.",
+      "inside": "{label} in {target}.",
+      "root": "{label} an den Anfang der Seite."
+    },
+    "preview": {
+      "empty": "Nichts zu sehen – die Seite ist leer.",
+      "rendering": "Wird gerendert…"
+    },
+    "palette": {
+      "label": "Komponenten",
+      "title": "Komponenten",
+      "categories": {
+        "layout": "Layout",
+        "content": "Inhalt",
+        "civic": "Kommunal",
+        "smartcity": "Smart City"
+      }
+    },
+    "properties": {
+      "label": "Eigenschaften",
+      "title": "Eigenschaften",
+      "empty": "Komponente auswählen, um Eigenschaften zu bearbeiten.",
+      "noFields": "Diese Komponente hat keine bearbeitbaren Eigenschaften.",
+      "visible": "Sichtbar",
+      "selectPlaceholder": "Auswählen…",
+      "breadcrumb": "Komponentenhierarchie",
+      "page": "Seite",
+      "groups": {
+        "data": "Daten",
+        "content": "Inhalt",
+        "appearance": "Darstellung"
+      },
+      "dataset": {
+        "placeholder": "Beispieldaten (kein Datensatz)",
+        "unavailable": "Kontext fehlt.",
+        "option": "{name} ({source})"
+      },
+      "items": {
+        "empty": "Noch keine Einträge.",
+        "entry": "Eintrag {number}",
+        "add": "Eintrag hinzufügen",
+        "remove": "Eintrag {number} entfernen",
+        "limit": "Diese Liste umfasst höchstens {max} Einträge."
+      }
+    },
+    "pages": {
+      "list": {
+        "title": "Seiten",
+        "description": "Die Seiten dieser Website. Öffnen Sie eine, um sie zu bearbeiten.",
+        "label": "Seiten dieser Website",
+        "empty": "Noch keine Seiten",
+        "emptyDescription": "Legen Sie unten die erste Seite an.",
+        "homePage": "Startseite",
+        "createTitle": "Seite anlegen"
+      },
+      "createForm": {
+        "title": "Titel",
+        "titlePlaceholder": "Über uns",
+        "path": "Pfad",
+        "pathPlaceholder": "ueber-uns",
+        "pathHint": "Kleinbuchstaben, Ziffern, Bindestriche und Schrägstriche. Leer lassen für die Startseite.",
+        "submit": "Seite anlegen",
+        "submitting": "Wird angelegt…"
+      }
+    }
+  }
+}
