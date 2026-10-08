@@ -1,0 +1,82 @@
+{
+  "map": {
+    "canvas": {
+      "label": "Map: {heading}",
+      "hint": "The locations on this map are also available as a list below the map.",
+      "loading": "Loading map…"
+    },
+    "controls": {
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "scrollZoom": "Use Ctrl + scroll to zoom the map",
+      "scrollZoomMac": "Use ⌘ + scroll to zoom the map",
+      "touchPan": "Use two fingers to move the map"
+    },
+    "states": {
+      "empty": "There are no locations to show on this map yet.",
+      "tilesUnavailable": "The map background is not available right now. All locations are still listed below.",
+      "failed": "The map could not be displayed. All locations are still listed below.",
+      "layersUnavailable": "{count, plural, one {One data layer is} other {# data layers are}} temporarily unavailable.",
+      "skipped": "{dropped, plural, one {One entry} other {# entries}} of {total} could not be placed on the map.",
+      "noMatches": "No locations match the current filters.",
+      "skippedReason": "{reason}: {count, number}"
+    },
+    "summary": "{shown, number} of {total, number} locations shown",
+    "filters": {
+      "title": "Filters",
+      "active": "{count, plural, one {# filter active} other {# filters active}}",
+      "reset": "Reset filters",
+      "from": "From",
+      "to": "To",
+      "minimum": "Minimum",
+      "maximum": "Maximum",
+      "option": "{value} ({count, number})"
+    },
+    "legend": {
+      "title": "Legend",
+      "layer": "Layer: {name}",
+      "locations": "Locations ({count, number})",
+      "lines": "Lines ({count, number})",
+      "areas": "Areas ({count, number})",
+      "other": "Other ({count, number})",
+      "low": "Low",
+      "high": "High",
+      "colorRange": "{field}: from {min} to {max}",
+      "sizeRange": "Size shows {field}: from {min} to {max}",
+      "density": "Density of locations",
+      "densityLow": "Fewer",
+      "densityHigh": "More",
+      "heatmapWeight": "Intensity shows {field}"
+    },
+    "details": {
+      "title": "Selected location",
+      "close": "Close details",
+      "openLink": "Open page for {name}",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "list": {
+      "title": "All locations ({count, number})",
+      "layer": "{name} ({count, number})",
+      "select": "Show {name} on the map",
+      "showMore": "Show more locations",
+      "selected": "Selected"
+    },
+    "fields": {
+      "status": "Status",
+      "category": "Category",
+      "value": "Value",
+      "unit": "Unit",
+      "observedAt": "Observed at"
+    },
+    "issues": {
+      "generic": "The location data is missing or invalid.",
+      "geometryMissing": "Location missing",
+      "geometryUnsupported": "Unsupported shape",
+      "geometryInvalid": "Invalid shape",
+      "coordinatesOutOfRange": "Coordinates outside the valid range",
+      "geometryTooLarge": "Shape too detailed",
+      "duplicateId": "Duplicate entry"
+    }
+  }
+}

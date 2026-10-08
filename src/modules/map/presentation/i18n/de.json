@@ -1,0 +1,82 @@
+{
+  "map": {
+    "canvas": {
+      "label": "Karte: {heading}",
+      "hint": "Die Orte dieser Karte stehen auch als Liste unterhalb der Karte zur Verfügung.",
+      "loading": "Karte wird geladen …"
+    },
+    "controls": {
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "scrollZoom": "Strg + Scrollen zum Zoomen der Karte",
+      "scrollZoomMac": "⌘ + Scrollen zum Zoomen der Karte",
+      "touchPan": "Mit zwei Fingern die Karte verschieben"
+    },
+    "states": {
+      "empty": "Auf dieser Karte gibt es noch keine Orte.",
+      "tilesUnavailable": "Der Kartenhintergrund ist derzeit nicht verfügbar. Alle Orte stehen weiterhin in der Liste unten.",
+      "failed": "Die Karte konnte nicht angezeigt werden. Alle Orte stehen weiterhin in der Liste unten.",
+      "layersUnavailable": "{count, plural, one {Eine Datenebene ist} other {# Datenebenen sind}} vorübergehend nicht verfügbar.",
+      "skipped": "{dropped, plural, one {Ein Eintrag} other {# Einträge}} von {total} konnten nicht auf der Karte platziert werden.",
+      "noMatches": "Kein Ort entspricht den aktuellen Filtern.",
+      "skippedReason": "{reason}: {count, number}"
+    },
+    "summary": "{shown, number} von {total, number} Orten angezeigt",
+    "filters": {
+      "title": "Filter",
+      "active": "{count, plural, one {# Filter aktiv} other {# Filter aktiv}}",
+      "reset": "Filter zurücksetzen",
+      "from": "Von",
+      "to": "Bis",
+      "minimum": "Minimum",
+      "maximum": "Maximum",
+      "option": "{value} ({count, number})"
+    },
+    "legend": {
+      "title": "Legende",
+      "layer": "Ebene: {name}",
+      "locations": "Orte ({count, number})",
+      "lines": "Linien ({count, number})",
+      "areas": "Flächen ({count, number})",
+      "other": "Sonstige ({count, number})",
+      "low": "Niedrig",
+      "high": "Hoch",
+      "colorRange": "{field}: von {min} bis {max}",
+      "sizeRange": "Die Größe zeigt {field}: von {min} bis {max}",
+      "density": "Dichte der Orte",
+      "densityLow": "Weniger",
+      "densityHigh": "Mehr",
+      "heatmapWeight": "Die Intensität zeigt {field}"
+    },
+    "details": {
+      "title": "Ausgewählter Ort",
+      "close": "Details schließen",
+      "openLink": "Seite zu {name} öffnen",
+      "yes": "Ja",
+      "no": "Nein"
+    },
+    "list": {
+      "title": "Alle Orte ({count, number})",
+      "layer": "{name} ({count, number})",
+      "select": "{name} auf der Karte zeigen",
+      "showMore": "Weitere Orte anzeigen",
+      "selected": "Ausgewählt"
+    },
+    "fields": {
+      "status": "Status",
+      "category": "Kategorie",
+      "value": "Wert",
+      "unit": "Einheit",
+      "observedAt": "Erfasst am"
+    },
+    "issues": {
+      "generic": "Die Ortsangaben fehlen oder sind ungültig.",
+      "geometryMissing": "Ort fehlt",
+      "geometryUnsupported": "Nicht unterstützte Form",
+      "geometryInvalid": "Ungültige Form",
+      "coordinatesOutOfRange": "Koordinaten außerhalb des gültigen Bereichs",
+      "geometryTooLarge": "Form zu detailliert",
+      "duplicateId": "Doppelter Eintrag"
+    }
+  }
+}
