@@ -1,0 +1,126 @@
+{
+  "release": {
+    "history": {
+      "listLabel": "Release history",
+      "empty": "No releases published yet. Open the builder and select “Publish” to create the first release.",
+      "releaseNumber": "Release #{number}",
+      "active": "Live",
+      "publishedAt": "Published: {date}",
+      "createdAt": "Created: {date}",
+      "rollback": "Restore",
+      "rollbackLabel": "Restore release #{number}",
+      "buildFailed": "Build failed",
+      "restored": "Release #{number} is live again.",
+      "rollbackNote": "Restoring a release reactivates the unchanged version from back then — nothing is rebuilt."
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "rolledBack": "Rolled back",
+      "failed": "Failed"
+    },
+    "errors": {
+      "notFound": "This release was not found.",
+      "websiteNotFound": "This website was not found.",
+      "notPublished": "This website has not been published yet.",
+      "notRestorable": "This release was never published successfully and cannot be restored.",
+      "numberConflict": "Another release was published at the same time. Please try again.",
+      "validationFailed": "The input is invalid.",
+      "publishBlocked": "The website cannot be published. Please check its pages.",
+      "persistenceFailed": "The operation could not be completed. Please try again later.",
+      "snapshotCorrupted": "This release's snapshot is damaged and cannot be restored.",
+      "unexpected": "Something went wrong. Please try again.",
+      "migrationNotFound": "This update was not found.",
+      "migrationAlreadyApplied": "This update was already applied.",
+      "migrationStale": "The website was published again after this check. Please check for updates again.",
+      "migrationPlanCorrupted": "Stored data for this update is damaged and cannot be used."
+    },
+    "validation": {
+      "idInvalid": "The identifier is invalid.",
+      "noPages": "This website has no pages to publish.",
+      "pageConfigMissing": "A page has no saved configuration.",
+      "pageConfigInvalid": "A page has an invalid configuration.",
+      "contractIncompatible": "A component needs a newer version of a content contract.",
+      "resolutionUnknown": "A decision refers to something that is not part of this update. Please check for updates again.",
+      "resolutionActionInvalid": "This choice is not available for this setting.",
+      "resolutionValueInvalid": "The value you entered is not valid or is too large."
+    },
+    "migration": {
+      "panel": {
+        "title": "Component updates",
+        "description": "Check whether the components on your published website have newer versions. Updates are written to your drafts, never to the live site, so you can review and publish them yourself.",
+        "check": "Check for updates",
+        "checking": "Checking…",
+        "upToDate": "All components on your published website are up to date.",
+        "upgradable": "{count, plural, one {# update ready} other {# updates ready}}",
+        "needsReview": "{count, plural, one {# needs your decision} other {# need your decision}}",
+        "unresolvable": "{count, plural, one {# cannot be updated} other {# cannot be updated}}"
+      },
+      "review": {
+        "homePage": "Home page",
+        "versions": "Version {from} → {to}",
+        "addedFields": "New settings with default values: {fields}",
+        "unresolvedNote": "{count, plural, one {# component still has an open decision and will be left unchanged.} other {# components still have open decisions and will be left unchanged.}}",
+        "apply": "Apply updates to drafts",
+        "applying": "Applying…",
+        "applyNote": "Only your drafts change. The live website stays as it is until you publish."
+      },
+      "nodeStatus": {
+        "unchanged": "Up to date",
+        "upgradable": "Ready to update",
+        "needsReview": "Needs your decision",
+        "unresolvable": "Cannot be updated"
+      },
+      "unresolvableReason": {
+        "typeUnregistered": "This component no longer exists.",
+        "versionUnregistered": "The version this component was built with is no longer available."
+      },
+      "conflict": {
+        "legend": "Setting: {field}",
+        "bothChangedHint": "You and the new component version both changed this setting.",
+        "removedHint": "The new component version no longer uses this setting, but you had customised it.",
+        "original": "Original default:",
+        "yours": "Your value:",
+        "incoming": "New default:",
+        "absent": "not set",
+        "keepLocal": "Keep my value",
+        "useNew": "Use the new default",
+        "custom": "Enter my own value",
+        "keepRemoved": "Keep my value (it will no longer be used)",
+        "discardRemoved": "Discard my value",
+        "customLabel": "Your value (JSON)",
+        "customHint": "For example \"Title\", 3, true or {\"a\": 1}.",
+        "customInvalid": "This is not valid JSON, or it is too large."
+      },
+      "result": {
+        "applied": "Updates applied to your drafts.",
+        "incomplete": "Some pages could not be updated.",
+        "summary": "{updated, plural, one {# component updated} other {# components updated}}, {skipped, plural, one {# left unchanged} other {# left unchanged}}."
+      },
+      "outcome": {
+        "written": "Updated",
+        "alreadyApplied": "Already updated",
+        "draftDiverged": "Left unchanged: the draft was edited after it was published.",
+        "pageMissing": "Left unchanged: the page no longer exists.",
+        "failed": "Could not be saved. Please try again."
+      },
+      "history": {
+        "title": "Update history",
+        "listLabel": "Update history",
+        "empty": "No updates have been proposed yet.",
+        "proposedAt": "Proposed: {date}",
+        "appliedAt": "Applied: {date}"
+      },
+      "status": {
+        "proposed": "Proposed",
+        "applied": "Applied"
+      }
+    },
+    "pages": {
+      "migrations": {
+        "title": "Migrations",
+        "description": "Check a published website against today's component versions and review the proposed changes."
+      }
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "release": {
+    "history": {
+      "listLabel": "Release-Verlauf",
+      "empty": "Noch keine Releases veröffentlicht. Öffnen Sie den Builder und klicken Sie auf „Veröffentlichen“, um das erste Release zu erstellen.",
+      "releaseNumber": "Release #{number}",
+      "active": "Aktiv",
+      "publishedAt": "Veröffentlicht: {date}",
+      "createdAt": "Erstellt: {date}",
+      "rollback": "Wiederherstellen",
+      "rollbackLabel": "Release #{number} wiederherstellen",
+      "buildFailed": "Build fehlgeschlagen",
+      "restored": "Release #{number} ist wieder live.",
+      "rollbackNote": "Das Wiederherstellen eines Releases aktiviert die unveränderliche Version von damals — keine Neuerstellung erforderlich."
+    },
+    "status": {
+      "draft": "Entwurf",
+      "published": "Veröffentlicht",
+      "rolledBack": "Zurückgerollt",
+      "failed": "Fehlgeschlagen"
+    },
+    "errors": {
+      "notFound": "Dieses Release wurde nicht gefunden.",
+      "websiteNotFound": "Diese Website wurde nicht gefunden.",
+      "notPublished": "Diese Website wurde noch nicht veröffentlicht.",
+      "notRestorable": "Dieses Release wurde nie erfolgreich veröffentlicht und kann nicht wiederhergestellt werden.",
+      "numberConflict": "Gleichzeitig wurde ein anderes Release veröffentlicht. Bitte versuchen Sie es erneut.",
+      "validationFailed": "Die Eingabe ist ungültig.",
+      "publishBlocked": "Die Website kann nicht veröffentlicht werden. Bitte prüfen Sie ihre Seiten.",
+      "persistenceFailed": "Der Vorgang konnte nicht abgeschlossen werden. Bitte versuchen Sie es später erneut.",
+      "snapshotCorrupted": "Das Snapshot dieses Releases ist beschädigt und kann nicht wiederhergestellt werden.",
+      "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "migrationNotFound": "Dieses Update wurde nicht gefunden.",
+      "migrationAlreadyApplied": "Dieses Update wurde bereits übernommen.",
+      "migrationStale": "Die Website wurde nach dieser Prüfung erneut veröffentlicht. Bitte prüfen Sie erneut auf Updates.",
+      "migrationPlanCorrupted": "Gespeicherte Daten für dieses Update sind beschädigt und können nicht verwendet werden."
+    },
+    "validation": {
+      "idInvalid": "Die Kennung ist ungültig.",
+      "noPages": "Diese Website hat keine Seiten, die veröffentlicht werden könnten.",
+      "pageConfigMissing": "Eine Seite hat keine gespeicherte Konfiguration.",
+      "pageConfigInvalid": "Eine Seite hat eine ungültige Konfiguration.",
+      "contractIncompatible": "Eine Komponente benötigt eine neuere Version einer Content-Schnittstelle.",
+      "resolutionUnknown": "Eine Entscheidung bezieht sich auf etwas, das nicht Teil dieses Updates ist. Bitte prüfen Sie erneut auf Updates.",
+      "resolutionActionInvalid": "Diese Auswahl ist für diese Einstellung nicht verfügbar.",
+      "resolutionValueInvalid": "Der eingegebene Wert ist ungültig oder zu groß."
+    },
+    "migration": {
+      "panel": {
+        "title": "Komponenten-Updates",
+        "description": "Prüfen Sie, ob für die Komponenten Ihrer veröffentlichten Website neuere Versionen vorliegen. Updates werden in Ihre Entwürfe geschrieben, nie in die Live-Website. So können Sie sie prüfen und selbst veröffentlichen.",
+        "check": "Auf Updates prüfen",
+        "checking": "Wird geprüft…",
+        "upToDate": "Alle Komponenten Ihrer veröffentlichten Website sind auf dem neuesten Stand.",
+        "upgradable": "{count, plural, one {# Update bereit} other {# Updates bereit}}",
+        "needsReview": "{count, plural, one {# braucht Ihre Entscheidung} other {# brauchen Ihre Entscheidung}}",
+        "unresolvable": "{count, plural, one {# kann nicht aktualisiert werden} other {# können nicht aktualisiert werden}}"
+      },
+      "review": {
+        "homePage": "Startseite",
+        "versions": "Version {from} → {to}",
+        "addedFields": "Neue Einstellungen mit Standardwerten: {fields}",
+        "unresolvedNote": "{count, plural, one {# Komponente hat noch eine offene Entscheidung und bleibt unverändert.} other {# Komponenten haben noch offene Entscheidungen und bleiben unverändert.}}",
+        "apply": "Updates in Entwürfe übernehmen",
+        "applying": "Wird übernommen…",
+        "applyNote": "Nur Ihre Entwürfe ändern sich. Die Live-Website bleibt unverändert, bis Sie veröffentlichen."
+      },
+      "nodeStatus": {
+        "unchanged": "Aktuell",
+        "upgradable": "Bereit zum Update",
+        "needsReview": "Braucht Ihre Entscheidung",
+        "unresolvable": "Kann nicht aktualisiert werden"
+      },
+      "unresolvableReason": {
+        "typeUnregistered": "Diese Komponente existiert nicht mehr.",
+        "versionUnregistered": "Die Version, mit der diese Komponente erstellt wurde, ist nicht mehr verfügbar."
+      },
+      "conflict": {
+        "legend": "Einstellung: {field}",
+        "bothChangedHint": "Sie und die neue Komponentenversion haben diese Einstellung beide geändert.",
+        "removedHint": "Die neue Komponentenversion verwendet diese Einstellung nicht mehr, Sie hatten sie aber angepasst.",
+        "original": "Ursprünglicher Standard:",
+        "yours": "Ihr Wert:",
+        "incoming": "Neuer Standard:",
+        "absent": "nicht gesetzt",
+        "keepLocal": "Meinen Wert behalten",
+        "useNew": "Neuen Standard verwenden",
+        "custom": "Eigenen Wert eingeben",
+        "keepRemoved": "Meinen Wert behalten (er wird nicht mehr verwendet)",
+        "discardRemoved": "Meinen Wert verwerfen",
+        "customLabel": "Ihr Wert (JSON)",
+        "customHint": "Zum Beispiel \"Titel\", 3, true oder {\"a\": 1}.",
+        "customInvalid": "Das ist kein gültiges JSON oder es ist zu groß."
+      },
+      "result": {
+        "applied": "Updates wurden in Ihre Entwürfe übernommen.",
+        "incomplete": "Einige Seiten konnten nicht aktualisiert werden.",
+        "summary": "{updated, plural, one {# Komponente aktualisiert} other {# Komponenten aktualisiert}}, {skipped, plural, one {# unverändert gelassen} other {# unverändert gelassen}}."
+      },
+      "outcome": {
+        "written": "Aktualisiert",
+        "alreadyApplied": "Bereits aktualisiert",
+        "draftDiverged": "Unverändert: Der Entwurf wurde nach der Veröffentlichung bearbeitet.",
+        "pageMissing": "Unverändert: Die Seite existiert nicht mehr.",
+        "failed": "Konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+      },
+      "history": {
+        "title": "Update-Verlauf",
+        "listLabel": "Update-Verlauf",
+        "empty": "Es wurden noch keine Updates vorgeschlagen.",
+        "proposedAt": "Vorgeschlagen: {date}",
+        "appliedAt": "Übernommen: {date}"
+      },
+      "status": {
+        "proposed": "Vorgeschlagen",
+        "applied": "Übernommen"
+      }
+    },
+    "pages": {
+      "migrations": {
+        "title": "Migrationen",
+        "description": "Eine veröffentlichte Website mit den heutigen Komponentenversionen abgleichen und die vorgeschlagenen Änderungen prüfen."
+      }
+    }
+  }
+}
