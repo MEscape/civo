@@ -1,0 +1,693 @@
+{
+  "componentPlatform": {
+    "components": {
+      "section": {
+        "label": "Abschnitt",
+        "description": "Fasst andere Komponenten in einem Block mit eigenem Hintergrundton zusammen.",
+        "fields": {
+          "tone": {
+            "label": "Hintergrund",
+            "options": {
+              "default": "Standard",
+              "muted": "Abgesetzt"
+            }
+          }
+        }
+      },
+      "eventsGrid": {
+        "label": "Veranstaltungen",
+        "description": "Zeigt kommende Termine an.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "limit": {
+            "label": "Anzahl"
+          },
+          "category": {
+            "label": "Kategorie",
+            "placeholder": "z. B. Markt"
+          },
+          "columns": {
+            "label": "Spalten"
+          }
+        }
+      },
+      "accordion": {
+        "label": "Akkordeon",
+        "description": "Ein-/ausklappbare Fragen und Antworten.",
+        "fields": {
+          "heading": {
+            "label": "Überschrift"
+          },
+          "items": {
+            "label": "Fragen & Antworten",
+            "fields": {
+              "question": {
+                "label": "Frage"
+              },
+              "answer": {
+                "label": "Antwort"
+              }
+            }
+          }
+        }
+      },
+      "callToAction": {
+        "label": "Call-to-Action",
+        "description": "Hervorgehobener Abschnitt mit Button.",
+        "fields": {
+          "heading": {
+            "label": "Überschrift"
+          },
+          "body": {
+            "label": "Text"
+          },
+          "buttonLabel": {
+            "label": "Button-Beschriftung"
+          },
+          "href": {
+            "label": "Link-Ziel",
+            "placeholder": "/leistungen"
+          }
+        }
+      },
+      "cardGrid": {
+        "label": "Karten-Raster",
+        "description": "Frei konfigurierbares Raster aus Karten.",
+        "fields": {
+          "heading": {
+            "label": "Überschrift"
+          },
+          "cards": {
+            "label": "Karten",
+            "fields": {
+              "title": {
+                "label": "Titel"
+              },
+              "description": {
+                "label": "Beschreibung"
+              },
+              "href": {
+                "label": "Link-Ziel"
+              }
+            }
+          },
+          "columns": {
+            "label": "Spalten"
+          }
+        }
+      },
+      "hero": {
+        "label": "Hero",
+        "description": "Große Titelfläche mit Titel und Untertitel.",
+        "fields": {
+          "title": {
+            "label": "Titel"
+          },
+          "subtitle": {
+            "label": "Untertitel"
+          },
+          "imageUrl": {
+            "label": "Bild-URL",
+            "placeholder": "https://..."
+          }
+        }
+      },
+      "richText": {
+        "label": "Text",
+        "description": "Überschrift mit Fließtext.",
+        "fields": {
+          "heading": {
+            "label": "Überschrift"
+          },
+          "body": {
+            "label": "Text"
+          }
+        }
+      },
+      "tabs": {
+        "label": "Tabs",
+        "description": "Inhalte in Reitern organisiert.",
+        "fields": {
+          "tabs": {
+            "label": "Reiter",
+            "fields": {
+              "label": {
+                "label": "Beschriftung"
+              },
+              "body": {
+                "label": "Inhalt"
+              }
+            }
+          }
+        }
+      },
+      "alertBanner": {
+        "label": "Bekanntmachungen",
+        "description": "Kritische Meldungen und Warnungen.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "limit": {
+            "label": "Anzahl"
+          }
+        }
+      },
+      "contactCard": {
+        "label": "Kontakte",
+        "description": "Ansprechpartner und Kontaktdaten.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          }
+        }
+      },
+      "councilBlock": {
+        "label": "Gemeinderat",
+        "description": "Mitglieder und Ausschüsse des Gemeinderats.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          }
+        }
+      },
+      "departmentDirectory": {
+        "label": "Ämter-Verzeichnis",
+        "description": "Alle Ämter und Fachbereiche.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "columns": {
+            "label": "Spalten"
+          }
+        }
+      },
+      "map": {
+        "label": "Karte",
+        "description": "Interaktive Karte für Geodaten, z. B. Sensoren, Einrichtungen oder Stadtbezirke.",
+        "fields": {
+          "primaryDatasetId": {
+            "label": "Kartendaten"
+          },
+          "secondaryDatasetId": {
+            "label": "Weitere Kartendaten"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "pointStyle": {
+            "label": "Darstellung von Punkten",
+            "options": {
+              "circles": "Kreise (nach Wert skaliert)",
+              "markers": "Markierungen",
+              "clusters": "Cluster",
+              "heatmap": "Heatmap"
+            }
+          },
+          "colorBy": {
+            "label": "Einfärben nach (Datenfeld)"
+          },
+          "sizeBy": {
+            "label": "Größe nach (Datenfeld)"
+          },
+          "interaction": {
+            "label": "Beim Klick",
+            "options": {
+              "details": "Details anzeigen",
+              "link": "Verknüpfte Seite öffnen",
+              "none": "Nichts"
+            }
+          },
+          "height": {
+            "label": "Höhe",
+            "options": {
+              "compact": "Kompakt",
+              "standard": "Standard",
+              "tall": "Hoch"
+            }
+          },
+          "showFilters": {
+            "label": "Filter anzeigen"
+          },
+          "showLegend": {
+            "label": "Legende anzeigen"
+          }
+        }
+      },
+      "newsAndEventsSplit": {
+        "label": "Aktuelles & Termine",
+        "description": "Aktuelles und Termine nebeneinander.",
+        "fields": {
+          "newsDatasetId": {
+            "label": "Datensatz Aktuelles"
+          },
+          "eventsDatasetId": {
+            "label": "Datensatz Termine"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "newsLimit": {
+            "label": "Anzahl Aktuelles"
+          },
+          "eventsLimit": {
+            "label": "Anzahl Termine"
+          }
+        }
+      },
+      "newsGrid": {
+        "label": "Aktuelles",
+        "description": "Zeigt die neuesten Nachrichten an.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "limit": {
+            "label": "Anzahl"
+          },
+          "category": {
+            "label": "Kategorie",
+            "placeholder": "z. B. Mobilität"
+          },
+          "columns": {
+            "label": "Spalten"
+          }
+        }
+      },
+      "openingHours": {
+        "label": "Öffnungszeiten",
+        "description": "Zeigt die generellen Öffnungszeiten.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          }
+        }
+      },
+      "quickLinks": {
+        "label": "Schnellzugriff",
+        "description": "Liste wichtiger Links.",
+        "fields": {
+          "heading": {
+            "label": "Überschrift"
+          },
+          "links": {
+            "label": "Links",
+            "fields": {
+              "label": {
+                "label": "Beschriftung"
+              },
+              "href": {
+                "label": "Link-Ziel"
+              }
+            }
+          }
+        }
+      },
+      "serviceFinder": {
+        "label": "Leistungs-Suche",
+        "description": "Interaktive Suche für alle Dienstleistungen.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "description": {
+            "label": "Beschreibung"
+          },
+          "placeholder": {
+            "label": "Platzhalter"
+          },
+          "initialCategory": {
+            "label": "Start-Kategorie",
+            "placeholder": "z. B. Bürgerservice"
+          }
+        }
+      },
+      "serviceGrid": {
+        "label": "Online-Leistungen",
+        "description": "Kompakte Übersicht von Dienstleistungen.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "columns": {
+            "label": "Spalten"
+          }
+        }
+      },
+      "wasteCalendar": {
+        "label": "Abfuhrkalender",
+        "description": "Nächste Müllabholungen.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "district": {
+            "label": "Bezirk"
+          },
+          "limit": {
+            "label": "Anzahl"
+          }
+        }
+      },
+      "dashboardGrid": {
+        "label": "Dashboard-Raster",
+        "description": "Gemischtes Dashboard mit KPIs und Charts.",
+        "fields": {
+          "datasetId": {
+            "label": "Kennzahlen"
+          },
+          "trendDatasetId": {
+            "label": "Messreihe (optional)"
+          },
+          "breakdownDatasetId": {
+            "label": "Verteilung (optional)"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "category": {
+            "label": "Kategorie",
+            "options": {
+              "all": "Alle",
+              "sustainability": "Nachhaltigkeit",
+              "mobility": "Mobilität",
+              "energy": "Energie",
+              "other": "Sonstiges"
+            }
+          }
+        }
+      },
+      "kpiGrid": {
+        "label": "KPI-Raster",
+        "description": "Wichtige Kennzahlen als Kacheln.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "category": {
+            "label": "Kategorie",
+            "options": {
+              "all": "Alle",
+              "sustainability": "Nachhaltigkeit",
+              "mobility": "Mobilität",
+              "energy": "Energie",
+              "other": "Sonstiges"
+            }
+          },
+          "columns": {
+            "label": "Spalten"
+          }
+        }
+      },
+      "metricChart": {
+        "label": "Diagramm (Basis)",
+        "description": "Einfaches Diagramm für Kennzahlen.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "category": {
+            "label": "Kategorie",
+            "options": {
+              "all": "Alle",
+              "sustainability": "Nachhaltigkeit",
+              "mobility": "Mobilität",
+              "energy": "Energie",
+              "other": "Sonstiges"
+            }
+          }
+        }
+      },
+      "metricComparisonChart": {
+        "label": "Vergleichs-Diagramm",
+        "description": "Vergleicht Metriken miteinander.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "category": {
+            "label": "Kategorie",
+            "options": {
+              "all": "Alle",
+              "sustainability": "Nachhaltigkeit",
+              "mobility": "Mobilität",
+              "energy": "Energie",
+              "other": "Sonstiges"
+            }
+          }
+        }
+      },
+      "metricDonut": {
+        "label": "Donut-Diagramm",
+        "description": "Stellt eine prozentuale Verteilung dar.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "group": {
+            "label": "Gruppe",
+            "placeholder": "z. B. Energiemix"
+          }
+        }
+      },
+      "metricGauge": {
+        "label": "Tacho-Diagramm",
+        "description": "Kennzahl auf einer Skala.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "goalId": {
+            "label": "Ziel-ID",
+            "placeholder": "z. B. co2-emissionen"
+          }
+        }
+      },
+      "metricTable": {
+        "label": "Metrik-Tabelle",
+        "description": "Kennzahlen als übersichtliche Tabelle.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "category": {
+            "label": "Kategorie",
+            "options": {
+              "all": "Alle",
+              "sustainability": "Nachhaltigkeit",
+              "mobility": "Mobilität",
+              "energy": "Energie",
+              "other": "Sonstiges"
+            }
+          }
+        }
+      },
+      "metricTrendChart": {
+        "label": "Trend-Diagramm",
+        "description": "Historische Entwicklung einer Metrik.",
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "series": {
+            "label": "Reihe",
+            "placeholder": "z. B. CO₂-Emissionen"
+          },
+          "category": {
+            "label": "Kategorie",
+            "options": {
+              "all": "Alle",
+              "sustainability": "Nachhaltigkeit",
+              "mobility": "Mobilität",
+              "energy": "Energie",
+              "other": "Sonstiges"
+            }
+          }
+        }
+      }
+    },
+    "eventsGrid": {
+      "defaultHeading": "Termine",
+      "time": "{time} Uhr"
+    },
+    "states": {
+      "empty": "Hier gibt es derzeit nichts anzuzeigen."
+    },
+    "render": {
+      "sectionUnavailable": "Dieser Abschnitt ist vorübergehend nicht verfügbar.",
+      "unknownComponent": "Unbekannte Komponente:"
+    },
+    "origin": {
+      "sampleUnbound": "Beispieldaten: kein Datensatz gewählt",
+      "datasetNotFound": "Beispieldaten: der Datensatz existiert nicht mehr",
+      "datasetNotMapped": "Beispieldaten: der Datensatz hat noch keine Feldzuordnung",
+      "datasetKindMismatch": "Beispieldaten: der Datensatz passt nicht zu dieser Komponente",
+      "sourceFailed": "Beispieldaten: die Datenquelle ist nicht erreichbar",
+      "requestInvalid": "Beispieldaten: die Anfrage war ungültig"
+    },
+    "hero": {
+      "defaultTitle": "Willkommen"
+    },
+    "callToAction": {
+      "defaultHeading": "Jetzt aktiv werden",
+      "defaultButtonLabel": "Mehr erfahren"
+    },
+    "map": {
+      "defaultHeading": "Karte",
+      "layers": {
+        "primary": "Kartendaten",
+        "secondary": "Weitere Kartendaten"
+      }
+    },
+    "quickLinks": {
+      "defaultHeading": "Schnellzugriff"
+    },
+    "alertBanner": {
+      "defaultHeading": "Bekanntmachungen"
+    },
+    "contactCard": {
+      "defaultHeading": "Kontakt"
+    },
+    "councilBlock": {
+      "defaultHeading": "Gemeinderat & Ausschüsse"
+    },
+    "departmentDirectory": {
+      "defaultHeading": "Ämter & Fachbereiche",
+      "writeTo": "E-Mail an {name}"
+    },
+    "newsAndEventsSplit": {
+      "defaultHeading": "Aktuelles & Termine",
+      "newsHeading": "Aktuelles",
+      "eventsHeading": "Termine"
+    },
+    "newsGrid": {
+      "defaultHeading": "Aktuelles"
+    },
+    "openingHours": {
+      "defaultHeading": "Öffnungszeiten",
+      "closed": "Geschlossen",
+      "range": "{from} – {to} Uhr",
+      "days": {
+        "mon": "Montag",
+        "tue": "Dienstag",
+        "wed": "Mittwoch",
+        "thu": "Donnerstag",
+        "fri": "Freitag",
+        "sat": "Samstag",
+        "sun": "Sonntag"
+      }
+    },
+    "serviceFinder": {
+      "defaultHeading": "Leistungen finden",
+      "defaultPlaceholder": "Leistung suchen…",
+      "allCategories": "Alle",
+      "noResults": "Keine passenden Leistungen gefunden."
+    },
+    "serviceGrid": {
+      "defaultHeading": "Online-Leistungen"
+    },
+    "wasteCalendar": {
+      "defaultHeading": "Abfuhrkalender",
+      "types": {
+        "restmuell": "Restmüll",
+        "biomuell": "Biomüll",
+        "papier": "Papier",
+        "gelberSack": "Gelber Sack",
+        "sperrmuell": "Sperrmüll"
+      }
+    },
+    "dashboardGrid": {
+      "defaultHeading": "Smart-City-Dashboard",
+      "trendTitle": "{label} · Verlauf",
+      "distributionTitle": "{label} · Verteilung",
+      "distributionFallbackTitle": "Verteilung"
+    },
+    "kpiGrid": {
+      "defaultHeading": "Stadt in Zahlen"
+    },
+    "metricChart": {
+      "defaultHeading": "Entwicklung"
+    },
+    "metricComparisonChart": {
+      "defaultHeading": "Vergleich",
+      "actual": "Ist-Wert",
+      "target": "Zielwert"
+    },
+    "metricDonut": {
+      "defaultHeading": "Verteilung",
+      "title": "{heading} · {label}"
+    },
+    "metricGauge": {
+      "defaultHeading": "Zielerreichung",
+      "progressLabel": "zum Ziel",
+      "summary": "{value} von {target} Ziel"
+    },
+    "metricTable": {
+      "defaultHeading": "Kennzahlen im Überblick",
+      "columns": {
+        "metric": "Kennzahl",
+        "value": "Wert",
+        "change": "Veränderung"
+      },
+      "noChange": "–"
+    },
+    "metricTrendChart": {
+      "defaultHeading": "Entwicklung über Zeit",
+      "title": "{heading} · {label}"
+    }
+  }
+}

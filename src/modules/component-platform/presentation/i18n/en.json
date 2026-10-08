@@ -1,0 +1,693 @@
+{
+  "componentPlatform": {
+    "components": {
+      "section": {
+        "label": "Section",
+        "description": "Groups other components in a block with its own background tone.",
+        "fields": {
+          "tone": {
+            "label": "Background",
+            "options": {
+              "default": "Default",
+              "muted": "Muted"
+            }
+          }
+        }
+      },
+      "eventsGrid": {
+        "label": "Events",
+        "description": "Shows upcoming events.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "limit": {
+            "label": "Number of events"
+          },
+          "category": {
+            "label": "Category",
+            "placeholder": "e.g. Market"
+          },
+          "columns": {
+            "label": "Columns"
+          }
+        }
+      },
+      "accordion": {
+        "label": "Accordion",
+        "description": "Collapsible questions and answers.",
+        "fields": {
+          "heading": {
+            "label": "Heading"
+          },
+          "items": {
+            "label": "Questions & answers",
+            "fields": {
+              "question": {
+                "label": "Question"
+              },
+              "answer": {
+                "label": "Answer"
+              }
+            }
+          }
+        }
+      },
+      "callToAction": {
+        "label": "Call to action",
+        "description": "Highlighted block with a button.",
+        "fields": {
+          "heading": {
+            "label": "Heading"
+          },
+          "body": {
+            "label": "Text"
+          },
+          "buttonLabel": {
+            "label": "Button label"
+          },
+          "href": {
+            "label": "Link target",
+            "placeholder": "/services"
+          }
+        }
+      },
+      "cardGrid": {
+        "label": "Card grid",
+        "description": "Freely configurable grid of cards.",
+        "fields": {
+          "heading": {
+            "label": "Heading"
+          },
+          "cards": {
+            "label": "Cards",
+            "fields": {
+              "title": {
+                "label": "Title"
+              },
+              "description": {
+                "label": "Description"
+              },
+              "href": {
+                "label": "Link target"
+              }
+            }
+          },
+          "columns": {
+            "label": "Columns"
+          }
+        }
+      },
+      "hero": {
+        "label": "Hero",
+        "description": "Large title area with title and subtitle.",
+        "fields": {
+          "title": {
+            "label": "Title"
+          },
+          "subtitle": {
+            "label": "Subtitle"
+          },
+          "imageUrl": {
+            "label": "Image URL",
+            "placeholder": "https://..."
+          }
+        }
+      },
+      "richText": {
+        "label": "Text",
+        "description": "Heading with running text.",
+        "fields": {
+          "heading": {
+            "label": "Heading"
+          },
+          "body": {
+            "label": "Text"
+          }
+        }
+      },
+      "tabs": {
+        "label": "Tabs",
+        "description": "Content organised in tabs.",
+        "fields": {
+          "tabs": {
+            "label": "Tabs",
+            "fields": {
+              "label": {
+                "label": "Label"
+              },
+              "body": {
+                "label": "Content"
+              }
+            }
+          }
+        }
+      },
+      "alertBanner": {
+        "label": "Notices",
+        "description": "Critical messages and warnings.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "limit": {
+            "label": "Number of items"
+          }
+        }
+      },
+      "contactCard": {
+        "label": "Contacts",
+        "description": "Contact persons and contact details.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          }
+        }
+      },
+      "councilBlock": {
+        "label": "Town council",
+        "description": "Members and committees of the town council.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          }
+        }
+      },
+      "departmentDirectory": {
+        "label": "Department directory",
+        "description": "All departments and divisions.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "columns": {
+            "label": "Columns"
+          }
+        }
+      },
+      "map": {
+        "label": "Map",
+        "description": "Interactive map of geographic data, e.g. sensors, facilities or districts.",
+        "fields": {
+          "primaryDatasetId": {
+            "label": "Map data"
+          },
+          "secondaryDatasetId": {
+            "label": "Additional map data"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "pointStyle": {
+            "label": "Point display",
+            "options": {
+              "circles": "Circles (sized by value)",
+              "markers": "Markers",
+              "clusters": "Clusters",
+              "heatmap": "Heatmap"
+            }
+          },
+          "colorBy": {
+            "label": "Colour by (data field)"
+          },
+          "sizeBy": {
+            "label": "Size by (data field)"
+          },
+          "interaction": {
+            "label": "On click",
+            "options": {
+              "details": "Show details",
+              "link": "Open linked page",
+              "none": "Nothing"
+            }
+          },
+          "height": {
+            "label": "Height",
+            "options": {
+              "compact": "Compact",
+              "standard": "Standard",
+              "tall": "Tall"
+            }
+          },
+          "showFilters": {
+            "label": "Show filters"
+          },
+          "showLegend": {
+            "label": "Show legend"
+          }
+        }
+      },
+      "newsAndEventsSplit": {
+        "label": "News & events",
+        "description": "News and events side by side.",
+        "fields": {
+          "newsDatasetId": {
+            "label": "News dataset"
+          },
+          "eventsDatasetId": {
+            "label": "Events dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "newsLimit": {
+            "label": "Number of news"
+          },
+          "eventsLimit": {
+            "label": "Number of events"
+          }
+        }
+      },
+      "newsGrid": {
+        "label": "News",
+        "description": "Shows the latest news.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "limit": {
+            "label": "Number of items"
+          },
+          "category": {
+            "label": "Category",
+            "placeholder": "e.g. Mobility"
+          },
+          "columns": {
+            "label": "Columns"
+          }
+        }
+      },
+      "openingHours": {
+        "label": "Opening hours",
+        "description": "Shows the general opening hours.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          }
+        }
+      },
+      "quickLinks": {
+        "label": "Quick links",
+        "description": "List of important links.",
+        "fields": {
+          "heading": {
+            "label": "Heading"
+          },
+          "links": {
+            "label": "Links",
+            "fields": {
+              "label": {
+                "label": "Label"
+              },
+              "href": {
+                "label": "Link target"
+              }
+            }
+          }
+        }
+      },
+      "serviceFinder": {
+        "label": "Service finder",
+        "description": "Interactive search for all services.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "description": {
+            "label": "Description"
+          },
+          "placeholder": {
+            "label": "Placeholder"
+          },
+          "initialCategory": {
+            "label": "Initial category",
+            "placeholder": "e.g. Citizen services"
+          }
+        }
+      },
+      "serviceGrid": {
+        "label": "Online services",
+        "description": "Compact overview of services.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "columns": {
+            "label": "Columns"
+          }
+        }
+      },
+      "wasteCalendar": {
+        "label": "Waste calendar",
+        "description": "Next waste collections.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "district": {
+            "label": "District"
+          },
+          "limit": {
+            "label": "Number of items"
+          }
+        }
+      },
+      "dashboardGrid": {
+        "label": "Dashboard grid",
+        "description": "Mixed dashboard with KPIs and charts.",
+        "fields": {
+          "datasetId": {
+            "label": "Metrics"
+          },
+          "trendDatasetId": {
+            "label": "Measurements over time (optional)"
+          },
+          "breakdownDatasetId": {
+            "label": "Distribution (optional)"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "category": {
+            "label": "Category",
+            "options": {
+              "all": "All",
+              "sustainability": "Sustainability",
+              "mobility": "Mobility",
+              "energy": "Energy",
+              "other": "Other"
+            }
+          }
+        }
+      },
+      "kpiGrid": {
+        "label": "KPI grid",
+        "description": "Key figures as tiles.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "category": {
+            "label": "Category",
+            "options": {
+              "all": "All",
+              "sustainability": "Sustainability",
+              "mobility": "Mobility",
+              "energy": "Energy",
+              "other": "Other"
+            }
+          },
+          "columns": {
+            "label": "Columns"
+          }
+        }
+      },
+      "metricChart": {
+        "label": "Chart (basic)",
+        "description": "Simple chart for metrics.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "category": {
+            "label": "Category",
+            "options": {
+              "all": "All",
+              "sustainability": "Sustainability",
+              "mobility": "Mobility",
+              "energy": "Energy",
+              "other": "Other"
+            }
+          }
+        }
+      },
+      "metricComparisonChart": {
+        "label": "Comparison chart",
+        "description": "Compares metrics with each other.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "category": {
+            "label": "Category",
+            "options": {
+              "all": "All",
+              "sustainability": "Sustainability",
+              "mobility": "Mobility",
+              "energy": "Energy",
+              "other": "Other"
+            }
+          }
+        }
+      },
+      "metricDonut": {
+        "label": "Donut chart",
+        "description": "Shows a percentage distribution.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "group": {
+            "label": "Group",
+            "placeholder": "e.g. Energy mix"
+          }
+        }
+      },
+      "metricGauge": {
+        "label": "Gauge chart",
+        "description": "A metric on a scale.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "goalId": {
+            "label": "Goal ID",
+            "placeholder": "e.g. co2-emissions"
+          }
+        }
+      },
+      "metricTable": {
+        "label": "Metric table",
+        "description": "Metrics as a clear table.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "category": {
+            "label": "Category",
+            "options": {
+              "all": "All",
+              "sustainability": "Sustainability",
+              "mobility": "Mobility",
+              "energy": "Energy",
+              "other": "Other"
+            }
+          }
+        }
+      },
+      "metricTrendChart": {
+        "label": "Trend chart",
+        "description": "Historical development of a metric.",
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "series": {
+            "label": "Series",
+            "placeholder": "e.g. CO₂ emissions"
+          },
+          "category": {
+            "label": "Category",
+            "options": {
+              "all": "All",
+              "sustainability": "Sustainability",
+              "mobility": "Mobility",
+              "energy": "Energy",
+              "other": "Other"
+            }
+          }
+        }
+      }
+    },
+    "eventsGrid": {
+      "defaultHeading": "Events",
+      "time": "{time}"
+    },
+    "states": {
+      "empty": "There is nothing to show here yet."
+    },
+    "render": {
+      "sectionUnavailable": "This section is temporarily unavailable.",
+      "unknownComponent": "Unknown component:"
+    },
+    "origin": {
+      "sampleUnbound": "Sample data: no dataset selected",
+      "datasetNotFound": "Sample data: the dataset no longer exists",
+      "datasetNotMapped": "Sample data: the dataset has no field mapping yet",
+      "datasetKindMismatch": "Sample data: the dataset does not fit this component",
+      "sourceFailed": "Sample data: the data source could not be reached",
+      "requestInvalid": "Sample data: the request was invalid"
+    },
+    "hero": {
+      "defaultTitle": "Welcome"
+    },
+    "callToAction": {
+      "defaultHeading": "Get involved",
+      "defaultButtonLabel": "Learn more"
+    },
+    "map": {
+      "defaultHeading": "Map",
+      "layers": {
+        "primary": "Map data",
+        "secondary": "Additional map data"
+      }
+    },
+    "quickLinks": {
+      "defaultHeading": "Quick links"
+    },
+    "alertBanner": {
+      "defaultHeading": "Notices"
+    },
+    "contactCard": {
+      "defaultHeading": "Contact"
+    },
+    "councilBlock": {
+      "defaultHeading": "Town council & committees"
+    },
+    "departmentDirectory": {
+      "defaultHeading": "Departments",
+      "writeTo": "Email {name}"
+    },
+    "newsAndEventsSplit": {
+      "defaultHeading": "News & events",
+      "newsHeading": "News",
+      "eventsHeading": "Events"
+    },
+    "newsGrid": {
+      "defaultHeading": "News"
+    },
+    "openingHours": {
+      "defaultHeading": "Opening hours",
+      "closed": "Closed",
+      "range": "{from} – {to}",
+      "days": {
+        "mon": "Monday",
+        "tue": "Tuesday",
+        "wed": "Wednesday",
+        "thu": "Thursday",
+        "fri": "Friday",
+        "sat": "Saturday",
+        "sun": "Sunday"
+      }
+    },
+    "serviceFinder": {
+      "defaultHeading": "Find services",
+      "defaultPlaceholder": "Search services…",
+      "allCategories": "All",
+      "noResults": "No matching services found."
+    },
+    "serviceGrid": {
+      "defaultHeading": "Online services"
+    },
+    "wasteCalendar": {
+      "defaultHeading": "Waste calendar",
+      "types": {
+        "restmuell": "Residual waste",
+        "biomuell": "Organic waste",
+        "papier": "Paper",
+        "gelberSack": "Packaging",
+        "sperrmuell": "Bulky waste"
+      }
+    },
+    "dashboardGrid": {
+      "defaultHeading": "Smart city dashboard",
+      "trendTitle": "{label} · Trend",
+      "distributionTitle": "{label} · Distribution",
+      "distributionFallbackTitle": "Distribution"
+    },
+    "kpiGrid": {
+      "defaultHeading": "The city in numbers"
+    },
+    "metricChart": {
+      "defaultHeading": "Development"
+    },
+    "metricComparisonChart": {
+      "defaultHeading": "Comparison",
+      "actual": "Actual",
+      "target": "Target"
+    },
+    "metricDonut": {
+      "defaultHeading": "Distribution",
+      "title": "{heading} · {label}"
+    },
+    "metricGauge": {
+      "defaultHeading": "Progress to target",
+      "progressLabel": "of target",
+      "summary": "{value} of {target} target"
+    },
+    "metricTable": {
+      "defaultHeading": "Key figures at a glance",
+      "columns": {
+        "metric": "Metric",
+        "value": "Value",
+        "change": "Change"
+      },
+      "noChange": "–"
+    },
+    "metricTrendChart": {
+      "defaultHeading": "Development over time",
+      "title": "{heading} · {label}"
+    }
+  }
+}
