@@ -1,18 +1,6 @@
-@import "tailwindcss";
-
-/*
- * Tailwind builds this stylesheet from every non-ignored file in the repo and
- * treats any class-looking string as a class, in prose too. Documentation
- * quotes forbidden classes and placeholders as examples, and one such example
- * once generated an invalid rule that broke every page. Docs are not sources.
- * Neither are tests: they quote forbidden classes as fixtures, and Tailwind
- * would ship those as real rules. (globals-css.test.ts fails if any other file
- * poisons the build.)
- */
-@source not "../../.agents";
-@source not "../../**/*.md";
-@source not "../../**/*.test.ts";
-@source not "../../**/*.test.tsx";
+@import 'tailwindcss';
+/* `animate-in` / `animate-out` used by Radix-based primitives (select). */
+@import 'tw-animate-css';
 
 /*
  * Civo design tokens.
@@ -23,7 +11,7 @@
  *   2. Per-website theme tokens (--civo-color-*, --civo-font-*,
  *      --civo-radius, --civo-section-spacing) — these are set inline by
  *      the theme provider from stored Theme data (see
- *      src/domain/website/theme.ts) and have defaults here so components
+ *      src/modules/website/presentation/theme/theme-css.ts) and have defaults here so components
  *      render sensibly even before a theme loads.
  *
  * No component ever writes raw hex/px values — everything routes through
@@ -31,7 +19,7 @@
  * without touching component code.
  */
 :root {
-    /*
+  /*
      * Brand colors, as the platform default theme. A website's ThemeProvider
      * overrides all nine, so nothing here is fixed. For each color:
      *   X            fills, borders, backgrounds
@@ -41,58 +29,58 @@
      * These literals are what themeToCssVariables(defaultTheme) emits, so
      * chrome outside any ThemeProvider matches; a test enforces it.
      */
-    --civo-color-primary: #1f3a34;
-    --civo-color-primary-foreground: #ffffff;
-    --civo-color-primary-copy: #1f3a34;
-    --civo-color-secondary: #7a8b85;
-    --civo-color-secondary-foreground: #000000;
-    --civo-color-secondary-copy: #64726d;
-    --civo-color-accent: #c9782f;
-    --civo-color-accent-foreground: #000000;
-    --civo-color-accent-copy: #a16026;
+  --civo-color-primary: #1f3a34;
+  --civo-color-primary-foreground: #ffffff;
+  --civo-color-primary-copy: #1f3a34;
+  --civo-color-secondary: #7a8b85;
+  --civo-color-secondary-foreground: #000000;
+  --civo-color-secondary-copy: #64726d;
+  --civo-color-accent: #c9782f;
+  --civo-color-accent-foreground: #000000;
+  --civo-color-accent-copy: #a16026;
 
-    --civo-color-background: #f6f4ee;
-    --civo-color-surface: #ffffff;
-    --civo-color-text: #2e2a24;
-    --civo-color-text-muted: #5b564c;
-    --civo-color-border: #e4e0d5;
-    /* Boundary of interactive controls (inputs, toggles). WCAG 1.4.11 needs
+  --civo-color-background: #f6f4ee;
+  --civo-color-surface: #ffffff;
+  --civo-color-text: #2e2a24;
+  --civo-color-text-muted: #5b564c;
+  --civo-color-border: #e4e0d5;
+  /* Boundary of interactive controls (inputs, toggles). WCAG 1.4.11 needs
        3:1 against adjacent colors; --civo-color-border is decorative only. */
-    --civo-color-border-strong: #857f72;
+  --civo-color-border-strong: #857f72;
 
-    /*
+  /*
      * Semantic status tokens. Deliberately STATIC (never set by a website
      * theme): a municipality's brand color must not be able to redefine
      * what "danger" or "success" looks like. Each status has a solid
      * (text/icon), a subtle (background) and a border value; solid meets
      * WCAG AA (4.5:1) on surface, subtle and page background.
      */
-    --civo-color-success: #1a6b3c;
-    --civo-color-success-subtle: #e8f4ec;
-    --civo-color-success-border: #a8d5b8;
-    --civo-color-warning: #8a5100;
-    --civo-color-warning-subtle: #fdf3dc;
-    --civo-color-warning-border: #e8c777;
-    --civo-color-danger: #b42318;
-    --civo-color-danger-subtle: #fdecea;
-    --civo-color-danger-border: #f0a8a1;
-    --civo-color-info: #1d5a99;
-    --civo-color-info-subtle: #e8f1fb;
-    --civo-color-info-border: #a3c4ea;
-    --civo-color-status-foreground: #ffffff;
+  --civo-color-success: #1a6b3c;
+  --civo-color-success-subtle: #e8f4ec;
+  --civo-color-success-border: #a8d5b8;
+  --civo-color-warning: #8a5100;
+  --civo-color-warning-subtle: #fdf3dc;
+  --civo-color-warning-border: #e8c777;
+  --civo-color-danger: #b42318;
+  --civo-color-danger-subtle: #fdecea;
+  --civo-color-danger-border: #f0a8a1;
+  --civo-color-info: #1d5a99;
+  --civo-color-info-subtle: #e8f1fb;
+  --civo-color-info-border: #a3c4ea;
+  --civo-color-status-foreground: #ffffff;
 
-    --civo-font-heading: var(--font-source-serif), ui-serif, Georgia, serif;
-    --civo-font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --civo-font-heading: var(--font-source-serif), ui-serif, Georgia, serif;
+  --civo-font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-    --civo-radius: 6px;
-    --civo-section-spacing: 4rem;
+  --civo-radius: 6px;
+  --civo-section-spacing: 4rem;
 
-    /* Height of the internal app header. Full-height workspaces (builder,
+  /* Height of the internal app header. Full-height workspaces (builder,
        settings) size themselves to the space below it via `h-app-body`. */
-    --civo-app-header-height: 3.5rem;
+  --civo-app-header-height: 3.5rem;
 
-    --background: var(--civo-color-background);
-    --foreground: var(--civo-color-text);
+  --background: var(--civo-color-background);
+  --foreground: var(--civo-color-text);
 }
 
 /*
@@ -124,12 +112,20 @@
  */
 :root,
 [data-civo-theme] {
-    --civo-chart-1: var(--civo-color-primary-copy);
-    --civo-chart-2: var(--civo-color-accent-copy);
-    --civo-chart-3: color-mix(in oklab, var(--civo-color-primary-copy) 45%, var(--civo-color-surface));
-    --civo-chart-4: color-mix(in oklab, var(--civo-color-accent-copy) 45%, var(--civo-color-surface));
-    --civo-chart-5: var(--civo-color-secondary-copy);
-    --civo-chart-6: color-mix(in oklab, var(--civo-color-secondary-copy) 45%, var(--civo-color-surface));
+  --civo-chart-1: var(--civo-color-primary-copy);
+  --civo-chart-2: var(--civo-color-accent-copy);
+  --civo-chart-3: color-mix(
+    in oklab,
+    var(--civo-color-primary-copy) 45%,
+    var(--civo-color-surface)
+  );
+  --civo-chart-4: color-mix(in oklab, var(--civo-color-accent-copy) 45%, var(--civo-color-surface));
+  --civo-chart-5: var(--civo-color-secondary-copy);
+  --civo-chart-6: color-mix(
+    in oklab,
+    var(--civo-color-secondary-copy) 45%,
+    var(--civo-color-surface)
+  );
 }
 
 /*
@@ -140,63 +136,63 @@
  * variable, so a per-website theme override still flows through at runtime.
  */
 @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-    --color-primary: var(--civo-color-primary);
-    --color-primary-foreground: var(--civo-color-primary-foreground);
-    --color-primary-copy: var(--civo-color-primary-copy);
-    --color-secondary: var(--civo-color-secondary);
-    --color-secondary-foreground: var(--civo-color-secondary-foreground);
-    --color-secondary-copy: var(--civo-color-secondary-copy);
-    --color-accent: var(--civo-color-accent);
-    --color-accent-foreground: var(--civo-color-accent-foreground);
-    --color-accent-copy: var(--civo-color-accent-copy);
+  --color-primary: var(--civo-color-primary);
+  --color-primary-foreground: var(--civo-color-primary-foreground);
+  --color-primary-copy: var(--civo-color-primary-copy);
+  --color-secondary: var(--civo-color-secondary);
+  --color-secondary-foreground: var(--civo-color-secondary-foreground);
+  --color-secondary-copy: var(--civo-color-secondary-copy);
+  --color-accent: var(--civo-color-accent);
+  --color-accent-foreground: var(--civo-color-accent-foreground);
+  --color-accent-copy: var(--civo-color-accent-copy);
 
-    /* Naming rule: a token name says what the color is FOR. Text colors
+  /* Naming rule: a token name says what the color is FOR. Text colors
        are named for text (`text-copy`, `text-copy-muted`), surfaces for
        surfaces (`bg-surface`, `bg-canvas`). Never reuse shadcn's names
        (muted, destructive, input, ring) for a different role: shadcn's
        `bg-muted` is a surface, so a text color called `muted` would paint
        a dark background wherever a shadcn snippet is pasted in. */
-    --color-canvas: var(--civo-color-background);
-    --color-surface: var(--civo-color-surface);
-    --color-copy: var(--civo-color-text);
-    --color-copy-muted: var(--civo-color-text-muted);
-    --color-border: var(--civo-color-border);
-    --color-border-strong: var(--civo-color-border-strong);
+  --color-canvas: var(--civo-color-background);
+  --color-surface: var(--civo-color-surface);
+  --color-copy: var(--civo-color-text);
+  --color-copy-muted: var(--civo-color-text-muted);
+  --color-border: var(--civo-color-border);
+  --color-border-strong: var(--civo-color-border-strong);
 
-    --color-success: var(--civo-color-success);
-    --color-success-subtle: var(--civo-color-success-subtle);
-    --color-success-border: var(--civo-color-success-border);
-    --color-warning: var(--civo-color-warning);
-    --color-warning-subtle: var(--civo-color-warning-subtle);
-    --color-warning-border: var(--civo-color-warning-border);
-    --color-danger: var(--civo-color-danger);
-    --color-danger-subtle: var(--civo-color-danger-subtle);
-    --color-danger-border: var(--civo-color-danger-border);
-    --color-info: var(--civo-color-info);
-    --color-info-subtle: var(--civo-color-info-subtle);
-    --color-info-border: var(--civo-color-info-border);
-    --color-status-foreground: var(--civo-color-status-foreground);
+  --color-success: var(--civo-color-success);
+  --color-success-subtle: var(--civo-color-success-subtle);
+  --color-success-border: var(--civo-color-success-border);
+  --color-warning: var(--civo-color-warning);
+  --color-warning-subtle: var(--civo-color-warning-subtle);
+  --color-warning-border: var(--civo-color-warning-border);
+  --color-danger: var(--civo-color-danger);
+  --color-danger-subtle: var(--civo-color-danger-subtle);
+  --color-danger-border: var(--civo-color-danger-border);
+  --color-info: var(--civo-color-info);
+  --color-info-subtle: var(--civo-color-info-subtle);
+  --color-info-border: var(--civo-color-info-border);
+  --color-status-foreground: var(--civo-color-status-foreground);
 
-    --color-chart-1: var(--civo-chart-1);
-    --color-chart-2: var(--civo-chart-2);
-    --color-chart-3: var(--civo-chart-3);
-    --color-chart-4: var(--civo-chart-4);
-    --color-chart-5: var(--civo-chart-5);
-    --color-chart-6: var(--civo-chart-6);
+  --color-chart-1: var(--civo-chart-1);
+  --color-chart-2: var(--civo-chart-2);
+  --color-chart-3: var(--civo-chart-3);
+  --color-chart-4: var(--civo-chart-4);
+  --color-chart-5: var(--civo-chart-5);
+  --color-chart-6: var(--civo-chart-6);
 
-    --spacing-section: var(--civo-section-spacing);
-    --spacing-app-header: var(--civo-app-header-height);
+  --spacing-section: var(--civo-section-spacing);
+  --spacing-app-header: var(--civo-app-header-height);
 
-    --radius-token: var(--civo-radius);
-    --radius-token-sm: calc(var(--civo-radius) - 2px);
+  --radius-token: var(--civo-radius);
+  --radius-token-sm: calc(var(--civo-radius) - 2px);
 
-    --font-sans: var(--civo-font-body);
-    --font-serif: var(--civo-font-heading);
-    --font-heading: var(--civo-font-heading);
-    --font-body: var(--civo-font-body);
+  --font-sans: var(--civo-font-body);
+  --font-serif: var(--civo-font-heading);
+  --font-heading: var(--civo-font-heading);
+  --font-body: var(--civo-font-body);
 }
 
 /*
@@ -205,17 +201,8 @@
  * it); the first declaration is the fallback for browsers without `dvh`.
  */
 @utility h-app-body {
-    height: calc(100vh - var(--civo-app-header-height));
-    height: calc(100dvh - var(--civo-app-header-height));
-}
-
-/* Overlay + side-sheet entrances. Values are not variable references, so
-   this block is a plain (non-inline) @theme. Exits are deliberately
-   instant: fewer moving parts, and reduced-motion users get the same. */
-@theme {
-    --animate-sheet-overlay: sheet-overlay-in 150ms ease-out;
-    --animate-sheet-left: sheet-in-left 200ms ease-out;
-    --animate-sheet-right: sheet-in-right 200ms ease-out;
+  height: calc(100vh - var(--civo-app-header-height));
+  height: calc(100dvh - var(--civo-app-header-height));
 }
 
 /*
@@ -229,86 +216,61 @@
  * still override it.
  */
 @layer base {
-    h1,
-    h2,
-    h3,
-    h4 {
-        overflow-wrap: anywhere;
-        hyphens: auto;
-    }
+  h1,
+  h2,
+  h3,
+  h4 {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
 }
 
 body {
-    background: var(--civo-color-background);
-    color: var(--civo-color-text);
-    font-family: var(--civo-font-body);
+  background: var(--civo-color-background);
+  color: var(--civo-color-text);
+  font-family: var(--civo-font-body);
 }
 
 h1,
 h2,
 h3,
 h4 {
-    font-family: var(--civo-font-heading);
+  font-family: var(--civo-font-heading);
 }
 
 /* Visible focus states everywhere — accessibility is not optional. */
 :focus-visible {
-    outline: 2px solid var(--civo-color-accent);
-    outline-offset: 2px;
-}
-
-@keyframes sheet-overlay-in {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes sheet-in-left {
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes sheet-in-right {
-    from {
-        transform: translateX(100%);
-    }
-    to {
-        transform: translateX(0);
-    }
+  outline: 2px solid var(--civo-color-accent);
+  outline-offset: 2px;
 }
 
 @keyframes accordion-down {
-    from {
-        height: 0;
-    }
-    to {
-        height: var(--radix-accordion-content-height);
-    }
+  from {
+    height: 0;
+  }
+
+  to {
+    height: var(--radix-accordion-content-height);
+  }
 }
 
 @keyframes accordion-up {
-    from {
-        height: var(--radix-accordion-content-height);
-    }
-    to {
-        height: 0;
-    }
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+
+  to {
+    height: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
