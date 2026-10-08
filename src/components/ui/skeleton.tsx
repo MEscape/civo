@@ -1,22 +1,24 @@
-import { cn } from "@/lib/utils/cn";
-import React from "react";
+import type { HTMLAttributes } from 'react';
+
+import { cn } from '@lib/utils';
 
 /**
- * A loading placeholder shaped like the content it stands in for, not a
- * generic spinner: a spinner tells a reader "wait", a skeleton also tells
- * them roughly what is about to appear and where, so the page does not
- * visibly jump once the real content lands.
+ * Animated loading placeholder. Uses `bg-canvas` to stay on-theme.
  *
- * `aria-hidden`: the placeholder carries no information of its own. The
- * Suspense boundary around it should have its own `aria-busy`/`aria-live`
- * region if the wait needs to be announced.
+ * Rule §19: never use raw gray values for skeletons — they must track the
+ * current theme's canvas color.
+ *
+ * A block is decorative and hidden from assistive technology: the region it
+ * stands in for marks itself `aria-busy` and announces loading once.
  */
-export function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
-    return (
-        <div
-            aria-hidden="true"
-            className={cn("animate-pulse rounded-token-sm bg-border", className)}
-            {...props}
-        />
-    );
+function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('animate-pulse rounded-token bg-canvas', className)}
+      aria-hidden="true"
+      {...props}
+    />
+  );
 }
+
+export { Skeleton };

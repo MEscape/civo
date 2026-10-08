@@ -1,50 +1,42 @@
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { Slot } from "radix-ui";
-import { cn } from "@/lib/utils/cn";
+import type { HTMLAttributes } from 'react';
+
+import { cva, type VariantProps } from 'class-variance-authority';
+
+import { cn } from '@lib/utils';
 
 /**
- * Badge. Variants are named for meaning, not appearance:
- *  - default / muted: neutral labels (category, department, party)
- *  - success / warning / danger / info: status. A status badge must carry
- *    its meaning in text (and optionally an icon child), never in color
- *    alone (WCAG 1.4.1) — color only reinforces what the label says.
+ * Badge variants.
+ *
+ * Status variants (`success`, `warning`, `danger`, `info`) use the semantic
+ * token triplet (solid / subtle / border) defined in globals.css.
+ * `default` uses the primary brand color.
+ * `outline` uses only the border token with no fill.
+ * `muted` is a neutral label (a party, a department) that carries no status.
  */
 const badgeVariants = cva(
-    "inline-flex w-fit shrink-0 items-center justify-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:size-3",
-    {
-        variants: {
-            variant: {
-                default: "border-transparent bg-primary text-primary-foreground",
-                muted: "border-border bg-canvas text-copy-muted",
-                success: "border-success-border bg-success-subtle text-success",
-                warning: "border-warning-border bg-warning-subtle text-warning",
-                danger: "border-danger-border bg-danger-subtle text-danger",
-                info: "border-info-border bg-info-subtle text-info",
-            },
-        },
-        defaultVariants: {
-            variant: "default",
-        },
-    }
+  'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
+  {
+    variants: {
+      variant: {
+        default: 'border-transparent bg-primary text-primary-foreground',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        outline: 'border-border text-copy',
+        muted: 'border-border bg-canvas text-copy-muted',
+        success: 'border-success-border bg-success-subtle text-success',
+        warning: 'border-warning-border bg-warning-subtle text-warning',
+        danger: 'border-danger-border bg-danger-subtle text-danger',
+        info: 'border-info-border bg-info-subtle text-info',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  },
 );
 
-function Badge({
-    className,
-    variant,
-    asChild = false,
-    ...props
-}: React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-    const Comp = asChild ? Slot.Root : "span";
+export interface BadgeProps
+  extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
 
-    return (
-        <Comp
-            data-slot="badge"
-            data-variant={variant ?? "default"}
-            className={cn(badgeVariants({ variant }), className)}
-            {...props}
-        />
-    );
+export function Badge({ className, variant, ...props }: BadgeProps) {
+  return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
-export { Badge, badgeVariants };
+export { badgeVariants };

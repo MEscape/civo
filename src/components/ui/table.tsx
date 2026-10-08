@@ -1,123 +1,100 @@
-import * as React from "react"
-import { cn } from "@/lib/utils/cn"
+import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 
-/**
- * A wide table scrolls sideways inside its own container, never the page.
- * That container is a focusable, named region: a scrollable area that
- * keyboard users cannot focus hides its overflowing columns from them
- * entirely (WCAG 2.1.1). `label` is required so the region always has a name
- * and a caller cannot forget it.
- */
-function Table({ className, label, ...props }: React.ComponentProps<"table"> & { label: string }) {
+import { cn } from '@lib/utils';
+
+function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>) {
   return (
-    <div
-      data-slot="table-container"
-      role="region"
-      aria-label={label}
-      tabIndex={0}
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
+    <div className="relative w-full overflow-auto rounded-token border border-border">
+      <table className={cn('w-full caption-bottom text-sm', className)} {...props} />
     </div>
-  )
+  );
 }
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
-  return (
-    <thead
-      data-slot="table-header"
-      className={cn("[&_tr]:border-b [&_tr]:border-border", className)}
-      {...props}
-    />
-  )
+function TableHeader({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <thead className={cn('border-b border-border bg-canvas', className)} {...props} />;
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody
-      data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
-      {...props}
-    />
-  )
+function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <tbody className={cn('[&_tr:last-child]:border-0', className)} {...props} />;
 }
 
-function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+function TableFooter({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <tfoot
-      data-slot="table-footer"
-      className={cn(
-        "border-t border-border bg-canvas font-medium [&>tr]:last:border-b-0",
-        className
-      )}
+      className={cn('border-t border-border bg-canvas font-medium text-copy', className)}
       {...props}
     />
-  )
+  );
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+function TableRow({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
   return (
     <tr
-      data-slot="table-row"
       className={cn(
-        "border-b border-border transition-colors hover:bg-canvas has-aria-expanded:bg-canvas data-[state=selected]:bg-canvas",
-        className
+        'border-b border-border transition-colors hover:bg-canvas data-[state=selected]:bg-canvas',
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+function TableHead({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
-      data-slot="table-head"
       className={cn(
-        "h-10 px-3 text-left align-middle font-medium whitespace-nowrap text-copy [&:has([role=checkbox])]:pr-0",
-        className
+        'h-9 px-4 text-left align-middle text-xs font-medium text-copy-muted',
+        '[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-px',
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+function TableCell({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
     <td
-      data-slot="table-cell"
       className={cn(
-        "px-3 py-2.5 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
-        className
+        'p-4 align-middle text-copy',
+        '[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-px',
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
-function TableCaption({
-  className,
-  ...props
-}: React.ComponentProps<"caption">) {
+function TableCaption({ className, ...props }: HTMLAttributes<HTMLTableCaptionElement>) {
+  return <caption className={cn('mt-4 text-sm text-copy-muted', className)} {...props} />;
+}
+
+/**
+ * Minimal skeleton row for use in a loading state.
+ *
+ * Usage: render N of these inside a `<TableBody>` while data is loading.
+ * Column count must match the real table.
+ */
+function TableSkeletonRow({ columns }: { columns: number }) {
   return (
-    <caption
-      data-slot="table-caption"
-      className={cn("mt-4 text-sm text-copy-muted", className)}
-      {...props}
-    />
-  )
+    <tr className="border-b border-border">
+      {Array.from({ length: columns }).map((_, i) => (
+        <td key={i} className="p-4">
+          <div className="h-4 w-full animate-pulse rounded-token-sm bg-canvas" />
+        </td>
+      ))}
+    </tr>
+  );
 }
 
 export {
   Table,
-  TableHeader,
   TableBody,
+  TableCaption,
+  TableCell,
   TableFooter,
   TableHead,
+  TableHeader,
   TableRow,
-  TableCell,
-  TableCaption,
-}
+  TableSkeletonRow,
+};

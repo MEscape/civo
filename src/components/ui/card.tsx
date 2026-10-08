@@ -1,49 +1,42 @@
-import * as React from "react";
-import { cn } from "@/lib/utils/cn";
+import type { HTMLAttributes } from 'react';
 
-/**
- * Card primitive. Deliberately flat — a hairline border, no drop shadow,
- * minimal radius — per the design brief (spec §8: avoid "excessive
- * shadows", "startup-style neon UI"). This is the base every civic
- * component (NewsGrid, ServiceGrid, ContactCard, ...) builds on.
- */
-export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-    return (
-        <div
-            className={cn(
-                "border border-border bg-surface rounded-token",
-                className
-            )}
-            {...props}
-        />
-    );
+import { cn } from '@lib/utils';
+
+function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('rounded-token border border-border bg-surface text-copy shadow-sm', className)}
+      {...props}
+    />
+  );
 }
 
-export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-    return <div className={cn("p-5 pb-3", className)} {...props} />;
+function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('flex flex-col gap-1.5 p-6', className)} {...props} />;
 }
 
-/**
- * Card heading. Defaults to <h3>, correct on pages where cards sit under a
- * section's <h2> (every public page). Pass `as="h2"` where cards sit directly
- * under the page's <h1>, so the outline never skips a level (WCAG 1.3.1).
- */
-export function CardTitle({
-    as: Heading = "h3",
-    className,
-    ...props
-}: React.HTMLAttributes<HTMLHeadingElement> & { as?: "h2" | "h3" | "h4" }) {
-    return <Heading className={cn("font-heading text-lg leading-snug", className)} {...props} />;
+function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h3
+      className={cn(
+        'font-heading text-lg font-semibold leading-none tracking-tight text-copy',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
-export function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-    return <p className={cn("text-sm text-copy-muted", className)} {...props} />;
+function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={cn('text-sm text-copy-muted', className)} {...props} />;
 }
 
-export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-    return <div className={cn("p-5 pt-0", className)} {...props} />;
+function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('p-6 pt-0', className)} {...props} />;
 }
 
-export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-    return <div className={cn("p-5 pt-0 flex items-center", className)} {...props} />;
+function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('flex items-center p-6 pt-0', className)} {...props} />;
 }
+
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
