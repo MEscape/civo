@@ -1,0 +1,113 @@
+{
+  "website": {
+    "createForm": {
+      "name": "Name",
+      "namePlaceholder": "Stadt Musterstadt",
+      "slug": "Slug",
+      "slugPlaceholder": "musterstadt",
+      "template": "Vorlage",
+      "submit": "Website erstellen",
+      "submitting": "Wird erstellt…"
+    },
+    "templates": {
+      "municipal": {
+        "label": "Gemeinde / Stadt",
+        "description": "Startseite mit Hero, Neuigkeiten, Terminen, Leistungen und Kontakt."
+      },
+      "smartCity": {
+        "label": "Smart City Portal",
+        "description": "Startseite mit KPI-Kacheln, Smart-City-Metriken, Neuigkeiten und Terminen."
+      },
+      "association": {
+        "label": "Verein",
+        "description": "Startseite mit Hero, Vorstellung, Neuigkeiten, Terminen und Kontakt."
+      }
+    },
+    "themeSettings": {
+      "title": "Theme Einstellungen",
+      "colors": "Farben",
+      "primary": "Primär",
+      "secondary": "Sekundär",
+      "accent": "Akzent",
+      "colorPicker": "{color}: Farbe auswählen",
+      "typography": "Typografie",
+      "headingFont": "Überschriften",
+      "bodyFont": "Fließtext",
+      "layout": "Layout",
+      "radiusLabel": "Abrundung",
+      "spacingLabel": "Abstände",
+      "radius": {
+        "none": "Eckig (0px)",
+        "sm": "Leicht (2px)",
+        "md": "Mittel (6px)",
+        "lg": "Stark (12px)"
+      },
+      "spacing": {
+        "compact": "Kompakt",
+        "comfortable": "Komfortabel",
+        "spacious": "Großzügig"
+      },
+      "submit": "Theme speichern",
+      "submitting": "Speichert…",
+      "saved": "Theme erfolgreich gespeichert!",
+      "previewTitle": "Live-Vorschau",
+      "preview": {
+        "heading": "Willkommen",
+        "body": "Dies ist eine Vorschau, wie Ihre Komponenten mit den neuen Theme-Einstellungen aussehen werden.",
+        "cardTitle": "Karte",
+        "cardBody": "Komponenten wie Karten übernehmen automatisch die abgerundeten Ecken und Hintergrundfarben des Themes."
+      }
+    },
+    "errors": {
+      "notFound": "Die Website wurde nicht gefunden.",
+      "slugTaken": "Dieser Slug ist bereits vergeben.",
+      "validation": "Bitte überprüfen Sie Ihre Eingabe.",
+      "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "validation": {
+      "idInvalid": "Ungültige Kennung.",
+      "nameTooShort": "Der Name muss mindestens {nameMin} Zeichen lang sein.",
+      "nameTooLong": "Der Name darf höchstens {nameMax} Zeichen lang sein.",
+      "slugRequired": "Bitte geben Sie einen Slug an.",
+      "slugTooLong": "Der Slug darf höchstens {slugMax} Zeichen lang sein.",
+      "slugInvalid": "Der Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten.",
+      "descriptionTooLong": "Die Beschreibung darf höchstens {descriptionMax} Zeichen lang sein.",
+      "templateUnknown": "Bitte wählen Sie eine gültige Vorlage.",
+      "colorInvalid": "Bitte geben Sie eine Farbe im Format #RRGGBB an.",
+      "fontUnsupported": "Diese Schriftart ist nicht verfügbar.",
+      "radiusUnsupported": "Diese Abrundung ist nicht verfügbar.",
+      "spacingUnsupported": "Dieser Abstand ist nicht verfügbar."
+    },
+    "pages": {
+      "list": {
+        "title": "Websites",
+        "description": "Erstellen und verwalten Sie die Websites Ihrer Kommune.",
+        "empty": "Noch keine Websites",
+        "emptyDescription": "Erstellen Sie Ihre erste Website, um loszulegen.",
+        "createTitle": "Website erstellen"
+      },
+      "detail": {
+        "releasesTitle": "Veröffentlichungen",
+        "links": {
+          "builder": {
+            "title": "Seiten",
+            "description": "Seiten dieser Website bearbeiten und veröffentlichen."
+          },
+          "settings": {
+            "title": "Einstellungen",
+            "description": "Design und Datenquellen."
+          },
+          "migrations": {
+            "title": "Migrationen",
+            "description": "Veröffentlichte Seiten mit den aktuellen Komponentenversionen abgleichen."
+          }
+        }
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "description": "Design und Datenquellen dieser Website."
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "website": {
+    "createForm": {
+      "name": "Name",
+      "namePlaceholder": "Town of Exampleville",
+      "slug": "Slug",
+      "slugPlaceholder": "exampleville",
+      "template": "Template",
+      "submit": "Create website",
+      "submitting": "Creating…"
+    },
+    "templates": {
+      "municipal": {
+        "label": "Municipality / city",
+        "description": "Home page with hero, news, events, services and contact."
+      },
+      "smartCity": {
+        "label": "Smart city portal",
+        "description": "Home page with KPI tiles, smart-city metrics, news and events."
+      },
+      "association": {
+        "label": "Association",
+        "description": "Home page with hero, introduction, news, events and contact."
+      }
+    },
+    "themeSettings": {
+      "title": "Theme settings",
+      "colors": "Colors",
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "accent": "Accent",
+      "colorPicker": "{color}: choose color",
+      "typography": "Typography",
+      "headingFont": "Headings",
+      "bodyFont": "Body text",
+      "layout": "Layout",
+      "radiusLabel": "Corner radius",
+      "spacingLabel": "Spacing",
+      "radius": {
+        "none": "Square (0px)",
+        "sm": "Slight (2px)",
+        "md": "Medium (6px)",
+        "lg": "Strong (12px)"
+      },
+      "spacing": {
+        "compact": "Compact",
+        "comfortable": "Comfortable",
+        "spacious": "Spacious"
+      },
+      "submit": "Save theme",
+      "submitting": "Saving…",
+      "saved": "Theme saved.",
+      "previewTitle": "Live preview",
+      "preview": {
+        "heading": "Welcome",
+        "body": "This is a preview of how your components will look with the new theme settings.",
+        "cardTitle": "Card",
+        "cardBody": "Components such as cards automatically pick up the theme's rounded corners and background colors."
+      }
+    },
+    "errors": {
+      "notFound": "The website was not found.",
+      "slugTaken": "This slug is already taken.",
+      "validation": "Please check your input.",
+      "infrastructure": "A service error occurred. Please try again later.",
+      "unexpected": "An unexpected error occurred."
+    },
+    "validation": {
+      "idInvalid": "Invalid identifier.",
+      "nameTooShort": "The name must be at least {nameMin} characters long.",
+      "nameTooLong": "The name must be at most {nameMax} characters long.",
+      "slugRequired": "Please enter a slug.",
+      "slugTooLong": "The slug must be at most {slugMax} characters long.",
+      "slugInvalid": "The slug may only contain lowercase letters, numbers and hyphens.",
+      "descriptionTooLong": "The description must be at most {descriptionMax} characters long.",
+      "templateUnknown": "Please choose a valid template.",
+      "colorInvalid": "Please enter a color in the format #RRGGBB.",
+      "fontUnsupported": "This font is not available.",
+      "radiusUnsupported": "This corner radius is not available.",
+      "spacingUnsupported": "This spacing is not available."
+    },
+    "pages": {
+      "list": {
+        "title": "Websites",
+        "description": "Create and manage your municipality's websites.",
+        "empty": "No websites yet",
+        "emptyDescription": "Create your first website to get started.",
+        "createTitle": "Create a website"
+      },
+      "detail": {
+        "releasesTitle": "Releases",
+        "links": {
+          "builder": {
+            "title": "Pages",
+            "description": "Edit and publish the pages of this website."
+          },
+          "settings": {
+            "title": "Settings",
+            "description": "Theme and data sources."
+          },
+          "migrations": {
+            "title": "Migrations",
+            "description": "Check published pages against current component versions."
+          }
+        }
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "Theme and data sources of this website."
+      }
+    }
+  }
+}
