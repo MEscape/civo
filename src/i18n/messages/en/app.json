@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "title": "Civo — Municipal & Smart City Website Builder",
+    "description": "Website builder platform for German municipalities, smart city portals, and civil society organizations."
+  },
+  "home": {
+    "title": "Civo",
+    "description": "Municipal & Smart City Website Builder",
+    "comingSoon": "The public landing page is coming soon."
+  },
+  "routeError": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "retry": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has moved.",
+    "returnHome": "Return home"
+  },
+  "navigation": {
+    "label": "Main navigation"
+  },
+  "loading": "Loading…"
+}
