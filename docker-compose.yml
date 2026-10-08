@@ -1,0 +1,91 @@
+services:
+  # -----------------------------
+  # PostgreSQL
+  # -----------------------------
+  postgres:
+    image: postgres:latest
+    container_name: civo-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env.docker
+    volumes:
+      - civo-postgres-data:/var/lib/postgresql
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------
+  # MailHog
+  # -----------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: civo-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    env_file:
+      - .env.docker
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8025/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------
+  # Next.js Production
+  # -----------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: http://localhost:3000
+    container_name: civo-app
+    restart: unless-stopped
+    init: true
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+
+      # Inside Docker, "localhost" means the app container.
+      DATABASE_URL: postgresql://civo:civo@postgres:5432/civo
+      AUTH_DATABASE_URL: postgresql://civo:civo@postgres:5432/civo_auth
+
+      AUTH_ENABLED: "true"
+      AUTH_SECRET: local-docker-secret-change-this-to-a-long-random-value
+
+      AUTH_MAIL_PROVIDER: smtp
+      AUTH_MAIL_SMTP_HOST: mailhog
+      AUTH_MAIL_SMTP_PORT: "1025"
+
+      LOG_LEVEL: info
+
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  civo-postgres-data:
