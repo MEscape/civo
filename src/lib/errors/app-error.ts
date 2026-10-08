@@ -1,76 +1,71 @@
 /**
- * Structured application error model.
+ * Every error that crosses a layer boundary in this codebase is an
+ * `AppError`. Never a bare Error, never a string.
  *
- * These represent *expected* failure modes surfaced through `Result`,
- * never thrown. Keep `message` safe to show in logs; it is NOT guaranteed
- * to be safe to render to end users verbatim (see toUserMessage below).
+ * `kind` is a discriminated-union tag (typescript.md: "prefer discriminated
+ * unions for finite states"). It describes *what happened*, not which
+ * transport carried it (errors.md) — so there is no `kind: 'http-500'` or
+ * `kind: 'prisma-p2002'` here; those get mapped to one of these kinds at
+ * the infrastructure/API boundary instead.
  */
-export type AppErrorCode =
-    | "VALIDATION_ERROR"
-    | "NOT_FOUND"
-    | "CONFLICT"
-    | "DATABASE_ERROR"
-    | "EXTERNAL_API_ERROR"
-    | "UNAUTHORIZED"
-    | "FORBIDDEN"
-    | "INTERNAL_ERROR";
+export type AppErrorKind =
+  | 'validation'
+  | 'not_found'
+  | 'conflict'
+  | 'unauthorized'
+  | 'forbidden'
+  | 'infrastructure'
+  | 'unexpected';
 
-export type AppError = {
-    code: AppErrorCode;
-    message: string;
-    /** Underlying cause (e.g. caught exception). Never sent to the client. */
-    cause?: unknown;
-    /** Optional field name, useful for surfacing validation errors in forms. */
-    field?: string;
-};
-
-export function appError(
-    code: AppErrorCode,
-    message: string,
-    options?: { cause?: unknown; field?: string }
-): AppError {
-    return { code, message, cause: options?.cause, field: options?.field };
+interface BaseAppError {
+  readonly kind: AppErrorKind;
+  readonly code: string;
+  readonly message: string;
+  readonly cause?: unknown;
 }
 
-export const AppErrors = {
-    validation: (message: string, field?: string): AppError =>
-        appError("VALIDATION_ERROR", message, { field }),
-    notFound: (resource: string): AppError =>
-        appError("NOT_FOUND", `${resource} wurde nicht gefunden.`),
-    conflict: (message: string): AppError => appError("CONFLICT", message),
-    database: (cause?: unknown): AppError =>
-        appError("DATABASE_ERROR", "Ein Datenbankfehler ist aufgetreten.", { cause }),
-    externalApi: (message: string, cause?: unknown): AppError =>
-        appError("EXTERNAL_API_ERROR", message, { cause }),
-    unauthorized: (): AppError =>
-        appError("UNAUTHORIZED", "Für diese Aktion ist eine Anmeldung erforderlich."),
-    forbidden: (): AppError =>
-        appError("FORBIDDEN", "Sie haben keine Berechtigung, diese Aktion auszuführen."),
-    internal: (cause?: unknown): AppError =>
-        appError("INTERNAL_ERROR", "Ein unerwarteter Fehler ist aufgetreten.", { cause }),
-};
+export interface ValidationAppError extends BaseAppError {
+  readonly kind: 'validation';
+  readonly fieldErrors: Record<string, string[]>;
+}
+
+export interface NotFoundAppError extends BaseAppError {
+  readonly kind: 'not_found';
+}
+
+export interface ConflictAppError extends BaseAppError {
+  readonly kind: 'conflict';
+}
+
+export interface UnauthorizedAppError extends BaseAppError {
+  readonly kind: 'unauthorized';
+}
+
+export interface ForbiddenAppError extends BaseAppError {
+  readonly kind: 'forbidden';
+}
 
 /**
- * Maps an AppErrorCode to a safe, generic message for end users.
- * Never leak `cause` or raw database/infrastructure detail to the client.
+ * An infrastructure failure that has already been mapped out of its
+ * original shape (Prisma error, fetch failure, etc.) before crossing the
+ * infrastructure boundary — persistence.md: "keep Prisma-specific errors
+ * inside infrastructure". `cause` preserves the original for logging only;
+ * `message` must never leak infrastructure detail to a user (api.md).
  */
-export function toUserMessage(error: AppError): string {
-    switch (error.code) {
-        case "VALIDATION_ERROR":
-            return error.message;
-        case "NOT_FOUND":
-            return error.message;
-        case "CONFLICT":
-            return error.message;
-        case "UNAUTHORIZED":
-            return "Bitte melden Sie sich an, um fortzufahren.";
-        case "FORBIDDEN":
-            return "Sie haben keine Berechtigung, diese Aktion auszuführen.";
-        case "DATABASE_ERROR":
-        case "EXTERNAL_API_ERROR":
-        case "INTERNAL_ERROR":
-            return "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
-        default:
-            return "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
-    }
+export interface InfrastructureAppError extends BaseAppError {
+  readonly kind: 'infrastructure';
 }
+
+/** A genuinely unexpected failure. Represents a caught `throw`, not a business outcome. */
+export interface UnexpectedAppError extends BaseAppError {
+  readonly kind: 'unexpected';
+}
+
+export type AppError =
+  | ValidationAppError
+  | NotFoundAppError
+  | ConflictAppError
+  | UnauthorizedAppError
+  | ForbiddenAppError
+  | InfrastructureAppError
+  | UnexpectedAppError;
