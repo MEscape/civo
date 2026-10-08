@@ -1,0 +1,115 @@
+name: Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two production deployments at once.
+# Never cancel a deployment halfway through migration/deploy.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      # Nested license job posts PR comments; a called workflow cannot exceed its caller's permissions.
+      pull-requests: write
+
+  deploy:
+    name: Migrate & deploy
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    # Configure this environment in GitHub:
+    # - deployment branch: main
+    # - optional required reviewers
+    # - production secrets
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+
+      # Direct production connections used by migrations.
+      # These are separate from the least-privilege runtime connections.
+      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      AUTH_DATABASE_URL: ${{ secrets.PRODUCTION_AUTH_DATABASE_URL }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # Make sure the migrations being deployed are the reviewed migrations.
+      - name: Check migration files
+        run: npm run db:migrate:check
+
+      # 1) BUILD FIRST.
+      # A broken build must never leave either database migrated.
+      - name: Pull Vercel production settings
+        run: npx vercel pull --yes --environment=production
+
+      - name: Build production artifact
+        run: npx vercel build --prod
+
+      # 2) MIGRATE APPLICATION DATABASE.
+      - name: Show application migration status
+        run: npm run db:migrate:status
+
+      - name: Apply application migrations
+        run: npm run db:migrate:app
+
+      # 3) MIGRATE AUTH DATABASE.
+      - name: Apply auth migrations
+        run: npm run db:migrate:auth
+
+      # 4) DEPLOY THE PREBUILT ARTIFACT.
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          url="$(npx vercel deploy --prebuilt --prod)"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # 5) VERIFY DEPLOYMENT.
+      - name: Smoke test
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          # Optional Vercel Deployment Protection bypass.
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          args=(-fsS --max-time 10)
+
+          if [ -n "$BYPASS" ]; then
+            args+=(-H "x-vercel-protection-bypass: $BYPASS")
+          fi
+
+          for i in $(seq 1 12); do
+            if curl "${args[@]}" "$DEPLOY_URL/api/health"; then
+              exit 0
+            fi
+            sleep 5
+          done
+
+          echo "::error::Smoke test failed for $DEPLOY_URL."
+          echo "::error::Roll back with 'vercel rollback'."
+          exit 1
+
+      # Verify the application database against the committed Prisma contract.
+      - name: Verify application database
+        run: npm run db:verify

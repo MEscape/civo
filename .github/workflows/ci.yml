@@ -1,0 +1,339 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_call:
+  # production.yml re-runs the full CI on the exact commit it deploys
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  # Cancel superseded PR runs; never cancel a run that guards a production deploy.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  lint:
+    name: Lint & format
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run i18n:check
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # tsconfig.json includes scripts/ and prisma/, so one run covers them.
+      - run: npm run typecheck
+
+  database:
+    name: Contract & migrations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17.6-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: app_ci
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U ci -d app_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci
+      AUTH_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci_auth
+      AUTH_DATABASE_NAME: app_ci_auth
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # The auth database is separate from the application database.
+      - name: Create auth database
+        run: |
+          PGPASSWORD=ci_password psql \
+            -h localhost \
+            -U ci \
+            -d app_ci \
+            -c 'CREATE DATABASE app_ci_auth'
+
+      # Offline: were any committed migration files edited by hand or deleted?
+      - name: Migration files are intact
+        run: npm run db:migrate:check
+
+      # contract.json / contract.d.ts are committed and consumed by the runtime.
+      - name: Emitted contract is up to date
+        run: |
+          npm run db:generate
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Generated files are stale. Run 'npm run db:generate' and commit the result."
+            git status --short
+            git --no-pager diff --stat
+            exit 1
+          fi
+
+      - name: Check migration files
+        run: npm run db:migrate:check
+
+      # Application database.
+      - name: Apply application migrations
+        run: |
+          npm run db:migrate:app
+          npm run db:migrate:status
+
+      # Auth database.
+      - name: Apply auth migrations
+        run: npm run db:migrate:auth
+
+      - name: Database matches the contract
+        run: npm run db:verify
+
+  test:
+    name: Unit & integration tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17.6-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: app_ci
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U ci -d app_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci
+      AUTH_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci_auth
+      AUTH_DATABASE_NAME: app_ci_auth
+      AUTH_ENABLED: "false"
+      LOG_LEVEL: warn
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - name: Create auth database
+        run: |
+          PGPASSWORD=ci_password psql \
+            -h localhost \
+            -U ci \
+            -d app_ci \
+            -c 'CREATE DATABASE app_ci_auth'
+
+      # Application database.
+      - name: Migrate application database
+        run: |
+          npm run db:migrate:app
+
+      # Auth database.
+      - name: Migrate auth database
+        run: npm run db:migrate:auth
+
+      - run: npm test
+      - run: npm run test:architecture
+
+  license:
+    name: License compliance
+    uses: ./.github/workflows/license-check.yml
+    permissions:
+      contents: read
+      # Lets the called workflow post/update its PR comment.
+      pull-requests: write
+
+  build:
+    name: Next.js build
+    needs: [lint, typecheck, database, test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    env:
+      # Public value only; inlined into the browser bundle.
+      NEXT_PUBLIC_APP_URL: https://ci.example.invalid
+
+      # Build-time placeholders only.
+      DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci
+      AUTH_ENABLED: "true"
+      AUTH_SECRET: ci-placeholder-not-a-secret-000000000000
+      AUTH_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci_auth
+      # Production requires a real mail provider when auth is enabled; nothing is sent during a build.
+      AUTH_MAIL_PROVIDER: resend
+      AUTH_MAIL_API_KEY: ci-placeholder-not-a-key
+      AUTH_MAIL_FROM: ci@example.invalid
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', 'next.config.*') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+      - run: npm run build
+
+  docker:
+    name: Docker image validation
+    needs: [lint, typecheck, database, test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: civo:ci
+          build-args: |
+            NEXT_PUBLIC_APP_URL=https://ci.example.invalid
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Runs as non-root
+        run: |
+          test "$(docker run --rm --entrypoint id civo:ci -u)" != "0"
+
+      - name: Create Docker network
+        run: docker network create civo-ci
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name civo-postgres-ci \
+            --network civo-ci \
+            -e POSTGRES_USER=ci \
+            -e POSTGRES_PASSWORD=ci_password \
+            -e POSTGRES_DB=civo \
+            postgres:17.6-alpine
+
+          for i in $(seq 1 30); do
+            docker exec civo-postgres-ci \
+              pg_isready -U ci -d civo && break
+            sleep 2
+          done
+
+          docker exec civo-postgres-ci \
+            psql -U ci -d civo \
+            -c 'CREATE DATABASE civo_auth'
+
+      - name: Start MailHog
+        run: |
+          docker run -d \
+            --name civo-mailhog-ci \
+            --network civo-ci \
+            mailhog/mailhog:latest
+
+      - name: Migrate application database
+        run: |
+          docker run --rm \
+            --network civo-ci \
+            -e DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo \
+            civo:ci \
+            npm run db:migrate:app
+
+      - name: Migrate auth database
+        run: |
+          docker run --rm \
+            --network civo-ci \
+            -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
+            civo:ci \
+            npm run db:migrate:auth
+
+      - name: Container boots and answers /api/health
+        run: |
+          docker run -d \
+            --init \
+            --name civo-app \
+            --network civo-ci \
+            -p 3000:3000 \
+            -e DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo \
+            -e AUTH_ENABLED=true \
+            -e AUTH_SECRET=ci-placeholder-not-a-secret-000000000000 \
+            -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
+            -e AUTH_MAIL_PROVIDER=smtp \
+            -e AUTH_MAIL_SMTP_HOST=civo-mailhog-ci \
+            -e AUTH_MAIL_SMTP_PORT=1025 \
+            civo:ci
+
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs civo-app
+          exit 1
+
+      - name: Cleanup Docker resources
+        if: always()
+        run: |
+          docker rm -f civo-app civo-mailhog-ci civo-postgres-ci 2>/dev/null || true
+          docker network rm civo-ci 2>/dev/null || true
+
+  # Single required status check for branch protection.
+  ci-success:
+    name: CI success
+    if: always()
+    needs: [lint, typecheck, database, test, license, build, docker]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: All jobs passed
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "One or more CI jobs failed or were cancelled."
+            exit 1
+          fi
