@@ -1,0 +1,22 @@
+# Naming Rules
+
+- Files and directories use `kebab-case`, including component files.
+- Framework-reserved file names keep their required form (`page.tsx`, `layout.tsx`, `route.ts`, `proxy.ts`).
+- Variables, parameters, functions, and methods use `camelCase`.
+- Classes, React components, types, interfaces, and enums use `PascalCase`.
+- Compile-time constants use `UPPER_SNAKE_CASE`.
+- Environment variables use `UPPER_SNAKE_CASE`.
+- Zod schemas use `camelCase` with a `Schema` suffix; the inferred type drops the suffix (`createUserSchema` → `CreateUser`).
+- Booleans read as predicates: `isActive`, `hasAccess`, `canEdit`.
+- Event handler props start with `on`; their implementations start with `handle`.
+- Custom hooks start with `use`.
+- Do not prefix interfaces with `I` or suffix types with `Type`.
+- Suffix files by role when the role is not obvious: `.port.ts`, `.repository.ts`, `.schema.ts`, `.action.ts`, `.dto.ts`, `.test.ts`.
+- One primary export per file; the file name reflects that export.
+- `index.ts` is reserved for a module's public API. See [`modules.md`](modules.md).
+- Commands are imperative (`CreateOrder`); queries describe the result (`GetOrderById`).
+- Ports are named for the capability (`OrderRepository`); adapters carry the technology name (`PrismaOrderRepository`).
+- Error types describe what happened (`OrderNotFoundError`). See [`errors.md`](errors.md).
+- Translation keys are stable, semantic, and dot-separated. See [`i18n.md`](i18n.md).
+- Avoid generic names such as `helpers`, `misc`, `common`, `manager`, and `data`.
+- Avoid abbreviations except widely understood ones (`id`, `url`).
