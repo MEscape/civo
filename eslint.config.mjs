@@ -1,132 +1,48 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
-import boundaries from "eslint-plugin-boundaries";
-import tsParser from "@typescript-eslint/parser";
+// @ts-check
+/**
+ * ESLint flat config: a thin composition of the modules in ./eslint.
+ *
+ *   base.mjs          ignores, ESLint recommended, typescript-eslint (type-aware)
+ *   typescript.mjs    TypeScript rules
+ *   imports.mjs       import order / duplicates / cycles / unused
+ *   restrictions.mjs  package, global and syntax restrictions (locale wrappers, process.env, UI primitives)
+ *   architecture.mjs  custom `architecture/*` rules (layers, modules, use cases, adapters, actions, DTOs, pages)
+ *   react.mjs         React, Hooks, jsx-a11y (strict), Next.js core-web-vitals
+ *   naming.mjs        kebab-case files and folders
+ *   style.mjs         ESLint core correctness/style, comment hygiene, smell detection
+ *   tokens.mjs        design-token conformance
+ *   overrides.mjs     tests, framework files, config/tooling
+ *
+ * Order matters: later blocks win per rule key, Prettier is next to last
+ * (it disables conflicting stylistic rules) and `curly` is re-enabled after it.
+ * Layer/module rules are NOT listed per module: eslint/architecture-policy/policy.mjs is the one policy, read by
+ * both the `architecture/*` rules and the architecture tests (docs/rules/boundaries.md describes it).
+ */
+import { defineConfig } from 'eslint/config';
+import prettierConfig from 'eslint-config-prettier';
 
-const eslintConfig = defineConfig([
-    ...nextVitals,
-    ...nextTs,
+import { architectureRules } from './eslint/architecture.mjs';
+import { base } from './eslint/base.mjs';
+import { imports } from './eslint/imports.mjs';
+import { naming } from './eslint/naming.mjs';
+import { overrides } from './eslint/overrides.mjs';
+import { react } from './eslint/react.mjs';
+import { restrictions } from './eslint/restrictions.mjs';
+import { afterPrettier, style } from './eslint/style.mjs';
+import { tokens } from './eslint/tokens.mjs';
+import { typescript } from './eslint/typescript.mjs';
 
-    {
-        files: ["src/**/*.ts", "src/**/*.tsx"],
-
-        languageOptions: {
-            parser: tsParser,
-        },
-
-        plugins: {
-            boundaries,
-        },
-
-        settings: {
-            "boundaries/include": ["src/**/*.ts", "src/**/*.tsx"],
-
-            "boundaries/elements": [
-                { type: "domain", pattern: "src/modules/**/domain/**" },
-                { type: "application", pattern: "src/modules/**/application/**" },
-                { type: "infrastructure", pattern: "src/modules/**/infrastructure/**" },
-                { type: "module-components", pattern: "src/modules/**/components/**" },
-                { type: "global-components", pattern: "src/components/**" },
-                { type: "lib", pattern: "src/lib/**" },
-                { type: "app", pattern: "src/app/**" },
-                { type: "store", pattern: "src/store/**" },
-            ],
-        },
-
-        rules: {
-            "boundaries/dependencies": [
-                "error",
-                {
-                    default: "allow",
-
-                    policies: [
-                        {
-                            from: { element: { type: "domain" } },
-                            disallow: [
-                                { element: { type: "application" } },
-                                { element: { type: "infrastructure" } },
-                                { element: { type: "module-components" } },
-                                { element: { type: "global-components" } },
-                                { element: { type: "app" } },
-                                { element: { type: "store" } }
-                            ],
-                            message: "domain/** must stay framework-free. It may depend on other domain/** modules and lib/** only.",
-                        },
-
-                        {
-                            from: { element: { type: "application" } },
-                            disallow: [
-                                { element: { type: "module-components" } },
-                                { element: { type: "global-components" } },
-                                { element: { type: "app" } }
-                            ],
-                            message: "application/** must not import UI components. It should coordinate domain and infrastructure.",
-                        },
-
-                        {
-                            from: { element: { type: "store" } },
-                            disallow: [
-                                { element: { type: "module-components" } },
-                                { element: { type: "global-components" } },
-                                { element: { type: "app" } },
-                                { element: { type: "infrastructure" } }
-                            ],
-                            message: "store/** must only depend on domain or application layers.",
-                        },
-                    ],
-                },
-            ],
-        },
-    },
-
-    {
-        files: ["src/modules/**/domain/**/*.ts"],
-        rules: {
-            "no-restricted-imports": [
-                "error",
-                {
-                    paths: [
-                        {
-                            name: "@prisma/client",
-                            message: "domain/** must not import @prisma/client directly.",
-                        },
-                        {
-                            name: "react",
-                            message: "domain/** must stay framework-free.",
-                        },
-                        {
-                            name: "next/cache",
-                            message: "domain/** must stay framework-free.",
-                        },
-                        {
-                            name: "@reduxjs/toolkit",
-                            message: "domain/** must stay framework-free.",
-                        },
-                        {
-                            name: "react-redux",
-                            message: "domain/** must stay framework-free.",
-                        },
-                    ],
-                },
-            ],
-        },
-    },
-
-    {
-        files: ["**/*.test.ts", "**/*.test.tsx"],
-        rules: {
-            "@typescript-eslint/no-explicit-any": "off",
-        },
-    },
-
-    // Override default ignores of eslint-config-next.
-    globalIgnores([
-        ".next/**",
-        "out/**",
-        "build/**",
-        "next-env.d.ts",
-    ]),
-]);
-
-export default eslintConfig;
+export default defineConfig(
+  ...base,
+  ...imports,
+  ...architectureRules,
+  ...restrictions,
+  ...typescript,
+  ...naming,
+  ...style,
+  ...react,
+  ...tokens,
+  ...overrides,
+  prettierConfig,
+  ...afterPrettier,
+);

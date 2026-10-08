@@ -1,25 +1,8 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-}
+// use prisma-8
 
 enum PageConfigStatus {
   DRAFT
   PUBLISHED
-}
-
-enum DataSourceKind {
-  MOCK
-  REST
-}
-
-enum DataSourceStatus {
-  UNKNOWN
-  OK
-  ERROR
 }
 
 enum ReleaseStatus {
@@ -34,53 +17,56 @@ enum MigrationStatus {
   APPLIED
 }
 
-model Theme {
-  id             String   @id @default(uuid())
-  primaryColor   String   @default("#0F172A")
-  secondaryColor String   @default("#1E293B")
-  accentColor    String   @default("#3B82F6")
-  headingFont    String   @default("Inter")
-  bodyFont       String   @default("Inter")
-  radius         String   @default("8px")
-  spacingScale   String   @default("1")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+enum DataSourceKind {
+  MOCK
+  REST
+}
 
-  // Relations
-  websites Website[]
+enum DataSourceStatus {
+  UNKNOWN
+  OK
+  ERROR
+}
+
+enum DatasetStatus {
+  UNKNOWN
+  OK
+  ERROR
 }
 
 model Website {
-  id                 String   @id @default(uuid())
-  name               String
-  slug               String   @unique
-  description        String?
-  templateKey        String?
-  themeId            String?
-  publishedReleaseId String?  @unique
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  slug        String   @unique
+  description String?
+  templateKey String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  publishedReleaseId String? @unique
 
-  // Relations
-  theme            Theme?           @relation(fields: [themeId], references: [id], onDelete: SetNull)
-  pages            Page[]
-  dataSources      DataSource[]
-  releases         WebsiteRelease[] @relation("WebsiteReleases")
-  publishedRelease WebsiteRelease?  @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
-  migrations       Migration[]
+  pages       Page[]
+  theme       WebsiteTheme?
+  releases    WebsiteRelease[]
+  migrations  WebsiteMigration[]
+  dataSources DataSource[]
+  publishedRelease WebsiteRelease? @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
+
+  @@unique([id, tenantId])
 }
 
 model Page {
   id        String   @id @default(uuid())
+  tenantId  String
   websiteId String
+  website   Website  @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
   path      String
   title     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  // Relations
-  website Website      @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  configs PageConfig[]
+  version   Int      @default(1)
+  configs   PageConfig[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   @@unique([websiteId, path])
 }
@@ -92,79 +78,101 @@ model PageConfig {
   status    PageConfigStatus @default(DRAFT)
   version   Int              @default(1)
   createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  updatedAt DateTime         @default(now())
 
-  // Relations
-  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page      Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, version])
 }
 
-model DataSource {
-  id            String           @id @default(uuid())
-  websiteId     String
-  name          String
-  kind          DataSourceKind
-  config        Json // Kind-specific connection config (e.g. baseUrl, authMode)
-  status        DataSourceStatus @default(UNKNOWN)
-  lastCheckedAt DateTime?
-  lastError     String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+model WebsiteTheme {
+  id             String  @id @default(uuid())
+  websiteId      String  @unique
+  primaryColor   String  @default("#1F3A34")
+  secondaryColor String  @default("#7A8B85")
+  accentColor    String  @default("#C9782F")
+  headingFont    String  @default("Source Serif 4")
+  bodyFont       String  @default("Inter")
+  radius         String  @default("md")
+  spacingScale   String  @default("comfortable")
 
-  // Relations
-  website  Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  datasets Dataset[]
-}
-
-model Dataset {
-  id            String           @id @default(uuid())
-  dataSourceId  String
-  name          String // Human-readable e.g. "Würzburg Veranstaltungen"
-  slug          String // URL-safe key e.g. "events"
-  canonicalType String // "Event" | "NewsItem" | "Service" | ... (see CanonicalType in domain)
-  mapping       Json? // Field mapping from external shape to canonical type
-  status        DataSourceStatus @default(UNKNOWN)
-  lastFetchedAt DateTime?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-
-  // Relations
-  dataSource DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
-
-  // One dataset per slug per source (e.g. a source can't have two "events" datasets)
-  @@unique([dataSourceId, slug])
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 }
 
 model WebsiteRelease {
-  id            String        @id @default(uuid())
+  id            String   @id @default(uuid())
   websiteId     String
   releaseNumber Int
   status        ReleaseStatus @default(DRAFT)
   snapshot      Json
   snapshotHash  String
-  createdAt     DateTime      @default(now())
   publishedAt   DateTime?
+  createdAt     DateTime @default(now())
 
-  // Relations
-  website            Website     @relation("WebsiteReleases", fields: [websiteId], references: [id], onDelete: Cascade)
-  publishedByWebsite Website?    @relation("PublishedRelease")
-  migrations         Migration[]
+  website       Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  activeWebsites Website[] @relation("PublishedRelease")
+  migrations    WebsiteMigration[]
 
   @@unique([websiteId, releaseNumber])
 }
 
-model Migration {
+model WebsiteMigration {
   id              String          @id @default(uuid())
   websiteId       String
   sourceReleaseId String
   status          MigrationStatus @default(PROPOSED)
-  planSnapshot    Json
-  resolutions     Json
+  plan            Json
+  resolutions     Json?
+  proposedBy      String
+  appliedBy       String?
   createdAt       DateTime        @default(now())
   appliedAt       DateTime?
 
-  // Relations
   website       Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  sourceRelease WebsiteRelease @relation(fields: [sourceReleaseId], references: [id])
+  sourceRelease WebsiteRelease @relation(fields: [sourceReleaseId], references: [id], onDelete: Cascade)
 
-  @@index([websiteId])
+  @@index([websiteId, createdAt])
+}
+
+model DataSource {
+  id            String    @id @default(uuid())
+  websiteId     String
+  name          String
+  kind          DataSourceKind
+  config        Json
+  status        DataSourceStatus @default(UNKNOWN)
+  lastCheckedAt DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+
+  website       Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  datasets      Dataset[]
+}
+
+model Dataset {
+  id            String    @id @default(uuid())
+  dataSourceId  String
+  name          String
+  slug          String
+  canonicalKind String
+  mapping       Json?
+  status        DatasetStatus @default(UNKNOWN)
+  lastFetchedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+
+  dataSource    DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([dataSourceId, slug])
+}
+
+model Membership {
+  id        String   @id @default(uuid())
+  actorId   String
+  tenantId  String
+  role      String
+  createdAt DateTime @default(now())
+
+  @@unique([actorId, tenantId, role])
 }

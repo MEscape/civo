@@ -1,148 +1,36 @@
-# Civo
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A website builder platform for German municipalities, smart-city portals, clubs/associations (Vereine), and civic organizations.
+## Getting Started
 
-This codebase is a clean, extensible **Vertical Slice Architecture (Modular)** foundation for a structured, JSON-driven page builder.
-
----
-
-## Status: what's complete vs. what remains
-
-This codebase is fully built, typechecked, unit-tested, and production-build-verified.
-
-### Fully built, typechecked, and tested
-- **Framework:** Next.js 16 (App Router) + React 19 + TypeScript (strict) + Tailwind v4
-- **Architecture:** Vertical Slice Architecture (Modules) separating `builder`, `component-platform`, `content`, `data-sources`, `integrations`, and `website`.
-- **Error Handling:** `Result<T, E>` / `AppError` never-throw pattern, structured logger.
-- **Database:** Prisma schema (`Website`, `Page`, `PageConfig`, `Theme`, `DataSource`).
-- **Domain:** Canonical content domain types + Zod schemas (`NewsItem`, `CivicEvent`, `Service`, `Contact`, `SmartCityMetric`, etc).
-- **Page Tree:** `PageNode` / `PageConfig` JSON page-tree model + recursive Zod validation + pure functional tree operations.
-- **Data Sources & Integrations:** Dynamic REST/JSON data sources, visual field-mapping UI, outbound URL validation (SSRF protection), and aggressive dataset caching.
-- **Data Adapters:** `CivicDataProvider` and `SmartCityDataProvider` have production-ready REST implementations backed by user-configured field mappings, alongside mock fallbacks for zero-config onboarding.
-- **Component Platform:** Centralized component registry (`type` → component resolution) + `PageRenderer`.
-- **Component Library:** 27+ modular components across `standard`, `civic`, and `smartcity` namespaces (including Hero, RichText, NewsGrid, ServiceFinder, KPI Grids, and interactive Metric Charts).
-- **Builder Editor:** Client-side Redux Toolkit state, three-panel shell, drag-and-drop sortable canvas (with precise hit-testing, native event delegation, and visual drag overlays), properties panel.
-- **Server Actions:** Zod-validated mutations for website creation, theme updates, page-config saving, and data source management.
-
-### What YOU need to do to actually run this
-1. **Run `npm run db:generate`** (`prisma generate`) — downloads the Prisma query-engine binary and generates the actual typed client.
-2. **Run `docker compose up -d`** to start local Postgres, then **`npm run db:migrate`** to create the schema.
-3. **Run `npm run db:seed`** to load three demo websites (municipal, smart-city, association) built from the Musterstadt data.
-4. **Run `npm run dev`** and open `http://localhost:3000` — it should redirect to `/websites`.
-
-### Known simplifications / explicit follow-ups
-- **Properties panel only edits top-level string/number props.** Array/object props aren't editable through a form yet — they come from template defaults. A nested-field editor is the natural next step.
-- **No authentication**, by design. A single implicit dev user is assumed everywhere.
-
----
-
-## Getting started
+First, run the development server:
 
 ```bash
-cp .env.example .env
-docker compose up -d
-npm install
-npm run db:generate
-npm run db:migrate
-npm run db:seed
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Then open `http://localhost:3000`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Scripts
-| Command | Description |
-|---|---|
-| `npm run dev` | Start the Next.js dev server |
-| `npm run build` | Production build |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
-| `npm run test` | Run unit tests once (Vitest) |
-| `npm run test:watch` | Run unit tests in watch mode |
-| `npm run db:generate` | Generate the Prisma client |
-| `npm run db:migrate` | Run Prisma migrations (dev) |
-| `npm run db:seed` | Seed demo data (Musterstadt) |
-| `npm run db:studio` | Open Prisma Studio |
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
----
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Architecture
+## Learn More
 
-```
-External API / CMS / Database
-            ↓
-      Data Adapter Layer        (src/modules/integrations/*/infrastructure/adapters)
-            ↓
-    Canonical Internal Model    (src/modules/content/domain)
-            ↓
-       Page Configuration       (src/modules/builder/domain/page-node)
-            ↓
-       Component Renderer       (src/modules/component-platform/infrastructure/render-nodes.tsx)
-            ↓
-        Next.js Website
-```
+To learn more about Next.js, take a look at the following resources:
 
-Layering for mutations:
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-```
-UI (Client Component)
- ↓
-Server Action           (src/modules/*/application/*-actions.ts)
- ↓
-Zod validation          (src/modules/*/domain/*-schema.ts)
- ↓
-Service                 (src/modules/*/application/*-service.ts)
- ↓
-Repository              (src/modules/*/infrastructure/*-repository.ts)
- ↓
-Prisma
- ↓
-PostgreSQL
-```
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Project structure
+## Deploy on Vercel
 
-```
-src/
-  app/                 Next.js App Router (Dashboard & Public Sites)
-  components/
-    ui/                shadcn-style UI primitives on civo design tokens
-  lib/                 Core utilities (result, errors, logger, db, local fonts)
-  modules/
-    builder/           Builder UI, Redux Slice, Page Tree Operations, Native DND
-    component-platform/ Component Registry & PageRenderer infrastructure
-    content/           Content schemas & domain types (News, Events, etc)
-    data-sources/      Data provider configuration and resolution
-    integrations/      Feature modules:
-      civic/           NewsGrid, EventsGrid, ServiceFinder, WasteCalendar, etc.
-      smartcity/       KPI Grid, Metric Charts, Dashboards
-    website/           Website/Page DB Repositories, Services & Themes
-  store/               Redux store configuration
-prisma/
-  schema.prisma
-  seed.ts
-```
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
----
-
-## How to extend
-
-### Add a new component
-1. Add a Zod prop schema in your feature module (e.g., `src/modules/integrations/civic/components/your-component/your-component.definition.ts`).
-2. Create the React component (e.g., `your-component.tsx`). It receives `{ props, websiteId }`.
-3. Register it in the module's `components.ts` file, which exports the definitions up to the global platform registry.
-
-### Add a new data provider (e.g. GraphQL or a specialized API)
-1. Implement the data provider interface (e.g. `CivicDataProvider`) in `src/modules/integrations/civic/infrastructure/adapters/your-provider.ts`.
-2. Ensure you respect the `DataSourceView` boundary type instead of importing the raw Prisma model directly into components/actions.
-3. Map the external response shape into the canonical types, validating before returning.
-4. Swap the instantiation in `data-source-resolver.ts` to route to your new provider based on the `DataSourceKind`.
-
-### Add a new template
-Add a new `WebsiteTemplate` entry in `src/modules/website/domain/templates/`. Its `generateHomePageConfig()` should return a fresh `PageConfig` object built from component registry types.
-
----
-
-## Design system
-
-Municipal + smart-city + modern SaaS, deliberately calm: a warm paper background, a deep forest-slate primary, a muted clay accent used sparingly, a humanist serif for headings (Source Serif 4) paired with a grotesk sans (Inter) for body/UI, hairline borders instead of shadows, minimal border-radius. All values are CSS custom properties (`--civo-*`) defined in `src/app/globals.css` and `src/modules/website/domain/theme.ts` — no component hardcodes a color, font, or radius value, which is what makes per-website theming possible without touching component code.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
