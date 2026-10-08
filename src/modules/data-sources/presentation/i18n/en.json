@@ -1,0 +1,240 @@
+{
+  "dataSources": {
+    "panel": {
+      "title": "Data sources",
+      "intro": "Connect municipal and smart-city data sources to give your website components real data.",
+      "newSource": "+ New source",
+      "createTitle": "Add a data source",
+      "empty": "No data sources configured. Sample data is shown."
+    },
+    "sourceCard": {
+      "confirmDelete": "Really remove this data source? All of its datasets are deleted too.",
+      "unknownEndpoint": "Unknown URL",
+      "kind": "Type",
+      "lastChecked": "Last checked",
+      "never": "Never",
+      "testHealthy": "Connection successful ({ms} ms).",
+      "testing": "Checking…",
+      "test": "Test connection",
+      "remove": "Remove"
+    },
+    "sourceForm": {
+      "name": "Source name",
+      "namePlaceholder": "e.g. Municipal open data portal",
+      "authMode": "Authentication",
+      "baseUrl": "API base URL",
+      "baseUrlPlaceholder": "https://example-municipality.org/api",
+      "credentialHint": "The credential is not stored here. It must be set on the server as an environment variable; ask your administrator.",
+      "saving": "Saving…",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "datasets": {
+      "title": "Datasets",
+      "add": "+ Add dataset",
+      "empty": "This source has no datasets yet. Add one.",
+      "kind": "Type: {kind}",
+      "confirmDelete": "Really delete this dataset and its mapping? Components that use it fall back to sample data.",
+      "hideMapping": "Hide mapping",
+      "editMapping": "Edit mapping",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "datasetForm": {
+      "title": "Add a dataset",
+      "titleEdit": "Edit dataset",
+      "name": "Name",
+      "namePlaceholder": "e.g. Events 2026",
+      "kind": "Dataset type",
+      "saving": "Saving…",
+      "add": "Add",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "mapping": {
+      "fieldRow": "Row {row}",
+      "title": "Map fields",
+      "loading": "Loading…",
+      "load": "Load fields",
+      "noFields": "No fields were found in the data source's response.",
+      "tableCaption": "Assignment of external fields to target fields",
+      "externalField": "External field",
+      "sampleValue": "Sample value",
+      "targetField": "Target field",
+      "targetFieldFor": "Target field for {field}",
+      "unassigned": "Not assigned",
+      "preview": "Preview",
+      "save": "Save mapping",
+      "saving": "Saving…",
+      "saved": "Mapping saved.",
+      "previewTitle": "Preview of the mapped record",
+      "targetOption": "{label}{required, select, yes { *} other {}}{taken, select, yes { (already assigned)} other {}}"
+    },
+    "kinds": {
+      "REST": "REST / JSON",
+      "MOCK": "Mock (sample data)"
+    },
+    "status": {
+      "OK": "Connected",
+      "ERROR": "Error",
+      "UNKNOWN": "Not tested"
+    },
+    "authModes": {
+      "NONE": "None",
+      "API_KEY": "API key",
+      "BEARER_TOKEN": "Bearer token"
+    },
+    "canonicalKinds": {
+      "Event": "Event",
+      "NewsItem": "News item",
+      "Service": "Service",
+      "Contact": "Contact",
+      "OpeningHoursEntry": "Opening hours",
+      "ServiceDetail": "Service (detail)",
+      "CouncilBody": "Council body",
+      "WasteCollectionEntry": "Waste collection",
+      "Alert": "Alert",
+      "Department": "Department",
+      "SmartCityMetric": "Smart-city metric",
+      "SmartCityGoal": "Smart-city goal (value and target)",
+      "SmartCityObservation": "Smart-city measurement over time",
+      "SmartCityBreakdownEntry": "Smart-city distribution part",
+      "GeoFeature": "Map feature"
+    },
+    "targetFields": {
+      "Event": {
+        "title": "Title",
+        "description": "Description",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "location": "Location",
+        "category": "Category",
+        "imageUrl": "Image URL"
+      },
+      "NewsItem": {
+        "title": "Title",
+        "excerpt": "Excerpt",
+        "category": "Category",
+        "imageUrl": "Image URL",
+        "publishedAt": "Publication date",
+        "slug": "URL slug",
+        "content": "Content"
+      },
+      "Service": {
+        "title": "Title",
+        "description": "Description",
+        "href": "Link",
+        "icon": "Icon name"
+      },
+      "Contact": {
+        "name": "Name",
+        "role": "Role",
+        "email": "Email",
+        "phone": "Phone"
+      },
+      "Alert": {
+        "title": "Title",
+        "message": "Message",
+        "severity": "Severity",
+        "active": "Active",
+        "href": "Link"
+      },
+      "SmartCityMetric": {
+        "label": "Label",
+        "value": "Value",
+        "unit": "Unit",
+        "category": "Category",
+        "trend": "Trend",
+        "changePercent": "Change (%)"
+      },
+      "SmartCityGoal": {
+        "label": "Label",
+        "value": "Value",
+        "target": "Target",
+        "unit": "Unit",
+        "category": "Category"
+      },
+      "SmartCityObservation": {
+        "series": "Series (measure name)",
+        "observedAt": "Observed at",
+        "value": "Value",
+        "unit": "Unit",
+        "category": "Category"
+      },
+      "SmartCityBreakdownEntry": {
+        "label": "Part",
+        "value": "Value",
+        "group": "Group (the whole)",
+        "unit": "Unit"
+      },
+      "GeoFeature": {
+        "name": "Name",
+        "geometry": "Geometry (GeoJSON)",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "category": "Category",
+        "status": "Status",
+        "value": "Value",
+        "unit": "Unit",
+        "observedAt": "Observed at",
+        "description": "Description",
+        "href": "Link",
+        "properties": "Further properties"
+      }
+    },
+    "errors": {
+      "dataSourceNotFound": "The data source was not found.",
+      "websiteNotFound": "The website was not found.",
+      "datasetNotFound": "The dataset was not found.",
+      "datasetSlugTaken": "A dataset with this name already exists in this data source.",
+      "datasetNotMapped": "This dataset has no field mapping yet.",
+      "mappingFailed": "The mapping could not be applied to a record of the source.",
+      "connectionFailed": "Connection failed: the data source could not be reached.",
+      "connectionTimedOut": "Connection failed: the request timed out.",
+      "authenticationFailed": "Authentication failed: the data source rejected the credentials.",
+      "upstreamError": "Invalid response: the data source returned an error.",
+      "responseTooLarge": "Invalid response: the data source's response was too large.",
+      "responseUnreadable": "Invalid response: the data source's response could not be read.",
+      "responseNotJson": "Invalid response: the data source did not return valid JSON.",
+      "noSampleRecords": "Invalid response: the data source returned no sample records.",
+      "credentialsMissing": "Invalid configuration: the credentials are not set up on the server.",
+      "connectorUnavailable": "Invalid configuration: no connector is available for this data source type yet.",
+      "addressNotAllowed": "Invalid configuration: this address is not allowed.",
+      "validation": "Please check your input.",
+      "infrastructure": "A service error occurred. Please try again later.",
+      "unexpected": "An unexpected error occurred."
+    },
+    "validation": {
+      "idInvalid": "Invalid identifier.",
+      "nameTooShort": "The name must be at least {nameMin} characters long.",
+      "nameTooLong": "The name must be at most {nameMax} characters long.",
+      "kindUnknown": "This data source type is not available.",
+      "configInvalid": "The configuration is invalid.",
+      "baseUrlInvalid": "Please enter a valid URL.",
+      "urlSchemeNotAllowed": "Only http and https addresses are allowed.",
+      "urlCredentialsNotAllowed": "Addresses containing a username or password are not allowed.",
+      "urlAddressNotAllowed": "This address is not allowed.",
+      "pathInvalid": "The path is invalid.",
+      "authModeUnsupported": "This authentication type is not available.",
+      "datasetNameTooShort": "The name must be at least {datasetNameMin} characters long.",
+      "datasetNameTooLong": "The name must be at most {datasetNameMax} characters long.",
+      "slugRequired": "No key can be derived from this name.",
+      "slugTooLong": "The key must be at most {slugMax} characters long.",
+      "slugInvalid": "Only lowercase letters, numbers and hyphens are allowed.",
+      "canonicalKindUnknown": "Please choose a valid dataset type.",
+      "mappingFieldCountInvalid": "Assign at least one and at most {maxFields} fields.",
+      "sourcePathInvalid": "The external field is invalid.",
+      "targetPathInvalid": "The target field is invalid.",
+      "targetPathUnknown": "This target field does not exist for the chosen type.",
+      "targetPathConflict": "This target field is already assigned to another field.",
+      "requiredTargetMissing": "Required field not assigned.",
+      "transformInvalid": "The conversion is invalid.",
+      "valueNotText": "The value is not text.",
+      "valueNotNumber": "The value is not a valid number.",
+      "valueNotBoolean": "The value is not a valid true/false value.",
+      "valueNotDate": "The value is not a valid date.",
+      "valueNotUrl": "The value is not a valid http(s) URL.",
+      "valueMissing": "The value is required but missing."
+    }
+  }
+}

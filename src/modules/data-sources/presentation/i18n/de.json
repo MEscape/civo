@@ -1,0 +1,240 @@
+{
+  "dataSources": {
+    "panel": {
+      "title": "Datenquellen",
+      "intro": "Verbinden Sie kommunale und Smart-City-Datenquellen, um Ihren Website-Komponenten echte Daten zur Verfügung zu stellen.",
+      "newSource": "+ Neue Quelle",
+      "createTitle": "Neue Datenquelle anlegen",
+      "empty": "Keine Datenquellen konfiguriert. Es werden Beispieldaten angezeigt."
+    },
+    "sourceCard": {
+      "confirmDelete": "Diese Datenquelle wirklich entfernen? Alle Datensätze dieser Quelle werden ebenfalls gelöscht.",
+      "unknownEndpoint": "Unbekannte URL",
+      "kind": "Typ",
+      "lastChecked": "Zuletzt geprüft",
+      "never": "Noch nie",
+      "testHealthy": "Verbindung erfolgreich ({ms} ms).",
+      "testing": "Prüft…",
+      "test": "Verbindung testen",
+      "remove": "Entfernen"
+    },
+    "sourceForm": {
+      "name": "Name der Quelle",
+      "namePlaceholder": "z. B. Kommunales Open-Data-Portal",
+      "authMode": "Authentifizierung",
+      "baseUrl": "API Basis-URL",
+      "baseUrlPlaceholder": "https://beispiel-kommune.de/api",
+      "credentialHint": "Das Zugangs-Credential wird nicht hier gespeichert, sondern muss serverseitig als Umgebungsvariable hinterlegt werden. Wenden Sie sich dazu an Ihren Administrator.",
+      "saving": "Speichert…",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "datasets": {
+      "title": "Datensätze",
+      "add": "+ Datensatz hinzufügen",
+      "empty": "Diese Quelle stellt noch keine Datensätze bereit. Fügen Sie einen Datensatz hinzu.",
+      "kind": "Typ: {kind}",
+      "confirmDelete": "Diesen Datensatz und das zugehörige Mapping wirklich löschen? Komponenten, die diesen Datensatz verwenden, werden auf Beispieldaten zurückfallen.",
+      "hideMapping": "Mapping ausblenden",
+      "editMapping": "Mapping bearbeiten",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "datasetForm": {
+      "title": "Neuen Datensatz anlegen",
+      "titleEdit": "Datensatz bearbeiten",
+      "name": "Name",
+      "namePlaceholder": "z. B. Veranstaltungen 2026",
+      "kind": "Datensatz-Typ",
+      "saving": "Speichert…",
+      "add": "Hinzufügen",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "mapping": {
+      "fieldRow": "Zeile {row}",
+      "title": "Felder zuordnen",
+      "loading": "Lädt…",
+      "load": "Felder laden",
+      "noFields": "In der Antwort der Datenquelle wurden keine Felder gefunden.",
+      "tableCaption": "Zuordnung externer Felder zu Zielfeldern",
+      "externalField": "Externes Feld",
+      "sampleValue": "Beispielwert",
+      "targetField": "Zielfeld",
+      "targetFieldFor": "Zielfeld für {field}",
+      "unassigned": "Nicht zugeordnet",
+      "preview": "Vorschau",
+      "save": "Mapping speichern",
+      "saving": "Speichert…",
+      "saved": "Mapping gespeichert.",
+      "previewTitle": "Vorschau des zugeordneten Datensatzes",
+      "targetOption": "{label}{required, select, yes { *} other {}}{taken, select, yes { (bereits zugeordnet)} other {}}"
+    },
+    "kinds": {
+      "REST": "REST / JSON",
+      "MOCK": "Mock (Beispieldaten)"
+    },
+    "status": {
+      "OK": "Verbunden",
+      "ERROR": "Fehler",
+      "UNKNOWN": "Nicht getestet"
+    },
+    "authModes": {
+      "NONE": "Keine",
+      "API_KEY": "API-Schlüssel",
+      "BEARER_TOKEN": "Bearer-Token"
+    },
+    "canonicalKinds": {
+      "Event": "Veranstaltung",
+      "NewsItem": "Nachricht",
+      "Service": "Dienstleistung",
+      "Contact": "Kontakt",
+      "OpeningHoursEntry": "Öffnungszeiten",
+      "ServiceDetail": "Dienstleistung (Detail)",
+      "CouncilBody": "Ratsgremium",
+      "WasteCollectionEntry": "Abfallkalender",
+      "Alert": "Hinweis",
+      "Department": "Abteilung",
+      "SmartCityMetric": "Smart-City-Kennzahl",
+      "SmartCityGoal": "Smart-City-Ziel (Wert und Zielwert)",
+      "SmartCityObservation": "Smart-City-Messreihe (Zeitverlauf)",
+      "SmartCityBreakdownEntry": "Smart-City-Verteilung (Anteil)",
+      "GeoFeature": "Kartenobjekt"
+    },
+    "targetFields": {
+      "Event": {
+        "title": "Titel",
+        "description": "Beschreibung",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "location": "Ort",
+        "category": "Kategorie",
+        "imageUrl": "Bild-URL"
+      },
+      "NewsItem": {
+        "title": "Titel",
+        "excerpt": "Auszug",
+        "category": "Kategorie",
+        "imageUrl": "Bild-URL",
+        "publishedAt": "Veröffentlichungsdatum",
+        "slug": "URL-Slug",
+        "content": "Inhalt"
+      },
+      "Service": {
+        "title": "Titel",
+        "description": "Beschreibung",
+        "href": "Link",
+        "icon": "Icon-Name"
+      },
+      "Contact": {
+        "name": "Name",
+        "role": "Rolle",
+        "email": "E-Mail",
+        "phone": "Telefon"
+      },
+      "Alert": {
+        "title": "Titel",
+        "message": "Nachricht",
+        "severity": "Schweregrad",
+        "active": "Aktiv",
+        "href": "Link"
+      },
+      "SmartCityMetric": {
+        "label": "Bezeichnung",
+        "value": "Wert",
+        "unit": "Einheit",
+        "category": "Kategorie",
+        "trend": "Trend",
+        "changePercent": "Veränderung (%)"
+      },
+      "SmartCityGoal": {
+        "label": "Bezeichnung",
+        "value": "Wert",
+        "target": "Zielwert",
+        "unit": "Einheit",
+        "category": "Kategorie"
+      },
+      "SmartCityObservation": {
+        "series": "Reihe (Name der Messgröße)",
+        "observedAt": "Erfasst am",
+        "value": "Wert",
+        "unit": "Einheit",
+        "category": "Kategorie"
+      },
+      "SmartCityBreakdownEntry": {
+        "label": "Anteil",
+        "value": "Wert",
+        "group": "Gruppe (das Ganze)",
+        "unit": "Einheit"
+      },
+      "GeoFeature": {
+        "name": "Name",
+        "geometry": "Geometrie (GeoJSON)",
+        "latitude": "Breitengrad",
+        "longitude": "Längengrad",
+        "category": "Kategorie",
+        "status": "Status",
+        "value": "Wert",
+        "unit": "Einheit",
+        "observedAt": "Erfasst am",
+        "description": "Beschreibung",
+        "href": "Link",
+        "properties": "Weitere Eigenschaften"
+      }
+    },
+    "errors": {
+      "dataSourceNotFound": "Die Datenquelle wurde nicht gefunden.",
+      "websiteNotFound": "Die Website wurde nicht gefunden.",
+      "datasetNotFound": "Der Datensatz wurde nicht gefunden.",
+      "datasetSlugTaken": "Ein Datensatz mit diesem Namen existiert bereits in dieser Datenquelle.",
+      "datasetNotMapped": "Für diesen Datensatz ist noch keine Feldzuordnung gespeichert.",
+      "mappingFailed": "Das Mapping konnte auf einen Datensatz der Quelle nicht angewandt werden.",
+      "connectionFailed": "Verbindung fehlgeschlagen: Die Datenquelle konnte nicht erreicht werden.",
+      "connectionTimedOut": "Verbindung fehlgeschlagen: Die Zeitüberschreitung der Anfrage wurde erreicht.",
+      "authenticationFailed": "Authentifizierung fehlgeschlagen: Die Datenquelle hat die Anmeldeinformationen abgelehnt.",
+      "upstreamError": "Ungültige Antwort: Die Datenquelle hat einen Fehler zurückgegeben.",
+      "responseTooLarge": "Ungültige Antwort: Die Antwort der Datenquelle war zu groß.",
+      "responseUnreadable": "Ungültige Antwort: Die Antwort der Datenquelle konnte nicht gelesen werden.",
+      "responseNotJson": "Ungültige Antwort: Die Datenquelle hat kein gültiges JSON zurückgegeben.",
+      "noSampleRecords": "Ungültige Antwort: Die Datenquelle hat keine Beispieldatensätze zurückgegeben.",
+      "credentialsMissing": "Ungültige Konfiguration: Die Zugangsdaten sind auf dem Server nicht hinterlegt.",
+      "connectorUnavailable": "Ungültige Konfiguration: Für diesen Datenquellentyp ist noch kein Connector verfügbar.",
+      "addressNotAllowed": "Ungültige Konfiguration: Diese Adresse ist nicht erlaubt.",
+      "validation": "Bitte überprüfen Sie Ihre Eingabe.",
+      "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "validation": {
+      "idInvalid": "Ungültige Kennung.",
+      "nameTooShort": "Der Name muss mindestens {nameMin} Zeichen lang sein.",
+      "nameTooLong": "Der Name darf höchstens {nameMax} Zeichen lang sein.",
+      "kindUnknown": "Dieser Datenquellentyp ist nicht verfügbar.",
+      "configInvalid": "Die Konfiguration ist ungültig.",
+      "baseUrlInvalid": "Bitte geben Sie eine gültige URL an.",
+      "urlSchemeNotAllowed": "Nur http- und https-Adressen sind erlaubt.",
+      "urlCredentialsNotAllowed": "Adressen mit Benutzername oder Passwort sind nicht erlaubt.",
+      "urlAddressNotAllowed": "Diese Adresse ist nicht erlaubt.",
+      "pathInvalid": "Der Pfad ist ungültig.",
+      "authModeUnsupported": "Dieser Authentifizierungstyp ist nicht verfügbar.",
+      "datasetNameTooShort": "Der Name muss mindestens {datasetNameMin} Zeichen lang sein.",
+      "datasetNameTooLong": "Der Name darf höchstens {datasetNameMax} Zeichen lang sein.",
+      "slugRequired": "Aus diesem Namen lässt sich kein Schlüssel ableiten.",
+      "slugTooLong": "Der Schlüssel darf höchstens {slugMax} Zeichen lang sein.",
+      "slugInvalid": "Nur Kleinbuchstaben, Ziffern und Bindestriche sind erlaubt.",
+      "canonicalKindUnknown": "Bitte wählen Sie einen gültigen Datensatz-Typ.",
+      "mappingFieldCountInvalid": "Ordnen Sie mindestens ein und höchstens {maxFields} Felder zu.",
+      "sourcePathInvalid": "Das externe Feld ist ungültig.",
+      "targetPathInvalid": "Das Zielfeld ist ungültig.",
+      "targetPathUnknown": "Dieses Zielfeld gibt es für den gewählten Typ nicht.",
+      "targetPathConflict": "Dieses Zielfeld wurde bereits einem anderen Feld zugeordnet.",
+      "requiredTargetMissing": "Pflichtfeld nicht zugeordnet.",
+      "transformInvalid": "Die Umwandlung ist ungültig.",
+      "valueNotText": "Der Wert ist kein Text.",
+      "valueNotNumber": "Der Wert ist keine gültige Zahl.",
+      "valueNotBoolean": "Der Wert ist kein gültiger Wahrheitswert.",
+      "valueNotDate": "Der Wert ist kein gültiges Datum.",
+      "valueNotUrl": "Der Wert ist keine gültige http(s)-URL.",
+      "valueMissing": "Der Wert ist erforderlich, fehlt aber."
+    }
+  }
+}
