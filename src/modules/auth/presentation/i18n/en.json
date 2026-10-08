@@ -1,0 +1,121 @@
+{
+  "auth": {
+    "signIn": {
+      "title": "Sign in",
+      "description": "Sign in with your email address and password.",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "No account yet?",
+      "createAccount": "Create an account",
+      "metadata": {
+        "title": "Sign in to your account",
+        "description": "Sign in to access your dashboard and manage your account."
+      }
+    },
+    "signUp": {
+      "title": "Create an account",
+      "description": "Register with your email address. You will receive a link to confirm it.",
+      "name": "Name",
+      "email": "Email address",
+      "password": "Password",
+      "passwordHint": "At least {passwordMin} characters.",
+      "confirmPassword": "Repeat password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "hasAccount": "Already registered?",
+      "signInLink": "Sign in",
+      "successTitle": "Check your inbox",
+      "success": "If this address can be used for a new account, we have sent a link to confirm it. The link is valid for {minutes} minutes.",
+      "metadata": {
+        "title": "Create a new account",
+        "description": "Register for a new account to get started."
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "description": "Enter your email address and we will send you a link to choose a new password.",
+      "email": "Email address",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "backToSignIn": "Back to sign in",
+      "successTitle": "Check your inbox",
+      "success": "If an account exists for this address, we have sent a link to reset the password. The link is valid for {minutes} minutes.",
+      "metadata": {
+        "title": "Reset your password",
+        "description": "Request a password reset link to regain access to your account."
+      }
+    },
+    "resetPassword": {
+      "title": "Choose a new password",
+      "description": "Your new password replaces the old one on all devices.",
+      "newPassword": "New password",
+      "passwordHint": "At least {passwordMin} characters.",
+      "confirmPassword": "Repeat new password",
+      "submit": "Save password",
+      "submitting": "Saving…",
+      "successTitle": "Password changed",
+      "success": "Your password has been changed. You can now sign in.",
+      "signIn": "Go to sign in",
+      "missingTokenTitle": "This link is incomplete",
+      "missingToken": "The reset link is missing its token. Request a new one.",
+      "requestNew": "Request a new link",
+      "metadata": {
+        "title": "Set a new password"
+      }
+    },
+    "emailVerification": {
+      "title": "Email verification",
+      "description": "Verifying your email address.",
+      "successTitle": "Email address verified",
+      "success": "Your email address has been verified. You can now sign in.",
+      "failureTitle": "Link invalid or expired",
+      "failure": "This verification link is invalid or has expired. Sign in and we will send you a new one.",
+      "signIn": "Go to sign in",
+      "metadata": {
+        "title": "Verify your email"
+      }
+    },
+    "signOut": {
+      "label": "Sign out",
+      "pending": "Signing out…"
+    },
+    "pageError": {
+      "title": "Authentication Error",
+      "description": "An unexpected error occurred.",
+      "retry": "Try again"
+    },
+    "pageNotFound": {
+      "title": "404 - Not Found",
+      "description": "The requested authentication page could not be found.",
+      "returnHome": "Return Home"
+    },
+    "errors": {
+      "unauthenticated": "Please sign in to continue.",
+      "invalidCredentials": "The email address or password is incorrect.",
+      "sessionExpired": "Your session has expired. Please sign in again.",
+      "reauthenticationRequired": "Please sign in again to confirm this action.",
+      "invalidToken": "This link is invalid or has expired. Request a new one.",
+      "emailNotVerified": "Your email address is not verified yet. We have sent you a new link.",
+      "permissionDenied": "You do not have permission to do this.",
+      "rateLimited": "Too many attempts. Please wait a while and try again.",
+      "validation": "Please check your input.",
+      "infrastructure": "A service error occurred. Please try again later.",
+      "unexpected": "An unexpected error occurred."
+    },
+    "validation": {
+      "emailRequired": "Please enter your email address.",
+      "emailInvalid": "Please enter a valid email address.",
+      "emailTooLong": "The email address must be at most {emailMax} characters long.",
+      "passwordRequired": "Please enter your password.",
+      "passwordTooShort": "The password must be at least {passwordMin} characters long.",
+      "passwordTooLong": "The password must be at most {passwordMax} characters long.",
+      "passwordMismatch": "The passwords do not match.",
+      "nameRequired": "Please enter your name.",
+      "nameTooLong": "The name must be at most {nameMax} characters long.",
+      "tokenInvalid": "This link is invalid. Request a new one."
+    }
+  }
+}

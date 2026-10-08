@@ -1,0 +1,121 @@
+{
+  "auth": {
+    "signIn": {
+      "title": "Anmelden",
+      "description": "Melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an.",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "submit": "Anmelden",
+      "submitting": "Wird angemeldet…",
+      "forgotPassword": "Passwort vergessen?",
+      "noAccount": "Noch kein Konto?",
+      "createAccount": "Konto erstellen",
+      "metadata": {
+        "title": "In Ihrem Konto anmelden",
+        "description": "Melden Sie sich an, um auf Ihr Dashboard zuzugreifen und Ihr Konto zu verwalten."
+      }
+    },
+    "signUp": {
+      "title": "Konto erstellen",
+      "description": "Registrieren Sie sich mit Ihrer E-Mail-Adresse. Sie erhalten einen Link zur Bestätigung.",
+      "name": "Name",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "passwordHint": "Mindestens {passwordMin} Zeichen.",
+      "confirmPassword": "Passwort wiederholen",
+      "submit": "Konto erstellen",
+      "submitting": "Konto wird erstellt…",
+      "hasAccount": "Bereits registriert?",
+      "signInLink": "Anmelden",
+      "successTitle": "Bitte prüfen Sie Ihr Postfach",
+      "success": "Wenn diese Adresse für ein neues Konto verwendet werden kann, haben wir einen Bestätigungslink gesendet. Der Link ist {minutes} Minuten gültig.",
+      "metadata": {
+        "title": "Ein neues Konto erstellen",
+        "description": "Registrieren Sie sich für ein neues Konto, um loszulegen."
+      }
+    },
+    "forgotPassword": {
+      "title": "Passwort zurücksetzen",
+      "description": "Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link, um ein neues Passwort festzulegen.",
+      "email": "E-Mail-Adresse",
+      "submit": "Link senden",
+      "submitting": "Wird gesendet…",
+      "backToSignIn": "Zurück zur Anmeldung",
+      "successTitle": "Bitte prüfen Sie Ihr Postfach",
+      "success": "Wenn zu dieser Adresse ein Konto besteht, haben wir einen Link zum Zurücksetzen des Passworts gesendet. Der Link ist {minutes} Minuten gültig.",
+      "metadata": {
+        "title": "Ihr Passwort zurücksetzen",
+        "description": "Fordern Sie einen Link zum Zurücksetzen Ihres Passworts an, um wieder Zugriff auf Ihr Konto zu erhalten."
+      }
+    },
+    "resetPassword": {
+      "title": "Neues Passwort festlegen",
+      "description": "Das neue Passwort ersetzt das alte auf allen Geräten.",
+      "newPassword": "Neues Passwort",
+      "passwordHint": "Mindestens {passwordMin} Zeichen.",
+      "confirmPassword": "Neues Passwort wiederholen",
+      "submit": "Passwort speichern",
+      "submitting": "Wird gespeichert…",
+      "successTitle": "Passwort geändert",
+      "success": "Ihr Passwort wurde geändert. Sie können sich jetzt anmelden.",
+      "signIn": "Zur Anmeldung",
+      "missingTokenTitle": "Der Link ist unvollständig",
+      "missingToken": "Dem Link zum Zurücksetzen fehlt das Token. Fordern Sie einen neuen Link an.",
+      "requestNew": "Neuen Link anfordern",
+      "metadata": {
+        "title": "Ein neues Passwort festlegen"
+      }
+    },
+    "emailVerification": {
+      "title": "E-Mail-Bestätigung",
+      "description": "Bestätigen Sie Ihre E-Mail-Adresse.",
+      "successTitle": "E-Mail-Adresse bestätigt",
+      "success": "Ihre E-Mail-Adresse wurde bestätigt. Sie können sich jetzt anmelden.",
+      "failureTitle": "Link ungültig oder abgelaufen",
+      "failure": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Melden Sie sich an, dann senden wir Ihnen einen neuen.",
+      "signIn": "Zur Anmeldung",
+      "metadata": {
+        "title": "Ihre E-Mail-Adresse bestätigen"
+      }
+    },
+    "signOut": {
+      "label": "Abmelden",
+      "pending": "Wird abgemeldet…"
+    },
+    "pageError": {
+      "title": "Authentifizierungsfehler",
+      "description": "Ein unerwarteter Fehler ist aufgetreten.",
+      "retry": "Erneut versuchen"
+    },
+    "pageNotFound": {
+      "title": "404 - Nicht gefunden",
+      "description": "Die angeforderte Authentifizierungsseite konnte nicht gefunden werden.",
+      "returnHome": "Zurück zur Startseite"
+    },
+    "errors": {
+      "unauthenticated": "Bitte melden Sie sich an, um fortzufahren.",
+      "invalidCredentials": "Die E-Mail-Adresse oder das Passwort ist falsch.",
+      "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+      "reauthenticationRequired": "Bitte melden Sie sich erneut an, um diese Aktion zu bestätigen.",
+      "invalidToken": "Dieser Link ist ungültig oder abgelaufen. Fordern Sie einen neuen an.",
+      "emailNotVerified": "Ihre E-Mail-Adresse ist noch nicht bestätigt. Wir haben Ihnen einen neuen Link gesendet.",
+      "permissionDenied": "Sie haben keine Berechtigung für diese Aktion.",
+      "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+      "validation": "Bitte überprüfen Sie Ihre Eingabe.",
+      "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "validation": {
+      "emailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+      "emailTooLong": "Die E-Mail-Adresse darf höchstens {emailMax} Zeichen lang sein.",
+      "passwordRequired": "Bitte geben Sie Ihr Passwort ein.",
+      "passwordTooShort": "Das Passwort muss mindestens {passwordMin} Zeichen lang sein.",
+      "passwordTooLong": "Das Passwort darf höchstens {passwordMax} Zeichen lang sein.",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+      "nameRequired": "Bitte geben Sie Ihren Namen ein.",
+      "nameTooLong": "Der Name darf höchstens {nameMax} Zeichen lang sein.",
+      "tokenInvalid": "Dieser Link ist ungültig. Fordern Sie einen neuen an."
+    }
+  }
+}
