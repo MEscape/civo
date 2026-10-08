@@ -1,0 +1,4 @@
+name: license-check.yml
+on:
+
+jobs:
