@@ -151,7 +151,7 @@ describe('the public booking flow', () => {
       customer: { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org' },
     });
     // The module sends no e-mail, so it must not claim to.
-    expect(screen.getByText(/We do not send a confirmation e-mail/)).toBeInTheDocument();
+    expect(screen.getByText(/A confirmation is also sent to this address/)).toBeInTheDocument();
     expect(screen.getByText(/ada@example\.org/)).toBeInTheDocument();
   });
 

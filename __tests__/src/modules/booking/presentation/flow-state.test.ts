@@ -6,12 +6,12 @@ import {
   initialState,
   needsServiceStep,
   stepsFor,
-} from '@modules/booking/presentation/components/flow/flow-state';
+} from '@modules/booking/presentation/flow/flow-state';
 import type {
   FlowAction,
   FlowConfig,
   FlowState,
-} from '@modules/booking/presentation/components/flow/flow-state';
+} from '@modules/booking/presentation/flow/flow-state';
 
 import { ANNEX, BERLIN, COURSE, booking, hold, service, slot } from './fixtures';
 

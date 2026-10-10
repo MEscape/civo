@@ -4,7 +4,7 @@ import type {
   LocationView,
   ResourceView,
   ServiceView,
-} from '../../application/contracts/booking-views';
+} from '../../application/contracts/setup-views';
 
 export interface LocationDto {
   readonly id: string;

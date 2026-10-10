@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCalendarFile } from '@modules/booking/presentation/components/flow/calendar-file';
+import { buildCalendarFile } from '@modules/booking/presentation/calendar/calendar-file';
 import {
   collectDetails,
   validateDetails,
-} from '@modules/booking/presentation/components/flow/details-validation';
+} from '@modules/booking/presentation/flow/details-validation';
 import {
   compareYearMonth,
   daysInMonth,
@@ -13,7 +13,7 @@ import {
   monthCells,
   shiftMonth,
   yearMonthOf,
-} from '@modules/booking/presentation/components/flow/month-math';
+} from '@modules/booking/presentation/time/month-math';
 import { toWallClock } from '@modules/booking/presentation/time/zoned-time';
 
 import { service } from './fixtures';

@@ -7,7 +7,7 @@ import {
   BOOKING_ERROR_CODES,
   BOOKING_VALIDATION_CODES,
 } from '@modules/booking/application/contracts/booking-constraints';
-import { FLOW_STEPS } from '@modules/booking/presentation/components/flow/flow-state';
+import { FLOW_STEPS } from '@modules/booking/presentation/flow/flow-state';
 import deBooking from '@modules/booking/presentation/i18n/de.json';
 import enBooking from '@modules/booking/presentation/i18n/en.json';
 import {

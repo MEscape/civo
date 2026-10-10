@@ -2,7 +2,7 @@ import type { InformationField } from '../../application/contracts/booking-const
 import type {
   PublicCatalogView,
   PublicServiceView,
-} from '../../application/contracts/booking-views';
+} from '../../application/contracts/catalog-views';
 
 export interface PublicLocationDto {
   readonly id: string;

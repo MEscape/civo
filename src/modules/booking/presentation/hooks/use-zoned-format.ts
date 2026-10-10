@@ -1,13 +1,19 @@
+/* eslint-disable no-restricted-syntax -- Slot and booking times are read in the LOCATION's time zone, which useAppFormatters (bound to the request zone) cannot do; the locale still comes from the request via useLocale. */
 import { useMemo } from 'react';
 
 import { useLocale } from '@i18n/client';
 
-import { parseLocalDate, weekdayOf } from '../../application/contracts/booking-constraints';
+import { MS_PER_DAY } from '@lib/utils';
+
+import { parseLocalDate } from '../../application/contracts/booking-constraints';
 
 const UTC = 'UTC';
 const NOON = 12;
-const MONDAY_2024 = Date.UTC(2024, 0, 1);
-const MS_PER_DAY = 86_400_000;
+/** A Monday, so weekday number N is that day plus N - 1 days. */
+const REFERENCE_YEAR = 2024;
+const MONDAY_2024 = Date.UTC(REFERENCE_YEAR, 0, 1);
+/** Any year works for a time of day; it only has to be a real date. */
+const ANY_YEAR = 2000;
 const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
 
 /** A calendar day as a `Date` that formats the same in every zone: noon UTC, formatted in UTC. */
@@ -20,7 +26,9 @@ function localDateToDate(localDate: string): Date | null {
 
 function timeToDate(localTime: string): Date | null {
   const match = TIME_PATTERN.exec(localTime);
-  return match === null ? null : new Date(Date.UTC(2000, 0, 1, Number(match[1]), Number(match[2])));
+  return match === null
+    ? null
+    : new Date(Date.UTC(ANY_YEAR, 0, 1, Number(match[1]), Number(match[2])));
 }
 
 export interface ZonedFormat {
@@ -114,8 +122,4 @@ export function useZonedFormat(timeZone: string): ZonedFormat {
   }, [locale, timeZone]);
 }
 
-/** ISO weekday of a `YYYY-MM-DD` day, or `null` when it is not a date. */
-export function weekdayOfLocalDate(localDate: string): number | null {
-  const parsed = parseLocalDate(localDate);
-  return parsed === null ? null : weekdayOf(parsed);
-}
+/* eslint-enable no-restricted-syntax -- End of the location-zone exception above. */

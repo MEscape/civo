@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import type { BookingView, HoldView } from '@modules/booking/application/contracts/booking-views';
 import type {
   AvailabilityView,
-  BookingView,
-  HoldView,
   PublicCatalogView,
-} from '@modules/booking/application/contracts/booking-views';
+} from '@modules/booking/application/contracts/catalog-views';
 import {
   toAlternativeSlotsDto,
   toAvailabilityDto,

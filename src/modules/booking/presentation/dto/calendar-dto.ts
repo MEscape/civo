@@ -5,7 +5,7 @@ import type {
   CalendarBookingView,
   CalendarResourceView,
   OperationsCalendarView,
-} from '../../application/contracts/booking-views';
+} from '../../application/contracts/calendar-views';
 
 export interface CalendarBookingDto {
   readonly id: string;

@@ -284,7 +284,11 @@ describe('the service form', () => {
       cancellation: expect.objectContaining({ isAllowed: true }),
     });
     expect(payload).not.toHaveProperty('id');
-    expect(refresh).toHaveBeenCalled();
+    // The action revalidates the page, so its response already carries the fresh data: no second round trip.
+    expect(refresh).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    });
   });
 
   it('shows what the server rejected next to the form', async () => {

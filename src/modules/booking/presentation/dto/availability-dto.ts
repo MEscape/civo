@@ -4,7 +4,7 @@ import type {
   AlternativeSlotsView,
   AvailabilityView,
   SlotView,
-} from '../../application/contracts/booking-views';
+} from '../../application/contracts/catalog-views';
 
 /**
  * One bookable start time. `localDate` and `localTime` are the wall-clock
