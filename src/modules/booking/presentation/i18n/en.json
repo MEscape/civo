@@ -130,9 +130,26 @@
       "continue": "Continue",
       "review": "Review booking"
     },
+    "sample": {
+      "idCard": {
+        "name": "Apply for an ID card",
+        "description": "Book an appointment to apply for or renew your ID card.",
+        "category": "Citizen services"
+      },
+      "registration": {
+        "name": "Register a change of address",
+        "description": "Register your new address in person.",
+        "category": "Citizen services"
+      },
+      "location": {
+        "name": "Citizens' office",
+        "address": "Town hall, ground floor"
+      },
+      "instructions": "Please bring your current ID card."
+    },
     "state": {
       "empty": "Nothing can be booked here yet. Please check back later.",
-      "empty-draft": "Nothing can be booked yet. Add an active service with a location and opening hours in the booking administration.",
+      "empty-draft": "Nothing can be booked yet, so this shows sample services. Add an active service with a location and opening hours in the booking administration.",
       "unavailable": "Booking is temporarily unavailable. Please try again later.",
       "staff-only": "The booking calendar is only shown to signed-in staff.",
       "no-access": "You do not have access to the booking calendar."
@@ -220,7 +237,7 @@
     },
     "confirmation": {
       "referenceLabel": "Your booking reference",
-      "keepSafe": "Please keep this reference and the e-mail address {email}. You need both to change or cancel your booking. We do not send a confirmation e-mail.",
+      "keepSafe": "Please keep this reference and the e-mail address {email}. You need both to change or cancel your booking. A confirmation is also sent to this address.",
       "copy": "Copy reference",
       "copied": "Copied",
       "copyFailed": "Could not copy. Please note the reference down.",

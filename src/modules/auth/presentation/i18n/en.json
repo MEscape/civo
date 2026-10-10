@@ -89,8 +89,7 @@
     },
     "pageNotFound": {
       "title": "404 - Not Found",
-      "description": "The requested authentication page could not be found.",
-      "returnHome": "Return Home"
+      "description": "The requested authentication page could not be found."
     },
     "errors": {
       "unauthenticated": "Please sign in to continue.",

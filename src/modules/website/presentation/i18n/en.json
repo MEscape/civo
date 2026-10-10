@@ -21,7 +21,27 @@
       "association": {
         "label": "Association",
         "description": "Home page with hero, introduction, news, events and contact."
+      },
+      "citizenServices": {
+        "label": "Citizen services",
+        "description": "Service search, appointment booking, frequently asked questions and contact."
+      },
+      "tourism": {
+        "label": "Tourism and leisure",
+        "description": "Home page with highlights, events, a call to action and visitor information."
       }
+    },
+    "generalSettings": {
+      "title": "General",
+      "description": "The name and description of this website.",
+      "name": "Name",
+      "slug": "Slug",
+      "slugHint": "The slug is part of the public address and cannot be changed.",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "A short summary of this website",
+      "submit": "Save changes",
+      "submitting": "Saving…",
+      "saved": "Changes saved."
     },
     "themeSettings": {
       "title": "Theme settings",
@@ -78,6 +98,10 @@
       "fontUnsupported": "This font is not available.",
       "radiusUnsupported": "This corner radius is not available.",
       "spacingUnsupported": "This spacing is not available."
+    },
+    "nav": {
+      "label": "Website sections",
+      "overview": "Overview"
     },
     "pages": {
       "list": {

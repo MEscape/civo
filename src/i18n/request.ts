@@ -1,7 +1,7 @@
 import { IntlErrorCode, type IntlError } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
 
-import { serverEnv } from '@lib/config';
+import { serverEnv } from '@lib/config/server';
 import { logger } from '@lib/logger';
 import { deepMerge } from '@lib/utils';
 

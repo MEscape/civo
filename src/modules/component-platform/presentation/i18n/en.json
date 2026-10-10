@@ -4,6 +4,20 @@
       "section": {
         "label": "Section",
         "description": "Groups other components in a block with its own background tone.",
+        "sample": {
+          "props": {
+            "tone": "muted"
+          },
+          "children": {
+            "1": {
+              "type": "richText",
+              "props": {
+                "heading": "A section groups content",
+                "body": "Components placed inside share this background."
+              }
+            }
+          }
+        },
         "fields": {
           "tone": {
             "label": "Background",
@@ -39,6 +53,25 @@
       "accordion": {
         "label": "Accordion",
         "description": "Collapsible questions and answers.",
+        "sample": {
+          "props": {
+            "heading": "Frequently asked questions",
+            "items": {
+              "1": {
+                "question": "How do I apply for an ID card?",
+                "answer": "Book an appointment online and bring a current photo."
+              },
+              "2": {
+                "question": "When is the town hall open?",
+                "answer": "Monday to Friday from 8 am to 12 noon."
+              },
+              "3": {
+                "question": "Where can I park?",
+                "answer": "Parking is available behind the town hall."
+              }
+            }
+          }
+        },
         "fields": {
           "heading": {
             "label": "Heading"
@@ -78,6 +111,25 @@
       "cardGrid": {
         "label": "Card grid",
         "description": "Freely configurable grid of cards.",
+        "sample": {
+          "props": {
+            "heading": "Our offers",
+            "cards": {
+              "1": {
+                "title": "Citizens' office",
+                "description": "Documents, registration and certificates."
+              },
+              "2": {
+                "title": "Building authority",
+                "description": "Permits and advice for building projects."
+              },
+              "3": {
+                "title": "Library",
+                "description": "Books, media and events for all ages."
+              }
+            }
+          }
+        },
         "fields": {
           "heading": {
             "label": "Heading"
@@ -120,6 +172,12 @@
       "richText": {
         "label": "Text",
         "description": "Heading with running text.",
+        "sample": {
+          "props": {
+            "heading": "Welcome to our town",
+            "body": "Here you find news, services and contacts of the municipality.\nUse this block for running text."
+          }
+        },
         "fields": {
           "heading": {
             "label": "Heading"
@@ -132,6 +190,24 @@
       "tabs": {
         "label": "Tabs",
         "description": "Content organised in tabs.",
+        "sample": {
+          "props": {
+            "tabs": {
+              "1": {
+                "label": "Overview",
+                "body": "A short introduction to the topic."
+              },
+              "2": {
+                "label": "Costs",
+                "body": "Fees and payment options at a glance."
+              },
+              "3": {
+                "label": "Contact",
+                "body": "Who to ask when you have questions."
+              }
+            }
+          }
+        },
         "fields": {
           "tabs": {
             "label": "Tabs",
@@ -332,6 +408,29 @@
       "quickLinks": {
         "label": "Quick links",
         "description": "List of important links.",
+        "sample": {
+          "props": {
+            "heading": "Quick links",
+            "links": {
+              "1": {
+                "label": "Book an appointment",
+                "href": "/"
+              },
+              "2": {
+                "label": "Report a defect",
+                "href": "/"
+              },
+              "3": {
+                "label": "Opening hours",
+                "href": "/"
+              },
+              "4": {
+                "label": "Waste calendar",
+                "href": "/"
+              }
+            }
+          }
+        },
         "fields": {
           "heading": {
             "label": "Heading"
@@ -392,6 +491,9 @@
         "fields": {
           "datasetId": {
             "label": "Dataset"
+          },
+          "additionalDatasetIds": {
+            "label": "Further datasets"
           },
           "heading": {
             "label": "Heading"

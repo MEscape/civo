@@ -5,7 +5,7 @@ import type { Locale, Namespace } from '@i18n';
 
 import { getLocale, getMessages, getTimeZone } from '@i18n/server';
 
-import { serverEnv } from '@lib/config';
+import { serverEnv } from '@lib/config/server';
 import { pick, unique } from '@lib/utils';
 
 import { I18nClientProvider } from './i18n-client-provider';

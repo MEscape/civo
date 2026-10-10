@@ -21,7 +21,27 @@
       "association": {
         "label": "Verein",
         "description": "Startseite mit Hero, Vorstellung, Neuigkeiten, Terminen und Kontakt."
+      },
+      "citizenServices": {
+        "label": "Bürgerservice",
+        "description": "Leistungssuche, Terminbuchung, häufige Fragen und Kontakt."
+      },
+      "tourism": {
+        "label": "Tourismus & Freizeit",
+        "description": "Startseite mit Highlights, Veranstaltungen, Handlungsaufforderung und Besucherinformationen."
       }
+    },
+    "generalSettings": {
+      "title": "Allgemein",
+      "description": "Name und Beschreibung dieser Website.",
+      "name": "Name",
+      "slug": "Slug",
+      "slugHint": "Der Slug ist Teil der öffentlichen Adresse und kann nicht geändert werden.",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Eine kurze Zusammenfassung dieser Website",
+      "submit": "Änderungen speichern",
+      "submitting": "Wird gespeichert…",
+      "saved": "Änderungen gespeichert."
     },
     "themeSettings": {
       "title": "Theme Einstellungen",
@@ -78,6 +98,10 @@
       "fontUnsupported": "Diese Schriftart ist nicht verfügbar.",
       "radiusUnsupported": "Diese Abrundung ist nicht verfügbar.",
       "spacingUnsupported": "Dieser Abstand ist nicht verfügbar."
+    },
+    "nav": {
+      "label": "Bereiche der Website",
+      "overview": "Übersicht"
     },
     "pages": {
       "list": {

@@ -130,9 +130,26 @@
       "continue": "Weiter",
       "review": "Buchung prüfen"
     },
+    "sample": {
+      "idCard": {
+        "name": "Personalausweis beantragen",
+        "description": "Vereinbaren Sie einen Termin, um Ihren Personalausweis zu beantragen oder zu verlängern.",
+        "category": "Bürgerservice"
+      },
+      "registration": {
+        "name": "Ummeldung",
+        "description": "Melden Sie Ihre neue Adresse persönlich an.",
+        "category": "Bürgerservice"
+      },
+      "location": {
+        "name": "Bürgerbüro",
+        "address": "Rathaus, Erdgeschoss"
+      },
+      "instructions": "Bitte bringen Sie Ihren aktuellen Personalausweis mit."
+    },
     "state": {
       "empty": "Hier kann noch nichts gebucht werden. Bitte schauen Sie später noch einmal vorbei.",
-      "empty-draft": "Es kann noch nichts gebucht werden. Legen Sie in der Buchungsverwaltung eine aktive Leistung mit Standort und Öffnungszeiten an.",
+      "empty-draft": "Es kann noch nichts gebucht werden, daher zeigt die Vorschau Beispielleistungen. Legen Sie in der Buchungsverwaltung eine aktive Leistung mit Standort und Öffnungszeiten an.",
       "unavailable": "Die Buchung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.",
       "staff-only": "Der Buchungskalender wird nur angemeldetem Personal angezeigt.",
       "no-access": "Sie haben keinen Zugriff auf den Buchungskalender."
@@ -220,7 +237,7 @@
     },
     "confirmation": {
       "referenceLabel": "Ihre Buchungsreferenz",
-      "keepSafe": "Bitte bewahren Sie diese Referenz und die E-Mail-Adresse {email} auf. Sie benötigen beides, um Ihre Buchung zu ändern oder zu stornieren. Wir senden keine Bestätigungs-E-Mail.",
+      "keepSafe": "Bitte bewahren Sie diese Referenz und die E-Mail-Adresse {email} auf. Sie benötigen beides, um Ihre Buchung zu ändern oder zu stornieren. Eine Bestätigung senden wir zusätzlich an diese Adresse.",
       "copy": "Referenz kopieren",
       "copied": "Kopiert",
       "copyFailed": "Kopieren nicht möglich. Bitte notieren Sie sich die Referenz.",

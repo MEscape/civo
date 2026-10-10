@@ -89,8 +89,7 @@
     },
     "pageNotFound": {
       "title": "404 - Nicht gefunden",
-      "description": "Die angeforderte Authentifizierungsseite konnte nicht gefunden werden.",
-      "returnHome": "Zurück zur Startseite"
+      "description": "Die angeforderte Authentifizierungsseite konnte nicht gefunden werden."
     },
     "errors": {
       "unauthenticated": "Bitte melden Sie sich an, um fortzufahren.",

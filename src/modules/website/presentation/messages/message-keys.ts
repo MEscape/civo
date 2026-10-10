@@ -1,7 +1,7 @@
 import type { MessageCatalog } from '@i18n';
 
-import { fieldPath } from '@lib/errors/validation';
-import type { NestedKeyOf } from '@lib/errors/validation';
+import { fieldPath } from '@lib/errors';
+import type { NestedKeyOf } from '@lib/errors';
 
 import {
   WEBSITE_ERROR_CODES as ERRORS,
@@ -81,6 +81,14 @@ export const TEMPLATE_MESSAGE_KEYS = {
   association: {
     label: fieldPath('templates', 'association', 'label'),
     description: fieldPath('templates', 'association', 'description'),
+  },
+  'citizen-services': {
+    label: fieldPath('templates', 'citizenServices', 'label'),
+    description: fieldPath('templates', 'citizenServices', 'description'),
+  },
+  tourism: {
+    label: fieldPath('templates', 'tourism', 'label'),
+    description: fieldPath('templates', 'tourism', 'description'),
   },
 } as const satisfies Record<TemplateKey, { label: ValidKeys; description: ValidKeys }>;
 

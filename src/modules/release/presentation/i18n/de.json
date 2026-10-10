@@ -2,7 +2,10 @@
   "release": {
     "history": {
       "listLabel": "Release-Verlauf",
-      "empty": "Noch keine Releases veröffentlicht. Öffnen Sie den Builder und klicken Sie auf „Veröffentlichen“, um das erste Release zu erstellen.",
+      "empty": "Noch keine Veröffentlichung. Wählen Sie „Veröffentlichen“, um die aktuellen Seiten live zu schalten.",
+      "publish": "Aktuelle Seiten veröffentlichen",
+      "publishing": "Wird veröffentlicht…",
+      "published": "Version #{number} ist live.",
       "releaseNumber": "Release #{number}",
       "active": "Aktiv",
       "publishedAt": "Veröffentlicht: {date}",

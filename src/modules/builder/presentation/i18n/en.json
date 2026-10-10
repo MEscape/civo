@@ -119,6 +119,14 @@
         "unavailable": "Context missing.",
         "option": "{name} ({source})"
       },
+      "datasets": {
+        "empty": "No compatible datasets yet.",
+        "limit": "At most {max} further datasets can be combined."
+      },
+      "category": {
+        "placeholder": "All categories",
+        "storedValue": "{value} (not in the data)"
+      },
       "items": {
         "empty": "No entries yet.",
         "entry": "Entry {number}",

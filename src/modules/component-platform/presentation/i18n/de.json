@@ -4,6 +4,20 @@
       "section": {
         "label": "Abschnitt",
         "description": "Fasst andere Komponenten in einem Block mit eigenem Hintergrundton zusammen.",
+        "sample": {
+          "props": {
+            "tone": "muted"
+          },
+          "children": {
+            "1": {
+              "type": "richText",
+              "props": {
+                "heading": "Ein Abschnitt gruppiert Inhalte",
+                "body": "Komponenten darin teilen sich diesen Hintergrund."
+              }
+            }
+          }
+        },
         "fields": {
           "tone": {
             "label": "Hintergrund",
@@ -39,6 +53,25 @@
       "accordion": {
         "label": "Akkordeon",
         "description": "Ein-/ausklappbare Fragen und Antworten.",
+        "sample": {
+          "props": {
+            "heading": "Häufige Fragen",
+            "items": {
+              "1": {
+                "question": "Wie beantrage ich einen Personalausweis?",
+                "answer": "Buchen Sie online einen Termin und bringen Sie ein aktuelles Foto mit."
+              },
+              "2": {
+                "question": "Wann ist das Rathaus geöffnet?",
+                "answer": "Montag bis Freitag von 8 bis 12 Uhr."
+              },
+              "3": {
+                "question": "Wo kann ich parken?",
+                "answer": "Parkplätze finden Sie hinter dem Rathaus."
+              }
+            }
+          }
+        },
         "fields": {
           "heading": {
             "label": "Überschrift"
@@ -78,6 +111,25 @@
       "cardGrid": {
         "label": "Karten-Raster",
         "description": "Frei konfigurierbares Raster aus Karten.",
+        "sample": {
+          "props": {
+            "heading": "Unsere Angebote",
+            "cards": {
+              "1": {
+                "title": "Bürgerbüro",
+                "description": "Ausweise, Meldewesen und Bescheinigungen."
+              },
+              "2": {
+                "title": "Bauamt",
+                "description": "Genehmigungen und Beratung für Bauvorhaben."
+              },
+              "3": {
+                "title": "Bücherei",
+                "description": "Bücher, Medien und Veranstaltungen für alle Altersgruppen."
+              }
+            }
+          }
+        },
         "fields": {
           "heading": {
             "label": "Überschrift"
@@ -120,6 +172,12 @@
       "richText": {
         "label": "Text",
         "description": "Überschrift mit Fließtext.",
+        "sample": {
+          "props": {
+            "heading": "Willkommen in unserer Stadt",
+            "body": "Hier finden Sie Neuigkeiten, Leistungen und Ansprechpartner der Verwaltung.\nNutzen Sie diesen Block für Fließtext."
+          }
+        },
         "fields": {
           "heading": {
             "label": "Überschrift"
@@ -132,6 +190,24 @@
       "tabs": {
         "label": "Tabs",
         "description": "Inhalte in Reitern organisiert.",
+        "sample": {
+          "props": {
+            "tabs": {
+              "1": {
+                "label": "Überblick",
+                "body": "Eine kurze Einführung in das Thema."
+              },
+              "2": {
+                "label": "Kosten",
+                "body": "Gebühren und Zahlungsmöglichkeiten auf einen Blick."
+              },
+              "3": {
+                "label": "Kontakt",
+                "body": "Wer bei Fragen weiterhilft."
+              }
+            }
+          }
+        },
         "fields": {
           "tabs": {
             "label": "Reiter",
@@ -332,6 +408,29 @@
       "quickLinks": {
         "label": "Schnellzugriff",
         "description": "Liste wichtiger Links.",
+        "sample": {
+          "props": {
+            "heading": "Schnellzugriff",
+            "links": {
+              "1": {
+                "label": "Termin buchen",
+                "href": "/"
+              },
+              "2": {
+                "label": "Mängel melden",
+                "href": "/"
+              },
+              "3": {
+                "label": "Öffnungszeiten",
+                "href": "/"
+              },
+              "4": {
+                "label": "Abfallkalender",
+                "href": "/"
+              }
+            }
+          }
+        },
         "fields": {
           "heading": {
             "label": "Überschrift"
@@ -392,6 +491,9 @@
         "fields": {
           "datasetId": {
             "label": "Datensatz"
+          },
+          "additionalDatasetIds": {
+            "label": "Weitere Datensätze"
           },
           "heading": {
             "label": "Überschrift"

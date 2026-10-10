@@ -1,7 +1,7 @@
 import type { MessageCatalog } from '@i18n';
 
-import { fieldPath } from '@lib/errors/validation';
-import type { NestedKeyOf } from '@lib/errors/validation';
+import { fieldPath } from '@lib/errors';
+import type { NestedKeyOf } from '@lib/errors';
 
 import {
   COMPONENT_PLATFORM_ERROR_CODES as ERRORS,

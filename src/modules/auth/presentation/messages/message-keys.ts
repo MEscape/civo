@@ -1,7 +1,7 @@
 import type { MessageCatalog } from '@i18n';
 
-import { fieldPath } from '@lib/errors/validation';
-import type { NestedKeyOf } from '@lib/errors/validation';
+import { fieldPath } from '@lib/errors';
+import type { NestedKeyOf } from '@lib/errors';
 
 import {
   AUTH_ERROR_CODES as ERRORS,
@@ -38,7 +38,6 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.providerFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.mailerNotConfigured]: fieldPath('errors', 'infrastructure'),
-  [ERRORS.mailDeliveryFailed]: fieldPath('errors', 'infrastructure'),
   [VALIDATION.emailRequired]: fieldPath('validation', 'emailRequired'),
   [VALIDATION.emailInvalid]: fieldPath('validation', 'emailInvalid'),
   [VALIDATION.emailTooLong]: fieldPath('validation', 'emailTooLong'),

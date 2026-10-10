@@ -119,6 +119,14 @@
         "unavailable": "Kontext fehlt.",
         "option": "{name} ({source})"
       },
+      "datasets": {
+        "empty": "Noch keine passenden Datensätze.",
+        "limit": "Es lassen sich höchstens {max} weitere Datensätze kombinieren."
+      },
+      "category": {
+        "placeholder": "Alle Kategorien",
+        "storedValue": "{value} (nicht in den Daten)"
+      },
       "items": {
         "empty": "Noch keine Einträge.",
         "entry": "Eintrag {number}",

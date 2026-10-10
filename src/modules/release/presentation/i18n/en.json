@@ -2,7 +2,10 @@
   "release": {
     "history": {
       "listLabel": "Release history",
-      "empty": "No releases published yet. Open the builder and select “Publish” to create the first release.",
+      "empty": "No releases published yet. Select “Publish” to put the current pages live.",
+      "publish": "Publish current pages",
+      "publishing": "Publishing…",
+      "published": "Release #{number} is live.",
       "releaseNumber": "Release #{number}",
       "active": "Live",
       "publishedAt": "Published: {date}",

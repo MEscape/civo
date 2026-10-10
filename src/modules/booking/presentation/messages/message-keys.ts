@@ -1,21 +1,17 @@
 import type { MessageCatalog } from '@i18n';
 
-import { fieldPath } from '@lib/errors/validation';
-import type { NestedKeyOf } from '@lib/errors/validation';
+import { fieldPath } from '@lib/errors';
+import type { NestedKeyOf } from '@lib/errors';
 
 import {
   BOOKING_ERROR_CODES as ERRORS,
   BOOKING_VALIDATION_CODES as VALIDATION,
   CUSTOMER_LIMITS,
-  EXCEPTION_KINDS,
   HOLD_MINUTES,
-  INFORMATION_FIELDS,
   LOCATION_LIMITS,
   MAX_CUSTOMER_RESCHEDULES,
   RESOURCE_LIMITS,
-  RESOURCE_TYPES,
   SERVICE_LIMITS,
-  WEEKDAYS,
 } from '../../application/contracts/booking-constraints';
 
 import type {
@@ -25,6 +21,7 @@ import type {
   InformationField,
   ResourceKind,
   Weekday,
+  EXCEPTION_KINDS,
 } from '../../application/contracts/booking-constraints';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['booking']>;
@@ -201,11 +198,3 @@ export const CHANGE_ACTOR_MESSAGE_KEYS = {
   customer: fieldPath('actors', 'customer'),
   staff: fieldPath('actors', 'staff'),
 } as const satisfies Record<ChangeActor, ValidKeys>;
-
-/** The list orders the forms offer, so a new value cannot be forgotten in a form. */
-export const FORM_OPTIONS = {
-  resourceTypes: RESOURCE_TYPES,
-  informationFields: INFORMATION_FIELDS,
-  exceptionKinds: EXCEPTION_KINDS,
-  weekdays: WEEKDAYS,
-} as const;

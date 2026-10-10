@@ -1,12 +1,6 @@
 {
   "metadata": {
-    "title": "Civo — Website-Baukasten für Kommunen und Smart Cities",
     "description": "Website-Baukasten-Plattform für deutsche Kommunen, Smart-City-Portale und zivilgesellschaftliche Organisationen."
-  },
-  "home": {
-    "title": "Civo",
-    "description": "Website-Baukasten für Kommunen und Smart Cities",
-    "comingSoon": "Die öffentliche Startseite folgt in Kürze."
   },
   "routeError": {
     "title": "Etwas ist schiefgelaufen",
@@ -16,7 +10,7 @@
   "notFound": {
     "title": "Seite nicht gefunden",
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
-    "returnHome": "Zur Startseite"
+    "backToWebsites": "Zurück zu den Websites"
   },
   "navigation": {
     "label": "Hauptnavigation"
