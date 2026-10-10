@@ -52,7 +52,7 @@ body:
         - OS: 
         - Browser: 
         - Node.js version: 
-        - Docker version (if applicable): 
+        - Docker version (if applicable):
     validations:
       required: false
   - type: textarea

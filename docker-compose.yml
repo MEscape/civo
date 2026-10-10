@@ -41,6 +41,7 @@ services:
   # Next.js Production
   # -----------------------------
   app:
+    profiles: ["production"]
     build:
       context: .
       dockerfile: Dockerfile
@@ -56,15 +57,15 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
 
       # Inside Docker, "localhost" means the app container.
-      DATABASE_URL: postgresql://civo:civo@postgres:5432/civo
-      AUTH_DATABASE_URL: postgresql://civo:civo@postgres:5432/civo_auth
+      DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo
+      AUTH_DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo_auth
 
       AUTH_ENABLED: "true"
-      AUTH_SECRET: local-docker-secret-change-this-to-a-long-random-value
+      AUTH_SECRET: CivoProdSecret9876543210abcdef9876543210abcdef
 
-      AUTH_MAIL_PROVIDER: smtp
-      AUTH_MAIL_SMTP_HOST: mailhog
-      AUTH_MAIL_SMTP_PORT: "1025"
+      MAIL_PROVIDER: smtp
+      MAIL_SMTP_HOST: mailhog
+      MAIL_SMTP_PORT: "1025"
 
       LOG_LEVEL: info
 

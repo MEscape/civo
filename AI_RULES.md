@@ -172,7 +172,8 @@ Allowed direction:
 
 - Validate all external input at the system boundary.
 - Never trust client-side validation.
-- Use Zod as the canonical runtime validation library.
+- Use Zod as the canonical runtime validation library, in the presentation layer: schemas for requests, forms, Server Action input and search parameters. Domain, application and infrastructure do not import Zod (lint enforces it).
+- Below the presentation boundary, data of unknown shape (stored JSON, a driver row, a library's error body) is checked with the guards in `@lib/utils` (`objectOf`, `arrayOf`, …), which check shape only; the domain constructors that run next check the rules.
 - Define schemas close to the boundary they validate.
 - Parse unknown external data before using it.
 - Prefer `safeParse` when validation failure is expected application flow.
@@ -273,7 +274,8 @@ Allowed direction:
 
 - Environment variables are infrastructure/configuration concerns.
 - Validate environment variables at startup.
-- Separate server-only and public configuration.
+- Separate server-only and public configuration: `@lib/config/server` imports `server-only` and holds everything secret; `@lib/config` holds only values safe for the browser.
+- A subsystem's variables are required only while that subsystem is on (authentication variables only when `AUTH_ENABLED=true`). Database configuration is always required. Production never allows authentication to be off.
 - Use `NEXT_PUBLIC_*` only for intentionally public values; secrets must never use this prefix.
 - Do not access `process.env` throughout application code.
 - Centralize environment access behind typed configuration.
@@ -397,7 +399,7 @@ Allowed direction:
 - Keep translation resources organized by feature or bounded context: one namespace per module, owned by that module, plus the app shell's `app` namespace for framework entry points.
 - One catalog per locale is assembled in `src/i18n/locales/<locale>.ts`; namespaces are never merged into each other.
 - A module's message map points only at keys of its own namespace, including its fallback error texts.
-- Format dates and numbers through `getAppFormatters` / `useAppFormatters`; never pass a locale to `@lib/utils` from a component.
+- Format dates and numbers through `getAppFormatters` / `useAppFormatters`; never pass a locale to `@lib/utils` from a component, build an `Intl` formatter, or call `toLocale*String` (lint enforces it).
 - Every locale has exactly the keys and ICU arguments of the default locale (`npm run i18n:check`).
 - Product names are brands and are not translated.
 - Domain errors use stable error codes; presentation maps them to translations.
