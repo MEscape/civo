@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { MapConfig } from '@modules/map';
+import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
 import {
   countActiveFilters,
   deriveFilters,

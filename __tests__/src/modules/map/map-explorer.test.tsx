@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { MapConfig, MapLayerInput } from '@modules/map';
+import type { MapLayerInput } from '@modules/map';
+import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
 import { MapExplorer } from '@modules/map/presentation/components/map-explorer.client';
 import enMap from '@modules/map/presentation/i18n/en.json';
 import type {

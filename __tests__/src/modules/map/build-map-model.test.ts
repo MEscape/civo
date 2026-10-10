@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { MapConfig } from '@modules/map';
+import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
 import { MAP_VALIDATION_CODES as CODES } from '@modules/map/domain/errors/map-errors';
 import type { DataIssues } from '@modules/map/domain/features/map-features';
 

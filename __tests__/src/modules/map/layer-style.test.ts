@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { MapConfig } from '@modules/map';
+import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
 import { PALETTE_SIZE } from '@modules/map/domain/style/layer-style';
 
 import { districtsLayer, layer, parkingLayer, point, prepareMap } from './fixtures';

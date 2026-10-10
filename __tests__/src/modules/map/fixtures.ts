@@ -1,4 +1,5 @@
-import type { Attributes, MapConfig, MapFeatureInput, MapLayerInput } from '@modules/map';
+import type { Attributes, MapFeatureInput, MapLayerInput } from '@modules/map';
+import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
 import type { MapModel } from '@modules/map/application/contracts/map-views';
 import { BuildMapModel } from '@modules/map/application/queries/build-map-model';
 import type { DataIssues } from '@modules/map/domain/features/map-features';
