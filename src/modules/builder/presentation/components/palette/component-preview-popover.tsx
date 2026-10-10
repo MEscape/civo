@@ -9,7 +9,7 @@ import { useTranslations } from '@i18n/client';
 import { useComponentPreview } from '../../hooks/use-component-preview';
 import { useComponentText } from '../../hooks/use-component-text';
 import { MESSAGE_PARAMS, messageKeyForCode } from '../../messages/message-keys';
-import { useBuilderSession } from '../builder-session-context';
+import { useBuilderSession } from '../../state/builder-session-context';
 import { CanvasThemeScope } from '../canvas/canvas-theme-scope';
 
 import type { ThemeStyle } from '../canvas/canvas-theme-scope';

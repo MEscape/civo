@@ -1,6 +1,6 @@
 import { connection } from 'next/server';
 
-import { escalate } from '@lib/errors';
+import { escalate } from '@lib/errors/escalate';
 import type { AppResult, AppResultAsync } from '@lib/result';
 
 import type { ContentKind } from '../../../application/contracts/component-platform-constraints';

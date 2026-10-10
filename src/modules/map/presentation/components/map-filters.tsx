@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 
+import { CheckboxField } from '@components/shared/checkbox-field';
 import { Button } from '@components/ui/button';
 import { Input, Label } from '@components/ui/input';
 
@@ -45,6 +46,7 @@ function SelectGroup({
   const t = useTranslations('map');
   const label = useFieldLabel();
   const format = useAttributeFormat();
+  const groupId = useId();
   const current = state[definition.field];
   const selected = current?.kind === 'select' ? current.selected : [];
 
@@ -57,23 +59,21 @@ function SelectGroup({
     <fieldset className="space-y-2">
       <legend className="text-sm font-medium text-copy">{label(definition.field)}</legend>
       {definition.options.map((option) => (
-        <label key={option.value} className="flex items-center gap-2 text-sm text-copy">
-          <input
-            type="checkbox"
-            className="size-4 accent-primary"
-            checked={selected.includes(option.value)}
-            onChange={(event) => {
-              handleToggle(option.value, event.target.checked);
-            }}
-          />
-          {t('filters.option', {
+        <CheckboxField
+          key={option.value}
+          id={`${groupId}-${option.value}`}
+          checked={selected.includes(option.value)}
+          onChange={(event) => {
+            handleToggle(option.value, event.target.checked);
+          }}
+          label={t('filters.option', {
             value:
               option.value === 'true' || option.value === 'false'
                 ? format(option.value === 'true')
                 : option.value,
             count: option.count,
           })}
-        </label>
+        />
       ))}
     </fieldset>
   );

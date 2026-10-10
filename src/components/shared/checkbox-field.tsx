@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 
-import { FieldMessage } from '@components/shared/field-message';
+import { FieldMessage } from './field-message';
 
 export interface CheckboxFieldProps extends Omit<ComponentProps<'input'>, 'type' | 'id'> {
   readonly id: string;

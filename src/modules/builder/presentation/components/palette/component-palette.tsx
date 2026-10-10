@@ -10,8 +10,8 @@ import { useComponentText } from '../../hooks/use-component-text';
 import { usePaletteDrag } from '../../hooks/use-palette-drag';
 import { CATEGORY_MESSAGE_KEYS } from '../../messages/message-keys';
 import { useBuilderDispatch } from '../../state/builder-hooks';
+import { useBuilderSession } from '../../state/builder-session-context';
 import { insertComponent } from '../../state/editing-thunks';
-import { useBuilderSession } from '../builder-session-context';
 
 import { ComponentPreviewPopover } from './component-preview-popover';
 

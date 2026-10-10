@@ -32,16 +32,6 @@ export function AppHeader({ className, ...props }: HTMLAttributes<HTMLElement>) 
 }
 
 /**
- * Scrollable body below the app header.
- * Uses the `h-app-body` utility defined in globals.css (dvh-aware).
- */
-export function AppBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto', className)} {...props} />
-  );
-}
-
-/**
  * Centered, width-capped content column.
  *
  * `max-w-7xl` keeps line-lengths readable on wide screens while leaving room
@@ -80,41 +70,6 @@ export function Section({ tone = 'default', className, ...props }: SectionProps)
 }
 
 /**
- * Two-pane layout: fixed-width sidebar on the left, fluid main on the right.
- * Used for the builder workspace and settings pages.
- *
- * The sidebar width is intentionally a scale utility (w-64) so it snaps to a
- * design-system multiple. Override via `sidebarClassName` if a different
- * width is needed — but always use a Tailwind scale utility, never an arbitrary px value.
- */
-interface SidebarLayoutProps extends HTMLAttributes<HTMLDivElement> {
-  sidebar: React.ReactNode;
-  sidebarClassName?: string;
-}
-
-export function SidebarLayout({
-  sidebar,
-  sidebarClassName,
-  className,
-  children,
-  ...props
-}: SidebarLayoutProps) {
-  return (
-    <div className={cn('flex h-app-body overflow-hidden', className)} {...props}>
-      <aside
-        className={cn(
-          'flex w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-surface',
-          sidebarClassName,
-        )}
-      >
-        {sidebar}
-      </aside>
-      <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">{children}</main>
-    </div>
-  );
-}
-
-/**
  * Page-level heading group. Contains the `<h1>` + optional lead text.
  * One `<h1>` per page — enforced by this component existing as the canonical
  * wrapper so teams do not scatter raw `<h1>` elements.
@@ -131,14 +86,6 @@ export function PageHeading({ title, description, className, ...props }: PageHea
       {description ? <p className="text-sm text-copy-muted">{description}</p> : null}
     </div>
   );
-}
-
-/**
- * Horizontal rule using the design-system border token.
- * Thin wrapper so `<hr>` always uses `border-border`, never a raw color.
- */
-export function Divider({ className, ...props }: HTMLAttributes<HTMLHRElement>) {
-  return <hr className={cn('border-t border-border', className)} {...props} />;
 }
 
 const EMPTY_STATE_VARIANTS = {

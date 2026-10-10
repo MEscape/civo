@@ -12,12 +12,17 @@ import { editNodeProps } from '../../state/props-thunks';
 import { PropertyControl } from './property-control';
 
 import type { PropFieldDescriptor } from '../../../application/contracts/builder-constraints';
-import type { PageNodeId } from '../../../application/contracts/editor-model';
+import type { PageNodeId, PageNodeProps } from '../../../application/contracts/editor-model';
 
 export interface PropertyFieldRowProps {
   readonly nodeId: PageNodeId;
   readonly field: PropFieldDescriptor;
-  readonly value: JsonValue | undefined;
+  readonly nodeProps: PageNodeProps;
+}
+
+/** The stored value, or the default the page renders while nothing is stored. */
+function effectiveValue(field: PropFieldDescriptor, stored: JsonValue | undefined) {
+  return stored === undefined ? (field.defaultValue ?? undefined) : stored;
 }
 
 /**
@@ -25,7 +30,7 @@ export interface PropertyFieldRowProps {
  * `onCommit` ends the undo step on blur or after a discrete choice, so a
  * typing burst is a single undo.
  */
-export function PropertyFieldRow({ nodeId, field, value }: PropertyFieldRowProps) {
+export function PropertyFieldRow({ nodeId, field, nodeProps }: PropertyFieldRowProps) {
   const dispatch = useBuilderDispatch();
   const text = useComponentText();
   const id = useId();
@@ -40,7 +45,8 @@ export function PropertyFieldRow({ nodeId, field, value }: PropertyFieldRowProps
         id={id}
         labelId={labelId}
         field={field}
-        value={value}
+        value={effectiveValue(field, nodeProps[field.key])}
+        nodeProps={nodeProps}
         onChange={(next) => {
           dispatch(editNodeProps(nodeId, { [field.key]: next }));
         }}

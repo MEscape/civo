@@ -18,7 +18,7 @@ function FieldList({ nodeId, fields, props }: PropertyFieldGroupsProps) {
   return (
     <div className="flex flex-col gap-4">
       {fields.map((field) => (
-        <PropertyFieldRow key={field.key} nodeId={nodeId} field={field} value={props[field.key]} />
+        <PropertyFieldRow key={field.key} nodeId={nodeId} field={field} nodeProps={props} />
       ))}
     </div>
   );

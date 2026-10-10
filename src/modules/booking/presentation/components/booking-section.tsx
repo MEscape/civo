@@ -2,8 +2,11 @@ import { connection } from 'next/server';
 
 import { I18nProvider } from '@components/providers/i18n-provider';
 
+import { getTranslations } from '@i18n/server';
+
 import { bookingAdminQueries, bookingPublicQueries } from '../../composition';
 import { toPublicCatalogDto } from '../dto/catalog-dto';
+import { createSampleCatalog } from '../dto/sample-catalog-dto';
 import { toBookingSetupDto } from '../dto/setup-dto';
 
 import { BookingAdmin } from './admin/booking-admin.client';
@@ -54,8 +57,10 @@ export async function BookingSection({
     return <BookingState kind="unavailable" heading={heading} />;
   }
   if (catalog.value.services.length === 0) {
-    return (
-      <BookingState kind={renderMode === 'draft' ? 'empty-draft' : 'empty'} heading={heading} />
+    return renderMode === 'draft' ? (
+      <SampleBooking websiteId={websiteId} heading={heading} />
+    ) : (
+      <BookingState kind="empty" heading={heading} />
     );
   }
 
@@ -69,6 +74,46 @@ export async function BookingSection({
         readOnly={renderMode === 'draft'}
       />
     </I18nProvider>
+  );
+}
+
+/** The editor's view of a component with nothing to book yet: a note, then sample services in the read-only flow. */
+async function SampleBooking({
+  websiteId,
+  heading,
+}: {
+  readonly websiteId: string;
+  readonly heading: string;
+}) {
+  const t = await getTranslations('booking');
+  const catalog = createSampleCatalog({
+    idCard: {
+      name: t('sample.idCard.name'),
+      description: t('sample.idCard.description'),
+      category: t('sample.idCard.category'),
+    },
+    registration: {
+      name: t('sample.registration.name'),
+      description: t('sample.registration.description'),
+      category: t('sample.registration.category'),
+    },
+    location: { name: t('sample.location.name'), address: t('sample.location.address') },
+    instructions: t('sample.instructions'),
+  });
+
+  return (
+    <div className="space-y-4">
+      <BookingState kind="empty-draft" heading={heading} />
+      <I18nProvider namespaces={['booking']}>
+        <BookingFlow
+          websiteId={websiteId}
+          catalog={catalog}
+          fixedServiceId={null}
+          heading={heading}
+          readOnly
+        />
+      </I18nProvider>
+    </div>
   );
 }
 

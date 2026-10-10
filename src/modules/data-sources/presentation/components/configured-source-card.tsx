@@ -6,8 +6,6 @@ import { FieldMessage } from '@components/shared/field-message';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 
-import { useRouter } from '@i18n';
-
 import { useNow, useTranslations, useAppFormatters } from '@i18n/client';
 
 import { deleteDataSourceAction } from '../actions/delete-data-source-action';
@@ -32,7 +30,6 @@ export function ConfiguredSourceCard({ source }: ConfiguredSourceCardProps) {
   const format = useAppFormatters();
   // `useNow` is hydration-safe, unlike `new Date()` in render.
   const now = useNow();
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [testMessage, setTestMessage] = useState<TestMessage | null>(null);
   const [deleteErrorCode, setDeleteErrorCode] = useState<string | undefined>(undefined);
@@ -49,7 +46,6 @@ export function ConfiguredSourceCard({ source }: ConfiguredSourceCardProps) {
           outcome.isHealthy ? { kind: 'healthy' } : { kind: 'failed', code: outcome.errorCode },
         );
       }
-      router.refresh();
     });
   }
 
@@ -65,7 +61,6 @@ export function ConfiguredSourceCard({ source }: ConfiguredSourceCardProps) {
         setDeleteErrorCode(result.error.code);
         return;
       }
-      router.refresh();
     });
   }
 

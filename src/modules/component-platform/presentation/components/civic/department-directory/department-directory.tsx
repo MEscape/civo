@@ -55,8 +55,8 @@ export async function DepartmentDirectory({
         <Grid as="ul" columns={props.columns}>
           {items.map((department) => (
             <li key={department.id}>
-              <Card className="h-full">
-                <CardHeader>
+              <Card className="flex h-full flex-col">
+                <CardHeader className="flex-1">
                   <CardTitle>
                     {department.href !== undefined ? (
                       <ContentLink href={department.href} className="hover:text-primary-copy">
@@ -69,7 +69,7 @@ export async function DepartmentDirectory({
                   {department.description !== undefined && (
                     <CardDescription>{department.description}</CardDescription>
                   )}
-                  <ul className="mt-3 flex flex-col gap-1.5 text-sm">
+                  <ul className="mt-auto flex flex-col gap-1.5 pt-3 text-sm">
                     {department.contacts.map((contact) => (
                       <li key={contact.id} className="flex items-center justify-between gap-2">
                         <span className="text-copy">{contact.name}</span>

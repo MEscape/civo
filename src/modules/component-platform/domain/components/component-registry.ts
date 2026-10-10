@@ -1,5 +1,7 @@
 import { invariant } from '@lib/utils';
 
+import { DATASET_CONTROLS } from '../models/prop-field';
+
 import type { ComponentDefinition } from '../models/component-definition';
 
 /** Pseudo-parent for "directly on the page". */
@@ -36,7 +38,7 @@ export function createComponentRegistry(
     }
     for (const field of definition.fields) {
       invariant(
-        field.control !== 'dataset' ||
+        !DATASET_CONTROLS.includes(field.control) ||
           field.datasetKind !== null ||
           definition.dataBinding !== null,
         `"${definition.type}" has the dataset prop "${field.key}" but declares no data binding for it.`,

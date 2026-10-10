@@ -8,11 +8,17 @@ import listPlugin from '@fullcalendar/list';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
-import { Button } from '@components/ui/button';
-import { Icons } from '@components/ui/icons';
+import { cn, MS_PER_DAY } from '@lib/utils';
 
-import { cn } from '@lib/utils';
+import { CalendarToolbar } from './calendar-toolbar';
 
+import type {
+  CalendarAdapterEvent,
+  CalendarLabels,
+  CalendarRange,
+  CalendarTone,
+  CalendarViewName,
+} from '../../calendar/calendar-model';
 import type { DatesSetArg, EventClickArg } from '@fullcalendar/core';
 
 /**
@@ -27,35 +33,6 @@ import type { DatesSetArg, EventClickArg } from '@fullcalendar/core';
  * is drawn is exactly what the clock at the location shows, on every device,
  * with no conversion left to get wrong.
  */
-
-export type CalendarTone = 'success' | 'info' | 'muted' | 'warning' | 'danger';
-
-export interface CalendarAdapterEvent {
-  readonly id: string;
-  readonly title: string;
-  /** Wall-clock `YYYY-MM-DDTHH:mm:ss` at the location. */
-  readonly start: string;
-  readonly end: string;
-  readonly tone: CalendarTone;
-}
-
-export interface CalendarRange {
-  /** First visible day, `YYYY-MM-DD`. */
-  readonly from: string;
-  /** Last visible day, `YYYY-MM-DD`, included. */
-  readonly to: string;
-}
-
-export type CalendarViewName = 'month' | 'week' | 'day' | 'list';
-
-export interface CalendarLabels {
-  readonly today: string;
-  readonly previous: string;
-  readonly next: string;
-  readonly views: Readonly<Record<CalendarViewName, string>>;
-  readonly viewGroup: string;
-  readonly noEvents: string;
-}
 
 export interface CalendarAdapterProps {
   readonly events: readonly CalendarAdapterEvent[];
@@ -104,7 +81,6 @@ const TONE_COLORS: Readonly<
 };
 
 const NARROW_SCREEN_QUERY = '(max-width: 40rem)';
-const MS_PER_DAY = 86_400_000;
 const DATE_LENGTH = 10;
 
 /** FullCalendar reports the visible range with an exclusive end, as UTC midnights. */
@@ -145,51 +121,18 @@ export function CalendarAdapter({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => api()?.prev()}
-            aria-label={labels.previous}
-          >
-            <Icons.chevronLeft aria-hidden="true" />
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => api()?.today()}>
-            {labels.today}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => api()?.next()}
-            aria-label={labels.next}
-          >
-            <Icons.chevronRight aria-hidden="true" />
-          </Button>
-        </div>
-        <h3 className="text-base font-medium text-copy" aria-live="polite">
-          {title}
-        </h3>
-        <div role="group" aria-label={labels.viewGroup} className="flex gap-1">
-          {(Object.keys(VIEW_BY_NAME) as CalendarViewName[]).map((name) => (
-            <Button
-              key={name}
-              type="button"
-              size="sm"
-              variant={view === name ? 'default' : 'outline'}
-              aria-pressed={view === name}
-              onClick={() => {
-                setView(name);
-                api()?.changeView(VIEW_BY_NAME[name]);
-              }}
-            >
-              {labels.views[name]}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <CalendarToolbar
+        title={title}
+        labels={labels}
+        view={view}
+        onPrevious={() => api()?.prev()}
+        onToday={() => api()?.today()}
+        onNext={() => api()?.next()}
+        onViewChange={(name) => {
+          setView(name);
+          api()?.changeView(VIEW_BY_NAME[name]);
+        }}
+      />
 
       <div
         className={cn(

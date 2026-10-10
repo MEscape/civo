@@ -5,8 +5,6 @@ import { useId, useState, useTransition } from 'react';
 import { FieldMessage } from '@components/shared/field-message';
 import { Button } from '@components/ui/button';
 
-import { useRouter } from '@i18n';
-
 import { useTranslations } from '@i18n/client';
 
 import type { SerializedActionError } from '@lib/result';
@@ -74,7 +72,6 @@ export function DataSourceMappingPanel({
 }: DataSourceMappingPanelProps) {
   const t = useTranslations('dataSources');
 
-  const router = useRouter();
   const id = useId();
   const [isPending, startTransition] = useTransition();
   const [fields, setFields] = useState<readonly DiscoveredFieldView[] | null>(null);
@@ -168,7 +165,6 @@ export function DataSourceMappingPanel({
         return;
       }
       setStatus({ kind: 'saved' });
-      router.refresh();
     });
   }
 

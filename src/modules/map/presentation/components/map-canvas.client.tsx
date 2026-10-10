@@ -35,6 +35,8 @@ export interface MapCanvasProps {
   readonly createRenderer: CreateMapRenderer;
 }
 
+const MAP_HOST_CLASS = 'h-full w-full';
+
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -82,10 +84,16 @@ export function MapCanvas(props: MapCanvasProps) {
   const { tiles, createRenderer } = props;
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (container === null) {
+    const slot = containerRef.current;
+    if (slot === null) {
       return undefined;
     }
+    // Every run gets its own empty element: Mapbox warns (and loses interactivity)
+    // when its container has children, which happens when a previous, still
+    // initializing map (React Strict Mode, changed tiles) has already filled it.
+    const container = document.createElement('div');
+    container.className = MAP_HOST_CLASS;
+    slot.appendChild(container);
     const initial = latest.current;
     let isCancelled = false;
     let created: MapRenderer | null = null;
@@ -114,6 +122,7 @@ export function MapCanvas(props: MapCanvasProps) {
       .then((instance) => {
         if (isCancelled) {
           instance.destroy();
+          container.remove();
           return;
         }
         created = instance;
@@ -130,6 +139,7 @@ export function MapCanvas(props: MapCanvasProps) {
     return () => {
       isCancelled = true;
       created?.destroy();
+      container.remove();
       setRenderer(null);
     };
   }, [createRenderer, tiles.accessToken, tiles.styleUrl]);

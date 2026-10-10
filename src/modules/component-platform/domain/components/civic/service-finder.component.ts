@@ -18,9 +18,6 @@ export const serviceFinderDefinition = defineComponent({
       group: 'content',
       municipal: true,
     }),
-    initialCategory: prop.text(PROP_LIMITS.category, {
-      group: 'content',
-      placeholder: true,
-    }),
+    initialCategory: prop.category(PROP_LIMITS.category, { group: 'content' }),
   },
 });

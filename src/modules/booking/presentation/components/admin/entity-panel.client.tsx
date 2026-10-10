@@ -5,8 +5,6 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@components/ui/button';
 
-import { useRouter } from '@i18n';
-
 import { useTranslations } from '@i18n/client';
 
 export interface EntityFormArgs<T> {
@@ -48,7 +46,6 @@ export function EntityPanel<T extends { readonly id: string }>({
   renderForm,
 }: EntityPanelProps<T>) {
   const t = useTranslations('booking');
-  const router = useRouter();
   const [editing, setEditing] = useState<Editing | null>(null);
 
   if (editing !== null) {
@@ -59,7 +56,6 @@ export function EntityPanel<T extends { readonly id: string }>({
         {renderForm({
           item,
           onSaved: () => {
-            router.refresh();
             setEditing(null);
           },
           onCancel: () => {

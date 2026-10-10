@@ -23,8 +23,8 @@ export function SignOutButton() {
       if (!result.ok) {
         return;
       }
+      // The action revalidated the layout, so the sign-in page is fetched fresh: no extra refresh.
       router.push(authRoutes.signIn());
-      router.refresh();
     });
   }
 

@@ -1,23 +1,24 @@
 'use client';
 
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@components/ui/button';
 import { Skeleton } from '@components/ui/skeleton';
 
 import { useLocale, useTranslations } from '@i18n/client';
 
-import { getOperationsCalendarAction } from '../../actions/get-operations-calendar-action';
+import { ALL_FILTER, useOperationsCalendar } from '../../hooks/use-operations-calendar';
 import { ErrorNotice } from '../shared/error-notice';
-import { SelectField } from '../shared/select-field';
 
 import { BookingDetailsPanel } from './booking-details-panel.client';
+import { CalendarFilters } from './calendar-filters';
 import { CalendarView } from './calendar-view.client';
 
-import type { CalendarAdapterEvent, CalendarRange, CalendarTone } from './calendar-adapter.client';
 import type { BookingStatus } from '../../../application/contracts/booking-constraints';
-import type { CalendarBookingDto, OperationsCalendarDto } from '../../dto/calendar-dto';
+import type { CalendarAdapterEvent, CalendarTone } from '../../calendar/calendar-model';
+import type { CalendarBookingDto } from '../../dto/calendar-dto';
 import type { BookingSetupDto } from '../../dto/setup-dto';
+import type { CalendarFilters as Filters } from '../../hooks/use-operations-calendar';
 
 export interface OperationsCalendarProps {
   readonly websiteId: string;
@@ -35,25 +36,25 @@ const TONE_BY_STATUS = {
   expired: 'muted',
 } as const satisfies Record<BookingStatus, CalendarTone>;
 
-/** The filter value for "no filter"; a real id is never this word. */
-const ALL = 'all';
-
-type Outcome =
-  | { readonly kind: 'ready'; readonly calendar: OperationsCalendarDto }
-  | { readonly kind: 'failed'; readonly code: string };
-
-function readyCalendar(outcome: Outcome | null): OperationsCalendarDto | null {
-  return outcome?.kind === 'ready' ? outcome.calendar : null;
-}
-
-interface Loaded {
-  readonly key: string;
-  readonly outcome: Outcome;
-}
+const NO_FILTERS: Filters = {
+  locationId: ALL_FILTER,
+  serviceId: ALL_FILTER,
+  resourceId: ALL_FILTER,
+};
 
 function titleOf(booking: CalendarBookingDto): string {
   const who = booking.customerName ?? booking.reference;
   return `${booking.serviceName} · ${who}`;
+}
+
+function toEvent(booking: CalendarBookingDto): CalendarAdapterEvent {
+  return {
+    id: booking.id,
+    title: titleOf(booking),
+    start: booking.startLocal,
+    end: booking.endLocal,
+    tone: TONE_BY_STATUS[booking.status],
+  };
 }
 
 /**
@@ -65,65 +66,11 @@ function titleOf(booking: CalendarBookingDto): string {
 export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCalendarProps) {
   const t = useTranslations('booking');
   const locale = useLocale();
-  const id = useId();
-
-  const [range, setRange] = useState<CalendarRange | null>(null);
-  const [locationId, setLocationId] = useState(ALL);
-  const [serviceId, setServiceId] = useState(ALL);
-  const [resourceId, setResourceId] = useState(ALL);
+  const [filters, setFilters] = useState(NO_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [version, setVersion] = useState(0);
-  const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const { range, outcome, shown, changeRange, refresh } = useOperationsCalendar(websiteId, filters);
 
-  const requestKey =
-    range === null
-      ? null
-      : `${range.from}|${range.to}|${locationId}|${serviceId}|${resourceId}|${version}`;
-
-  useEffect(() => {
-    if (range === null || requestKey === null) {
-      return undefined;
-    }
-    let cancelled = false;
-    void getOperationsCalendarAction({
-      websiteId,
-      from: range.from,
-      to: range.to,
-      ...(locationId === ALL ? {} : { locationId }),
-      ...(serviceId === ALL ? {} : { serviceId }),
-      ...(resourceId === ALL ? {} : { resourceId }),
-    }).then((result) => {
-      if (cancelled) {
-        return;
-      }
-      setLoaded({
-        key: requestKey,
-        outcome: result.ok
-          ? { kind: 'ready', calendar: result.data }
-          : { kind: 'failed', code: result.error.code },
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [websiteId, range, requestKey, locationId, serviceId, resourceId]);
-
-  const outcome = loaded?.key === requestKey ? loaded.outcome : null;
-  // Keep showing the last good data while the next range loads, so the calendar does not flash empty.
-  const shown = readyCalendar(outcome) ?? readyCalendar(loaded?.outcome ?? null);
-
-  const events: readonly CalendarAdapterEvent[] = useMemo(
-    () =>
-      (shown?.bookings ?? []).map((booking) => ({
-        id: booking.id,
-        title: titleOf(booking),
-        start: booking.startLocal,
-        end: booking.endLocal,
-        tone: TONE_BY_STATUS[booking.status],
-      })),
-    [shown],
-  );
-
+  const events = useMemo(() => (shown?.bookings ?? []).map(toEvent), [shown]);
   const selected = shown?.bookings.find((booking) => booking.id === selectedId) ?? null;
   const labels = useMemo(
     () => ({
@@ -142,55 +89,9 @@ export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCa
     [t],
   );
 
-  const handleRange = useCallback((next: CalendarRange) => {
-    setRange((current) => (current?.from === next.from && current.to === next.to ? current : next));
-  }, []);
-  const refresh = useCallback(() => {
-    setVersion((current) => current + 1);
-  }, []);
-
-  const resourcesForFilter = setup.resources.filter(
-    (resource) =>
-      locationId === ALL || resource.locationId === null || resource.locationId === locationId,
-  );
-
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <SelectField
-          id={`${id}-location`}
-          label={t('calendar.filterLocation')}
-          value={locationId}
-          options={[
-            { value: ALL, label: t('calendar.firstLocation') },
-            ...setup.locations.map((location) => ({ value: location.id, label: location.name })),
-          ]}
-          onValueChange={(value) => {
-            setLocationId(value);
-            setResourceId(ALL);
-          }}
-        />
-        <SelectField
-          id={`${id}-service`}
-          label={t('calendar.filterService')}
-          value={serviceId}
-          options={[
-            { value: ALL, label: t('calendar.allServices') },
-            ...setup.services.map((service) => ({ value: service.id, label: service.name })),
-          ]}
-          onValueChange={setServiceId}
-        />
-        <SelectField
-          id={`${id}-resource`}
-          label={t('calendar.filterResource')}
-          value={resourceId}
-          options={[
-            { value: ALL, label: t('calendar.allResources') },
-            ...resourcesForFilter.map((resource) => ({ value: resource.id, label: resource.name })),
-          ]}
-          onValueChange={setResourceId}
-        />
-      </div>
+      <CalendarFilters setup={setup} filters={filters} onChange={setFilters} />
 
       {outcome?.kind === 'failed' && (
         <div className="space-y-2">
@@ -215,7 +116,7 @@ export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCa
             locale={locale}
             labels={labels}
             initialView="week"
-            onRangeChange={handleRange}
+            onRangeChange={changeRange}
             onEventSelect={setSelectedId}
           />
           {outcome === null && range !== null && (

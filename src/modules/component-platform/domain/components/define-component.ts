@@ -57,6 +57,7 @@ function toFieldDefinition(key: string, field: PropField<unknown>): PropFieldDef
     hasPlaceholder: field.hasPlaceholder,
     itemFields: field.itemFields,
     datasetKind: field.datasetKind,
+    defaultValue: field.fallback,
   };
 }
 

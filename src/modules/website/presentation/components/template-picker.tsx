@@ -38,7 +38,6 @@ export function TemplatePicker({ control }: TemplatePickerProps) {
           const inputId = `${errorId}-${key}`;
           return (
             <label key={key} htmlFor={inputId} className="block cursor-pointer">
-              <span className="sr-only">{t(TEMPLATE_MESSAGE_KEYS[key].label)}</span>
               <input
                 id={inputId}
                 type="radio"
@@ -52,7 +51,7 @@ export function TemplatePicker({ control }: TemplatePickerProps) {
                 onBlur={field.onBlur}
                 ref={index === 0 ? field.ref : undefined}
               />
-              <Card className="h-full ring-accent peer-checked:ring-2">
+              <Card className="h-full ring-accent peer-checked:ring-2 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2">
                 <CardContent className="pt-4">
                   <p className="text-sm font-medium text-copy">
                     {t(TEMPLATE_MESSAGE_KEYS[key].label)}

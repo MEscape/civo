@@ -7,8 +7,6 @@ import { Alert, AlertDescription } from '@components/ui/alert';
 import { Button } from '@components/ui/button';
 import { Spinner } from '@components/ui/icons';
 
-import { useRouter } from '@i18n';
-
 import { useTranslations } from '@i18n/client';
 
 import { proposeMigrationAction } from '../actions/propose-migration-action';
@@ -46,7 +44,6 @@ function reviewableOf(proposal: MigrationProposalDto | null) {
 
 export function MigrationPanel({ websiteId, history }: MigrationPanelProps) {
   const t = useTranslations('release');
-  const router = useRouter();
   const id = useId();
   const [isPending, startTransition] = useTransition();
   const [proposal, setProposal] = useState<MigrationProposalDto | null>(null);
@@ -64,7 +61,6 @@ export function MigrationPanel({ websiteId, history }: MigrationPanelProps) {
         return;
       }
       setProposal(response.data);
-      router.refresh();
     });
   }
 
@@ -74,7 +70,6 @@ export function MigrationPanel({ websiteId, history }: MigrationPanelProps) {
     if (applied.status === 'applied') {
       setProposal(null);
     }
-    router.refresh();
   }
 
   const reviewable = reviewableOf(proposal);

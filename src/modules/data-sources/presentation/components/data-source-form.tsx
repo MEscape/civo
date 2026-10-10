@@ -3,14 +3,12 @@
 import { useId, useState, useTransition } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { FieldMessage } from '@components/shared/field-message';
-import { SelectField } from '@components/shared/select-field';
+import { FormSelectField } from '@components/shared/form-select-field';
 import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
-
-import { useRouter } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
@@ -39,7 +37,6 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
   const errorText = (code: string | undefined) =>
     code === undefined ? undefined : t(messageKeyForCode(code), MESSAGE_PARAMS);
 
-  const router = useRouter();
   const id = useId();
   const [isPending, startTransition] = useTransition();
   const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
@@ -49,7 +46,12 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
     defaultValues: { name: '', baseUrl: '', authMode: 'NONE' },
   });
   const { errors } = form.formState;
-  const authMode = form.watch('authMode');
+  const authMode = useWatch({ control: form.control, name: 'authMode' });
+
+  const authModeOptions = AUTH_MODES.map((mode) => ({
+    value: mode,
+    label: t(AUTH_MODE_MESSAGE_KEYS[mode]),
+  }));
 
   const nameId = `${id}-name`;
   const baseUrlId = `${id}-base-url`;
@@ -67,7 +69,6 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
         setFormErrorCode(applyActionError(result.error, form.setError));
         return;
       }
-      router.refresh();
       onSaved();
     });
   }
@@ -87,18 +88,14 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
           error={errorText(errors.name?.message)}
           {...form.register('name')}
         />
-        <SelectField
+        <FormSelectField
+          control={form.control}
+          name="authMode"
           id={`${id}-auth-mode`}
           label={t('sourceForm.authMode')}
-          errorMessage={errorText(errors.authMode?.message)}
-          {...form.register('authMode')}
-        >
-          {AUTH_MODES.map((mode) => (
-            <option key={mode} value={mode}>
-              {t(AUTH_MODE_MESSAGE_KEYS[mode])}
-            </option>
-          ))}
-        </SelectField>
+          options={authModeOptions}
+          errorText={errorText}
+        />
       </div>
 
       <TextField

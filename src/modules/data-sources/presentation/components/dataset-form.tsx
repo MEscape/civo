@@ -6,11 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 import { FieldMessage } from '@components/shared/field-message';
-import { SelectField } from '@components/shared/select-field';
+import { FormSelectField } from '@components/shared/form-select-field';
 import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
-
-import { useRouter } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
@@ -47,7 +45,6 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
   const errorText = (code: string | undefined) =>
     code === undefined ? undefined : t(messageKeyForCode(code), MESSAGE_PARAMS);
 
-  const router = useRouter();
   const id = useId();
   const [isPending, startTransition] = useTransition();
   const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
@@ -60,6 +57,11 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
     },
   });
   const { errors } = form.formState;
+  const kindOptions = CANONICAL_KINDS.map((kind) => ({
+    value: kind,
+    label: t(CANONICAL_KIND_MESSAGE_KEYS[kind]),
+  }));
+
   const nameId = `${id}-name`;
 
   function handleSubmit(values: DatasetFormValues) {
@@ -76,7 +78,6 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
         );
         return;
       }
-      router.refresh();
       onSaved(result.data);
     });
   }
@@ -106,18 +107,14 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
           error={errorText(errors.name?.message)}
           {...form.register('name')}
         />
-        <SelectField
+        <FormSelectField
+          control={form.control}
+          name="canonicalKind"
           id={`${id}-kind`}
           label={t('datasetForm.kind')}
-          errorMessage={errorText(errors.canonicalKind?.message)}
-          {...form.register('canonicalKind')}
-        >
-          {CANONICAL_KINDS.map((type) => (
-            <option key={type} value={type}>
-              {t(CANONICAL_KIND_MESSAGE_KEYS[type])}
-            </option>
-          ))}
-        </SelectField>
+          options={kindOptions}
+          errorText={errorText}
+        />
       </div>
 
       {formErrorCode !== null && (

@@ -4,7 +4,7 @@ import { useTranslations } from '@i18n/client';
 
 import { findNode } from '../../../application/contracts/editor-model';
 import { useComponentText } from '../../hooks/use-component-text';
-import { useBuilderSession } from '../builder-session-context';
+import { useBuilderSession } from '../../state/builder-session-context';
 
 import type { PageNode, PageNodeId, Rect } from '../../../application/contracts/editor-model';
 

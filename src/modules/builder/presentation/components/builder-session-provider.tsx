@@ -7,16 +7,19 @@ import { Provider } from 'react-redux';
 
 import { createComponentCatalog } from '../../application/contracts/editor-model';
 import { savePageConfigAction } from '../actions/save-page-config-action';
+import { NO_CATEGORY_OPTIONS } from '../dto/category-options-dto';
+import { BuilderSessionContext } from '../state/builder-session-context';
 import { createBuilderStore } from '../state/builder-store';
 
-import { BuilderSessionContext } from './builder-session-context';
-
+import type { CategoryOptionsDto } from '../dto/category-options-dto';
 import type { DatasetOptionsByKind } from '../dto/dataset-options-dto';
 import type { EditorSessionDto } from '../dto/editor-session-dto';
 
 export interface BuilderSessionProviderProps {
   readonly session: EditorSessionDto;
   readonly datasetOptions: DatasetOptionsByKind;
+  /** Category values for `category` controls; omitted when no component asks for them. */
+  readonly categoryOptions?: CategoryOptionsDto;
   readonly children: ReactNode;
 }
 
@@ -33,6 +36,7 @@ function createIdSeed(): string {
 export function BuilderSessionProvider({
   session,
   datasetOptions,
+  categoryOptions = NO_CATEGORY_OPTIONS,
   children,
 }: BuilderSessionProviderProps) {
   const [runtime] = useState(() => {
@@ -43,7 +47,7 @@ export function BuilderSessionProvider({
         savePageConfig: savePageConfigAction,
         createIdSeed,
       }),
-      context: { catalog, datasetOptions },
+      context: { catalog, datasetOptions, categoryOptions },
     };
   });
 

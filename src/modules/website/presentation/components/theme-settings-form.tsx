@@ -6,10 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { FieldMessage } from '@components/shared/field-message';
-import { SelectField } from '@components/shared/select-field';
+import { FormSelectField } from '@components/shared/form-select-field';
 import { Button } from '@components/ui/button';
-
-import { useRouter } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
@@ -36,6 +34,11 @@ import { ThemePreview } from './theme-preview';
 import type { WebsiteThemeView } from '../../application/contracts/website-views';
 import type { ThemeSettings } from '../schemas/theme-settings-schema';
 
+/** A font's name is its own label: font names are not translated. */
+function fontOption(font: string) {
+  return { value: font, label: font };
+}
+
 export interface ThemeSettingsFormProps {
   readonly websiteId: string;
   readonly initialTheme: WebsiteThemeView;
@@ -47,7 +50,17 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
   const errorText = (code: string | undefined) =>
     code === undefined ? undefined : t(messageKeyForCode(code));
 
-  const router = useRouter();
+  const headingFontOptions = THEME_FONT_FAMILIES.map(fontOption);
+  const bodyFontOptions = BODY_FONT_FAMILIES.map(fontOption);
+  const radiusOptions = THEME_RADII.map((radius) => ({
+    value: radius,
+    label: t(RADIUS_MESSAGE_KEYS[radius]),
+  }));
+  const spacingOptions = THEME_SPACING_SCALES.map((scale) => ({
+    value: scale,
+    label: t(SPACING_MESSAGE_KEYS[scale]),
+  }));
+
   const id = useId();
   const [isPending, startTransition] = useTransition();
   const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
@@ -57,7 +70,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
     resolver: zodResolver(themeSettingsSchema),
     defaultValues: initialTheme,
   });
-  const { errors, isDirty } = form.formState;
+  const { isDirty } = form.formState;
   const previewTheme = toPreviewTheme(useWatch({ control: form.control }), initialTheme);
 
   // Derived, not stored: the confirmation disappears as soon as the user edits again.
@@ -77,12 +90,11 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
       }
       form.reset(result.data.theme);
       setHasSaved(true);
-      router.refresh();
     });
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <section aria-labelledby={`${id}-title`}>
         <h2 id={`${id}-title`} className="mb-6 text-xl font-semibold text-copy">
           {t('themeSettings.title')}
@@ -91,11 +103,11 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
           onSubmit={form.handleSubmit(handleSubmit)}
           noValidate
           aria-busy={isPending}
-          className="space-y-6 rounded-token border border-border bg-surface p-6"
+          className="space-y-6 rounded-token border border-border bg-surface p-4 sm:p-6"
         >
           <fieldset className="space-y-4">
             <legend className="text-sm font-medium text-copy">{t('themeSettings.colors')}</legend>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <ColorField
                 control={form.control}
                 name="colors.primary"
@@ -118,61 +130,45 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
             <legend className="text-sm font-medium text-copy">
               {t('themeSettings.typography')}
             </legend>
-            <div className="grid grid-cols-2 gap-4">
-              <SelectField
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormSelectField
+                control={form.control}
+                name="typography.headingFont"
                 id={`${id}-heading-font`}
                 label={t('themeSettings.headingFont')}
-                errorMessage={errorText(errors.typography?.headingFont?.message)}
-                {...form.register('typography.headingFont')}
-              >
-                {THEME_FONT_FAMILIES.map((font) => (
-                  <option key={font} value={font}>
-                    {font}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
+                options={headingFontOptions}
+                errorText={errorText}
+              />
+              <FormSelectField
+                control={form.control}
+                name="typography.bodyFont"
                 id={`${id}-body-font`}
                 label={t('themeSettings.bodyFont')}
-                errorMessage={errorText(errors.typography?.bodyFont?.message)}
-                {...form.register('typography.bodyFont')}
-              >
-                {BODY_FONT_FAMILIES.map((font) => (
-                  <option key={font} value={font}>
-                    {font}
-                  </option>
-                ))}
-              </SelectField>
+                options={bodyFontOptions}
+                errorText={errorText}
+              />
             </div>
           </fieldset>
 
           <fieldset className="space-y-4">
             <legend className="text-sm font-medium text-copy">{t('themeSettings.layout')}</legend>
-            <div className="grid grid-cols-2 gap-4">
-              <SelectField
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormSelectField
+                control={form.control}
+                name="radius"
                 id={`${id}-radius`}
                 label={t('themeSettings.radiusLabel')}
-                errorMessage={errorText(errors.radius?.message)}
-                {...form.register('radius')}
-              >
-                {THEME_RADII.map((radius) => (
-                  <option key={radius} value={radius}>
-                    {t(RADIUS_MESSAGE_KEYS[radius])}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
+                options={radiusOptions}
+                errorText={errorText}
+              />
+              <FormSelectField
+                control={form.control}
+                name="spacingScale"
                 id={`${id}-spacing`}
                 label={t('themeSettings.spacingLabel')}
-                errorMessage={errorText(errors.spacingScale?.message)}
-                {...form.register('spacingScale')}
-              >
-                {THEME_SPACING_SCALES.map((scale) => (
-                  <option key={scale} value={scale}>
-                    {t(SPACING_MESSAGE_KEYS[scale])}
-                  </option>
-                ))}
-              </SelectField>
+                options={spacingOptions}
+                errorText={errorText}
+              />
             </div>
           </fieldset>
 

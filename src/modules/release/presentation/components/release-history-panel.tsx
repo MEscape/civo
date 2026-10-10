@@ -4,15 +4,15 @@ import { useId, useState, useTransition } from 'react';
 
 import { EmptyState } from '@components/layout/layout-primitives';
 import { FieldMessage } from '@components/shared/field-message';
+import { Button } from '@components/ui/button';
 import { AlertTriangle } from '@components/ui/icons';
-
-import { useRouter } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
 import { noop } from '@lib/utils';
 
+import { publishReleaseAction } from '../actions/publish-release-action';
 import { rollbackReleaseAction } from '../actions/rollback-release-action';
 import { messageKeyForCode } from '../messages/message-keys';
 
@@ -34,15 +34,29 @@ export interface ReleaseHistoryPanelProps {
 export function ReleaseHistoryPanel({ websiteId, history }: ReleaseHistoryPanelProps) {
   const t = useTranslations('release');
 
-  const router = useRouter();
   const id = useId();
   const [isPending, startTransition] = useTransition();
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [restoredNumber, setRestoredNumber] = useState<number | null>(null);
+  const [publishedNumber, setPublishedNumber] = useState<number | null>(null);
+
+  function handlePublish() {
+    setErrorCode(null);
+    setRestoredNumber(null);
+    startTransition(async () => {
+      const result = await publishReleaseAction({ websiteId });
+      if (!result.ok) {
+        setErrorCode(applyActionError(result.error, noop));
+        return;
+      }
+      setPublishedNumber(result.data.releaseNumber);
+    });
+  }
 
   function handleRollback(releaseId: string) {
     setErrorCode(null);
     setRestoredNumber(null);
+    setPublishedNumber(null);
     startTransition(async () => {
       const result = await rollbackReleaseAction({ websiteId, releaseId });
       if (!result.ok) {
@@ -51,23 +65,44 @@ export function ReleaseHistoryPanel({ websiteId, history }: ReleaseHistoryPanelP
         return;
       }
       setRestoredNumber(result.data.releaseNumber);
-      router.refresh();
     });
   }
 
+  const publishControl = (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button type="button" onClick={handlePublish} disabled={isPending}>
+        {isPending ? t('history.publishing') : t('history.publish')}
+      </Button>
+      {publishedNumber !== null && (
+        <p role="status" className="text-sm text-success">
+          {t('history.published', { number: publishedNumber })}
+        </p>
+      )}
+    </div>
+  );
+
   if (history.releases.length === 0) {
     return (
-      <EmptyState
-        title={t('history.empty')}
-        icon={<AlertTriangle className="size-8" aria-hidden="true" />}
-        variant="outlined"
-        className="py-12"
-      />
+      <div className="flex flex-col gap-3" aria-busy={isPending}>
+        {publishControl}
+        <FieldMessage
+          id={`${id}-error`}
+          message={errorCode ? t(messageKeyForCode(errorCode)) : undefined}
+          className="rounded-token border border-danger px-4 py-3"
+        />
+        <EmptyState
+          title={t('history.empty')}
+          icon={<AlertTriangle className="size-8" aria-hidden="true" />}
+          variant="outlined"
+          className="py-12"
+        />
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-3" aria-busy={isPending}>
+      {publishControl}
       <FieldMessage
         id={`${id}-error`}
         message={errorCode ? t(messageKeyForCode(errorCode)) : undefined}

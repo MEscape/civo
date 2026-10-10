@@ -11,13 +11,13 @@ Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/ap
 
 ## `@components/layout` (Layout primitives)
 
-`layout-primitives.tsx`: `PageShell`, `AppHeader`, `AppBody`, `Container`, `Section` (`tone`: `default` | `muted`), `SidebarLayout`, `PageHeading` (the page's single `h1`), `SectionHeading` (`h2`), `Divider`, `EmptyState` (`variant`: `plain` | `outlined`), `Grid` (container-query columns).
+`layout-primitives.tsx`: `PageShell`, `AppHeader`, `Container`, `Section` (`tone`: `default` | `muted`), `PageHeading` (the page's single `h1`), `SectionHeading` (`h2`), `EmptyState` (`variant`: `plain` | `outlined`), `Grid` (container-query columns).
 
 `app-nav.tsx`: `AppNav`, a header's navigation links. A Client Component so the locale-aware `Link` does not read the request while a layout prerenders.
 
 ## `@components/shared` (Composites)
 
-- `text-field.tsx`, `select-field.tsx`, `field-message.tsx`: labelled form fields with hints and errors wired to `aria-describedby`.
+- `text-field.tsx`, `select-field.tsx`, `form-select-field.tsx`, `checkbox-field.tsx`, `field-message.tsx`: labelled form fields with hints and errors wired to `aria-describedby`. `select-field.tsx` is a controlled Radix select (`options`, `value`, `onValueChange`); a Radix select has no native input, so react-hook-form's `register` cannot drive it: `form-select-field.tsx` binds it to a form value through the controller. `checkbox-field.tsx` is a native checkbox with a visible focus ring; module forms and filters use it instead of a bare `<input type="checkbox">`.
 - `loading-status.tsx`: `LoadingStatus`, the one screen-reader announcement inside loading UI (`app.loading`); skeletons stay `aria-hidden`.
 - `not-found-panel.tsx`: the body of every `not-found.tsx`.
 - `route-error-panel.tsx`: the body of every `error.tsx`; it never shows the raw error message.

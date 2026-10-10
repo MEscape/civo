@@ -1,7 +1,9 @@
 import { assertNever } from '@lib/utils';
 
+import { CategoryControl } from './controls/category-control';
 import { ColumnsControl } from './controls/columns-control';
 import { DatasetControl } from './controls/dataset-control';
+import { DatasetsControl } from './controls/datasets-control';
 import { ItemsControl } from './controls/items-control';
 import { NumberControl } from './controls/number-control';
 import { SelectControl } from './controls/select-control';
@@ -34,6 +36,10 @@ export function PropertyControl(props: ControlProps) {
       return <SwitchControl {...props} />;
     case 'dataset':
       return <DatasetControl {...props} />;
+    case 'datasets':
+      return <DatasetsControl {...props} />;
+    case 'category':
+      return <CategoryControl {...props} />;
     case 'items':
       return <ItemsControl {...props} />;
     default:

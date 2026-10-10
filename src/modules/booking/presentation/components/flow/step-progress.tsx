@@ -2,7 +2,7 @@ import { useTranslations } from '@i18n/client';
 
 import { cn } from '@lib/utils';
 
-import type { FlowStep } from './flow-state';
+import type { FlowStep } from '../../flow/flow-state';
 
 export interface StepProgressProps {
   readonly steps: readonly FlowStep[];

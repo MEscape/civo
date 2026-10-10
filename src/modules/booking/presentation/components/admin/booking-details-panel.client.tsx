@@ -9,13 +9,14 @@ import { useTranslations } from '@i18n/client';
 import type { ActionResult } from '@lib/result';
 
 import { cancelBookingAsStaffAction } from '../../actions/cancel-booking-as-staff-action';
-import { completeBookingAction } from '../../actions/complete-booking-action';
-import { markBookingNoShowAction } from '../../actions/mark-booking-no-show-action';
 import { rescheduleBookingAsStaffAction } from '../../actions/reschedule-booking-as-staff-action';
-import { useZonedFormat } from '../../hooks/use-zoned-format';
-import { SlotPicker } from '../flow/slot-picker.client';
 import { BookingStatusBadge } from '../shared/booking-status-badge';
+import { CancelConfirmation } from '../shared/cancel-confirmation';
 import { ErrorNotice } from '../shared/error-notice';
+import { RescheduleSection } from '../shared/reschedule-section';
+
+import { BookingActions } from './booking-actions';
+import { BookingFacts } from './booking-facts';
 
 import type { SlotDto } from '../../dto/availability-dto';
 import type { CalendarBookingDto } from '../../dto/calendar-dto';
@@ -51,7 +52,6 @@ export function BookingDetailsPanel({
 }: BookingDetailsPanelProps) {
   const t = useTranslations('booking');
   const id = useId();
-  const format = useZonedFormat(timeZone);
   const [mode, setMode] = useState<Mode>('view');
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [slot, setSlot] = useState<SlotDto | null>(null);
@@ -97,180 +97,63 @@ export function BookingDetailsPanel({
         </div>
       </div>
 
-      <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
-        <dt className="text-copy-muted">{t('summary.when')}</dt>
-        <dd className="text-copy">{format.dateTime(booking.start)}</dd>
-        <dt className="text-copy-muted">{t('summary.participants')}</dt>
-        <dd className="text-copy">{booking.participants}</dd>
-        {resourceNames.length > 0 && (
-          <>
-            <dt className="text-copy-muted">{t('details.resources')}</dt>
-            <dd className="text-copy">{resourceNames.join(', ')}</dd>
-          </>
-        )}
-        <dt className="text-copy-muted">{t('details.customer')}</dt>
-        <dd className="text-copy">{booking.customerName ?? t('review.notProvided')}</dd>
-        <dt className="text-copy-muted">{t('fields.email')}</dt>
-        <dd className="break-all text-copy">{booking.customerEmail ?? t('review.notProvided')}</dd>
-        {booking.customerPhone !== null && (
-          <>
-            <dt className="text-copy-muted">{t('fields.phone')}</dt>
-            <dd className="text-copy">{booking.customerPhone}</dd>
-          </>
-        )}
-        {booking.notes !== null && (
-          <>
-            <dt className="text-copy-muted">{t('fields.notes')}</dt>
-            <dd className="whitespace-pre-line break-words text-copy">{booking.notes}</dd>
-          </>
-        )}
-        {booking.rescheduleCount > 0 && (
-          <>
-            <dt className="text-copy-muted">{t('details.rescheduled')}</dt>
-            <dd className="text-copy">{booking.rescheduleCount}</dd>
-          </>
-        )}
-        {booking.cancelledBy !== null && (
-          <>
-            <dt className="text-copy-muted">{t('details.cancelledBy')}</dt>
-            <dd className="text-copy">{t(`actors.${booking.cancelledBy}`)}</dd>
-          </>
-        )}
-      </dl>
+      <BookingFacts booking={booking} resourceNames={resourceNames} timeZone={timeZone} />
 
       {errorCode !== null && <ErrorNotice code={errorCode} focus />}
 
       {canManage && isOpen && mode === 'view' && (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => {
-              setMode('reschedule');
-            }}
-          >
-            {t('details.reschedule')}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={isPending}
-            onClick={() => {
-              setMode('confirm-cancel');
-            }}
-          >
-            {t('details.cancel')}
-          </Button>
-          {booking.status === 'confirmed' && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isPending}
-                onClick={() => {
-                  run(() => completeBookingAction({ bookingId: booking.id }));
-                }}
-              >
-                {t('details.complete')}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isPending}
-                onClick={() => {
-                  run(() => markBookingNoShowAction({ bookingId: booking.id }));
-                }}
-              >
-                {t('details.noShow')}
-              </Button>
-            </>
-          )}
-        </div>
+        <BookingActions
+          booking={booking}
+          isPending={isPending}
+          onReschedule={() => {
+            setMode('reschedule');
+          }}
+          onCancel={() => {
+            setMode('confirm-cancel');
+          }}
+          run={run}
+        />
       )}
 
       {!canManage && isOpen && <p className="text-sm text-copy-muted">{t('details.readOnly')}</p>}
 
       {mode === 'confirm-cancel' && (
-        <div
-          role="alertdialog"
-          aria-labelledby={`${id}-cancel`}
-          className="space-y-3 rounded-token border border-danger-border bg-danger-subtle p-4"
-        >
-          <p id={`${id}-cancel`} className="text-sm font-medium text-danger">
-            {t('details.confirmCancel')}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isPending}
-              onClick={() => {
-                run(() => cancelBookingAsStaffAction({ bookingId: booking.id }));
-              }}
-            >
-              {t('details.confirmCancelYes')}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={isPending}
-              onClick={() => {
-                setMode('view');
-              }}
-            >
-              {t('details.keep')}
-            </Button>
-          </div>
-        </div>
+        <CancelConfirmation
+          message={t('details.confirmCancel')}
+          confirmLabel={t('details.confirmCancelYes')}
+          keepLabel={t('details.keep')}
+          isPending={isPending}
+          onConfirm={() => {
+            run(() => cancelBookingAsStaffAction({ bookingId: booking.id }));
+          }}
+          onKeep={() => {
+            setMode('view');
+          }}
+        />
       )}
 
       {mode === 'reschedule' && (
-        <div className="space-y-4">
-          <SlotPicker
-            websiteId={websiteId}
-            serviceId={booking.serviceId}
-            locationId={booking.locationId}
-            participants={booking.participants}
-            horizonDays={service?.horizonDays ?? FALLBACK_HORIZON_DAYS}
-            selectedStart={slot?.start ?? null}
-            disabled={isPending}
-            onSelect={(chosen) => {
-              setSlot(chosen);
-            }}
-          />
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              disabled={slot === null || isPending}
-              onClick={() => {
-                if (slot !== null) {
-                  run(() =>
-                    rescheduleBookingAsStaffAction({ bookingId: booking.id, start: slot.start }),
-                  );
-                }
-              }}
-            >
-              {slot === null
-                ? t('manage.moveChoose')
-                : t('manage.moveTo', {
-                    date: format.shortDate(slot.localDate),
-                    time: format.timeOfDay(slot.localTime),
-                  })}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={isPending}
-              onClick={() => {
-                setMode('view');
-                setSlot(null);
-              }}
-            >
-              {t('details.keep')}
-            </Button>
-          </div>
-        </div>
+        <RescheduleSection
+          websiteId={websiteId}
+          serviceId={booking.serviceId}
+          locationId={booking.locationId}
+          participants={booking.participants}
+          horizonDays={service?.horizonDays ?? FALLBACK_HORIZON_DAYS}
+          slot={slot}
+          timeZone={timeZone}
+          isPending={isPending}
+          keepLabel={t('details.keep')}
+          onSelect={setSlot}
+          onConfirm={(chosen) => {
+            run(() =>
+              rescheduleBookingAsStaffAction({ bookingId: booking.id, start: chosen.start }),
+            );
+          }}
+          onKeep={() => {
+            setMode('view');
+            setSlot(null);
+          }}
+        />
       )}
     </section>
   );

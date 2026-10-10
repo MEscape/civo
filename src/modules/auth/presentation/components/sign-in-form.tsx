@@ -52,8 +52,8 @@ export function SignInForm({ returnTo }: SignInFormProps) {
     startTransition(async () => {
       const result = await signInAction({ ...values, returnTo });
       if (result.ok) {
+        // The action revalidated the layout, so the destination is fetched fresh: no extra refresh.
         router.push(result.data.redirectTo);
-        router.refresh();
         return;
       }
       // Keep the email so it can be corrected, but never leave a rejected password behind.

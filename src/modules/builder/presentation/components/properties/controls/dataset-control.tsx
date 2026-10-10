@@ -8,7 +8,7 @@ import {
 
 import { useTranslations } from '@i18n/client';
 
-import { useBuilderSession } from '../../builder-session-context';
+import { useBuilderSession } from '../../../state/builder-session-context';
 
 import type { ControlProps } from './control-props';
 import type { DatasetOptionDto } from '../../../dto/dataset-options-dto';

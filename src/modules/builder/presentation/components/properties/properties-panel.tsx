@@ -10,7 +10,7 @@ import {
   selectSelectedAncestors,
   selectSelectedNode,
 } from '../../state/builder-selectors';
-import { useBuilderSession } from '../builder-session-context';
+import { useBuilderSession } from '../../state/builder-session-context';
 
 import { NodeBreadcrumb } from './node-breadcrumb';
 import { PropertyFieldGroups } from './property-field-groups';

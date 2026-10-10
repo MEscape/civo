@@ -54,7 +54,13 @@ export async function NewsGrid({ props, context, loadContent }: NewsGridComponen
               <Card className="h-full overflow-hidden">
                 {item.imageUrl !== undefined && (
                   // eslint-disable-next-line @next/next/no-img-element -- the URL comes from municipal content on any host; next/image would need each host allow-listed
-                  <img src={item.imageUrl} alt="" className="h-40 w-full object-cover" />
+                  <img
+                    src={item.imageUrl}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-40 w-full object-cover"
+                  />
                 )}
                 <CardHeader>
                   {item.category !== undefined && (

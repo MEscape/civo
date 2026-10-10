@@ -1,22 +1,42 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 
 import { Label } from '@components/ui/input';
-import { Select, SelectTrigger } from '@components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@components/ui/select';
 
 import { FieldMessage } from './field-message';
 
-export interface SelectFieldProps extends ComponentProps<typeof Select> {
-  readonly id: string;
+export interface SelectFieldOption {
+  readonly value: string;
   readonly label: string;
-  readonly errorMessage?: ReactNode;
 }
 
-/** Label, select and its associated error message as one accessible unit. */
+export interface SelectFieldProps extends Omit<ComponentProps<typeof Select>, 'children'> {
+  readonly id: string;
+  readonly label: string;
+  readonly options: readonly SelectFieldOption[];
+  /** Shown while no value is chosen. */
+  readonly placeholder?: string;
+  /** A translated error message to display; `undefined` shows no error. */
+  readonly errorMessage?: string | undefined;
+}
+
+/**
+ * Label, select and its associated error message as one accessible unit.
+ * It is controlled (`value`/`onValueChange`): a form library's `register`
+ * cannot drive a Radix select, use `FormSelectField` for react-hook-form.
+ */
 export function SelectField({
   id,
   label,
+  options,
+  placeholder,
   errorMessage,
-  children,
   ...selectProps
 }: SelectFieldProps) {
   const errorId = `${id}-error`;
@@ -31,8 +51,15 @@ export function SelectField({
           aria-invalid={errorMessage ? true : undefined}
           aria-describedby={errorMessage ? errorId : undefined}
         >
-          {children}
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
 
       <FieldMessage id={errorId} message={errorMessage} />

@@ -2,24 +2,23 @@
 
 import { useId, useState } from 'react';
 
+import { CheckboxField } from '@components/shared/checkbox-field';
 import { TextField } from '@components/shared/text-field';
-import { Button } from '@components/ui/button';
 
 import { useTranslations } from '@i18n/client';
 
 import { trimToNull } from '@lib/utils';
 
 import { saveLocationAction } from '../../actions/save-location-action';
+import { planFormOf } from '../../drafts/availability-plan-form';
+import { useErrorText } from '../../hooks/use-error-text';
 import { useSaveForm } from '../../hooks/use-save-form';
-import { MESSAGE_PARAMS, messageKeyForCode } from '../../messages/message-keys';
 import { locationConfigSchema } from '../../schemas/location-config-schema';
-import { CheckboxField } from '../shared/checkbox-field';
-import { firstCode, FormErrorSummary } from '../shared/form-error-summary';
-
-import { AvailabilityEditor, EMPTY_PLAN } from './availability-editor';
+import { AvailabilityEditor } from '../availability/availability-editor';
+import { FormActions } from '../shared/form-actions';
+import { FormErrorSummary } from '../shared/form-error-summary';
 
 import type { LocationDto } from '../../dto/setup-dto';
-import type { AvailabilityPlanForm } from '../../schemas/availability-plan-schema';
 
 export interface LocationFormProps {
   readonly websiteId: string;
@@ -49,17 +48,10 @@ export function LocationForm({ websiteId, location, onSaved, onCancel }: Locatio
   const [address, setAddress] = useState(location?.address ?? '');
   const [timeZone, setTimeZone] = useState(location?.timeZone ?? browserZone());
   const [isActive, setIsActive] = useState(location?.isActive ?? true);
-  const [openingHours, setOpeningHours] = useState<AvailabilityPlanForm>(
-    location?.openingHours === undefined
-      ? EMPTY_PLAN
-      : (location.openingHours as AvailabilityPlanForm),
-  );
+  const [openingHours, setOpeningHours] = useState(planFormOf(location?.openingHours));
 
   const form = useSaveForm({ schema: locationConfigSchema, save: saveLocationAction, onSaved });
-  const errorText = (field: string) => {
-    const code = firstCode(form.errors, field);
-    return code === undefined ? undefined : t(messageKeyForCode(code), MESSAGE_PARAMS);
-  };
+  const errorText = useErrorText(form.errors);
 
   return (
     <form
@@ -145,14 +137,7 @@ export function LocationForm({ websiteId, location, onSaved, onCancel }: Locatio
         />
       </section>
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={form.isPending}>
-          {form.isPending ? t('form.saving') : t('form.save')}
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={form.isPending}>
-          {t('form.cancel')}
-        </Button>
-      </div>
+      <FormActions isPending={form.isPending} onCancel={onCancel} />
     </form>
   );
 }

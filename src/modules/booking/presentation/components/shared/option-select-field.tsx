@@ -13,7 +13,7 @@ export interface SelectOption {
   readonly label: string;
 }
 
-export interface SelectFieldProps {
+export interface OptionSelectFieldProps {
   readonly id: string;
   readonly label: string;
   readonly value: string;
@@ -29,7 +29,7 @@ export interface SelectFieldProps {
  * the picker reserves the empty value for "nothing chosen", so "all" and
  * "any" are explicit values of their own.
  */
-export function SelectField({
+export function OptionSelectField({
   id,
   label,
   value,
@@ -38,7 +38,7 @@ export function SelectField({
   error,
   hint,
   disabled,
-}: SelectFieldProps) {
+}: OptionSelectFieldProps) {
   const describedBy = [
     hint === undefined ? null : `${id}-hint`,
     error === undefined ? null : `${id}-error`,

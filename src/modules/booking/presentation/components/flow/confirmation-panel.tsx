@@ -6,8 +6,9 @@ import { Button } from '@components/ui/button';
 
 import { useTranslations } from '@i18n/client';
 
+import { downloadCalendarFile } from '../../calendar/download-calendar-file';
+
 import { BookingSummary } from './booking-summary';
-import { buildCalendarFile } from './calendar-file';
 
 import type { BookingDto } from '../../dto/booking-dto';
 
@@ -19,28 +20,6 @@ export interface ConfirmationPanelProps {
 }
 
 type CopyState = 'idle' | 'copied' | 'failed';
-
-function downloadCalendarFile(booking: BookingDto): void {
-  const content = buildCalendarFile(
-    {
-      uid: booking.reference,
-      title: booking.serviceName,
-      start: booking.start,
-      end: booking.end,
-      location: [booking.locationName, booking.locationAddress]
-        .filter((part) => part !== null)
-        .join(', '),
-      description: booking.instructions,
-    },
-    new Date(),
-  );
-  const url = URL.createObjectURL(new Blob([content], { type: 'text/calendar;charset=utf-8' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${booking.reference}.ics`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
 
 /**
  * The booking is made. The reference is shown large and can be copied; we do

@@ -6,8 +6,6 @@ import { EmptyState } from '@components/layout/layout-primitives';
 import { FieldMessage } from '@components/shared/field-message';
 import { Button } from '@components/ui/button';
 
-import { useRouter } from '@i18n';
-
 import { useTranslations } from '@i18n/client';
 
 import { deleteDatasetAction } from '../actions/delete-dataset-action';
@@ -23,14 +21,13 @@ export interface DatasetManagementPanelProps {
 }
 
 /**
- * Datasets come from the server and are NOT copied into state: after a
- * change `router.refresh()` re-renders with the new list, so the server
- * stays the single source of truth.
+ * Datasets come from the server and are NOT copied into state: every change
+ * goes through an action that revalidates the page, so the response already
+ * carries the new list and the server stays the single source of truth.
  */
 export function DatasetManagementPanel({ dataSource }: DatasetManagementPanelProps) {
   const t = useTranslations('dataSources');
 
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isCreating, setIsCreating] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -53,7 +50,6 @@ export function DatasetManagementPanel({ dataSource }: DatasetManagementPanelPro
       if (expandedId === datasetId) {
         setExpandedId(null);
       }
-      router.refresh();
     });
   }
 

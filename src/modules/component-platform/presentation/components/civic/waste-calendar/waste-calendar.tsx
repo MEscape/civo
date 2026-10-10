@@ -49,6 +49,7 @@ export async function WasteCalendar({ props, context, loadContent }: WasteCalend
       mode: context.mode,
       websiteId: context.websiteId,
       datasetId: props.datasetId,
+      additionalDatasetIds: props.additionalDatasetIds,
       category: props.district,
       limit: props.limit,
     }),
