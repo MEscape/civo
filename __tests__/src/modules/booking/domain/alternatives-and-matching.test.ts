@@ -56,7 +56,7 @@ describe('alternative slots', () => {
     const bookings = bookingStarts.map((start) => makeBooking({ start, resources: ['emp-1'] }));
     const requested = at(MONDAY, '10:00');
     const index = indexFor({ location, bookings }, alternativeRange(requested, BERLIN, 2));
-    return suggestAlternativeSlots(index, requested, 1, limit);
+    return suggestAlternativeSlots(index, { requestedStart: requested, participants: 1, limit });
   }
 
   it('prefers the same day, nearest in time first', () => {
@@ -87,7 +87,13 @@ describe('alternative slots', () => {
 
   it('returns nothing when nothing is free', () => {
     const none = indexFor({ location: makeLocation({ openingHours: plan({}) }) });
-    expect(suggestAlternativeSlots(none, at(MONDAY, '10:00'), 1, 3)).toEqual([]);
+    expect(
+      suggestAlternativeSlots(none, {
+        requestedStart: at(MONDAY, '10:00'),
+        participants: 1,
+        limit: 3,
+      }),
+    ).toEqual([]);
   });
 
   it('respects the limit', () => {

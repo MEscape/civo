@@ -47,10 +47,6 @@ export type ResourceKind = (typeof RESOURCE_TYPES)[number];
 /** A qualification key such as `identity-services`: lower-case words joined by hyphens. */
 export const SKILL_KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export function isResourceType(raw: string): raw is ResourceKind {
-  return RESOURCE_TYPES.some((type) => type === raw);
-}
-
 /**
  * Something that can be reserved: a person, a room, a pitch, a device.
  *
@@ -113,44 +109,68 @@ function parseSkills(skills: readonly string[], bag: FieldErrorBag): string[] {
   return normalized.sort();
 }
 
-export function createBookableResourceDraft(
-  input: BookableResourceInput,
-): AppResult<BookableResourceDraft, ValidationAppError> {
-  const bag = createBookingErrorBag();
-
-  const name = input.name.trim();
+function parseName(raw: string, bag: FieldErrorBag): string {
+  const name = raw.trim();
   if (name === '') {
     bag.add('name', CODES.nameRequired);
   } else if (name.length > RESOURCE_LIMITS.nameMax) {
     bag.add('name', CODES.textTooLong);
   }
+  return name;
+}
 
+function checkCapacity(capacity: number | null, bag: FieldErrorBag): void {
+  if (capacity === null) {
+    return;
+  }
+  const isInRange =
+    Number.isInteger(capacity) && capacity >= 1 && capacity <= RESOURCE_LIMITS.capacityMax;
+  if (!isInRange) {
+    bag.add('capacity', CODES.capacityInvalid);
+  }
+}
+
+function parseLocation(raw: string | null, bag: FieldErrorBag): BookingLocationId | null {
+  if (raw === null) {
+    return null;
+  }
+  const parsed = parseBookingLocationId(raw);
+  if (parsed.isErr()) {
+    bag.add('locationId', CODES.idInvalid);
+    return null;
+  }
+  return parsed.value;
+}
+
+function parseAvailability(
+  raw: BookableResourceInput['availability'],
+  bag: FieldErrorBag,
+): AvailabilityPlan | null {
+  if (raw === null) {
+    return null;
+  }
+  const plan = createAvailabilityPlan(raw);
+  if (plan.isErr()) {
+    addFieldErrors(bag, plan.error);
+    return null;
+  }
+  return plan.value;
+}
+
+export function createBookableResourceDraft(
+  input: BookableResourceInput,
+): AppResult<BookableResourceDraft, ValidationAppError> {
+  const bag = createBookingErrorBag();
+
+  const name = parseName(input.name, bag);
   const type = RESOURCE_TYPES.find((candidate) => candidate === input.type) ?? null;
   if (type === null) {
     bag.add('type', CODES.resourceTypeUnknown);
   }
-
   const skills = parseSkills(input.skills, bag);
-
-  if (
-    input.capacity !== null &&
-    (!Number.isInteger(input.capacity) ||
-      input.capacity < 1 ||
-      input.capacity > RESOURCE_LIMITS.capacityMax)
-  ) {
-    bag.add('capacity', CODES.capacityInvalid);
-  }
-
-  const locationId = input.locationId === null ? null : parseBookingLocationId(input.locationId);
-  if (locationId?.isErr() === true) {
-    bag.add('locationId', CODES.idInvalid);
-  }
-
-  const availability =
-    input.availability === null ? null : createAvailabilityPlan(input.availability);
-  if (availability?.isErr() === true) {
-    addFieldErrors(bag, availability.error);
-  }
+  checkCapacity(input.capacity, bag);
+  const locationId = parseLocation(input.locationId, bag);
+  const availability = parseAvailability(input.availability, bag);
 
   if (bag.hasErrors || type === null) {
     return err(bag.toError());
@@ -158,12 +178,12 @@ export function createBookableResourceDraft(
 
   return ok({
     websiteId: input.websiteId,
-    locationId: locationId?.isOk() === true ? locationId.value : null,
+    locationId,
     name,
     type,
     skills,
     capacity: input.capacity,
-    availability: availability?.isOk() === true ? availability.value : null,
+    availability,
     isActive: input.isActive,
   });
 }

@@ -2,6 +2,7 @@ import { eachLocalDate, weekdayOf } from '../time/local-date';
 import { mergeIntervals, subtractIntervals } from '../time/time-interval';
 import { zonedTimeToEpoch } from '../time/time-zone';
 
+import type { LocalDateRange } from './scheduling-types';
 import type {
   AvailabilityException,
   AvailabilityPlan,
@@ -72,8 +73,7 @@ export function windowsForDate(
  */
 export function windowsForRange(
   plan: AvailabilityPlan,
-  from: LocalDate,
-  to: LocalDate,
+  { from, to }: LocalDateRange,
   zone: TimeZone,
 ): TimeInterval[] {
   return mergeIntervals(

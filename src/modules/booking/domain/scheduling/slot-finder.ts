@@ -1,6 +1,8 @@
+import { MS_PER_MINUTE } from '@lib/utils';
+
 import { eachLocalDate } from '../time/local-date';
 import { listCovers } from '../time/time-interval';
-import { MS_PER_MINUTE, MINUTES_PER_DAY } from '../time/time-of-day';
+import { MINUTES_PER_DAY } from '../time/time-of-day';
 import { zonedTimeToEpoch } from '../time/time-zone';
 
 import { assessSlot } from './slot-assessment';

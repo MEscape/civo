@@ -162,54 +162,60 @@ describe('change policy', () => {
     const service = makeService();
     const early = new Date(booking.start.getTime() - 25 * HOUR);
     const late = new Date(booking.start.getTime() - 23 * HOUR);
-    expect(checkCancellation(service, booking, 'customer', early).isOk()).toBe(true);
-    expect(checkCancellation(service, booking, 'customer', late)._unsafeUnwrapErr().code).toBe(
-      'booking.cancellation_deadline_passed',
+    expect(checkCancellation(service, booking, { actor: 'customer', now: early }).isOk()).toBe(
+      true,
     );
+    expect(
+      checkCancellation(service, booking, { actor: 'customer', now: late })._unsafeUnwrapErr().code,
+    ).toBe('booking.cancellation_deadline_passed');
   });
 
   it('does not bind staff by the customer deadline', () => {
     const late = new Date(booking.start.getTime() - 5 * 60_000);
-    expect(checkCancellation(makeService(), booking, 'staff', late).isOk()).toBe(true);
+    expect(checkCancellation(makeService(), booking, { actor: 'staff', now: late }).isOk()).toBe(
+      true,
+    );
   });
 
   it('honours a service that forbids cancellation', () => {
     const service = makeService({
       cancellation: { isAllowed: false, deadlineMinutes: 0, allowedActors: ['customer', 'staff'] },
     });
-    expect(checkCancellation(service, booking, 'staff', NOW)._unsafeUnwrapErr().code).toBe(
-      'booking.cancellation_not_allowed',
-    );
+    expect(
+      checkCancellation(service, booking, { actor: 'staff', now: NOW })._unsafeUnwrapErr().code,
+    ).toBe('booking.cancellation_not_allowed');
   });
 
   it('honours the allowed actors', () => {
     const service = makeService({
       cancellation: { isAllowed: true, deadlineMinutes: 0, allowedActors: ['staff'] },
     });
-    expect(checkCancellation(service, booking, 'customer', NOW).isErr()).toBe(true);
-    expect(checkCancellation(service, booking, 'staff', NOW).isOk()).toBe(true);
+    expect(checkCancellation(service, booking, { actor: 'customer', now: NOW }).isErr()).toBe(true);
+    expect(checkCancellation(service, booking, { actor: 'staff', now: NOW }).isOk()).toBe(true);
   });
 
   it('always lets a hold be abandoned', () => {
     const service = makeService({
       cancellation: { isAllowed: false, deadlineMinutes: 0, allowedActors: [] },
     });
-    expect(checkCancellation(service, held(), 'customer', NOW).isOk()).toBe(true);
+    expect(checkCancellation(service, held(), { actor: 'customer', now: NOW }).isOk()).toBe(true);
   });
 
   it('applies the rescheduling deadline to customers', () => {
     const service = makeService();
     const late = new Date(booking.start.getTime() - HOUR);
-    expect(checkRescheduling(service, booking, 'customer', NOW).isOk()).toBe(true);
-    expect(checkRescheduling(service, booking, 'customer', late)._unsafeUnwrapErr().code).toBe(
-      'booking.rescheduling_deadline_passed',
-    );
-    expect(checkRescheduling(service, booking, 'staff', late).isOk()).toBe(true);
+    expect(checkRescheduling(service, booking, { actor: 'customer', now: NOW }).isOk()).toBe(true);
+    expect(
+      checkRescheduling(service, booking, { actor: 'customer', now: late })._unsafeUnwrapErr().code,
+    ).toBe('booking.rescheduling_deadline_passed');
+    expect(checkRescheduling(service, booking, { actor: 'staff', now: late }).isOk()).toBe(true);
   });
 
   it('caps how often a customer may move a booking, but not staff', () => {
     const worn = confirmed({ rescheduleCount: MAX_CUSTOMER_RESCHEDULES });
-    expect(checkRescheduling(makeService(), worn, 'customer', NOW).isErr()).toBe(true);
-    expect(checkRescheduling(makeService(), worn, 'staff', NOW).isOk()).toBe(true);
+    expect(checkRescheduling(makeService(), worn, { actor: 'customer', now: NOW }).isErr()).toBe(
+      true,
+    );
+    expect(checkRescheduling(makeService(), worn, { actor: 'staff', now: NOW }).isOk()).toBe(true);
   });
 });

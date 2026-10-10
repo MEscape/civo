@@ -1,6 +1,7 @@
 import type { ConflictAppError, ValidationAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
+import { MS_PER_MINUTE } from '@lib/utils';
 
 import {
   capacityExceeded,
@@ -13,7 +14,6 @@ import {
 import { sharedSessionKey } from '../models/booking';
 import { compareLocalDates, toEpochDay } from '../time/local-date';
 import { listCovers } from '../time/time-interval';
-import { MS_PER_MINUTE } from '../time/time-of-day';
 import { epochToZonedWallClock, zonedTimeToEpoch } from '../time/time-zone';
 
 import { matchResources } from './resource-matching';
@@ -22,6 +22,7 @@ import type { ResourceDemand } from './resource-matching';
 import type { ResourceTimeline, SchedulingIndex } from './scheduling-index';
 import type { PlannedSlot, SlotAssessment, SlotRejection } from './scheduling-types';
 import type { BookableResourceId } from '../models/ids';
+import type { LocalDate } from '../time/local-date';
 import type { TimeInterval } from '../time/time-interval';
 
 function rejected(reason: SlotRejection): SlotAssessment {
@@ -85,6 +86,13 @@ function dayLoad(timeline: ResourceTimeline, epochDay: number): number {
   return timeline.loadByDay.get(epochDay) ?? 0;
 }
 
+/** What the resources must be free for: the occupied span, the group, and the day (for load balancing). */
+interface CandidateRequest {
+  readonly occupied: TimeInterval;
+  readonly participants: number;
+  readonly epochDay: number;
+}
+
 interface Candidates {
   readonly demands: readonly ResourceDemand[];
   /** Whether a resource was free and qualified but too small for the group. */
@@ -101,9 +109,7 @@ interface Candidates {
  */
 function candidatesFor(
   index: SchedulingIndex,
-  occupied: TimeInterval,
-  participants: number,
-  epochDay: number,
+  { occupied, participants, epochDay }: CandidateRequest,
 ): Candidates {
   let sawTooSmall = false;
   const demands: ResourceDemand[] = [];
@@ -172,6 +178,33 @@ function planned(plan: Plan): SlotAssessment {
   return { kind: 'planned', slot };
 }
 
+type RequestCheck =
+  | { readonly kind: 'rejected'; readonly assessment: SlotAssessment }
+  | { readonly kind: 'valid'; readonly startDate: LocalDate };
+
+/**
+ * Whether the request itself is sound (group size, on the grid, inside the
+ * booking window), whatever the resources. The start date is worked out only
+ * once the start is known to be on the grid, and handed back for the caller.
+ */
+function checkRequest(index: SchedulingIndex, start: number, participants: number): RequestCheck {
+  const isValidGroup =
+    Number.isInteger(participants) &&
+    participants >= 1 &&
+    participants <= index.input.service.capacity.participantsPerBooking;
+  if (!isValidGroup) {
+    return { kind: 'rejected', assessment: rejected('invalid-participants') };
+  }
+  if (!isOnGrid(index, start)) {
+    return { kind: 'rejected', assessment: rejected('off-grid') };
+  }
+  const startDate = epochToZonedWallClock(start, index.zone).date;
+  if (start < index.earliestStart || compareLocalDates(startDate, index.latestDate) > 0) {
+    return { kind: 'rejected', assessment: rejected('outside-booking-window') };
+  }
+  return { kind: 'valid', startDate };
+}
+
 /**
  * Decides whether a group of `participants` can start at `start`, and if so
  * with which resources. The one place the booking rules live: the slot list,
@@ -188,20 +221,11 @@ export function assessSlot(
 ): SlotAssessment {
   const { service, location } = index.input;
 
-  if (
-    !Number.isInteger(participants) ||
-    participants < 1 ||
-    participants > service.capacity.participantsPerBooking
-  ) {
-    return rejected('invalid-participants');
+  const checked = checkRequest(index, start, participants);
+  if (checked.kind === 'rejected') {
+    return checked.assessment;
   }
-  if (!isOnGrid(index, start)) {
-    return rejected('off-grid');
-  }
-  const startDate = epochToZonedWallClock(start, index.zone).date;
-  if (start < index.earliestStart || compareLocalDates(startDate, index.latestDate) > 0) {
-    return rejected('outside-booking-window');
-  }
+  const { startDate } = checked;
 
   const end = start + service.durationMinutes * MS_PER_MINUTE;
   const appointment: TimeInterval = { start, end };
@@ -241,12 +265,11 @@ export function assessSlot(
     });
   }
 
-  const { demands, sawTooSmall } = candidatesFor(
-    index,
+  const { demands, sawTooSmall } = candidatesFor(index, {
     occupied,
     participants,
-    toEpochDay(startDate),
-  );
+    epochDay: toEpochDay(startDate),
+  });
   const assignment = matchResources(demands);
   if (assignment === null) {
     return rejected(sawTooSmall ? 'capacity-exceeded' : 'resources-unavailable');

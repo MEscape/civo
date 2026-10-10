@@ -39,12 +39,17 @@ export function canTransition(from: BookingStatus, to: BookingStatus): boolean {
   return BOOKING_TRANSITIONS[from].includes(to);
 }
 
+interface Transition {
+  readonly to: BookingStatus;
+  /** Names the attempt in the error when the booking cannot make this move. */
+  readonly event: string;
+  readonly now: Date;
+  readonly changes?: Partial<Booking>;
+}
+
 function move(
   booking: Booking,
-  to: BookingStatus,
-  event: string,
-  now: Date,
-  changes: Partial<Booking> = {},
+  { to, event, now, changes = {} }: Transition,
 ): AppResult<Booking, ConflictAppError> {
   if (!canTransition(booking.status, to)) {
     return err(invalidStateTransition(booking.status, event));
@@ -72,12 +77,17 @@ export function confirmBooking(
   if (isHoldExpired(booking, now)) {
     return err(bookingExpired());
   }
-  return move(booking, 'confirmed', 'confirm', now, { customer, holdExpiresAt: null });
+  return move(booking, {
+    to: 'confirmed',
+    event: 'confirm',
+    now,
+    changes: { customer, holdExpiresAt: null },
+  });
 }
 
 /** Marks a hold that ran out; idempotent callers check `isHoldExpired` first. */
 export function expireHold(booking: Booking, now: Date): AppResult<Booking, ConflictAppError> {
-  return move(booking, 'expired', 'expire', now);
+  return move(booking, { to: 'expired', event: 'expire', now });
 }
 
 export function cancelBooking(
@@ -85,10 +95,11 @@ export function cancelBooking(
   actor: ChangeActor,
   now: Date,
 ): AppResult<Booking, ConflictAppError> {
-  return move(booking, 'cancelled', 'cancel', now, {
-    cancelledAt: now,
-    cancelledBy: actor,
-    holdExpiresAt: null,
+  return move(booking, {
+    to: 'cancelled',
+    event: 'cancel',
+    now,
+    changes: { cancelledAt: now, cancelledBy: actor, holdExpiresAt: null },
   });
 }
 
@@ -101,7 +112,7 @@ export function completeBooking(booking: Booking, now: Date): AppResult<Booking,
   if (booking.status === 'confirmed' && !afterStart(booking, now)) {
     return err(bookingNotStarted());
   }
-  return move(booking, 'completed', 'complete', now);
+  return move(booking, { to: 'completed', event: 'complete', now });
 }
 
 /** Staff record that the customer did not come. Only after the start. */
@@ -109,7 +120,7 @@ export function markNoShow(booking: Booking, now: Date): AppResult<Booking, Conf
   if (booking.status === 'confirmed' && !afterStart(booking, now)) {
     return err(bookingNotStarted());
   }
-  return move(booking, 'no_show', 'no-show', now);
+  return move(booking, { to: 'no_show', event: 'no-show', now });
 }
 
 /**

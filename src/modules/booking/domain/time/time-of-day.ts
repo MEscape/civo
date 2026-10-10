@@ -5,7 +5,6 @@
  */
 export const MINUTES_PER_HOUR = 60;
 export const MINUTES_PER_DAY = 1440;
-export const MS_PER_MINUTE = 60_000;
 
 const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
 

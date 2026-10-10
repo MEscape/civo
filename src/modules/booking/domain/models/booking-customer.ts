@@ -60,6 +60,23 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+/** One submitted field: `null` when it is blank (and an error when it was required), else its checked value. */
+function readField(
+  { field, isRequired }: { readonly field: InformationField; readonly isRequired: boolean },
+  input: BookingCustomerInput,
+  bag: FieldErrorBag,
+): string | null {
+  const value = blankToNull(input[field]);
+  if (value === null) {
+    if (isRequired) {
+      bag.add(field, CODES.fieldRequired);
+    }
+    return null;
+  }
+  checkFormat(field, value, bag);
+  return field === 'email' ? normalizeEmail(value) : value;
+}
+
 /** Validates the visitor's details against what the service asks for. */
 export function createBookingCustomer(
   service: BookableService,
@@ -68,16 +85,11 @@ export function createBookingCustomer(
   const bag = createBookingErrorBag();
   const values: Partial<Record<InformationField, string>> = {};
 
-  for (const { field, isRequired } of service.information) {
-    const value = blankToNull(input[field]);
-    if (value === null) {
-      if (isRequired) {
-        bag.add(field, CODES.fieldRequired);
-      }
-      continue;
+  for (const requirement of service.information) {
+    const value = readField(requirement, input, bag);
+    if (value !== null) {
+      values[requirement.field] = value;
     }
-    checkFormat(field, value, bag);
-    values[field] = field === 'email' ? normalizeEmail(value) : value;
   }
 
   const email = values.email;

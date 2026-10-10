@@ -33,10 +33,6 @@ export const BOOKING_STATUSES = [
 ] as const;
 export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
-export function isBookingStatus(raw: string): raw is BookingStatus {
-  return BOOKING_STATUSES.some((status) => status === raw);
-}
-
 /**
  * A reserved span of time on a set of resources.
  *

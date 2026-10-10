@@ -1,8 +1,9 @@
+import { MS_PER_MINUTE } from '@lib/utils';
+
 import { servesLocation } from '../models/bookable-resource';
 import { isBlocking } from '../models/booking';
 import { addDays, toEpochDay } from '../time/local-date';
 import { intersectIntervals } from '../time/time-interval';
-import { MS_PER_MINUTE } from '../time/time-of-day';
 import { localDateOf } from '../time/time-zone';
 
 import { windowsForRange } from './availability-windows';
@@ -150,14 +151,11 @@ export function buildSchedulingIndex(
 ): SchedulingIndex {
   const { service, location, now } = input;
   const zone = location.timeZone;
-  const windowFrom = addDays(range.from, -1);
-  const windowTo = addDays(range.to, 1);
+  const window: LocalDateRange = { from: addDays(range.from, -1), to: addDays(range.to, 1) };
 
-  const locationWindows = windowsForRange(location.openingHours, windowFrom, windowTo, zone);
+  const locationWindows = windowsForRange(location.openingHours, window, zone);
   const serviceWindows =
-    service.availability === null
-      ? null
-      : windowsForRange(service.availability, windowFrom, windowTo, zone);
+    service.availability === null ? null : windowsForRange(service.availability, window, zone);
   const appointmentWindows =
     serviceWindows === null ? locationWindows : intersectIntervals(locationWindows, serviceWindows);
 
@@ -174,10 +172,7 @@ export function buildSchedulingIndex(
     const own =
       resource.availability === null
         ? locationWindows
-        : intersectIntervals(
-            windowsForRange(resource.availability, windowFrom, windowTo, zone),
-            locationWindows,
-          );
+        : intersectIntervals(windowsForRange(resource.availability, window, zone), locationWindows);
     const { spans, longest } = busySpansOf(resource, blocking);
     timelines.set(resource.id, {
       resource,

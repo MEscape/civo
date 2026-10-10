@@ -76,12 +76,18 @@ export const NO_HOURS: DaySchedule = { intervals: [], breaks: [] };
 
 /** The seven days from a Monday-first list; a missing entry is a day without hours. */
 function toWeekly(days: readonly DaySchedule[]): WeeklySchedule {
-  const day = (index: number): DaySchedule => days[index] ?? NO_HOURS;
-  return { 1: day(0), 2: day(1), 3: day(2), 4: day(3), 5: day(4), 6: day(5), 7: day(6) };
+  const [monday, tuesday, wednesday, thursday, friday, saturday, sunday] = WEEKDAYS;
+  const [first, second, third, fourth, fifth, sixth, seventh] = days;
+  return {
+    [monday]: first ?? NO_HOURS,
+    [tuesday]: second ?? NO_HOURS,
+    [wednesday]: third ?? NO_HOURS,
+    [thursday]: fourth ?? NO_HOURS,
+    [friday]: fifth ?? NO_HOURS,
+    [saturday]: sixth ?? NO_HOURS,
+    [sunday]: seventh ?? NO_HOURS,
+  };
 }
-
-/** A plan with no hours at all: never available until the editor adds some. */
-export const NEVER_AVAILABLE: AvailabilityPlan = { weekly: toWeekly([]), exceptions: [] };
 
 export interface TimeRangeInput {
   /** `HH:mm`. */
@@ -131,8 +137,7 @@ function parseRange(input: TimeRangeInput, path: string, bag: FieldErrorBag): Ti
 /** Parses the ranges of one list; ranges that overlap are an error, ranges that touch are fine. */
 function parseRanges(
   inputs: readonly TimeRangeInput[],
-  path: string,
-  max: number,
+  { path, max }: { readonly path: string; readonly max: number },
   bag: FieldErrorBag,
 ): TimeRange[] {
   if (inputs.length > max) {
@@ -157,11 +162,14 @@ function parseDay(input: DayScheduleInput, path: string, bag: FieldErrorBag): Da
   return {
     intervals: parseRanges(
       input.intervals,
-      `${path}.intervals`,
-      AVAILABILITY_LIMITS.maxRangesPerDay,
+      { path: `${path}.intervals`, max: AVAILABILITY_LIMITS.maxRangesPerDay },
       bag,
     ),
-    breaks: parseRanges(input.breaks, `${path}.breaks`, AVAILABILITY_LIMITS.maxBreaksPerDay, bag),
+    breaks: parseRanges(
+      input.breaks,
+      { path: `${path}.breaks`, max: AVAILABILITY_LIMITS.maxBreaksPerDay },
+      bag,
+    ),
   };
 }
 
@@ -169,54 +177,74 @@ function parseExceptionKind(raw: string): ExceptionKind | null {
   return EXCEPTION_KINDS.find((kind) => kind === raw) ?? null;
 }
 
+function checkExceptionRange(
+  { from, to }: { readonly from: LocalDate; readonly to: LocalDate },
+  path: string,
+  bag: FieldErrorBag,
+): boolean {
+  if (compareLocalDates(from, to) > 0) {
+    return bag.expect(false, `${path}.to`, CODES.dateRangeInvalid);
+  }
+  const isShortEnough = daysBetween(from, to) + 1 <= AVAILABILITY_LIMITS.maxExceptionDays;
+  return bag.expect(isShortEnough, `${path}.to`, CODES.dateRangeTooLong);
+}
+
+interface ExceptionFields {
+  readonly kind: ExceptionKind;
+  readonly from: LocalDate;
+  readonly to: LocalDate;
+}
+
+/** The kind and dates of an exception, with every missing or unreadable one reported at once. */
+function parseExceptionFields(
+  input: AvailabilityExceptionInput,
+  path: string,
+  bag: FieldErrorBag,
+): ExceptionFields | null {
+  const kind = parseExceptionKind(input.kind);
+  const from = parseLocalDate(input.from);
+  const to = parseLocalDate(input.to);
+  const hasValidFields = [
+    bag.expect(kind !== null, `${path}.kind`, CODES.exceptionKindUnknown),
+    bag.expect(from !== null, `${path}.from`, CODES.dateInvalid),
+    bag.expect(to !== null, `${path}.to`, CODES.dateInvalid),
+  ].every(Boolean);
+  return hasValidFields && kind !== null && from !== null && to !== null
+    ? { kind, from, to }
+    : null;
+}
+
 function parseException(
   input: AvailabilityExceptionInput,
   path: string,
   bag: FieldErrorBag,
 ): AvailabilityException | null {
-  const kind = parseExceptionKind(input.kind);
-  const from = parseLocalDate(input.from);
-  const to = parseLocalDate(input.to);
-  let isValid = true;
-
-  if (kind === null) {
-    bag.add(`${path}.kind`, CODES.exceptionKindUnknown);
-    isValid = false;
-  }
-  if (from === null) {
-    bag.add(`${path}.from`, CODES.dateInvalid);
-    isValid = false;
-  }
-  if (to === null) {
-    bag.add(`${path}.to`, CODES.dateInvalid);
-    isValid = false;
-  }
-  if (kind === null || from === null || to === null) {
+  const fields = parseExceptionFields(input, path, bag);
+  if (fields === null) {
     return null;
   }
+  const { kind, from, to } = fields;
 
-  if (compareLocalDates(from, to) > 0) {
-    bag.add(`${path}.to`, CODES.dateRangeInvalid);
-    isValid = false;
-  } else if (daysBetween(from, to) + 1 > AVAILABILITY_LIMITS.maxExceptionDays) {
-    bag.add(`${path}.to`, CODES.dateRangeTooLong);
-    isValid = false;
-  }
+  const isRangeValid = checkExceptionRange({ from, to }, path, bag);
 
   const label = input.label?.trim() ?? '';
-  if (label.length > AVAILABILITY_LIMITS.maxLabelLength) {
-    bag.add(`${path}.label`, CODES.textTooLong);
-    isValid = false;
-  }
+  const isLabelValid = bag.expect(
+    label.length <= AVAILABILITY_LIMITS.maxLabelLength,
+    `${path}.label`,
+    CODES.textTooLong,
+  );
 
   const day =
     kind === 'closed' ? NO_HOURS : parseDay(input.day ?? NO_HOURS_INPUT, `${path}.day`, bag);
-  if (kind !== 'closed' && day.intervals.length === 0) {
-    bag.add(`${path}.day.intervals`, CODES.timeRangeInvalid);
-    isValid = false;
-  }
+  const hasHours = bag.expect(
+    kind === 'closed' || day.intervals.length > 0,
+    `${path}.day.intervals`,
+    CODES.timeRangeInvalid,
+  );
 
-  return isValid ? { kind, from, to, day, label: label === '' ? null : label } : null;
+  return isRangeValid && isLabelValid && hasHours
+    ? { kind, from, to, day, label: label === '' ? null : label }
+    : null;
 }
 
 /**

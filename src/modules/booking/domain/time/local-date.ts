@@ -1,3 +1,5 @@
+import { MS_PER_DAY } from '@lib/utils';
+
 /**
  * A calendar date with no time and no zone ("2026-03-29").
  *
@@ -16,10 +18,11 @@ export interface LocalDate {
 }
 
 /** ISO weekday: 1 is Monday, 7 is Sunday. */
+// eslint-disable-next-line no-magic-numbers -- the ISO 8601 weekday numbers are the definition itself, not a tunable
 export const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 
-const MS_PER_DAY = 86_400_000;
+const YEAR_DIGITS = 4;
 const MIN_YEAR = 1970;
 const MAX_YEAR = 2200;
 const MONTHS_PER_YEAR = 12;
@@ -63,7 +66,7 @@ export function parseLocalDate(text: string): LocalDate | null {
 
 export function formatLocalDate(date: LocalDate): string {
   const pad = (value: number, length: number) => String(value).padStart(length, '0');
-  return `${pad(date.year, 4)}-${pad(date.month, 2)}-${pad(date.day, 2)}`;
+  return `${pad(date.year, YEAR_DIGITS)}-${pad(date.month, 2)}-${pad(date.day, 2)}`;
 }
 
 /** Days since 1970-01-01. Two dates are compared and subtracted through this. */

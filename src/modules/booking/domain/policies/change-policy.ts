@@ -1,6 +1,7 @@
 import type { ConflictAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
+import { MS_PER_MINUTE } from '@lib/utils';
 
 import {
   cancellationDeadlinePassed,
@@ -8,7 +9,6 @@ import {
   reschedulingDeadlinePassed,
   reschedulingNotAllowed,
 } from '../errors/booking-errors';
-import { MS_PER_MINUTE } from '../time/time-of-day';
 
 import type { BookableService, ChangeActor, ChangePolicy } from '../models/bookable-service';
 import type { Booking } from '../models/booking';
@@ -18,6 +18,12 @@ import type { Booking } from '../models/booking';
  * exists so a citizen cannot hold a popular slot indefinitely by shuffling it.
  */
 export const MAX_CUSTOMER_RESCHEDULES = 3;
+
+/** Who tries to change a booking, and when. */
+export interface ChangeAttempt {
+  readonly actor: ChangeActor;
+  readonly now: Date;
+}
 
 function withinDeadline(policy: ChangePolicy, booking: Booking, now: Date): boolean {
   return now.getTime() <= booking.start.getTime() - policy.deadlineMinutes * MS_PER_MINUTE;
@@ -35,8 +41,7 @@ function permits(policy: ChangePolicy, actor: ChangeActor): boolean {
 export function checkCancellation(
   service: BookableService,
   booking: Booking,
-  actor: ChangeActor,
-  now: Date,
+  { actor, now }: ChangeAttempt,
 ): AppResult<true, ConflictAppError> {
   if (booking.status === 'held') {
     return ok(true);
@@ -55,8 +60,7 @@ export function checkCancellation(
 export function checkRescheduling(
   service: BookableService,
   booking: Booking,
-  actor: ChangeActor,
-  now: Date,
+  { actor, now }: ChangeAttempt,
 ): AppResult<true, ConflictAppError> {
   const policy = service.rescheduling;
   if (!permits(policy, actor)) {

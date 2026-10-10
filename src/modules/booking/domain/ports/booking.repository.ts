@@ -17,6 +17,19 @@ import type { TimeInterval } from '../time/time-interval';
 /** A booking about to be stored: everything but what the store assigns. */
 export type NewBooking = Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>;
 
+/** A website and the tenant that owns it: every booking query is scoped to both. */
+export interface WebsiteScope {
+  readonly websiteId: WebsiteId;
+  readonly tenantId: TenantId;
+}
+
+/** What the operations calendar asks for: a span of start times, narrowed, and bounded. */
+export interface CalendarQuery {
+  readonly span: TimeInterval;
+  readonly filter: BookingFilter;
+  readonly limit: number;
+}
+
 /** The optional narrowing of the operations calendar. */
 export interface BookingFilter {
   readonly locationId?: BookingLocationId | undefined;
@@ -50,19 +63,15 @@ export interface BookingRepository {
    * returned; the engine ignores it. Bounded by `limit`.
    */
   listBlocking(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    scope: WebsiteScope,
     span: TimeInterval,
     limit: number,
   ): AppResultAsync<readonly Booking[], InfrastructureAppError>;
 
   /** Live and finished bookings starting in the span, for the operations calendar. Bounded by `limit`. */
   listInRange(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    span: TimeInterval,
-    filter: BookingFilter,
-    limit: number,
+    scope: WebsiteScope,
+    query: CalendarQuery,
   ): AppResultAsync<readonly Booking[], InfrastructureAppError>;
 
   /**
@@ -91,23 +100,17 @@ export interface BookingRepository {
 
   /** Bookings of this e-mail address that still stand or are being held. */
   countLiveByEmail(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    scope: WebsiteScope,
     email: string,
     now: Date,
   ): AppResultAsync<number, InfrastructureAppError>;
 
   /** Holds that have not expired, across the website. */
-  countLiveHolds(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    now: Date,
-  ): AppResultAsync<number, InfrastructureAppError>;
+  countLiveHolds(scope: WebsiteScope, now: Date): AppResultAsync<number, InfrastructureAppError>;
 
   /** Marks expired holds `expired` and releases what they held. Returns how many. */
   releaseExpiredHolds(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    scope: WebsiteScope,
     now: Date,
     limit: number,
   ): AppResultAsync<number, InfrastructureAppError>;

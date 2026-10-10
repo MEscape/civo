@@ -17,6 +17,13 @@ export function alternativeRange(
   return { from: addDays(day, -spanDays), to: addDays(day, spanDays) };
 }
 
+export interface AlternativesRequest {
+  /** The start time the visitor asked for, as epoch milliseconds. */
+  readonly requestedStart: number;
+  readonly participants: number;
+  readonly limit: number;
+}
+
 /**
  * Other times worth offering when the requested one is gone, nearest first:
  * the same day before other days, then by distance in days, then by how close
@@ -25,9 +32,7 @@ export function alternativeRange(
  */
 export function suggestAlternativeSlots(
   index: SchedulingIndex,
-  requestedStart: number,
-  participants: number,
-  limit: number,
+  { requestedStart, participants, limit }: AlternativesRequest,
 ): AvailableSlot[] {
   const requested = epochToZonedWallClock(requestedStart, index.zone);
   const ranked = findAvailableSlots(index, participants)

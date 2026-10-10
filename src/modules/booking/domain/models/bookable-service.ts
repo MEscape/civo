@@ -187,26 +187,20 @@ export type BookableServiceDraft = Omit<
   'id' | 'tenantId' | 'createdAt' | 'updatedAt'
 >;
 
-/** Minutes a service's resources are held per booking: preparation, appointment and clean-up. */
-export function occupiedMinutes(service: BookableService): number {
-  return service.preparationMinutes + service.durationMinutes + service.cleanupMinutes;
-}
-
-/** The total of resources one booking holds. */
-export function requiredResourceCount(service: BookableService): number {
-  return service.requirements.reduce((sum, requirement) => sum + requirement.count, 0);
-}
-
 function isIntegerBetween(value: number, min: number, max: number): boolean {
   return Number.isInteger(value) && value >= min && value <= max;
 }
 
+interface TextRule {
+  readonly field: string;
+  readonly value: string | null;
+  readonly max: number;
+  readonly isRequired?: boolean;
+}
+
 function checkText(
   bag: FieldErrorBag,
-  field: string,
-  value: string | null,
-  max: number,
-  isRequired = false,
+  { field, value, max, isRequired = false }: TextRule,
 ): string | null {
   const text = blankToNull(value);
   if (text === null) {
@@ -406,19 +400,22 @@ export function createBookableServiceDraft(
 ): AppResult<BookableServiceDraft, ValidationAppError> {
   const bag = createBookingErrorBag();
 
-  const name = checkText(bag, 'name', input.name, SERVICE_LIMITS.nameMax, true);
-  const description = checkText(
-    bag,
-    'description',
-    input.description,
-    SERVICE_LIMITS.descriptionMax,
-  );
-  const instructions = checkText(
-    bag,
-    'instructions',
-    input.instructions,
-    SERVICE_LIMITS.instructionsMax,
-  );
+  const name = checkText(bag, {
+    field: 'name',
+    value: input.name,
+    max: SERVICE_LIMITS.nameMax,
+    isRequired: true,
+  });
+  const description = checkText(bag, {
+    field: 'description',
+    value: input.description,
+    max: SERVICE_LIMITS.descriptionMax,
+  });
+  const instructions = checkText(bag, {
+    field: 'instructions',
+    value: input.instructions,
+    max: SERVICE_LIMITS.instructionsMax,
+  });
   const category = blankToNull(input.category);
   if (
     category !== null &&

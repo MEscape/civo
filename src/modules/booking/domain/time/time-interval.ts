@@ -19,18 +19,6 @@ export function createInterval(start: number, end: number): TimeInterval | null 
   return end > start ? { start, end } : null;
 }
 
-export function intervalsOverlap(a: TimeInterval, b: TimeInterval): boolean {
-  return a.start < b.end && b.start < a.end;
-}
-
-export function intervalContains(outer: TimeInterval, inner: TimeInterval): boolean {
-  return outer.start <= inner.start && inner.end <= outer.end;
-}
-
-export function intervalLength(interval: TimeInterval): number {
-  return interval.end - interval.start;
-}
-
 /** Sorts and merges overlapping or touching intervals into a normalized list. */
 export function mergeIntervals(intervals: readonly TimeInterval[]): TimeInterval[] {
   const sorted = [...intervals].sort((a, b) => a.start - b.start || a.end - b.end);
@@ -76,6 +64,14 @@ export function intersectIntervals(
   return result;
 }
 
+/** Appends `[start, end)` unless it is empty. */
+function pushInterval(into: TimeInterval[], start: number, end: number): void {
+  const interval = createInterval(start, end);
+  if (interval !== null) {
+    into.push(interval);
+  }
+}
+
 /** The parts of `list` that are not in `removals`. Both lists must be normalized. */
 export function subtractIntervals(
   list: readonly TimeInterval[],
@@ -94,20 +90,14 @@ export function subtractIntervals(
         removalIndex += 1;
         continue;
       }
-      const before = createInterval(cursor, removal.start);
-      if (before !== null) {
-        result.push(before);
-      }
+      pushInterval(result, cursor, removal.start);
       cursor = Math.max(cursor, removal.end);
       if (removal.end > interval.end) {
         break;
       }
       removalIndex += 1;
     }
-    const rest = createInterval(cursor, interval.end);
-    if (rest !== null) {
-      result.push(rest);
-    }
+    pushInterval(result, cursor, interval.end);
   }
   return result;
 }
@@ -139,15 +129,4 @@ export function listCovers(list: readonly TimeInterval[], target: TimeInterval):
   const index = lastStartingAtOrBefore(list, target.start);
   const candidate = index === -1 ? undefined : list[index];
   return candidate !== undefined && candidate.end >= target.end;
-}
-
-/** Whether any interval of the normalized list overlaps `target`. */
-export function listOverlaps(list: readonly TimeInterval[], target: TimeInterval): boolean {
-  const index = lastStartingAtOrBefore(list, target.start);
-  const before = index === -1 ? undefined : list[index];
-  if (before !== undefined && before.end > target.start) {
-    return true;
-  }
-  const after = list[index + 1];
-  return after !== undefined && after.start < target.end;
 }

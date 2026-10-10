@@ -1,7 +1,7 @@
+import { MS_PER_DAY, MS_PER_MINUTE } from '@lib/utils';
 import type { Brand } from '@lib/utils';
 
 import { fromEpochDay, toEpochDay } from './local-date';
-import { MINUTES_PER_DAY, MS_PER_MINUTE } from './time-of-day';
 
 import type { LocalDate } from './local-date';
 
@@ -14,7 +14,6 @@ import type { LocalDate } from './local-date';
  */
 export type TimeZone = Brand<string, 'TimeZone'>;
 
-const MS_PER_DAY = MINUTES_PER_DAY * MS_PER_MINUTE;
 const ZONE_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)*$/;
 const MS_PER_SECOND = 1000;
 const HOURS_PER_DAY = 24;
