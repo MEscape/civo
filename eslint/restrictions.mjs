@@ -3,6 +3,7 @@ import {
   CLOCK_READS,
   ERROR_DETAILS,
   FORM_DATA,
+  LOCALE_FORMATTING,
   PROCESS_ENV,
   RANDOMNESS,
   UI_PRIMITIVES,
@@ -83,6 +84,22 @@ const FORMATTERS = {
   })),
 };
 
+/**
+ * Zod validates what crosses the presentation boundary (docs/rules/validation.md). Below it, data of unknown
+ * shape (stored JSON, driver rows, a library's error body) is checked with the guards in `@lib/utils`, and the
+ * domain keeps its own invariants.
+ */
+const NO_ZOD = {
+  paths: [
+    {
+      name: 'zod',
+      message:
+        "Zod belongs to the presentation layer. Check untrusted data below it with the guards from '@lib/utils' (arrayOf, objectOf, …).",
+    },
+  ],
+  patterns: [{ group: ['zod/*'], message: 'Zod belongs to the presentation layer.' }],
+};
+
 const merge = (...configs) => ({
   paths: configs.flatMap((c) => c.paths ?? []),
   patterns: configs.flatMap((c) => c.patterns ?? []),
@@ -110,10 +127,10 @@ export const restrictions = [
     },
   },
 
-  // --- process.env only in src/lib/config/env.ts ----------------------------
+  // --- process.env only in the two config entry points ----------------------------
   {
     files: SOURCE_FILES,
-    ignores: ['src/lib/config/env.ts'],
+    ignores: ['src/lib/config/public-env.ts', 'src/lib/config/server.ts'],
     rules: { 'no-restricted-syntax': ['error', PROCESS_ENV] },
   },
   // --- domain: no clock reads, no randomness, no process ---------------------
@@ -160,7 +177,14 @@ export const restrictions = [
   // --- presentation & pages: approved UI primitives --------------------------
   {
     files: ['src/modules/*/presentation/**/*.tsx', 'src/app/**/*.tsx'],
-    rules: { 'no-restricted-syntax': ['error', PROCESS_ENV, ...UI_PRIMITIVES] },
+    rules: {
+      'no-restricted-syntax': ['error', PROCESS_ENV, ...UI_PRIMITIVES, ...LOCALE_FORMATTING],
+    },
+  },
+  // Hooks and helpers of a module's presentation layer format through the request locale too.
+  {
+    files: ['src/modules/*/presentation/**/*.ts'],
+    rules: { 'no-restricted-syntax': ['error', PROCESS_ENV, ...LOCALE_FORMATTING] },
   },
   // --- error boundaries never show the failure itself ------------------------
   {
@@ -169,7 +193,15 @@ export const restrictions = [
       'src/app/**/global-error.tsx',
       'src/components/shared/route-error-panel.tsx',
     ],
-    rules: { 'no-restricted-syntax': ['error', PROCESS_ENV, ...UI_PRIMITIVES, ERROR_DETAILS] },
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        PROCESS_ENV,
+        ...UI_PRIMITIVES,
+        ...LOCALE_FORMATTING,
+        ERROR_DETAILS,
+      ],
+    },
   },
   // --- UI formats through the request locale ---------------------------------
   {
@@ -178,6 +210,16 @@ export const restrictions = [
       'no-restricted-imports': [
         'error',
         merge(LOCALE_WRAPPERS, MODULE_ALIAS, MODULE_PACKAGES, FORMATTERS),
+      ],
+    },
+  },
+  {
+    files: ['src/modules/*/{domain,application,infrastructure}/**/*.{ts,tsx}'],
+    ignores: ['src/i18n/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        merge(LOCALE_WRAPPERS, MODULE_ALIAS, MODULE_PACKAGES, NO_ZOD),
       ],
     },
   },

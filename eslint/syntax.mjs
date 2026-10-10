@@ -90,3 +90,21 @@ export const ERROR_DETAILS = {
   message:
     'An error boundary shows translated generic text; never render the error message, stack or cause (docs/rules/nextjs.md).',
 };
+
+/**
+ * docs/rules/i18n.md: presentation code formats through `getAppFormatters` / `useAppFormatters`, which bind the
+ * request locale and time zone. A hand-built `Intl` formatter or `toLocale*String` call picks its own locale.
+ */
+export const LOCALE_FORMATTING = [
+  {
+    selector:
+      "NewExpression[callee.object.name='Intl'][callee.property.name=/^(DateTimeFormat|NumberFormat|RelativeTimeFormat|ListFormat|PluralRules)$/]",
+    message:
+      "Format through getAppFormatters ('@i18n/server') or useAppFormatters ('@i18n/client') instead of building an Intl formatter (docs/rules/i18n.md).",
+  },
+  {
+    selector: 'CallExpression[callee.property.name=/^toLocale(Date|Time)?String$/]',
+    message:
+      "Format through getAppFormatters ('@i18n/server') or useAppFormatters ('@i18n/client') instead of toLocale*String (docs/rules/i18n.md).",
+  },
+];

@@ -23,7 +23,7 @@ export const LAYERS = /** @type {const} */ ([
 export const SHARED_LIB_ALLOW = {
   domain: ['errors', 'result', 'utils'],
   application: ['errors', 'result', 'utils'],
-  infrastructure: ['errors', 'result', 'utils', 'logger', 'db', 'config'],
+  infrastructure: ['errors', 'result', 'utils', 'logger', 'db', 'config', 'mail'],
   presentation: ['errors', 'result', 'utils', 'actions', 'seo', 'config', 'fonts'],
   // composition.ts, index.ts and module-root files: everything.
   root: null,
@@ -62,6 +62,7 @@ export const SERVER_ONLY_SPECIFIERS = [
   /^next\/headers$/,
   /^@prisma\//,
   /^@lib\/db($|\/)/,
+  /^@lib\/(config|mail)\/server$/,
 ];
 
 /**

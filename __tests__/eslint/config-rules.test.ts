@@ -11,7 +11,7 @@ import { overrides } from '../../eslint/overrides.mjs';
 import { react } from '../../eslint/react.mjs';
 import { restrictions } from '../../eslint/restrictions.mjs';
 import { afterPrettier, style } from '../../eslint/style.mjs';
-import { makeTree } from '../architecture/fixture-tree';
+import { makeTree, relativeToRoot } from '../architecture/fixture-tree';
 
 async function lintFiles(files: Record<string, string>): Promise<Record<string, string[]>> {
   const root = makeTree(files);
@@ -36,7 +36,7 @@ async function lintFiles(files: Record<string, string>): Promise<Record<string, 
   const results = await eslint.lintFiles(['src/**/*.{ts,tsx}']);
   return Object.fromEntries(
     results.map((r) => [
-      r.filePath.replace(`${root}/`, ''),
+      relativeToRoot(r.filePath, root),
       r.messages.map((m) => `[${m.ruleId}] ${m.message}`),
     ]),
   );
@@ -85,15 +85,17 @@ export const x = [useTranslations, getTranslations, Link, redirect, usePathname,
 });
 
 describe('configuration hygiene and layer-specific syntax', () => {
-  it('forbids process.env outside src/lib/config/env.ts, in every layer', async () => {
+  it('forbids process.env outside the two config entry points, in every layer', async () => {
     const out = await lintFiles({
       'src/modules/shop/domain/models/a.ts': 'export const a = process.env.X;\n',
       'src/modules/shop/application/commands/b.ts': 'export const b = process.env.X;\n',
-      'src/lib/config/env.ts': 'export const c = process.env.X;\n',
+      'src/lib/config/server.ts': 'export const c = process.env.X;\n',
+      'src/lib/config/public-env.ts': 'export const d = process.env.X;\n',
     });
     expect(out['src/modules/shop/domain/models/a.ts']!.join('\n')).toMatch(/process\.env/);
     expect(out['src/modules/shop/application/commands/b.ts']!.join('\n')).toMatch(/process\.env/);
-    expect(out['src/lib/config/env.ts']).toEqual([]);
+    expect(out['src/lib/config/server.ts']).toEqual([]);
+    expect(out['src/lib/config/public-env.ts']).toEqual([]);
   });
 
   it('keeps the domain free of clock and randomness, and the application free of HTTP objects', async () => {
@@ -278,5 +280,46 @@ describe('ESLint core correctness rules', () => {
     }>;
     const lastCurly = [...config].reverse().find((block) => block.rules && 'curly' in block.rules);
     expect(lastCurly?.rules?.['curly']).toEqual(['error', 'all']);
+  });
+});
+
+describe('locale formatting in presentation code', () => {
+  const HOOK = 'src/modules/shop/presentation/hooks/use-price.ts';
+  const COMPONENT_FILE = 'src/modules/shop/presentation/components/price.tsx';
+
+  it('rejects hand-built Intl formatters and toLocale*String in presentation code', async () => {
+    const out = await lintFiles({
+      [HOOK]: "export const a = new Intl.NumberFormat('de').format(1);\n",
+      [COMPONENT_FILE]:
+        'export const Price = ({ date }: { date: Date }) => <p>{date.toLocaleDateString()}</p>;\n',
+    });
+    expect(out[HOOK]!.join('\n')).toMatch(/useAppFormatters/);
+    expect(out[COMPONENT_FILE]!.join('\n')).toMatch(/toLocale\*String/);
+  });
+
+  it('allows non-formatting Intl use such as reading the browser time zone', async () => {
+    const out = await lintFiles({
+      [HOOK]: 'export const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;\n',
+    });
+    expect(out[HOOK]!.join('\n')).not.toMatch(/useAppFormatters/);
+  });
+});
+
+describe('zod stays in the presentation layer', () => {
+  const ZOD_IMPORT = "import { z } from 'zod';\nexport const schema = z.string();\n";
+
+  it.each(['domain', 'application', 'infrastructure'])(
+    'rejects zod in a module %s file',
+    async (layer) => {
+      const file = `src/modules/shop/${layer}/thing.ts`;
+      const out = await lintFiles({ [file]: ZOD_IMPORT });
+      expect(out[file]!.join('\n')).toMatch(/Zod belongs to the presentation layer/);
+    },
+  );
+
+  it('allows zod in presentation schemas', async () => {
+    const file = 'src/modules/shop/presentation/schemas/thing-schema.ts';
+    const out = await lintFiles({ [file]: ZOD_IMPORT });
+    expect(out[file]!.join('\n')).not.toMatch(/Zod belongs/);
   });
 });

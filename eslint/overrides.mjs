@@ -1,6 +1,6 @@
 import { LEGACY_MODULES } from './architecture-policy/policy.mjs';
 import { CONFIG_FILES, FRAMEWORK_FILES, TEST_FILES } from './shared.mjs';
-import { FOCUSED_TESTS, PROCESS_ENV, UI_PRIMITIVES } from './syntax.mjs';
+import { FOCUSED_TESTS, LOCALE_FORMATTING, PROCESS_ENV, UI_PRIMITIVES } from './syntax.mjs';
 
 /** Narrow, documented relaxations for tests, framework entry points and config/tooling files. */
 export const overrides = [
@@ -90,6 +90,7 @@ export const overrides = [
         'error',
         PROCESS_ENV,
         ...UI_PRIMITIVES.filter((entry) => !entry.selector.includes("'button'")),
+        ...LOCALE_FORMATTING,
       ],
     },
   },
