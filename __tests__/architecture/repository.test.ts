@@ -90,6 +90,7 @@ describe('architecture of this repository', () => {
       'use-case:HoldSlot=public',
       'use-case:ListComponentCatalog=public',
       'use-case:ListContent=public',
+      'use-case:ListContentCategories=public',
       'use-case:ListPagesForRelease=system',
       'use-case:ReleaseHold=public',
       'use-case:RequestPasswordReset=public',

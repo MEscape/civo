@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { runAllChecks } from '../../eslint/architecture-policy/index.mjs';
 import { architectureRules } from '../../eslint/architecture.mjs';
 
-import { makeTree } from './fixture-tree';
+import { makeTree, relativeToRoot } from './fixture-tree';
 import { MODULE, standardModule } from './standard-module';
 
 const M = `src/modules/${MODULE}`;
@@ -29,7 +29,7 @@ async function lint(root: string): Promise<string[]> {
   const results = await eslint.lintFiles(['src/**/*.{ts,tsx}']);
   return results.flatMap((r) =>
     r.messages.map(
-      (m) => `${r.filePath.replace(`${root}/`, '')}:${m.line} [${m.ruleId}] ${m.message}`,
+      (m) => `${relativeToRoot(r.filePath, root)}:${m.line} [${m.ruleId}] ${m.message}`,
     ),
   );
 }

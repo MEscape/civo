@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 import { afterAll } from 'vitest';
 
@@ -16,6 +16,11 @@ export function makeTree(files: Record<string, string>): string {
     writeFileSync(abs, content);
   }
   return root;
+}
+
+/** A path inside the fixture root with `/` separators, whatever the platform. */
+export function relativeToRoot(filePath: string, root: string): string {
+  return relative(root, filePath).replaceAll('\\', '/');
 }
 
 afterAll(() => {
