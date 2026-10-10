@@ -21,6 +21,21 @@ export const smartCityTemplate: WebsiteTemplate = {
         }),
         component('metricTrendChart', 'trend', { heading: 'Entwicklung' }),
       ]),
+      section('about-data', 'muted', [
+        component('accordion', 'data-faq', {
+          heading: 'Über die Daten',
+          items: [
+            {
+              question: 'Woher stammen die Daten?',
+              answer: 'Die Kennzahlen kommen aus den Fachverfahren und Sensoren der Stadt.',
+            },
+            {
+              question: 'Wie aktuell sind die Werte?',
+              answer: 'Jede Kennzahl zeigt den Zeitpunkt der letzten Messung an.',
+            },
+          ],
+        }),
+      ]),
       section('projects', 'default', [
         component('newsGrid', 'news', {
           columns: 3,

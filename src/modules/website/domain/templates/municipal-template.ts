@@ -27,7 +27,7 @@ export const municipalTemplate: WebsiteTemplate = {
         }),
       ]),
       section('directory', 'default', [
-        component('departmentDirectory', 'directory', {
+        component('departmentDirectory', 'department-directory', {
           heading: 'Ansprechpartner & Ämter',
         }),
         component('wasteCalendar', 'waste-calendar', {
@@ -35,7 +35,7 @@ export const municipalTemplate: WebsiteTemplate = {
         }),
       ]),
       section('contact', 'muted', [
-        component('contactCard', 'contact', { heading: 'Kontakt Rathaus' }),
+        component('contactCard', 'contact-card', { heading: 'Kontakt Rathaus' }),
         component('openingHours', 'opening-hours', {
           heading: 'Öffnungszeiten Bürgerbüro',
         }),

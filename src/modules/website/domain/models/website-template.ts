@@ -1,6 +1,12 @@
 import { literalGuard } from '@lib/utils';
 
-export const TEMPLATE_KEYS = ['municipal', 'smart-city', 'association'] as const;
+export const TEMPLATE_KEYS = [
+  'municipal',
+  'smart-city',
+  'association',
+  'citizen-services',
+  'tourism',
+] as const;
 export type TemplateKey = (typeof TEMPLATE_KEYS)[number];
 
 /** Narrows untrusted text (a stored row, a request value) to a known template. */

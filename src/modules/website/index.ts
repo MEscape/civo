@@ -8,6 +8,7 @@
 /** Server-only queries for Server Components. Mutations are reachable through Server Actions only. */
 export { restoreStoredWebsiteTheme, websiteQueries } from './composition';
 
+export { GeneralSettingsForm } from './presentation/components/general-settings-form';
 export { CreateWebsiteForm } from './presentation/components/create-website-form';
 export { ThemeProvider } from './presentation/components/theme-provider';
 export { ThemeSettingsForm } from './presentation/components/theme-settings-form';

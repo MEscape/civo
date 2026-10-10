@@ -25,8 +25,13 @@ export const associationTemplate: WebsiteTemplate = {
           eventsLimit: 3,
         }),
       ]),
+      component('callToAction', 'join', {
+        heading: 'Mitglied werden',
+        body: 'Machen Sie mit: Wir freuen uns über neue Gesichter und frische Ideen.',
+        buttonLabel: 'Kontakt aufnehmen',
+      }),
       section('contact', 'default', [
-        component('contactCard', 'contact', { heading: 'Kontakt' }),
+        component('contactCard', 'contact-card', { heading: 'Kontakt' }),
         component('openingHours', 'opening-hours', {
           heading: 'Öffnungszeiten Vereinsheim',
         }),

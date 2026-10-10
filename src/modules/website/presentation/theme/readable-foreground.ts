@@ -3,7 +3,12 @@ import type { RgbColor } from '@lib/utils';
 
 /** WCAG 2.x relative luminance and contrast, so text on a theme colour stays legible. */
 const LIGHT_FOREGROUND = '#ffffff';
-const DARK_FOREGROUND = '#111111';
+/**
+ * Pure black, not near-black: white and black meet at about 4.58:1 on the worst
+ * mid-tone, so one of them always reaches WCAG AA (4.5:1) for body text. A
+ * lighter dark such as #111111 leaves a band of mid-tone brand colours at 4.46:1.
+ */
+const DARK_FOREGROUND = '#000000';
 
 const CHANNEL_MAX = 255;
 const LINEAR_THRESHOLD = 0.03928;
