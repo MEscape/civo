@@ -1,9 +1,8 @@
 import { isAPIError } from 'better-auth/api';
-import { z } from 'zod';
 
 import type { AppError, InfrastructureAppError } from '@lib/errors';
 import { logger } from '@lib/logger';
-import { assertNever, isDefined } from '@lib/utils';
+import { assertNever, isDefined, isString, objectOf } from '@lib/utils';
 
 import {
   accountConflict,
@@ -77,26 +76,18 @@ const PROVIDER_CODE_CLASSES: ReadonlyMap<string, ProviderCodeClass> = new Map<
   ['BODY_MUST_BE_AN_OBJECT', 'validation'],
 ]);
 
-/**
- * Every provider code this mapper classifies, exposed so tests derive their
- * inputs from the same source of truth instead of keeping a second list that
- * can drift. Not part of the module's public API.
- */
-export const CLASSIFIED_PROVIDER_CODES: readonly string[] = [...PROVIDER_CODE_CLASSES.keys()];
-
 /** HTTP status Better Auth reports for "no valid session". */
 const UNAUTHORIZED_STATUS_CODE = 401;
 
 /** `body` comes from an external library, so its shape is parsed, not assumed (validation.md). */
-const providerErrorBodySchema = z.object({ code: z.string() });
+const isProviderErrorBody = objectOf<{ readonly code: string }>({ code: isString });
 
 /**
  * `body` is `undefined` for some failures (better-auth issue #7178 shows an
  * UNAUTHORIZED APIError with no body), so absence is a normal outcome.
  */
 function readProviderCode(body: unknown): string | undefined {
-  const parsed = providerErrorBodySchema.safeParse(body);
-  return parsed.success ? parsed.data.code : undefined;
+  return isProviderErrorBody(body) ? body.code : undefined;
 }
 
 function fromCodeClass(codeClass: ProviderCodeClass): AppError {

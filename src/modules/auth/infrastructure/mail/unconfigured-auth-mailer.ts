@@ -11,7 +11,7 @@ function notConfigured(): AppResultAsync<void, InfrastructureAppError> {
 }
 
 /**
- * Fallback while `AUTH_MAIL_PROVIDER=none`. It fails on every send, and the
+ * Fallback while `MAIL_PROVIDER=none`. It fails on every send, and the
  * failure is logged at error level by `deliverAuthEmail`, so a missing
  * mailer is loud instead of silently making sign-up and password reset
  * appear to work. It never sees, and so never logs, the message whose URL

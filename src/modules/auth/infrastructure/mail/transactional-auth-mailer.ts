@@ -1,10 +1,10 @@
 import type { InfrastructureAppError } from '@lib/errors';
+import type { MailTransport } from '@lib/mail';
 import type { AppResultAsync } from '@lib/result';
 
 import { renderAuthEmail } from './auth-email-templates';
 
 import type { AuthEmailKind, MailLocale } from './auth-email-templates';
-import type { MailTransport } from './mail-transport';
 import type { AuthLinkMessage, AuthMailer } from '../../domain/ports/auth-mailer.port';
 
 export interface TransactionalAuthMailerSettings {

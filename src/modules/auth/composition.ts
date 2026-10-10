@@ -2,11 +2,15 @@ import 'server-only';
 import { cache } from 'react';
 
 import { headers } from 'next/headers';
+import { connection } from 'next/server';
 
 import { systemClock } from '@lib/clock';
-import { APP_IDENTITY, publicEnv, serverEnv } from '@lib/config';
-import type { ServerEnv } from '@lib/config';
-import { assertNever, invariant, isDefined, once } from '@lib/utils';
+import { APP_IDENTITY, publicEnv } from '@lib/config';
+import { serverEnv } from '@lib/config/server';
+import type { ServerEnv } from '@lib/config/server';
+import { getMailTransport } from '@lib/mail/server';
+import { ResultAsync } from '@lib/result';
+import { invariant, isDefined, once } from '@lib/utils';
 
 import { createAuthorizationService } from './application/authorization-service';
 import { RequestPasswordReset } from './application/commands/request-password-reset';
@@ -25,8 +29,6 @@ import { createAuth } from './infrastructure/better-auth/create-auth';
 import { createAuthRouteHandlers } from './infrastructure/better-auth/create-auth-route-handlers';
 import { DevCurrentActorProvider } from './infrastructure/dev/dev-current-actor-provider';
 import { loggerSecurityAuditLog } from './infrastructure/logging/logger-security-audit-log';
-import { ResendMailTransport } from './infrastructure/mail/resend-mail-transport';
-import { SmtpMailTransport } from './infrastructure/mail/smtp-mail-transport';
 import { TransactionalAuthMailer } from './infrastructure/mail/transactional-auth-mailer';
 import { UnconfiguredAuthMailer } from './infrastructure/mail/unconfigured-auth-mailer';
 import { getAuthPool } from './infrastructure/pg/auth-pool';
@@ -41,7 +43,6 @@ import type { AuthMailer } from './domain/ports/auth-mailer.port';
 import type { CurrentActorProvider } from './domain/ports/current-actor-provider.port';
 import type { MembershipRepository } from './domain/ports/membership.repository';
 import type { AuthSettings, BetterAuthInstance } from './infrastructure/better-auth/create-auth';
-import type { MailTransport } from './infrastructure/mail/mail-transport';
 
 /**
  * Composition root for authentication and access control, at the framework
@@ -101,67 +102,14 @@ function resolveDevActorRole(raw: string): Role {
   throw new Error(`AUTH_DEV_ACTOR_ROLE "${raw}" is not a known role.`);
 }
 
-function buildMailer(env: ServerEnv): AuthMailer {
-  invariant(
-    !(env.NODE_ENV === 'production' && env.AUTH_MAIL_PROVIDER !== 'resend'),
-    'AUTH_MAIL_PROVIDER must be "resend" in production.',
-  );
-  invariant(
-    !(env.NODE_ENV !== 'production' && env.AUTH_MAIL_PROVIDER === 'resend'),
-    'AUTH_MAIL_PROVIDER must be "none" or "smtp" in development.',
-  );
-
-  if (env.AUTH_MAIL_PROVIDER === 'none') {
-    return new UnconfiguredAuthMailer();
-  }
-
-  const { AUTH_MAIL_FROM: from } = env;
-  invariant(isDefined(from), 'AUTH_MAIL_FROM is required when AUTH_MAIL_PROVIDER is set.');
-
-  let transport: MailTransport;
-
-  switch (env.AUTH_MAIL_PROVIDER) {
-    case 'smtp': {
-      const {
-        AUTH_MAIL_SMTP_HOST: host,
-        AUTH_MAIL_SMTP_PORT: port,
-        AUTH_MAIL_SMTP_SECURE: secure,
-      } = env;
-      invariant(
-        isDefined(host),
-        'AUTH_MAIL_SMTP_HOST is required when AUTH_MAIL_PROVIDER is "smtp".',
-      );
-      transport = new SmtpMailTransport({
-        host,
-        port,
-        secure,
-        from,
-      });
-      break;
-    }
-    case 'resend': {
-      const { AUTH_MAIL_API_KEY: apiKey, AUTH_MAIL_API_URL: apiUrl } = env;
-      invariant(
-        isDefined(apiKey),
-        'AUTH_MAIL_API_KEY is required when AUTH_MAIL_PROVIDER is "resend".',
-      );
-      transport = new ResendMailTransport({
-        apiKey,
-        from,
-        apiUrl,
-      });
-      break;
-    }
-    default:
-      return assertNever(env.AUTH_MAIL_PROVIDER, 'Unsupported AUTH_MAIL_PROVIDER.');
-  }
-
-  return new TransactionalAuthMailer(transport, {
-    appName: APP_IDENTITY.name,
-  });
+function buildMailer(): AuthMailer {
+  const transport = getMailTransport();
+  return transport === null
+    ? new UnconfiguredAuthMailer()
+    : new TransactionalAuthMailer(transport, { appName: APP_IDENTITY.name });
 }
 
-const getMailer = once<AuthMailer>(() => buildMailer(serverEnv));
+const getMailer = once<AuthMailer>(buildMailer);
 
 const getMemberships = once<MembershipRepository>(() => new PrismaMembershipRepository());
 
@@ -203,14 +151,29 @@ function memoizePerRequest(provider: CurrentActorProvider): CurrentActorProvider
   return { getCurrentActor: () => resolve() };
 }
 
+/**
+ * Knowing the actor is request-time work. A real session lookup reads
+ * `headers()`, which keeps everything that depends on the actor out of
+ * prerendering; the fixed dev actor reads nothing, so without this a protected
+ * page would prerender and run its database queries at build time.
+ */
+function requestScoped(provider: CurrentActorProvider): CurrentActorProvider {
+  return {
+    getCurrentActor: () =>
+      ResultAsync.fromSafePromise(connection()).andThen(() => provider.getCurrentActor()),
+  };
+}
+
 function buildCurrentActorProvider(): CurrentActorProvider {
   if (!serverEnv.AUTH_ENABLED) {
-    return new DevCurrentActorProvider({
-      role: resolveDevActorRole(serverEnv.AUTH_DEV_ACTOR_ROLE),
-      tenantId: DEFAULT_TENANT_ID,
-      nodeEnv: serverEnv.NODE_ENV,
-      appUrl: publicEnv.NEXT_PUBLIC_APP_URL,
-    });
+    return requestScoped(
+      new DevCurrentActorProvider({
+        role: resolveDevActorRole(serverEnv.AUTH_DEV_ACTOR_ROLE),
+        tenantId: DEFAULT_TENANT_ID,
+        nodeEnv: serverEnv.NODE_ENV,
+        appUrl: publicEnv.NEXT_PUBLIC_APP_URL,
+      }),
+    );
   }
   return new BetterAuthCurrentActorProvider({
     sessions: sessionSourceFrom(getAuth()),

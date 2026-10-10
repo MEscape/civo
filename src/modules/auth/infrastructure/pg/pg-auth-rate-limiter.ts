@@ -1,10 +1,9 @@
 import { createHmac } from 'node:crypto';
 
-import { z } from 'zod';
-
 import type { InfrastructureAppError } from '@lib/errors';
-import { fromThrowableAsync } from '@lib/result';
+import { err, fromThrowableAsync, ok } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { isInteger, objectOf } from '@lib/utils';
 
 import { rateLimiterFailed } from '../../domain/errors/auth-errors';
 
@@ -40,10 +39,12 @@ RETURNING
 `;
 
 /** Driver output is external data, so its shape is parsed, not assumed (validation.md). */
-const consumeRowSchema = z.object({
-  hits: z.number().int(),
-  retry_after_seconds: z.number().int(),
-});
+interface ConsumeRow {
+  readonly hits: number;
+  readonly retry_after_seconds: number;
+}
+
+const isConsumeRow = objectOf<ConsumeRow>({ hits: isInteger, retry_after_seconds: isInteger });
 
 /**
  * Fixed-window limiter on the auth database. Subjects (emails) are keyed
@@ -59,14 +60,21 @@ export class PgAuthRateLimiter implements AuthRateLimiter {
   consume(request: RateLimitRequest): AppResultAsync<RateLimitDecision, InfrastructureAppError> {
     const bucketKey = `${request.action}:${this.hashSubject(request.subject)}`;
 
-    return fromThrowableAsync(async () => {
-      const result = await this.pool.query(CONSUME_SQL, [bucketKey, request.windowSeconds]);
-      return consumeRowSchema.parse(result.rows[0]);
-    }, rateLimiterFailed).map((row): RateLimitDecision =>
-      row.hits <= request.limit
-        ? { isAllowed: true }
-        : { isAllowed: false, retryAfterSeconds: row.retry_after_seconds },
-    );
+    return fromThrowableAsync(
+      () => this.pool.query(CONSUME_SQL, [bucketKey, request.windowSeconds]),
+      rateLimiterFailed,
+    )
+      .andThen((result) => {
+        const row: unknown = result.rows[0];
+        return isConsumeRow(row)
+          ? ok(row)
+          : err(rateLimiterFailed(new Error('The rate limiter returned an unexpected row.')));
+      })
+      .map((row): RateLimitDecision =>
+        row.hits <= request.limit
+          ? { isAllowed: true }
+          : { isAllowed: false, retryAfterSeconds: row.retry_after_seconds },
+      );
   }
 
   private hashSubject(subject: string): string {
