@@ -2,7 +2,8 @@
 
 - Validate all external input at the system boundary.
 - Never trust client-side validation.
-- Use Zod as the canonical runtime validation library.
+- Use Zod as the canonical runtime validation library, in the presentation layer: schemas for requests, forms, Server Action input and search parameters. Domain, application and infrastructure do not import Zod (lint enforces it).
+- Below the presentation boundary, data of unknown shape (stored JSON, a driver row, a library's error body) is checked with the guards in `@lib/utils` (`objectOf`, `arrayOf`, …), which check shape only; the domain constructors that run next check the rules.
 - Define schemas close to the boundary they validate.
 - Parse unknown external data before using it.
 - Prefer `safeParse` when validation failure is expected application flow.

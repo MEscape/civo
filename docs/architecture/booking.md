@@ -59,6 +59,10 @@ A hold lasts 10 minutes (`HOLD_MINUTES`); `holdId` is the capability needed to c
 
 The website id is public and the tenant is derived server-side. Lookup of a booking needs reference **and** e-mail; a wrong e-mail answers "not found". Public use cases are tagged `@authorization public <reason>`. Requests are rate limited per client key by `SpendRequestBudget`.
 
+## E-mail
+
+The visitor is told by e-mail when a booking is confirmed, moved or cancelled (also when staff do it). The port is `BookingNotifier` (domain); `EmailBookingNotifier` renders the message (`booking-email-templates.ts`, German and English, in the language of the request) and sends it through the shared transport of `@lib/mail`. The booking is stored first: a message that cannot be sent is logged once (never with the address) and never undoes the booking. While `MAIL_PROVIDER=none` the notifier logs `booking.email_skipped` instead; production refuses to start without a mail provider.
+
 ## Operations calendar
 
 `presentation/components/admin/calendar-adapter.client.tsx` is the only file importing `@fullcalendar/*` (core, react, daygrid, timegrid, list: all MIT). It is lazy loaded. Events are sent as wall-clock strings of the location and the calendar runs in `UTC` mode, so what is drawn is what the clock at the location shows. The rest of the module speaks the neutral `CalendarAdapterProps`.
@@ -80,7 +84,7 @@ Booking data is never cached for visitors: `BookingSection` calls `connection()`
 ## Known limitations
 
 - Rate limiting is in memory, per server instance.
-- There are no e-mails or notifications; the confirmation tells the visitor to keep the reference and e-mail address.
+- The e-mail address is not verified: a booking is confirmed on submit and the confirmation e-mail goes to whatever address was typed. Asking the visitor to confirm through a link in that e-mail (double opt-in) needs a stored single-use token, i.e. a schema change; it is not built.
 - Expired holds are released lazily (before the next insert); there is no scheduled cleanup.
 - The repeated hour at the end of daylight saving time is not offered as a slot.
 - `locationIds` of a service are stored as JSON; integrity is checked in the application.

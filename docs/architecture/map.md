@@ -74,3 +74,14 @@ If a Content-Security-Policy is added later, Mapbox GL needs `worker-src blob:`,
 - New point visualization: add to `POINT_STYLES` and a branch in `pointLayers` (`mapbox-layers.ts`); the legend and styles need no change unless it has a new encoding.
 - New filter type: a variant in `filters.ts` (`FilterDefinition`, `FilterValue`) and a control in `map-filters.tsx`.
 - Another field type that should be visible on the map: add it to the `GeoFeature` contract (additive changes do not bump the version).
+
+## Limits
+
+Two different ceilings bound what a component asks the platform for, and they must not be conflated:
+
+| Ceiling                  | Value | Applies to                                                                                                            |
+| ------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------- |
+| `MAX_CONTENT_LIST_LIMIT` | 100   | Card lists (news, events, services…). Component props cap themselves at 50 or lower.                                  |
+| `MAX_DATASET_LIST_LIMIT` | 1000  | Kinds that read a dataset as data: `GeoFeature` (map), `SmartCityObservation` and `SmartCityBreakdownEntry` (charts). |
+
+Both live in `component-platform/application/list-limits.ts`; `resolveListLimit(kind, requested)` picks the ceiling by kind. 1000 equals the data-sources mapping cap (`MAX_MAPPED_RECORDS`), the most a dataset can hold. Presentation constants below the ceiling (`FEATURE_LIMIT` for the map, `OBSERVATION_LIMIT` and `BREAKDOWN_LIMIT` in `smartcity/support/dataset-limits.ts`) say how much one component wants; the application clamps whatever is asked.
