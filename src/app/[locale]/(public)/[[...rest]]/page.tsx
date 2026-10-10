@@ -9,6 +9,12 @@ import { notFound } from 'next/navigation';
  * behind Suspense. There is nothing to render here, so one sample value lets
  * the route be prerendered.
  */
+/**
+ * Nothing here renders: the route exists to answer 404 inside the locale layout,
+ * so there is no shell to prefetch or validate.
+ */
+export const instant = false;
+
 export function generateStaticParams() {
   return [{ rest: ['not-found'] }];
 }

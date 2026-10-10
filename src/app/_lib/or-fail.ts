@@ -6,8 +6,9 @@ import { redirect } from '@i18n';
 
 import { getLocale } from '@i18n/server';
 
-import { escalate, matchAppError } from '@lib/errors';
+import { matchAppError } from '@lib/errors';
 import type { AppError } from '@lib/errors';
+import { escalate } from '@lib/errors/escalate';
 import type { AppResult } from '@lib/result';
 
 /**

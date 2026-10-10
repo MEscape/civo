@@ -14,11 +14,5 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default function NotFound() {
   const t = useTranslations('app');
 
-  return (
-    <NotFoundPanel
-      title={t('notFound.title')}
-      description={t('notFound.description')}
-      returnLabel={t('notFound.returnHome')}
-    />
-  );
+  return <NotFoundPanel title={t('notFound.title')} description={t('notFound.description')} />;
 }

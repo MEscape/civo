@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import { websiteRoutes } from '@modules/website';
+
 import { NotFoundPanel } from '@components/shared/not-found-panel';
 
 import { useTranslations } from '@i18n/client';
@@ -18,7 +20,7 @@ export default function NotFound() {
     <NotFoundPanel
       title={t('notFound.title')}
       description={t('notFound.description')}
-      returnLabel={t('notFound.returnHome')}
+      action={{ href: websiteRoutes.list(), label: t('notFound.backToWebsites') }}
     />
   );
 }

@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { cache, Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
@@ -10,9 +10,11 @@ import { websiteQueries, websiteRoutes } from '@modules/website';
 
 import { Container, Grid, PageHeading, Section } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
+import { PageSkeleton } from '@components/shared/page-skeleton';
 import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 
-import { Link } from '@i18n';
+import { Link, requireLocale } from '@i18n';
+import type { Locale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
 
@@ -21,7 +23,7 @@ import { buildPrivateMetadata } from '@lib/seo';
 import { orFail } from '@/app/_lib/or-fail';
 
 interface RouteProps {
-  readonly params: Promise<{ websiteId: string }>;
+  readonly params: Promise<{ locale: string; websiteId: string }>;
 }
 
 /** Deduplicates the load between `generateMetadata` and the page within one request. */
@@ -33,9 +35,14 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   return buildPrivateMetadata(website.name);
 }
 
-export default async function WebsitePage({ params }: RouteProps) {
-  const { websiteId } = await params;
-  const t = await getTranslations('website');
+async function WebsiteDetails({
+  websiteId,
+  locale,
+}: {
+  readonly websiteId: string;
+  readonly locale: Locale;
+}) {
+  const t = await getTranslations({ locale, namespace: 'website' });
   const [website, history] = await Promise.all([
     orFail(loadWebsite(websiteId)),
     orFail(releaseQueries.listReleases.execute(websiteId)),
@@ -49,34 +56,44 @@ export default async function WebsitePage({ params }: RouteProps) {
   ] as const;
 
   return (
+    <Section className="space-y-8">
+      <PageHeading title={website.name} description={website.description ?? undefined} />
+
+      <Grid columns={3} as="ul">
+        {links.map(({ key, href }) => (
+          <li key={key}>
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <Link href={href}>{t(`pages.detail.links.${key}.title`)}</Link>
+                </CardTitle>
+                <CardDescription>{t(`pages.detail.links.${key}.description`)}</CardDescription>
+              </CardHeader>
+            </Card>
+          </li>
+        ))}
+      </Grid>
+
+      <div className="space-y-4">
+        <h2 className="font-heading text-lg font-semibold text-copy">
+          {t('pages.detail.releasesTitle')}
+        </h2>
+        <I18nProvider locale={locale} namespaces={['release']}>
+          <ReleaseHistoryPanel websiteId={website.id} history={toReleaseHistoryDto(history)} />
+        </I18nProvider>
+      </div>
+    </Section>
+  );
+}
+
+export default async function WebsitePage({ params }: RouteProps) {
+  const locale = requireLocale((await params).locale);
+  const { websiteId } = await params;
+  return (
     <Container className="max-w-4xl">
-      <Section className="space-y-8">
-        <PageHeading title={website.name} description={website.description ?? undefined} />
-
-        <Grid columns={3} as="ul">
-          {links.map(({ key, href }) => (
-            <li key={key}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <Link href={href}>{t(`pages.detail.links.${key}.title`)}</Link>
-                  </CardTitle>
-                  <CardDescription>{t(`pages.detail.links.${key}.description`)}</CardDescription>
-                </CardHeader>
-              </Card>
-            </li>
-          ))}
-        </Grid>
-
-        <div className="space-y-4">
-          <h2 className="font-heading text-lg font-semibold text-copy">
-            {t('pages.detail.releasesTitle')}
-          </h2>
-          <I18nProvider namespaces={['release']}>
-            <ReleaseHistoryPanel websiteId={website.id} history={toReleaseHistoryDto(history)} />
-          </I18nProvider>
-        </div>
-      </Section>
+      <Suspense fallback={<PageSkeleton />}>
+        <WebsiteDetails websiteId={websiteId} locale={locale} />
+      </Suspense>
     </Container>
   );
 }

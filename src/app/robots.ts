@@ -5,7 +5,6 @@ import { websiteRoutes } from '@modules/website';
 
 import { I18N_CONFIG } from '@i18n';
 
-import { publicEnv } from '@lib/config';
 import { toLocalizedPath } from '@lib/seo';
 
 /**
@@ -32,6 +31,5 @@ export default function robots(): MetadataRoute.Robots {
         ),
       ],
     },
-    sitemap: new URL('/sitemap.xml', publicEnv.NEXT_PUBLIC_APP_URL).toString(),
   };
 }

@@ -7,6 +7,7 @@ import { websiteRoutes } from '@modules/website';
 import { AppNav } from '@components/layout/app-nav';
 import { AppHeader, PageShell } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
+import { PageSkeleton } from '@components/shared/page-skeleton';
 
 import { requireLocale } from '@i18n';
 import type { Locale } from '@i18n';
@@ -18,7 +19,7 @@ import { APP_IDENTITY } from '@lib/config';
 /**
  * Reading the session is runtime data, and a segment's `loading.tsx` wraps
  * its page but not the layout beside it, so the check runs under its own
- * boundary. The fallback is empty on purpose: pages stream their own parts.
+ * boundary. The fallback is the page skeleton; pages stream their own parts inside it.
  * This is navigation convenience; every query authorizes for itself.
  */
 async function SignedInGate({ children }: { readonly children: ReactNode }) {
@@ -64,7 +65,7 @@ export default async function ProtectedLayout({
   return (
     <PageShell>
       <ProtectedHeader locale={locale} />
-      <Suspense fallback={null}>
+      <Suspense fallback={<PageSkeleton />}>
         <SignedInGate>{children}</SignedInGate>
       </Suspense>
     </PageShell>

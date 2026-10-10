@@ -15,10 +15,6 @@ export default function AuthNotFound() {
   const t = useTranslations('auth');
 
   return (
-    <NotFoundPanel
-      title={t('pageNotFound.title')}
-      description={t('pageNotFound.description')}
-      returnLabel={t('pageNotFound.returnHome')}
-    />
+    <NotFoundPanel title={t('pageNotFound.title')} description={t('pageNotFound.description')} />
   );
 }

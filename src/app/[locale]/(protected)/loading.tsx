@@ -1,9 +1,10 @@
+import { PageSkeleton } from '@components/shared/page-skeleton';
+
 /**
- * Deliberately empty. Pages here stream their own parts behind Suspense
- * (the platform's data components even bring their own skeletons), and a
- * route-level screen would show the wrong layout for forms and the editor.
- * The file still marks the Suspense boundary that `cacheComponents` needs.
+ * The placeholder every admin page shows while its data streams in. Cache
+ * Components requires a real placeholder at each dynamic boundary, and this
+ * file is that boundary for the whole group.
  */
-export default function Loading(): null {
-  return null;
+export default function Loading() {
+  return <PageSkeleton />;
 }

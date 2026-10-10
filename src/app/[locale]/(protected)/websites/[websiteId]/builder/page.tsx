@@ -5,6 +5,8 @@ import { builderQueries, CreatePageForm, PageList, toPageSummaryDto } from '@mod
 import { Container, PageHeading, Section } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
 
+import { requireLocale } from '@i18n';
+
 import { getTranslations } from '@i18n/server';
 
 import { buildPrivateMetadata } from '@lib/seo';
@@ -12,17 +14,19 @@ import { buildPrivateMetadata } from '@lib/seo';
 import { orFail } from '@/app/_lib/or-fail';
 
 interface RouteProps {
-  readonly params: Promise<{ websiteId: string }>;
+  readonly params: Promise<{ locale: string; websiteId: string }>;
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('builder');
+export async function generateMetadata({ params }: RouteProps): Promise<Metadata> {
+  const locale = requireLocale((await params).locale);
+  const t = await getTranslations({ locale, namespace: 'builder' });
   return buildPrivateMetadata(t('pages.list.title'));
 }
 
 export default async function BuilderPagesPage({ params }: RouteProps) {
+  const locale = requireLocale((await params).locale);
   const { websiteId } = await params;
-  const t = await getTranslations('builder');
+  const t = await getTranslations({ locale, namespace: 'builder' });
   const pages = await orFail(builderQueries.listPages.execute({ websiteId }));
 
   return (
@@ -36,7 +40,7 @@ export default async function BuilderPagesPage({ params }: RouteProps) {
           <h2 className="font-heading text-lg font-semibold text-copy">
             {t('pages.list.createTitle')}
           </h2>
-          <I18nProvider namespaces={['builder']}>
+          <I18nProvider locale={locale} namespaces={['builder']}>
             <CreatePageForm websiteId={websiteId} />
           </I18nProvider>
         </div>
