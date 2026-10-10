@@ -8,7 +8,7 @@
  * It does not run with the ordinary tests (they have no database). Point
  * `BOOKING_TEST_DATABASE_URL` at a database with the migrations applied and
  * run `npm run test:integration`. Prisma's timestamp codec needs a global
- * `Temporal`, so use Node 26.8.2 or later.
+ * `Temporal`; `@lib/db` installs a polyfill on runtimes without one.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -283,8 +283,7 @@ describe.skipIf(process.env['BOOKING_TEST_DATABASE_URL'] === undefined)(
 
       const blocking = (
         await bookings.listBlocking(
-          toWebsiteId(websiteRecordId),
-          tenantId,
+          { websiteId: toWebsiteId(websiteRecordId), tenantId },
           { start: BASE + 350 * MINUTE, end: BASE + 400 * MINUTE },
           50,
         )
@@ -419,21 +418,21 @@ describe.skipIf(process.env['BOOKING_TEST_DATABASE_URL'] === undefined)(
     it('counts live bookings by e-mail and releases expired holds in bulk', async () => {
       const websiteId = toWebsiteId(websiteRecordId);
       const live = (
-        await bookings.countLiveByEmail(websiteId, tenantId, 'MOVE@example.org', NOW)
+        await bookings.countLiveByEmail({ websiteId, tenantId }, 'MOVE@example.org', NOW)
       )._unsafeUnwrap();
       expect(live).toBe(1);
 
-      const holds = (await bookings.countLiveHolds(websiteId, tenantId, NOW))._unsafeUnwrap();
+      const holds = (await bookings.countLiveHolds({ websiteId, tenantId }, NOW))._unsafeUnwrap();
       expect(holds).toBeGreaterThan(0);
 
       const tomorrow = new Date(NOW.getTime() + 24 * 60 * MINUTE);
       const released = (
-        await bookings.releaseExpiredHolds(websiteId, tenantId, tomorrow, 100)
+        await bookings.releaseExpiredHolds({ websiteId, tenantId }, tomorrow, 100)
       )._unsafeUnwrap();
       expect(released).toBeGreaterThan(0);
-      expect((await bookings.countLiveHolds(websiteId, tenantId, tomorrow))._unsafeUnwrap()).toBe(
-        0,
-      );
+      expect(
+        (await bookings.countLiveHolds({ websiteId, tenantId }, tomorrow))._unsafeUnwrap(),
+      ).toBe(0);
     });
   },
 );

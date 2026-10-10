@@ -9,8 +9,7 @@ import type { AppResult } from '@lib/result';
 import { persistenceFailed } from '../../domain/errors/booking-errors';
 import { createBookingLocationDraft } from '../../domain/models/booking-location';
 import { toBookingLocationId, toWebsiteId } from '../../domain/models/ids';
-
-import { storedLocationSchema } from './stored-json-record-mapper';
+import { readStoredLocation } from '../../domain/models/stored-shapes';
 
 import type { BookingLocation } from '../../domain/models/booking-location';
 
@@ -49,16 +48,16 @@ export const LOCATION_SELECT = [
 export function toLocation(
   record: LocationRecord,
 ): AppResult<BookingLocation, InfrastructureAppError> {
-  const stored = storedLocationSchema.safeParse(record);
-  if (!stored.success) {
-    return err(persistenceFailed(stored.error));
+  const stored = readStoredLocation(record);
+  if (stored === null) {
+    return err(persistenceFailed(new Error('A stored location has JSON of an unexpected shape.')));
   }
   const draft = createBookingLocationDraft({
     websiteId: toWebsiteId(record.websiteId),
     name: record.name,
     address: record.address,
     timeZone: record.timeZone,
-    openingHours: stored.data.openingHours,
+    openingHours: stored.openingHours,
     isActive: record.isActive,
   });
   if (draft.isErr()) {

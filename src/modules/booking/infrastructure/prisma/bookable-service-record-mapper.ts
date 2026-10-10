@@ -9,8 +9,7 @@ import type { AppResult } from '@lib/result';
 import { persistenceFailed } from '../../domain/errors/booking-errors';
 import { createBookableServiceDraft } from '../../domain/models/bookable-service';
 import { toBookableServiceId, toWebsiteId } from '../../domain/models/ids';
-
-import { storedServiceSchema } from './stored-json-record-mapper';
+import { readStoredService } from '../../domain/models/stored-shapes';
 
 import type { BookableService } from '../../domain/models/bookable-service';
 
@@ -73,9 +72,9 @@ export const SERVICE_SELECT = [
 export function toService(
   record: ServiceRecord,
 ): AppResult<BookableService, InfrastructureAppError> {
-  const stored = storedServiceSchema.safeParse(record);
-  if (!stored.success) {
-    return err(persistenceFailed(stored.error));
+  const stored = readStoredService(record);
+  if (stored === null) {
+    return err(persistenceFailed(new Error('A stored service has JSON of an unexpected shape.')));
   }
   const draft = createBookableServiceDraft({
     websiteId: toWebsiteId(record.websiteId),
@@ -92,7 +91,13 @@ export function toService(
     noticeMinutes: record.noticeMinutes,
     horizonDays: record.horizonDays,
     instructions: record.instructions,
-    ...stored.data,
+    locationIds: stored.locationIds,
+    requirements: stored.requirements,
+    availability: stored.availability,
+    cancellation: stored.cancellation,
+    rescheduling: stored.rescheduling,
+    information: stored.information,
+    requiredDocuments: stored.requiredDocuments,
   });
   if (draft.isErr()) {
     return err(persistenceFailed(draft.error));

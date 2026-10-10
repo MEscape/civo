@@ -1,8 +1,8 @@
 import type { TenantId } from '@modules/auth';
 
-import { createPersistenceFailures, dateToInstant, db, instantToDate } from '@lib/db';
+import { createPersistenceFailures, dateToInstant, db, instantToDate, toJsonValue } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
-import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
+import { combine, errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -23,18 +23,18 @@ import {
   toBooking,
   toStatusRecord,
 } from './booking-record-mapper';
-import { restoreAll } from './restore-all-record-mapper';
-import { toJsonValue } from './stored-json-record-mapper';
 import { bookingsOf } from './tenant-ownership';
 
 import type { BookingRecord } from './booking-record-mapper';
+import type { Transaction } from './tenant-ownership';
 import type { Booking } from '../../domain/models/booking';
 import type { BookingReference } from '../../domain/models/booking-reference';
 import type { BookingId, WebsiteId } from '../../domain/models/ids';
 import type {
-  BookingFilter,
   BookingRepository,
+  CalendarQuery,
   NewBooking,
+  WebsiteScope,
 } from '../../domain/ports/booking.repository';
 import type { TimeInterval } from '../../domain/time/time-interval';
 
@@ -43,8 +43,6 @@ const failures = createPersistenceFailures({
   code: BOOKING_ERROR_CODES.persistenceFailed,
   subject: 'Booking',
 });
-
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /** The booking with the ids of the resources it holds: one statement, never one per row. */
 const bookingsWithHolds = (tenantId: TenantId, source: Pick<Transaction, 'orm'> = db) =>
@@ -295,8 +293,7 @@ export class PrismaBookingRepository implements BookingRepository {
   }
 
   listBlocking(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     span: TimeInterval,
     limit: number,
   ): AppResultAsync<readonly Booking[], InfrastructureAppError> {
@@ -311,15 +308,12 @@ export class PrismaBookingRepository implements BookingRepository {
           .limit(limit)
           .all(),
       failures.infraOnly('listBlocking'),
-    ).andThen((records) => restoreAll(records, toBooking));
+    ).andThen((records) => combine(records.map((record) => toBooking(record))));
   }
 
   listInRange(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    span: TimeInterval,
-    filter: BookingFilter,
-    limit: number,
+    { websiteId, tenantId }: WebsiteScope,
+    { span, filter, limit }: CalendarQuery,
   ): AppResultAsync<readonly Booking[], InfrastructureAppError> {
     return fromThrowableAsync(async () => {
       let query = bookingsWithHolds(tenantId)
@@ -341,7 +335,9 @@ export class PrismaBookingRepository implements BookingRepository {
         .orderBy([(booking) => booking.start.asc(), (booking) => booking.id.asc()])
         .limit(limit)
         .all();
-    }, failures.infraOnly('listInRange')).andThen((records) => restoreAll(records, toBooking));
+    }, failures.infraOnly('listInRange')).andThen((records) =>
+      combine(records.map((record) => toBooking(record))),
+    );
   }
 
   create(input: NewBooking, now: Date): AppResultAsync<Booking, WriteError> {
@@ -430,8 +426,7 @@ export class PrismaBookingRepository implements BookingRepository {
   }
 
   countLiveByEmail(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     email: string,
     now: Date,
   ): AppResultAsync<number, InfrastructureAppError> {
@@ -452,8 +447,7 @@ export class PrismaBookingRepository implements BookingRepository {
   }
 
   countLiveHolds(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     now: Date,
   ): AppResultAsync<number, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
@@ -466,8 +460,7 @@ export class PrismaBookingRepository implements BookingRepository {
   }
 
   releaseExpiredHolds(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     now: Date,
     limit: number,
   ): AppResultAsync<number, InfrastructureAppError> {

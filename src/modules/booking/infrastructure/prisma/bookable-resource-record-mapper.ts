@@ -9,8 +9,7 @@ import type { AppResult } from '@lib/result';
 import { persistenceFailed } from '../../domain/errors/booking-errors';
 import { createBookableResourceDraft } from '../../domain/models/bookable-resource';
 import { toBookableResourceId, toWebsiteId } from '../../domain/models/ids';
-
-import { storedResourceSchema } from './stored-json-record-mapper';
+import { readStoredResource } from '../../domain/models/stored-shapes';
 
 import type { BookableResource } from '../../domain/models/bookable-resource';
 
@@ -47,18 +46,18 @@ export const RESOURCE_SELECT = [
 export function toResource(
   record: ResourceRecord,
 ): AppResult<BookableResource, InfrastructureAppError> {
-  const stored = storedResourceSchema.safeParse(record);
-  if (!stored.success) {
-    return err(persistenceFailed(stored.error));
+  const stored = readStoredResource(record);
+  if (stored === null) {
+    return err(persistenceFailed(new Error('A stored resource has JSON of an unexpected shape.')));
   }
   const draft = createBookableResourceDraft({
     websiteId: toWebsiteId(record.websiteId),
     locationId: record.locationId,
     name: record.name,
     type: record.type,
-    skills: stored.data.skills,
+    skills: stored.skills,
     capacity: record.capacity,
-    availability: stored.data.availability,
+    availability: stored.availability,
     isActive: record.isActive,
   });
   if (draft.isErr()) {

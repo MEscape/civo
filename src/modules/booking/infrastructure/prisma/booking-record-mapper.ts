@@ -15,8 +15,7 @@ import {
   toBookingLocationId,
   toWebsiteId,
 } from '../../domain/models/ids';
-
-import { storedBookingSchema } from './stored-json-record-mapper';
+import { readStoredBooking } from '../../domain/models/stored-shapes';
 
 import type { Booking, BookingStatus } from '../../domain/models/booking';
 
@@ -136,9 +135,9 @@ function sortedIds(holds: readonly BookingHoldRecord[]) {
 }
 
 export function toBooking(record: BookingRecord): AppResult<Booking, InfrastructureAppError> {
-  const stored = storedBookingSchema.safeParse(record);
-  if (!stored.success) {
-    return err(persistenceFailed(stored.error));
+  const stored = readStoredBooking(record);
+  if (stored === null) {
+    return err(persistenceFailed(new Error('A stored booking has JSON of an unexpected shape.')));
   }
   return ok({
     id: toBookingId(record.id),
@@ -156,11 +155,11 @@ export function toBooking(record: BookingRecord): AppResult<Booking, Infrastruct
     resourceIds: sortedIds(record.holds),
     sessionKey: record.sessionKey,
     sessionCapacity: record.sessionCapacity,
-    customer: stored.data.customer,
+    customer: stored.customer,
     holdExpiresAt: toOptionalDate(record.holdExpiresAt),
     rescheduleCount: record.rescheduleCount,
     cancelledAt: toOptionalDate(record.cancelledAt),
-    cancelledBy: stored.data.cancelledBy,
+    cancelledBy: stored.cancelledBy,
     createdAt: instantToDate(record.createdAt),
     updatedAt: instantToDate(record.updatedAt),
   });

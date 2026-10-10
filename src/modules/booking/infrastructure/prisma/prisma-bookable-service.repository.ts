@@ -1,9 +1,9 @@
 import type { TenantId } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
-import { createPersistenceFailures, dateToInstant, db } from '@lib/db';
+import { createPersistenceFailures, dateToInstant, toJsonValue } from '@lib/db';
 import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
-import { fromThrowableAsync, okAsync } from '@lib/result';
+import { combine, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -14,9 +14,7 @@ import {
 import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
 
 import { SERVICE_SELECT, toService } from './bookable-service-record-mapper';
-import { restoreAll } from './restore-all-record-mapper';
-import { toJsonValue } from './stored-json-record-mapper';
-import { servicesOf } from './tenant-ownership';
+import { servicesOf, createInWebsite } from './tenant-ownership';
 
 import type { BookableService, BookableServiceDraft } from '../../domain/models/bookable-service';
 import type { BookableServiceId, WebsiteId } from '../../domain/models/ids';
@@ -86,7 +84,7 @@ export class PrismaBookableServiceRepository implements BookableServiceRepositor
           .limit(limit)
           .all(),
       failures.infraOnly('listByWebsite'),
-    ).andThen((records) => restoreAll(records, toService));
+    ).andThen((records) => combine(records.map((record) => toService(record))));
   }
 
   create(input: {
@@ -96,21 +94,19 @@ export class PrismaBookableServiceRepository implements BookableServiceRepositor
     const { tenantId, draft } = input;
     const now = dateToInstant(this.clock.now());
 
-    return fromThrowableAsync(async () => {
-      const website = await db.orm.public.Website.where({ id: draft.websiteId, tenantId })
-        .select('id')
-        .first();
-      if (website === null) {
-        return null;
-      }
-      return db.orm.public.BookableService.select(...SERVICE_SELECT).create({
-        tenantId,
-        websiteId: draft.websiteId,
-        ...toColumns(draft),
-        createdAt: now,
-        updatedAt: now,
-      });
-    }, failures.infraOnly('create'))
+    return fromThrowableAsync(
+      () =>
+        createInWebsite(tenantId, draft.websiteId, (tx) =>
+          tx.orm.public.BookableService.select(...SERVICE_SELECT).create({
+            tenantId,
+            websiteId: draft.websiteId,
+            ...toColumns(draft),
+            createdAt: now,
+            updatedAt: now,
+          }),
+        ),
+      failures.infraOnly('create'),
+    )
       .andThen(failures.requireRow(websiteNotFoundForBooking))
       .andThen(toService);
   }

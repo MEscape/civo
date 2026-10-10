@@ -9,6 +9,9 @@ import {
 import type { BookingReference } from '../../domain/models/booking-reference';
 import type { BookingReferenceGenerator } from '../../domain/ports/booking-reference-generator.port';
 
+/** Five bits per byte: the alphabet has 32 symbols, so this mask keeps the draw uniform. */
+const ALPHABET_MASK = BOOKING_REFERENCE_ALPHABET.length - 1;
+
 /**
  * References come from the operating system's secure random source. The
  * alphabet has exactly 32 symbols, so taking five bits per byte is uniform
@@ -21,7 +24,7 @@ export class RandomBookingReferenceGenerator implements BookingReferenceGenerato
     const bytes = randomBytes(BOOKING_REFERENCE_LENGTH);
     let reference = '';
     for (const byte of bytes) {
-      reference += BOOKING_REFERENCE_ALPHABET.charAt(byte & 31);
+      reference += BOOKING_REFERENCE_ALPHABET.charAt(byte & ALPHABET_MASK);
     }
     return toBookingReference(reference);
   }

@@ -1,9 +1,9 @@
 import type { TenantId } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
-import { createPersistenceFailures, dateToInstant, db } from '@lib/db';
+import { createPersistenceFailures, dateToInstant, toJsonValue } from '@lib/db';
 import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
-import { fromThrowableAsync, okAsync } from '@lib/result';
+import { combine, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -14,9 +14,7 @@ import {
 import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
 
 import { RESOURCE_SELECT, toResource } from './bookable-resource-record-mapper';
-import { restoreAll } from './restore-all-record-mapper';
-import { toJsonValue } from './stored-json-record-mapper';
-import { resourcesOf } from './tenant-ownership';
+import { resourcesOf, createInWebsite } from './tenant-ownership';
 
 import type {
   BookableResource,
@@ -76,7 +74,7 @@ export class PrismaBookableResourceRepository implements BookableResourceReposit
           .limit(limit)
           .all(),
       failures.infraOnly('listByWebsite'),
-    ).andThen((records) => restoreAll(records, toResource));
+    ).andThen((records) => combine(records.map((record) => toResource(record))));
   }
 
   create(input: {
@@ -86,21 +84,19 @@ export class PrismaBookableResourceRepository implements BookableResourceReposit
     const { tenantId, draft } = input;
     const now = dateToInstant(this.clock.now());
 
-    return fromThrowableAsync(async () => {
-      const website = await db.orm.public.Website.where({ id: draft.websiteId, tenantId })
-        .select('id')
-        .first();
-      if (website === null) {
-        return null;
-      }
-      return db.orm.public.BookableResource.select(...RESOURCE_SELECT).create({
-        tenantId,
-        websiteId: draft.websiteId,
-        ...toColumns(draft),
-        createdAt: now,
-        updatedAt: now,
-      });
-    }, failures.infraOnly('create'))
+    return fromThrowableAsync(
+      () =>
+        createInWebsite(tenantId, draft.websiteId, (tx) =>
+          tx.orm.public.BookableResource.select(...RESOURCE_SELECT).create({
+            tenantId,
+            websiteId: draft.websiteId,
+            ...toColumns(draft),
+            createdAt: now,
+            updatedAt: now,
+          }),
+        ),
+      failures.infraOnly('create'),
+    )
       .andThen(failures.requireRow(websiteNotFoundForBooking))
       .andThen(toResource);
   }
