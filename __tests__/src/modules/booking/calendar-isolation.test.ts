@@ -20,7 +20,7 @@ describe('the calendar library boundary', () => {
   it('is crossed by the adapter file alone', () => {
     const importers = files
       .filter((file) => /from\s+['"]@fullcalendar\//.test(readFileSync(file, 'utf8')))
-      .map((file) => relative(ROOT, file));
+      .map((file) => relative(ROOT, file).replaceAll('\\', '/'));
     expect(importers).toEqual([ADAPTER]);
   });
 

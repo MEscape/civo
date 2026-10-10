@@ -30,6 +30,7 @@ import { SuggestAlternativeSlots } from './application/queries/suggest-alternati
 import { RandomBookingReferenceGenerator } from './infrastructure/identity/random-booking-reference-generator';
 import { MemoryRequestLimiter } from './infrastructure/limiting/memory-request-limiter';
 import { loggerBookingAuditLog } from './infrastructure/logging/logger-booking-audit-log';
+import { createBookingNotifier } from './infrastructure/mail/create-booking-notifier';
 import { PrismaBookableResourceRepository } from './infrastructure/prisma/prisma-bookable-resource.repository';
 import { PrismaBookableServiceRepository } from './infrastructure/prisma/prisma-bookable-service.repository';
 import { PrismaBookingLocationRepository } from './infrastructure/prisma/prisma-booking-location.repository';
@@ -60,6 +61,7 @@ const locations = new PrismaBookingLocationRepository(systemClock);
 const resources = new PrismaBookableResourceRepository(systemClock);
 const services = new PrismaBookableServiceRepository(systemClock);
 const bookings = new PrismaBookingRepository();
+const notifier = createBookingNotifier();
 
 const adminDependencies: BookingDependencies = {
   authorization: getAccessControl(),
@@ -68,6 +70,7 @@ const adminDependencies: BookingDependencies = {
   services,
   bookings,
   audit: loggerBookingAuditLog,
+  notifier,
   clock: systemClock,
 };
 
@@ -84,6 +87,7 @@ const flowDependencies: BookingFlowDependencies = {
   ...publicDependencies,
   references: new RandomBookingReferenceGenerator(),
   audit: loggerBookingAuditLog,
+  notifier,
 };
 
 /** Use cases of the public booking flow: no sign-in, scoped by the website. */

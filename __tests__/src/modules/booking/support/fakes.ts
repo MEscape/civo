@@ -24,17 +24,23 @@ import type {
   BookingEvent,
 } from '@modules/booking/domain/ports/booking-audit-log.port';
 import type { BookingLocationRepository } from '@modules/booking/domain/ports/booking-location.repository';
+import type {
+  BookingNotice,
+  BookingNotifier,
+} from '@modules/booking/domain/ports/booking-notifier.port';
 import type { BookingReferenceGenerator } from '@modules/booking/domain/ports/booking-reference-generator.port';
 import type {
-  BookingFilter,
   BookingRepository,
+  CalendarQuery,
   NewBooking,
+  WebsiteScope,
 } from '@modules/booking/domain/ports/booking.repository';
 import type { WebsiteDirectoryRepository } from '@modules/booking/domain/ports/website-directory.repository';
 import type { TimeInterval } from '@modules/booking/domain/time/time-interval';
 
 import type { Clock } from '@lib/clock';
 import { forbiddenError } from '@lib/errors';
+import type { NotFoundAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 import { errAsync, okAsync } from '@lib/result';
 
@@ -67,6 +73,20 @@ export class RecordingAuditLog implements BookingAuditLog {
   }
 }
 
+/** Remembers what the visitor would have been told. */
+export class RecordingNotifier implements BookingNotifier {
+  readonly notices: BookingNotice[] = [];
+
+  notify(notice: BookingNotice): AppResultAsync<void, never> {
+    this.notices.push(notice);
+    return okAsync(undefined);
+  }
+
+  kinds(): string[] {
+    return this.notices.map((notice) => notice.kind);
+  }
+}
+
 /** Counts up, so a test knows the reference of the Nth booking. */
 export class SequentialReferences implements BookingReferenceGenerator {
   private counter = 0;
@@ -96,6 +116,17 @@ class InMemoryConfigRepository<T extends { id: string; tenantId: TenantId; websi
 
   seed(row: T): void {
     this.rows.set(row.id, row);
+  }
+
+  /** Merges a draft into a stored row; another tenant's row is "not found", as in the real repositories. */
+  update(id: string, tenantId: TenantId, draft: Partial<T>): AppResultAsync<T, NotFoundAppError> {
+    const current = this.rows.get(id);
+    if (current?.tenantId !== tenantId) {
+      return errAsync(bookingNotFound());
+    }
+    const next = { ...current, ...draft };
+    this.rows.set(id, next);
+    return okAsync(next);
   }
 
   findById(id: string, tenantId: TenantId): AppResultAsync<T | null, never> {
@@ -137,20 +168,6 @@ export class InMemoryLocationRepository
     this.rows.set(location.id, location);
     return okAsync(location);
   }
-
-  update(
-    id: BookingLocation['id'],
-    tenantId: TenantId,
-    draft: Parameters<BookingLocationRepository['update']>[2],
-  ): ReturnType<BookingLocationRepository['update']> {
-    const current = this.rows.get(id);
-    if (current?.tenantId !== tenantId) {
-      return errAsync(bookingNotFound());
-    }
-    const next = { ...current, ...draft };
-    this.rows.set(id, next);
-    return okAsync(next);
-  }
 }
 
 export class InMemoryResourceRepository
@@ -174,20 +191,6 @@ export class InMemoryResourceRepository
     this.rows.set(resource.id, resource);
     return okAsync(resource);
   }
-
-  update(
-    id: BookableResource['id'],
-    tenantId: TenantId,
-    draft: Parameters<BookableResourceRepository['update']>[2],
-  ): ReturnType<BookableResourceRepository['update']> {
-    const current = this.rows.get(id);
-    if (current?.tenantId !== tenantId) {
-      return errAsync(bookingNotFound());
-    }
-    const next = { ...current, ...draft };
-    this.rows.set(id, next);
-    return okAsync(next);
-  }
 }
 
 export class InMemoryServiceRepository
@@ -210,20 +213,6 @@ export class InMemoryServiceRepository
     };
     this.rows.set(service.id, service);
     return okAsync(service);
-  }
-
-  update(
-    id: BookableService['id'],
-    tenantId: TenantId,
-    draft: Parameters<BookableServiceRepository['update']>[2],
-  ): ReturnType<BookableServiceRepository['update']> {
-    const current = this.rows.get(id);
-    if (current?.tenantId !== tenantId) {
-      return errAsync(bookingNotFound());
-    }
-    const next = { ...current, ...draft };
-    this.rows.set(id, next);
-    return okAsync(next);
   }
 }
 
@@ -278,8 +267,7 @@ export class InMemoryBookingRepository implements BookingRepository {
   }
 
   listBlocking(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     span: TimeInterval,
     limit: number,
   ): AppResultAsync<readonly Booking[], never> {
@@ -297,11 +285,8 @@ export class InMemoryBookingRepository implements BookingRepository {
   }
 
   listInRange(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    span: TimeInterval,
-    filter: BookingFilter,
-    limit: number,
+    { websiteId, tenantId }: WebsiteScope,
+    { span, filter, limit }: CalendarQuery,
   ): AppResultAsync<readonly Booking[], never> {
     return okAsync(
       [...this.rows.values()]
@@ -351,8 +336,7 @@ export class InMemoryBookingRepository implements BookingRepository {
   }
 
   countLiveByEmail(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     email: string,
     now: Date,
   ): AppResultAsync<number, never> {
@@ -370,11 +354,7 @@ export class InMemoryBookingRepository implements BookingRepository {
     );
   }
 
-  countLiveHolds(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    now: Date,
-  ): AppResultAsync<number, never> {
+  countLiveHolds({ websiteId, tenantId }: WebsiteScope, now: Date): AppResultAsync<number, never> {
     return okAsync(
       [...this.rows.values()].filter(
         (booking) =>
@@ -387,8 +367,7 @@ export class InMemoryBookingRepository implements BookingRepository {
   }
 
   releaseExpiredHolds(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
+    { websiteId, tenantId }: WebsiteScope,
     now: Date,
     limit: number,
   ): AppResultAsync<number, never> {

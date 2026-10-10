@@ -17,6 +17,7 @@ import {
   ManualClock,
   OTHER_TENANT,
   RecordingAuditLog,
+  RecordingNotifier,
   SequentialReferences,
   authorizationFor,
 } from './fakes';
@@ -39,6 +40,7 @@ interface WorldOptions {
 export function createWorld(options: WorldOptions = {}) {
   const clock = new ManualClock(NOW);
   const audit = new RecordingAuditLog();
+  const notifier = new RecordingNotifier();
   const locations = new InMemoryLocationRepository();
   const resources = new InMemoryResourceRepository();
   const services = new InMemoryServiceRepository();
@@ -76,6 +78,7 @@ export function createWorld(options: WorldOptions = {}) {
     clock,
     references: new SequentialReferences(),
     audit,
+    notifier,
   };
 
   const admin: BookingDependencies = {
@@ -85,10 +88,11 @@ export function createWorld(options: WorldOptions = {}) {
     services,
     bookings,
     audit,
+    notifier,
     clock,
   };
 
-  return { clock, audit, locations, resources, services, bookings, flow, admin };
+  return { clock, audit, notifier, locations, resources, services, bookings, flow, admin };
 }
 
 export type World = ReturnType<typeof createWorld>;

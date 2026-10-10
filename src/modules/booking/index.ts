@@ -9,7 +9,6 @@
 
 export { BookingSection } from './presentation/components/booking-section';
 export { BookingAdministration } from './presentation/components/booking-administration';
-export { bookingRoutes } from './presentation/routes';
 
 export { default as enBooking } from './presentation/i18n/en.json';
 export { default as deBooking } from './presentation/i18n/de.json';
