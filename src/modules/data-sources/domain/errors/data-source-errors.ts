@@ -4,6 +4,7 @@ import {
   notFoundError,
   validationError,
   FieldErrorBag,
+  fieldPath,
 } from '@lib/errors';
 import type {
   ConflictAppError,
@@ -11,7 +12,6 @@ import type {
   NotFoundAppError,
   ValidationAppError,
 } from '@lib/errors';
-import { fieldPath } from '@lib/errors/validation';
 
 /**
  * Stable codes. Presentation maps these to translation keys (i18n.md);

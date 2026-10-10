@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { serverEnv } from '@lib/config';
+import { serverEnv } from '@lib/config/server';
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 

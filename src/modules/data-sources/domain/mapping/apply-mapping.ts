@@ -34,11 +34,22 @@ function sourceValue(record: unknown, path: string): unknown {
   return getPath(record, normalizePath(path));
 }
 
+/** A date and time with no zone or offset: `2026-10-12T10:00`, `2026-10-12 10:00:30`. */
+const ZONELESS_DATE_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/;
+
+/**
+ * Reads an instant from a source value. A date and time WITHOUT a zone is
+ * taken as UTC: `new Date` would read it in the zone of the machine running
+ * the server, so the same record would mean a different instant in
+ * development, on a host in another region, and after a redeploy.
+ */
 function toDate(raw: unknown): Date | null {
   if (!(typeof raw === 'string' || typeof raw === 'number' || raw instanceof Date)) {
     return null;
   }
-  const date = new Date(raw);
+  const date = new Date(
+    typeof raw === 'string' && ZONELESS_DATE_TIME.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw,
+  );
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
