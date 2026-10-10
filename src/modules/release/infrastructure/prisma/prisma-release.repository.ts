@@ -1,6 +1,6 @@
 import type { TenantId } from '@modules/auth';
 
-import { createPersistenceFailures, dateToInstant, db } from '@lib/db';
+import { createPersistenceFailures, dateToInstant, db, toJsonValue } from '@lib/db';
 import type {
   ConflictAppError,
   InfrastructureAppError,
@@ -191,7 +191,7 @@ export class PrismaReleaseRepository implements ReleaseRepository {
             websiteId,
             releaseNumber: nextReleaseNumber(latest?.releaseNumber ?? null),
             status: RECORD_STATUS.published,
-            snapshot: stored,
+            snapshot: toJsonValue(stored),
             snapshotHash,
             // Prisma 8 does not accept a `Date` for a `DateTime` column.
             publishedAt: dateToInstant(publishedAt),

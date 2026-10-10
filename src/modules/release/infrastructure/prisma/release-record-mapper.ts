@@ -1,11 +1,17 @@
-import { z } from 'zod';
-
 import { instantToDate } from '@lib/db';
 import type { InstantRecord } from '@lib/db';
 import type { UnexpectedAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
-import { isJsonRecord, literalGuard } from '@lib/utils';
+import {
+  arrayOf,
+  isInteger,
+  isJsonRecord,
+  isString,
+  literalGuard,
+  nullable,
+  objectOf,
+} from '@lib/utils';
 import type { JsonValue } from '@lib/utils';
 
 import { releaseSnapshotCorrupted } from '../../domain/errors/release-errors';
@@ -36,52 +42,90 @@ export interface ReleaseRecord extends ReleaseSummaryRecord {
   readonly snapshot: unknown;
 }
 
-const pageConfigSchema = z.custom<Readonly<Record<string, JsonValue>>>((value) =>
-  isJsonRecord(value),
-);
+interface StoredDependency {
+  readonly type: string;
+  readonly version: number;
+  readonly contracts: Array<{ readonly contract: string; readonly minVersion: number }>;
+}
 
-const dependencySchema = z.object({
-  type: z.string(),
-  version: z.number().int(),
-  contracts: z.array(z.object({ contract: z.string(), minVersion: z.number().int() })),
+const isStoredDependency = objectOf<StoredDependency>({
+  type: isString,
+  version: isInteger,
+  contracts: arrayOf(
+    objectOf<{ readonly contract: string; readonly minVersion: number }>({
+      contract: isString,
+      minVersion: isInteger,
+    }),
+  ),
 });
 
 /**
  * The flat shape written to the snapshot JSON column. Stored JSON is
- * external data to this build (an older or damaged row), so it is parsed,
+ * external data to this build (an older or damaged row), so it is checked,
  * never cast, before any of it reaches the domain.
  */
-const storedReleaseSnapshotSchema = z.object({
-  schemaVersion: z.literal(RELEASE_SNAPSHOT_SCHEMA_VERSION),
-  website: z.object({
-    id: z.string(),
-    name: z.string(),
-    slug: z.string(),
-    description: z.string().nullable(),
+export interface StoredReleaseSnapshot {
+  readonly schemaVersion: typeof RELEASE_SNAPSHOT_SCHEMA_VERSION;
+  readonly website: {
+    readonly id: string;
+    readonly name: string;
+    readonly slug: string;
+    readonly description: string | null;
+  };
+  readonly theme: {
+    readonly primaryColor: string;
+    readonly secondaryColor: string;
+    readonly accentColor: string;
+    readonly headingFont: string;
+    readonly bodyFont: string;
+    readonly radius: string;
+    readonly spacingScale: string;
+  };
+  readonly pages: Array<{
+    readonly path: string;
+    readonly title: string;
+    readonly config: Readonly<Record<string, JsonValue>>;
+  }>;
+  readonly dependencies: StoredDependency[];
+}
+
+const isStoredReleaseSnapshot = objectOf<StoredReleaseSnapshot>({
+  schemaVersion: (value): value is typeof RELEASE_SNAPSHOT_SCHEMA_VERSION =>
+    value === RELEASE_SNAPSHOT_SCHEMA_VERSION,
+  website: objectOf<StoredReleaseSnapshot['website']>({
+    id: isString,
+    name: isString,
+    slug: isString,
+    description: nullable(isString),
   }),
-  theme: z.object({
-    primaryColor: z.string(),
-    secondaryColor: z.string(),
-    accentColor: z.string(),
-    headingFont: z.string(),
-    bodyFont: z.string(),
-    radius: z.string(),
-    spacingScale: z.string(),
+  theme: objectOf<StoredReleaseSnapshot['theme']>({
+    primaryColor: isString,
+    secondaryColor: isString,
+    accentColor: isString,
+    headingFont: isString,
+    bodyFont: isString,
+    radius: isString,
+    spacingScale: isString,
   }),
-  pages: z.array(z.object({ path: z.string(), title: z.string(), config: pageConfigSchema })),
-  dependencies: z.array(dependencySchema),
+  pages: arrayOf(
+    objectOf<StoredReleaseSnapshot['pages'][number]>({
+      path: isString,
+      title: isString,
+      config: isJsonRecord,
+    }),
+  ),
+  dependencies: arrayOf(isStoredDependency),
 });
 
-export type StoredReleaseSnapshot = z.infer<typeof storedReleaseSnapshotSchema>;
+const hasStoredDependencies = objectOf<{ readonly dependencies: StoredDependency[] }>({
+  dependencies: arrayOf(isStoredDependency),
+});
 
 /** Only the dependency records of a stored snapshot; a snapshot without valid ones has none worth reporting. */
-const storedDependenciesSchema = z.object({ dependencies: z.array(dependencySchema) });
-
 export function toStoredDependencies(
   snapshot: unknown,
 ): readonly ReleaseComponentDependency[] | null {
-  const parsed = storedDependenciesSchema.safeParse(snapshot);
-  return parsed.success ? parsed.data.dependencies : null;
+  return hasStoredDependencies(snapshot) ? snapshot.dependencies : null;
 }
 
 /** Select only what the use cases need (persistence.md): history never loads snapshots. */
@@ -190,8 +234,8 @@ export function toStoredSnapshot(snapshot: ReleaseSnapshot): StoredReleaseSnapsh
  * understand) and must never be partially rendered.
  */
 export function toRelease(record: ReleaseRecord): AppResult<Release, UnexpectedAppError> {
-  const parsed = storedReleaseSnapshotSchema.safeParse(record.snapshot);
-  return parsed.success
-    ? ok({ ...toReleaseSummary(record), snapshot: toSnapshot(parsed.data) })
-    : err(releaseSnapshotCorrupted(parsed.error));
+  const stored: unknown = record.snapshot;
+  return isStoredReleaseSnapshot(stored)
+    ? ok({ ...toReleaseSummary(record), snapshot: toSnapshot(stored) })
+    : err(releaseSnapshotCorrupted(new Error('The stored snapshot has an unexpected shape.')));
 }
