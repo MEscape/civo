@@ -11,6 +11,7 @@ import { GetComponentDefaultProps } from './application/queries/get-component-de
 import { GetComponentReleaseInfo } from './application/queries/get-component-release-info';
 import { ListComponentCatalog } from './application/queries/list-component-catalog';
 import { ListContent } from './application/queries/list-content';
+import { ListContentCategories } from './application/queries/list-content-categories';
 import { COMPONENT_REGISTRY } from './domain/components/platform-registry';
 import { DatasetContentSource } from './infrastructure/data-sources/dataset-content-source';
 import { createPageRenderer } from './presentation/components/page-renderer/create-page-renderer';
@@ -34,6 +35,7 @@ const deps: PublicComponentPlatformDependencies = {
 
 export const componentPlatformQueries = {
   listContent: new ListContent(deps),
+  listContentCategories: new ListContentCategories(deps),
   listComponentCatalog: new ListComponentCatalog(deps),
   canNestComponent: new CanNestComponent(deps),
   getComponentReleaseInfo: new GetComponentReleaseInfo(deps),

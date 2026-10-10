@@ -31,6 +31,8 @@ export interface ContentListRequest<K extends ContentKind> {
   /** From the render context, never from component props. */
   readonly websiteId: string;
   readonly datasetId?: string | undefined;
+  /** Further datasets read together with `datasetId`; all must provide the same kind. */
+  readonly additionalDatasetIds?: readonly string[] | undefined;
   readonly category?: string | undefined;
   readonly limit?: number | undefined;
 }
@@ -40,3 +42,18 @@ export interface ContentListRequest<K extends ContentKind> {
  * upstream, so it is reported as validation, not as "not found".
  */
 export type ContentLoadError = ContentSourceError | ValidationAppError;
+
+/** What the editor asks for to offer category choices. Plain strings: ids and kinds come from the route. */
+export interface ContentCategoriesRequest {
+  /** From the authorized page, never from a request body. */
+  readonly websiteId: string;
+  /** The kinds whose sample categories are needed (components that are not bound yet). */
+  readonly kinds: readonly string[];
+  readonly datasets: ReadonlyArray<{ readonly id: string; readonly kind: string }>;
+}
+
+/** Distinct category values, sorted. */
+export interface ContentCategoriesView {
+  readonly byDataset: Readonly<Record<string, readonly string[]>>;
+  readonly sampleByKind: Readonly<Record<string, readonly string[]>>;
+}

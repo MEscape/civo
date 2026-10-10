@@ -1,3 +1,5 @@
+import type { JsonValue } from '@lib/utils';
+
 import type {
   ComponentCategory,
   ContentKind,
@@ -35,10 +37,16 @@ export interface CatalogFieldView {
   readonly labelKey: string;
   readonly placeholderKey: string | null;
   readonly options: readonly CatalogOptionView[];
-  /** Limits of a `number` control, so the panel never restates them. */
+  /** Limits of a `number` control (or the length of a `datasets` list), so the panel never restates them. */
   readonly bounds: CatalogBoundsView | null;
-  /** Which canonical kind a `dataset` control must offer datasets of. */
+  /** Which canonical kind the dataset-reading controls (`dataset`, `datasets`, `category`) work with. */
   readonly canonicalKind: ContentKind | null;
+  /**
+   * The value in force while the stored one is missing, so the panel shows
+   * what the page really renders instead of an empty control. `null`: the
+   * prop has no default.
+   */
+  readonly defaultValue: JsonValue | null;
   /** The fields of one entry of an `items` control; empty for every other control. */
   readonly itemFields: readonly CatalogItemFieldView[];
 }
@@ -55,6 +63,12 @@ export interface ComponentCatalogEntry {
   readonly category: ComponentCategory;
   readonly labelKey: string;
   readonly descriptionKey: string;
+  /**
+   * Where the translated sample content of the palette preview lives, if the
+   * component has any: a component whose defaults already render something
+   * needs none.
+   */
+  readonly sampleKey: string;
   readonly canHaveChildren: boolean;
   /** `null`: any component may be nested. */
   readonly acceptsChildTypes: readonly string[] | null;

@@ -15,6 +15,10 @@ export type {
   ComponentReleaseInfo,
 } from './application/contracts/catalog-views';
 export type {
+  ContentCategoriesRequest,
+  ContentCategoriesView,
+} from './application/contracts/content-views';
+export type {
   RenderContext,
   RenderableNode,
 } from './application/contracts/component-platform-constraints';

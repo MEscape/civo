@@ -1,4 +1,7 @@
+import { isJsonValue } from '@lib/utils';
+
 import { CONTENT_DEFINITIONS } from '../domain/content/content-definitions';
+import { DATASET_CONTROLS } from '../domain/models/prop-field';
 
 import type {
   CatalogFieldView,
@@ -24,6 +27,11 @@ export function componentLabelKey(type: string): string {
 
 export function componentDescriptionKey(type: string): string {
   return `${TEXT_ROOT}.${type}.description`;
+}
+
+/** Sample props and children a component's palette preview is rendered from; optional per component. */
+export function componentSampleKey(type: string): string {
+  return `${TEXT_ROOT}.${type}.sample`;
 }
 
 export function fieldLabelKey(type: string, field: string): string {
@@ -58,10 +66,10 @@ function toFieldView(
         field.control === 'select' ? fieldOptionKey(definition.type, field.key, value) : null,
     })),
     bounds: field.bounds,
-    canonicalKind:
-      field.control === 'dataset'
-        ? (field.datasetKind ?? definition.dataBinding?.canonicalKind ?? null)
-        : null,
+    canonicalKind: DATASET_CONTROLS.includes(field.control)
+      ? (field.datasetKind ?? definition.dataBinding?.canonicalKind ?? null)
+      : null,
+    defaultValue: isJsonValue(field.defaultValue) ? field.defaultValue : null,
     itemFields: field.itemFields.map((itemField) => ({
       key: itemField.key,
       labelKey: itemFieldLabelKey(definition.type, field.key, itemField.key),
@@ -77,6 +85,7 @@ export function toCatalogEntry(definition: ComponentDefinition): ComponentCatalo
     category: definition.category,
     labelKey: componentLabelKey(definition.type),
     descriptionKey: componentDescriptionKey(definition.type),
+    sampleKey: componentSampleKey(definition.type),
     canHaveChildren: definition.canHaveChildren,
     acceptsChildTypes: definition.acceptsChildTypes,
     fields: definition.fields.map((field) => toFieldView(definition, field)),

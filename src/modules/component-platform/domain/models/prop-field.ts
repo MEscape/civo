@@ -21,6 +21,8 @@ export const PROP_CONTROLS = [
   'columns',
   'switch',
   'dataset',
+  'datasets',
+  'category',
   'items',
 ] as const;
 export type PropControl = (typeof PROP_CONTROLS)[number];
@@ -34,6 +36,9 @@ export const GRID_COLUMN_COUNTS = [1, 2, 3, 4] as const;
 export type GridColumnCount = (typeof GRID_COLUMN_COUNTS)[number];
 
 const NO_ITEMS = 0;
+
+/** Controls that read the datasets of the component's data binding, and so need a content kind. */
+export const DATASET_CONTROLS: readonly PropControl[] = ['dataset', 'datasets', 'category'];
 
 /** One field of an `items` entry, as the properties panel edits it. */
 export interface PropItemField {
@@ -64,7 +69,7 @@ export interface PropField<T> {
   readonly municipal: boolean;
   /** The fields of one entry of an `items` list, in display order; empty for every other control. */
   readonly itemFields: readonly PropItemField[];
-  /** The kind a `dataset` prop accepts when it differs from the component's own data binding. */
+  /** The kind a `dataset`/`datasets` prop accepts when it differs from the component's own data binding. */
   readonly datasetKind: ContentKind | null;
   readonly schema: FieldSchema<T>;
   /** Applies when the stored value is missing or invalid: the single place a default is written. */
@@ -228,6 +233,36 @@ export const prop = {
       fallback: undefined,
       meta: { group: 'data' },
       datasetKind: kind,
+    });
+  },
+
+  /**
+   * A bounded list of further datasets of the same website and kind, read
+   * together with the component's primary `dataset` prop. A stored page
+   * without it keeps working: absent or invalid means "no further datasets".
+   */
+  datasets(max: number, kind?: ContentKind): PropField<readonly string[]> {
+    return propField({
+      control: 'datasets',
+      schema: list(text({ min: 1, max: ID_MAX_LENGTH, trim: true }), max),
+      fallback: [],
+      meta: { group: 'data' },
+      bounds: { min: NO_ITEMS, max },
+      datasetKind: kind,
+    });
+  },
+
+  /**
+   * One category value (a district, a service category) chosen from the
+   * values the bound datasets actually contain. It stays plain text, so a
+   * stored value that the data no longer offers keeps filtering as written.
+   */
+  category(max: number, meta?: PropMeta): PropField<string | undefined> {
+    return propField({
+      control: 'category',
+      schema: optional(text({ max, trim: true })),
+      fallback: undefined,
+      meta,
     });
   },
 } as const;

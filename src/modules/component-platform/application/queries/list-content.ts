@@ -1,18 +1,15 @@
-import { errAsync, okAsync } from '@lib/result';
+import { combine, combineAsync, errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
-import { clamp, isDefined, trimToNull } from '@lib/utils';
+import { isPlainObject, trimToNull, unique } from '@lib/utils';
 
 import { getContentDefinition } from '../../domain/content/content-definitions';
 import { selectContent } from '../../domain/content/select-content';
 import { contentDatasetNotFound } from '../../domain/errors/component-platform-errors';
 import { parseDatasetId, parseWebsiteId } from '../../domain/models/ids';
-import {
-  DEFAULT_CONTENT_LIST_LIMIT,
-  MAX_CONTENT_LIST_LIMIT,
-  MIN_CONTENT_LIST_LIMIT,
-} from '../list-limits';
+import { resolveListLimit } from '../list-limits';
 
 import type { ContentKind, ContentOf } from '../../domain/content/content-definitions';
+import type { ContentBatch } from '../../domain/ports/content-source.port';
 import type { PublicComponentPlatformDependencies } from '../component-platform-dependencies';
 import type {
   ContentListRequest,
@@ -21,10 +18,41 @@ import type {
   ContentOrigin,
 } from '../contracts/content-views';
 
-function resolveLimit(requested: number | undefined): number {
-  const wanted =
-    isDefined(requested) && Number.isInteger(requested) ? requested : DEFAULT_CONTENT_LIST_LIMIT;
-  return clamp(wanted, MIN_CONTENT_LIST_LIMIT, MAX_CONTENT_LIST_LIMIT);
+/** The primary dataset first, then the further ones; blanks and repeats dropped. */
+function distinctDatasetIds(request: {
+  readonly datasetId?: string | undefined;
+  readonly additionalDatasetIds?: readonly string[] | undefined;
+}): readonly string[] {
+  const wanted = [request.datasetId, ...(request.additionalDatasetIds ?? [])];
+  return unique(
+    wanted.flatMap((id) => {
+      const trimmed = trimToNull(id);
+      return trimmed === null || trimmed === '' ? [] : [trimmed];
+    }),
+  );
+}
+
+function hasStringId(item: unknown): item is { readonly id: string } {
+  return isPlainObject(item) && typeof item['id'] === 'string';
+}
+
+/**
+ * One list from one batch per dataset. Record ids are only unique inside
+ * their own dataset, so with several datasets each id is namespaced by its
+ * dataset's position; a single dataset keeps its ids untouched.
+ */
+function mergeBatches<K extends ContentKind>(
+  batches: ReadonlyArray<ContentBatch<K>>,
+): ReadonlyArray<ContentOf<K>> {
+  const [only] = batches;
+  if (batches.length === 1 && only !== undefined) {
+    return only.items;
+  }
+  return batches.flatMap((batch, index) =>
+    batch.items.map((item) =>
+      hasStringId(item) ? { ...item, id: `${String(index)}:${item.id}` } : item,
+    ),
+  );
 }
 
 /**
@@ -54,7 +82,7 @@ export class ListContent {
     // Canonical instants compare chronologically as text, which is how content is selected.
     const now = clock.now().toISOString();
     const category = trimToNull(request.category);
-    const limit = resolveLimit(request.limit);
+    const limit = resolveListLimit(request.kind, request.limit);
     const isDraft = request.mode === 'draft';
 
     const present = (
@@ -74,24 +102,25 @@ export class ListContent {
     ): AppResultAsync<ContentListView<K>, ContentLoadError> =>
       isDraft ? okAsync(sampled(error.code)) : errAsync(error);
 
-    const rawDatasetId = trimToNull(request.datasetId);
-    if (rawDatasetId === null) {
+    const rawDatasetIds = distinctDatasetIds(request);
+    if (rawDatasetIds.length === 0) {
       return okAsync(isDraft ? sampled(null) : present([], { kind: 'unbound' }));
     }
 
     // A malformed id is "not found", like an unknown one: a visitor learns nothing about which ids exist.
-    const parsedDataset = parseDatasetId(rawDatasetId);
-    if (parsedDataset.isErr()) {
+    const parsedDatasets = combine(rawDatasetIds.map((id) => parseDatasetId(id)));
+    if (parsedDatasets.isErr()) {
       return fallback(contentDatasetNotFound());
     }
+    const websiteId = parsedWebsite.value;
 
-    return live
-      .list({
-        kind: request.kind,
-        datasetId: parsedDataset.value,
-        websiteId: parsedWebsite.value,
-      })
-      .map((batch) => present(batch.items, { kind: 'live' }))
+    // Every dataset must answer: a calendar that silently lacks one district is worse than none.
+    return combineAsync(
+      parsedDatasets.value.map((datasetId) =>
+        live.list({ kind: request.kind, datasetId, websiteId }),
+      ),
+    )
+      .map((batches) => present(mergeBatches(batches), { kind: 'live' }))
       .orElse(fallback);
   }
 }

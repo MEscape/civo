@@ -19,8 +19,10 @@ export interface PropFieldDefinition {
   readonly bounds: PropBounds | null;
   readonly hasPlaceholder: boolean;
   readonly itemFields: readonly PropItemField[];
-  /** `null`: a `dataset` prop takes the component's own data binding. */
+  /** `null`: a dataset-reading prop takes the component's own data binding. */
   readonly datasetKind: ContentKind | null;
+  /** What applies while the stored value is missing or invalid, so the editor can show it as the current value. */
+  readonly defaultValue: unknown;
 }
 
 /**
