@@ -2,6 +2,7 @@ import { cache } from 'react';
 
 import type { Metadata } from 'next';
 
+import { bookingRoutes } from '@modules/booking/client';
 import { builderRoutes } from '@modules/builder/client';
 import { ReleaseHistoryPanel, releaseQueries } from '@modules/release';
 import { releaseRoutes, toReleaseHistoryDto } from '@modules/release/client';
@@ -42,6 +43,7 @@ export default async function WebsitePage({ params }: RouteProps) {
 
   const links = [
     { key: 'builder', href: builderRoutes.pages(website.id) },
+    { key: 'bookings', href: bookingRoutes.admin(website.id) },
     { key: 'settings', href: websiteRoutes.settings(website.id) },
     { key: 'migrations', href: releaseRoutes.migrations(website.id) },
   ] as const;

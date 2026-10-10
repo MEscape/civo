@@ -13,10 +13,6 @@ const DEFAULT_SESSION_MAX_LIFETIME_SECONDS = 30 * SECONDS_PER_DAY;
 
 const DEFAULT_DEV_ACTOR_ROLE = 'viewer';
 
-/** Mailpit's SMTP port, the local development default. */
-const DEFAULT_SMTP_PORT = 1025;
-const DEFAULT_RESEND_API_URL = 'https://api.resend.com/emails';
-
 const MIN_AUTH_SECRET_LENGTH = 32;
 
 /**
@@ -62,14 +58,6 @@ const authEnvObjectSchema = z.object({
   AUTH_TRUSTED_PROXIES: commaSeparatedListSchema,
 
   AUTH_DEV_ACTOR_ROLE: z.string().default(DEFAULT_DEV_ACTOR_ROLE),
-
-  AUTH_MAIL_PROVIDER: z.enum(['none', 'resend', 'smtp']).default('none'),
-  AUTH_MAIL_API_KEY: z.string().min(1).optional(),
-  AUTH_MAIL_API_URL: z.url().default(DEFAULT_RESEND_API_URL),
-  AUTH_MAIL_SMTP_HOST: z.string().min(1).optional(),
-  AUTH_MAIL_SMTP_PORT: positiveIntegerSchema(DEFAULT_SMTP_PORT),
-  AUTH_MAIL_SMTP_SECURE: booleanFlagSchema(false),
-  AUTH_MAIL_FROM: z.string().min(1).optional(),
 });
 
 /** A setting that must hold once auth is enabled. */
@@ -104,21 +92,6 @@ const REQUIREMENTS_WHEN_ENABLED: readonly Requirement[] = [
     path: 'AUTH_SESSION_MAX_LIFETIME_SECONDS',
     isMet: (env) => env.AUTH_SESSION_MAX_LIFETIME_SECONDS >= env.AUTH_SESSION_EXPIRES_IN_SECONDS,
     message: 'Must be at least AUTH_SESSION_EXPIRES_IN_SECONDS.',
-  },
-  {
-    path: 'AUTH_MAIL_API_KEY',
-    isMet: (env) => env.AUTH_MAIL_PROVIDER !== 'resend' || Boolean(env.AUTH_MAIL_API_KEY),
-    message: 'AUTH_MAIL_API_KEY is required when AUTH_MAIL_PROVIDER is "resend".',
-  },
-  {
-    path: 'AUTH_MAIL_SMTP_HOST',
-    isMet: (env) => env.AUTH_MAIL_PROVIDER !== 'smtp' || Boolean(env.AUTH_MAIL_SMTP_HOST),
-    message: 'AUTH_MAIL_SMTP_HOST is required when AUTH_MAIL_PROVIDER is "smtp".',
-  },
-  {
-    path: 'AUTH_MAIL_FROM',
-    isMet: (env) => env.AUTH_MAIL_PROVIDER === 'none' || Boolean(env.AUTH_MAIL_FROM),
-    message: 'AUTH_MAIL_FROM is required when AUTH_MAIL_PROVIDER is not "none".',
   },
 ];
 

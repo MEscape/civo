@@ -1,4 +1,6 @@
-import { serverEnv } from '@lib/config';
+import 'server-only';
+
+import { serverEnv } from '@lib/config/server';
 
 /**
  * Structured logging abstraction (observability.md: "use structured

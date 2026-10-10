@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 
+import type { BookingSectionProps } from '@modules/booking';
 import type { MapSectionProps } from '@modules/map';
 
 import { getComponentDefinition } from '../../../application/contracts/component-platform-constraints';
@@ -20,6 +21,8 @@ export interface RenderServices {
   readonly loadContent: LoadContent;
   /** The map module's server-side map section. */
   readonly mapSection: ComponentType<MapSectionProps>;
+  /** The booking module's server-side booking section. */
+  readonly bookingSection: ComponentType<BookingSectionProps>;
 }
 
 export interface ComponentRenderInput<TProps> extends RenderServices {

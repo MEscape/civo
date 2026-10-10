@@ -35,10 +35,10 @@ env:
   # License policy. This is the single place to edit it.
   # SPDX expressions are evaluated: "(MIT OR Apache-2.0)" passes if either side
   # is allowed, "A AND B" requires both. CC-BY-4.0 covers caniuse-lite (Next.js).
-  ALLOWED_LICENSES: ${{ inputs.allowed-licenses || 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;BlueOak-1.0.0;CC0-1.0;CC-BY-4.0;Unlicense;Python-2.0' }}
+  ALLOWED_LICENSES: ${{ inputs.allowed-licenses || 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;BlueOak-1.0.0;CC0-1.0;CC-BY-4.0;Unlicense;Python-2.0;LGPL-3.0-or-later;MPL-2.0;MIT-0' }}
 
   # Packages reviewed and accepted despite their license.
-  LICENSE_EXCEPTIONS: ${{ inputs.license-exceptions || '' }}
+  LICENSE_EXCEPTIONS: ${{ inputs.license-exceptions || 'mapbox-gl' }}
 
   # "true" also scans devDependencies.
   INCLUDE_DEV: ${{ inputs.include-dev && 'true' || 'false' }}

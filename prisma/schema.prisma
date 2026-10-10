@@ -34,6 +34,15 @@ enum DatasetStatus {
   ERROR
 }
 
+enum BookingStatus {
+  HELD
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+  EXPIRED
+}
+
 model Website {
   id          String   @id @default(uuid())
   tenantId    String
@@ -50,6 +59,10 @@ model Website {
   releases    WebsiteRelease[]
   migrations  WebsiteMigration[]
   dataSources DataSource[]
+  bookingLocations  BookingLocation[]
+  bookableResources BookableResource[]
+  bookableServices  BookableService[]
+  bookings          Booking[]
   publishedRelease WebsiteRelease? @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
 
   @@unique([id, tenantId])
@@ -175,4 +188,138 @@ model Membership {
   createdAt DateTime @default(now())
 
   @@unique([actorId, tenantId, role])
+}
+
+// ── Booking & scheduling ────────────────────────────────────────────────────
+// Every booking table carries (websiteId, tenantId) and references the website
+// by that pair, like Page: the database itself refuses a row whose tenant is
+// not the website's tenant.
+
+model BookingLocation {
+  id           String   @id @default(uuid())
+  tenantId     String
+  websiteId    String
+  name         String
+  address      String?
+  timeZone     String
+  openingHours Json
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  website   Website            @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  resources BookableResource[]
+  bookings  Booking[]
+
+  @@index([websiteId])
+}
+
+model BookableResource {
+  id           String   @id @default(uuid())
+  tenantId     String
+  websiteId    String
+  locationId   String?
+  name         String
+  type         String
+  skills       Json
+  capacity     Int?
+  availability Json?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  website  Website          @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  location BookingLocation? @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  holds    BookingResource[]
+
+  @@index([websiteId])
+}
+
+model BookableService {
+  id                     String   @id @default(uuid())
+  tenantId               String
+  websiteId              String
+  name                   String
+  description            String?
+  category               String?
+  isActive               Boolean  @default(true)
+  durationMinutes        Int
+  preparationMinutes     Int      @default(0)
+  cleanupMinutes         Int      @default(0)
+  slotIntervalMinutes    Int
+  locationIds            Json
+  requirements           Json
+  participantsPerBooking Int      @default(1)
+  participantsPerSession Int      @default(1)
+  noticeMinutes          Int      @default(0)
+  horizonDays            Int
+  availability           Json?
+  cancellation           Json
+  rescheduling           Json
+  information            Json
+  requiredDocuments      Json
+  instructions           String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @default(now())
+
+  website  Website   @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([websiteId])
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  tenantId        String
+  websiteId       String
+  serviceId       String
+  locationId      String
+  reference       String        @unique
+  status          BookingStatus
+  start           DateTime
+  end             DateTime
+  occupiedStart   DateTime
+  occupiedEnd     DateTime
+  participants    Int
+  sessionKey      String
+  sessionCapacity Int
+  customer        Json?
+  customerEmail   String?
+  holdExpiresAt   DateTime?
+  rescheduleCount Int           @default(0)
+  cancelledAt     DateTime?
+  cancelledBy     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now())
+
+  website  Website           @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  service  BookableService   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  location BookingLocation   @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  holds    BookingResource[]
+
+  @@index([websiteId, start])
+  @@index([sessionKey])
+  @@index([customerEmail])
+  @@index([status, holdExpiresAt])
+  @@check(expression: "\"start\" < \"end\" AND \"occupiedStart\" <= \"start\" AND \"end\" <= \"occupiedEnd\"", name: "Booking_span_check")
+  @@check(expression: "\"participants\" >= 1 AND \"participants\" <= \"sessionCapacity\"", name: "Booking_group_size_rule")
+}
+
+// One row per resource a booking holds. It repeats the booking's occupied span,
+// session key and liveness so a single table can carry the exclusion
+// constraint that makes double booking impossible (see the migration).
+model BookingResource {
+  bookingId     String
+  resourceId    String
+  occupiedStart DateTime
+  occupiedEnd   DateTime
+  sessionKey    String
+  isActive      Boolean
+
+  booking  Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  resource BookableResource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+
+  @@id([bookingId, resourceId])
+  @@index([resourceId, occupiedStart])
+  @@check(expression: "\"occupiedStart\" < \"occupiedEnd\"", name: "BookingResource_span_check")
 }

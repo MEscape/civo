@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run i18n:check && npm run test && npm run test:architecture",
     "test": "vitest run __tests__/src",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "test:architecture": "vitest run __tests__/architecture __tests__/eslint",
     "db:generate": "prisma contract emit",
@@ -28,6 +29,11 @@
     "i18n:check": "vitest run __tests__/architecture/i18n-catalogs.test.ts"
   },
   "dependencies": {
+    "@fullcalendar/core": "6.1.21",
+    "@fullcalendar/daygrid": "6.1.21",
+    "@fullcalendar/list": "6.1.21",
+    "@fullcalendar/react": "6.1.21",
+    "@fullcalendar/timegrid": "6.1.21",
     "@hookform/resolvers": "^5.9.1",
     "@prisma/orm-family-sql": "8.0.0-rc.13",
     "@prisma/orm-postgres": "8.0.0-rc.12",

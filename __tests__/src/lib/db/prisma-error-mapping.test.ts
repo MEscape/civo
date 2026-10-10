@@ -1,4 +1,8 @@
-import { isUniqueConstraintViolation, SqlConnectionError } from '@prisma/orm-family-sql/errors';
+import {
+  isUniqueConstraintViolation,
+  SqlConnectionError,
+  SqlQueryError,
+} from '@prisma/orm-family-sql/errors';
 import { isStructuredError } from '@prisma/orm-postgres/utils/structured-error';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,6 +17,7 @@ vi.mock('@prisma/orm-postgres/utils/structured-error', () => ({
 vi.mock('@prisma/orm-family-sql/errors', () => ({
   isUniqueConstraintViolation: vi.fn(),
   SqlConnectionError: { is: vi.fn() },
+  SqlQueryError: { is: vi.fn() },
 }));
 
 // 2. Mock the application error factories to observe the output straightforwardly.
@@ -55,6 +60,7 @@ describe('mapPrismaError', () => {
     vi.mocked(isStructuredError).mockReturnValue(false);
     vi.mocked(isUniqueConstraintViolation).mockReturnValue(false);
     vi.mocked(SqlConnectionError.is).mockReturnValue(false);
+    vi.mocked(SqlQueryError.is).mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -72,6 +78,43 @@ describe('mapPrismaError', () => {
       code: context.code,
       message: context.message,
     });
+  });
+
+  it('maps exclusion constraint violations to a conflict error', () => {
+    const error = Object.assign(new Error('conflicting key value violates exclusion constraint'), {
+      sqlState: '23P01',
+    });
+    vi.mocked(SqlQueryError.is).mockImplementation((e) => e === error);
+
+    expect(mapPrismaError(error, context)).toEqual({
+      kind: 'conflict',
+      code: context.code,
+      message: context.message,
+    });
+  });
+
+  it('does not mistake a driver error for an already-mapped AppError', () => {
+    // The real driver error carries a `kind` field of its own ('sql_query').
+    const error = Object.assign(new Error('duplicate key'), {
+      kind: 'sql_query',
+      sqlState: '23505',
+    });
+    vi.mocked(isUniqueConstraintViolation).mockImplementation((e) => e === error);
+
+    expect(mapPrismaError(error, context).kind).toBe('conflict');
+  });
+
+  it('passes an error that is already an AppError through unchanged', () => {
+    const mapped = { kind: 'not_found', code: 'X', message: 'gone' };
+
+    expect(mapPrismaError(mapped, context)).toBe(mapped);
+  });
+
+  it('does not treat other query errors as conflicts', () => {
+    const error = Object.assign(new Error('syntax error'), { sqlState: '42601' });
+    vi.mocked(SqlQueryError.is).mockImplementation((e) => e === error);
+
+    expect(mapPrismaError(error, context).kind).toBe('infrastructure');
   });
 
   it('maps unmapped structured errors to an infrastructure error', () => {

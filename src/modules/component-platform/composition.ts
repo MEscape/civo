@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { BookingSection } from '@modules/booking';
 import { dataSourceQueries } from '@modules/data-sources';
 import { MapSection } from '@modules/map';
 
@@ -41,11 +42,12 @@ export const componentPlatformQueries = {
 
 /**
  * The page renderer, wired with what components need: a loader built from
- * `listContent`, and the map module's section for the map component.
+ * `listContent`, and the map and booking modules' sections for their components.
  * Presentation never reaches this file or another module; both are handed
  * in from here.
  */
 export const renderPageNodes = createPageRenderer({
   loadContent: createContentLoader(componentPlatformQueries.listContent),
   mapSection: MapSection,
+  bookingSection: BookingSection,
 });

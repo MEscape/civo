@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logger } from '@lib/logger/logger';
 
 // Mock config to ensure all log levels are emitted during testing
-vi.mock('@lib/config', () => ({
+vi.mock('@lib/config/server', () => ({
   serverEnv: {
     LOG_LEVEL: 'debug',
   },

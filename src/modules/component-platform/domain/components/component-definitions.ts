@@ -1,6 +1,7 @@
 import { invariant } from '@lib/utils';
 
 import { alertBannerDefinition } from './civic/alert-banner.component';
+import { bookingDefinition } from './civic/booking.component';
 import { contactCardDefinition } from './civic/contact-card.component';
 import { councilBlockDefinition } from './civic/council-block.component';
 import { departmentDirectoryDefinition } from './civic/department-directory.component';
@@ -45,6 +46,7 @@ export const COMPONENT_DEFINITIONS = [
   richTextDefinition,
   tabsDefinition,
   alertBannerDefinition,
+  bookingDefinition,
   contactCardDefinition,
   councilBlockDefinition,
   departmentDirectoryDefinition,

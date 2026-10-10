@@ -36,6 +36,9 @@ const ROLE_PERMISSIONS = {
     'page.update',
     'page.delete',
     'page.restructure',
+    'booking.read',
+    'booking.configure',
+    'booking.manage',
   ],
   editor: [
     'website.read',
@@ -46,8 +49,17 @@ const ROLE_PERMISSIONS = {
     'page.read',
     'page.update',
     'page.restructure',
+    'booking.read',
+    'booking.manage',
   ],
-  viewer: ['website.read', 'release.read', 'datasource.read', 'dataset.read', 'page.read'],
+  viewer: [
+    'website.read',
+    'release.read',
+    'datasource.read',
+    'dataset.read',
+    'page.read',
+    'booking.read',
+  ],
 } as const satisfies Record<Role, readonly Permission[]>;
 
 /** Every permission a single role grants. Combining roles is `decide`'s job. */

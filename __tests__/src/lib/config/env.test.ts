@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { publicEnvSchema, serverEnvSchema } from '@lib/config/env-schema';
+import { serverEnvSchema } from '@lib/config/env-schema';
+import { publicEnvSchema } from '@lib/config/public-env-schema';
 
 /** Authentication is on by default and then needs its own settings; these tests are about the rest. */
 const AUTH_DISABLED = { AUTH_ENABLED: 'false' } as const;
@@ -21,8 +22,8 @@ describe('serverEnvSchema', () => {
         DATABASE_POOL_TIMEOUT_SECONDS: 10,
         LOG_LEVEL: 'info',
         AUTH_ENABLED: false,
-        AUTH_MAIL_PROVIDER: 'none',
-        AUTH_MAIL_SMTP_SECURE: false,
+        MAIL_PROVIDER: 'none',
+        MAIL_SMTP_SECURE: false,
       });
     }
   });
@@ -37,13 +38,13 @@ describe('serverEnvSchema', () => {
   it.each([
     ['true', true],
     ['false', false],
-  ])('reads the flag AUTH_MAIL_SMTP_SECURE=%s as %s', (raw, expected) => {
+  ])('reads the flag MAIL_SMTP_SECURE=%s as %s', (raw, expected) => {
     const result = serverEnvSchema.safeParse({
       ...AUTH_DISABLED,
       DATABASE_URL: 'postgres://localhost/db',
-      AUTH_MAIL_SMTP_SECURE: raw,
+      MAIL_SMTP_SECURE: raw,
     });
-    expect(result.success && result.data.AUTH_MAIL_SMTP_SECURE).toBe(expected);
+    expect(result.success && result.data.MAIL_SMTP_SECURE).toBe(expected);
   });
 
   it('fails if the required DATABASE_URL is missing', () => {
@@ -158,5 +159,118 @@ describe('publicEnvSchema: map configuration', () => {
       publicEnvSchema.safeParse({ NEXT_PUBLIC_MAPBOX_STYLE_URL: 'https://evil.example/style.json' })
         .success,
     ).toBe(false);
+  });
+});
+
+describe('serverEnvSchema: authentication modes', () => {
+  const DATABASE = { DATABASE_URL: 'postgres://localhost/db' } as const;
+  const AUTH_SECRETS = {
+    AUTH_SECRET: 'x'.repeat(40),
+    AUTH_DATABASE_URL: 'postgres://localhost/auth',
+  } as const;
+  const PRODUCTION_MAIL = {
+    MAIL_PROVIDER: 'resend',
+    MAIL_API_KEY: 're_key',
+    MAIL_FROM: 'noreply@example.com',
+  } as const;
+
+  it('needs no authentication secrets in development with auth disabled', () => {
+    expect(serverEnvSchema.safeParse({ ...DATABASE, ...AUTH_DISABLED }).success).toBe(true);
+  });
+
+  it('still requires the database when auth is disabled', () => {
+    const result = serverEnvSchema.safeParse({ ...AUTH_DISABLED });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['DATABASE_URL']);
+  });
+
+  it('names exactly the authentication settings that are missing when auth is enabled', () => {
+    const result = serverEnvSchema.safeParse({ ...DATABASE, AUTH_ENABLED: 'true' });
+    expect(result.error?.issues.map((issue) => issue.path.join('.')).sort()).toEqual([
+      'AUTH_DATABASE_URL',
+      'AUTH_SECRET',
+    ]);
+  });
+
+  it('accepts development with auth enabled and its secrets', () => {
+    expect(serverEnvSchema.safeParse({ ...DATABASE, ...AUTH_SECRETS }).success).toBe(true);
+  });
+
+  it('refuses a production start with auth disabled', () => {
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...AUTH_DISABLED,
+      ...PRODUCTION_MAIL,
+      NODE_ENV: 'production',
+    });
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['AUTH_ENABLED']);
+  });
+
+  it('refuses a production start without a mail provider', () => {
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...AUTH_SECRETS,
+      NODE_ENV: 'production',
+    });
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['MAIL_PROVIDER']);
+  });
+
+  it('accepts a fully configured production start', () => {
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...AUTH_SECRETS,
+      ...PRODUCTION_MAIL,
+      NODE_ENV: 'production',
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('serverEnvSchema: mail', () => {
+  const BASE = { DATABASE_URL: 'postgres://localhost/db', AUTH_ENABLED: 'false' } as const;
+  const paths = (input: Record<string, string>) =>
+    serverEnvSchema
+      .safeParse({ ...BASE, ...input })
+      .error?.issues.map((issue) => issue.path.join('.'))
+      .sort();
+
+  it('sends nothing by default', () => {
+    const result = serverEnvSchema.safeParse(BASE);
+    expect(result.success && result.data.MAIL_PROVIDER).toBe('none');
+  });
+
+  it('needs a sender, and a host, for smtp', () => {
+    expect(paths({ MAIL_PROVIDER: 'smtp' })).toEqual(['MAIL_FROM', 'MAIL_SMTP_HOST']);
+    expect(
+      serverEnvSchema.safeParse({
+        ...BASE,
+        MAIL_PROVIDER: 'smtp',
+        MAIL_SMTP_HOST: 'localhost',
+        MAIL_FROM: 'Civo <no-reply@example.org>',
+      }).success,
+    ).toBe(true);
+  });
+
+  it('refuses resend outside production, where mail would reach real people', () => {
+    expect(
+      paths({ MAIL_PROVIDER: 'resend', MAIL_API_KEY: 're_key', MAIL_FROM: 'a@example.org' }),
+    ).toEqual(['MAIL_PROVIDER']);
+  });
+
+  it('needs the API key and sender for resend in production', () => {
+    expect(
+      paths({ NODE_ENV: 'production', AUTH_ENABLED: 'true', MAIL_PROVIDER: 'resend' }),
+    ).toEqual(expect.arrayContaining(['MAIL_API_KEY', 'MAIL_FROM']));
+  });
+
+  it('requires mail to be configured in production, whatever else is on', () => {
+    expect(
+      paths({
+        NODE_ENV: 'production',
+        MAIL_PROVIDER: 'smtp',
+        MAIL_SMTP_HOST: 'h',
+        MAIL_FROM: 'a@b.c',
+      }),
+    ).toEqual(expect.arrayContaining(['MAIL_PROVIDER']));
   });
 });

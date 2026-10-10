@@ -161,6 +161,28 @@
           }
         }
       },
+      "booking": {
+        "label": "Booking",
+        "description": "Appointments and resource booking: visitors choose a time, staff see the calendar.",
+        "fields": {
+          "mode": {
+            "label": "Display",
+            "options": {
+              "public": "Visitors book",
+              "adminCalendar": "Staff calendar (signed-in staff only)"
+            }
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "serviceId": {
+            "label": "Service ID (optional, books only this service)"
+          },
+          "category": {
+            "label": "Category (optional, shows only this category)"
+          }
+        }
+      },
       "contactCard": {
         "label": "Contacts",
         "description": "Contact persons and contact details.",
@@ -598,6 +620,9 @@
     },
     "alertBanner": {
       "defaultHeading": "Notices"
+    },
+    "booking": {
+      "defaultHeading": "Book an appointment"
     },
     "contactCard": {
       "defaultHeading": "Contact"

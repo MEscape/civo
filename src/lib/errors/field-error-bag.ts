@@ -25,6 +25,14 @@ export class FieldErrorBag {
     }
   }
 
+  /** Records `code` at `path` unless `isOk`; returns `isOk`, so several checks can run without short-circuiting. */
+  expect(isOk: boolean, path: string, code: string): boolean {
+    if (!isOk) {
+      this.add(path, code);
+    }
+    return isOk;
+  }
+
   get hasErrors(): boolean {
     return Object.keys(this.errors).length > 0;
   }

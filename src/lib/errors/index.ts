@@ -25,6 +25,4 @@ export { httpStatusForError, toErrorResponseBody, type ErrorResponseBody } from 
 
 export { FieldErrorBag } from './field-error-bag';
 
-export { ROOT_FIELD, fieldPath } from './validation';
-
-export { escalate } from './route-errors';
+export { ROOT_FIELD, fieldPath, type NestedKeyOf } from './validation';

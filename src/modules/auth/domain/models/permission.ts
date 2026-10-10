@@ -29,6 +29,9 @@ export const PERMISSIONS = [
   'page.update',
   'page.delete',
   'page.restructure',
+  'booking.read',
+  'booking.configure',
+  'booking.manage',
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

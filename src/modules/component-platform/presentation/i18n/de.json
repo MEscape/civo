@@ -161,6 +161,28 @@
           }
         }
       },
+      "booking": {
+        "label": "Buchung",
+        "description": "Termine und Ressourcen buchen: Besuchende wählen eine Zeit, Personal sieht den Kalender.",
+        "fields": {
+          "mode": {
+            "label": "Anzeige",
+            "options": {
+              "public": "Besuchende buchen",
+              "adminCalendar": "Personalkalender (nur für angemeldetes Personal)"
+            }
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "serviceId": {
+            "label": "Leistungs-ID (optional, bucht nur diese Leistung)"
+          },
+          "category": {
+            "label": "Kategorie (optional, zeigt nur diese Kategorie)"
+          }
+        }
+      },
       "contactCard": {
         "label": "Kontakte",
         "description": "Ansprechpartner und Kontaktdaten.",
@@ -598,6 +620,9 @@
     },
     "alertBanner": {
       "defaultHeading": "Bekanntmachungen"
+    },
+    "booking": {
+      "defaultHeading": "Termin buchen"
     },
     "contactCard": {
       "defaultHeading": "Kontakt"

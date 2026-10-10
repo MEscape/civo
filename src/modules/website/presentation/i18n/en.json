@@ -101,6 +101,10 @@
           "migrations": {
             "title": "Migrations",
             "description": "Check published pages against current component versions."
+          },
+          "bookings": {
+            "title": "Bookings",
+            "description": "Appointments, rooms and pitches: set them up and see who booked what."
           }
         }
       },

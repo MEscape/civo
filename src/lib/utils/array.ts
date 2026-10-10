@@ -120,3 +120,13 @@ export function insertItem<T>(items: readonly T[], index: number, item: T): T[] 
   const at = Number.isInteger(index) ? Math.min(Math.max(index, 0), items.length) : items.length;
   return [...items.slice(0, at), item, ...items.slice(at)];
 }
+
+/** Returns a copy with the item at `index` replaced; an index outside the list changes nothing. */
+export function replaceAt<T>(items: readonly T[], index: number, item: T): T[] {
+  return items.map((existing, position) => (position === index ? item : existing));
+}
+
+/** Returns a copy without the item at `index`; an index outside the list changes nothing. */
+export function removeAt<T>(items: readonly T[], index: number): T[] {
+  return items.filter((_, position) => position !== index);
+}

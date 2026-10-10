@@ -1,4 +1,5 @@
 import { enAuth as auth } from '@modules/auth';
+import { enBooking as booking } from '@modules/booking';
 import { enBuilder as builder } from '@modules/builder';
 import { enComponentPlatform as componentPlatform } from '@modules/component-platform';
 import { enDataSource as dataSource } from '@modules/data-sources';
@@ -16,6 +17,7 @@ import app from '../messages/en/app.json';
 const messages = {
   app,
   auth: auth.auth,
+  booking: booking.booking,
   builder: builder.builder,
   componentPlatform: componentPlatform.componentPlatform,
   dataSources: dataSource.dataSources,

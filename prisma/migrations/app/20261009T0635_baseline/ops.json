@@ -1,0 +1,1438 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.DataSource",
+    "label": "Create table \"DataSource\"",
+    "summary": "Creates table \"DataSource\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "DataSource"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"DataSource\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DataSource\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"DataSource\"",
+        "sql": "CREATE TABLE \"public\".\"DataSource\" (\n  \"config\" json NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"kind\" text NOT NULL,\n  \"lastCheckedAt\" timestamptz,\n  \"lastError\" text,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'UNKNOWN' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"DataSource_kind_check_c3ae767f\" CHECK (\"kind\" IN ('MOCK', 'REST')),\n  CONSTRAINT \"DataSource_status_check_ff3434bd\" CHECK (\"status\" IN ('UNKNOWN', 'OK', 'ERROR'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"DataSource\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DataSource\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Dataset",
+    "label": "Create table \"Dataset\"",
+    "summary": "Creates table \"Dataset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Dataset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Dataset\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Dataset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Dataset\"",
+        "sql": "CREATE TABLE \"public\".\"Dataset\" (\n  \"canonicalKind\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dataSourceId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"lastFetchedAt\" timestamptz,\n  \"mapping\" json,\n  \"name\" text NOT NULL,\n  \"slug\" text NOT NULL,\n  \"status\" text DEFAULT 'UNKNOWN' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Dataset_status_check_ff3434bd\" CHECK (\"status\" IN ('UNKNOWN', 'OK', 'ERROR'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Dataset\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Dataset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Membership",
+    "label": "Create table \"Membership\"",
+    "summary": "Creates table \"Membership\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Membership"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Membership\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Membership\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Membership\"",
+        "sql": "CREATE TABLE \"public\".\"Membership\" (\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"role\" text NOT NULL,\n  \"tenantId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Membership\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Membership\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Page",
+    "label": "Create table \"Page\"",
+    "summary": "Creates table \"Page\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Page"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Page\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Page\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Page\"",
+        "sql": "CREATE TABLE \"public\".\"Page\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"path\" text NOT NULL,\n  \"tenantId\" text NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Page\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Page\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PageConfig",
+    "label": "Create table \"PageConfig\"",
+    "summary": "Creates table \"PageConfig\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PageConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PageConfig\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PageConfig\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PageConfig\"",
+        "sql": "CREATE TABLE \"public\".\"PageConfig\" (\n  \"content\" json NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"pageId\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"PageConfig_status_check_1b4a7b6b\" CHECK (\"status\" IN ('DRAFT', 'PUBLISHED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PageConfig\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PageConfig\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Website",
+    "label": "Create table \"Website\"",
+    "summary": "Creates table \"Website\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Website"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Website\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Website\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Website\"",
+        "sql": "CREATE TABLE \"public\".\"Website\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"publishedReleaseId\" text,\n  \"slug\" text NOT NULL,\n  \"templateKey\" text NOT NULL,\n  \"tenantId\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Website\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Website\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.WebsiteMigration",
+    "label": "Create table \"WebsiteMigration\"",
+    "summary": "Creates table \"WebsiteMigration\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "WebsiteMigration"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"WebsiteMigration\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"WebsiteMigration\"",
+        "sql": "CREATE TABLE \"public\".\"WebsiteMigration\" (\n  \"appliedAt\" timestamptz,\n  \"appliedBy\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"plan\" json NOT NULL,\n  \"proposedBy\" text NOT NULL,\n  \"resolutions\" json,\n  \"sourceReleaseId\" text NOT NULL,\n  \"status\" text DEFAULT 'PROPOSED' NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"WebsiteMigration_status_check_953d0064\" CHECK (\"status\" IN ('PROPOSED', 'APPLIED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"WebsiteMigration\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.WebsiteRelease",
+    "label": "Create table \"WebsiteRelease\"",
+    "summary": "Creates table \"WebsiteRelease\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "WebsiteRelease"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"WebsiteRelease\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteRelease\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"WebsiteRelease\"",
+        "sql": "CREATE TABLE \"public\".\"WebsiteRelease\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"publishedAt\" timestamptz,\n  \"releaseNumber\" int4 NOT NULL,\n  \"snapshot\" json NOT NULL,\n  \"snapshotHash\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"WebsiteRelease_status_check_4475a53d\" CHECK (\"status\" IN ('DRAFT', 'PUBLISHED', 'FAILED', 'ROLLED_BACK'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"WebsiteRelease\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteRelease\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.WebsiteTheme",
+    "label": "Create table \"WebsiteTheme\"",
+    "summary": "Creates table \"WebsiteTheme\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "WebsiteTheme"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"WebsiteTheme\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteTheme\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"WebsiteTheme\"",
+        "sql": "CREATE TABLE \"public\".\"WebsiteTheme\" (\n  \"accentColor\" text DEFAULT '#C9782F' NOT NULL,\n  \"bodyFont\" text DEFAULT 'Inter' NOT NULL,\n  \"headingFont\" text DEFAULT 'Source Serif 4' NOT NULL,\n  \"id\" text NOT NULL,\n  \"primaryColor\" text DEFAULT '#1F3A34' NOT NULL,\n  \"radius\" text DEFAULT 'md' NOT NULL,\n  \"secondaryColor\" text DEFAULT '#7A8B85' NOT NULL,\n  \"spacingScale\" text DEFAULT 'comfortable' NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"WebsiteTheme\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteTheme\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Dataset.Dataset_dataSourceId_slug_key",
+    "label": "Add unique constraint on \"Dataset\" (dataSourceId, slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Dataset_dataSourceId_slug_key",
+        "table": "Dataset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Dataset_dataSourceId_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Dataset_dataSourceId_slug_key",
+          "public",
+          "\"public\".\"Dataset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Dataset_dataSourceId_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"Dataset\" ADD CONSTRAINT \"Dataset_dataSourceId_slug_key\" UNIQUE (\"dataSourceId\", \"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Dataset_dataSourceId_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Dataset_dataSourceId_slug_key",
+          "public",
+          "\"public\".\"Dataset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Membership.Membership_actorId_tenantId_role_key",
+    "label": "Add unique constraint on \"Membership\" (actorId, tenantId, role)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Membership_actorId_tenantId_role_key",
+        "table": "Membership"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Membership_actorId_tenantId_role_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Membership_actorId_tenantId_role_key",
+          "public",
+          "\"public\".\"Membership\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Membership_actorId_tenantId_role_key\"",
+        "sql": "ALTER TABLE \"public\".\"Membership\" ADD CONSTRAINT \"Membership_actorId_tenantId_role_key\" UNIQUE (\"actorId\", \"tenantId\", \"role\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Membership_actorId_tenantId_role_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Membership_actorId_tenantId_role_key",
+          "public",
+          "\"public\".\"Membership\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Page.Page_websiteId_path_key",
+    "label": "Add unique constraint on \"Page\" (websiteId, path)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Page_websiteId_path_key",
+        "table": "Page"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Page_websiteId_path_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Page_websiteId_path_key",
+          "public",
+          "\"public\".\"Page\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Page_websiteId_path_key\"",
+        "sql": "ALTER TABLE \"public\".\"Page\" ADD CONSTRAINT \"Page_websiteId_path_key\" UNIQUE (\"websiteId\", \"path\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Page_websiteId_path_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Page_websiteId_path_key",
+          "public",
+          "\"public\".\"Page\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.PageConfig.PageConfig_pageId_version_key",
+    "label": "Add unique constraint on \"PageConfig\" (pageId, version)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "PageConfig_pageId_version_key",
+        "table": "PageConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"PageConfig_pageId_version_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PageConfig_pageId_version_key",
+          "public",
+          "\"public\".\"PageConfig\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"PageConfig_pageId_version_key\"",
+        "sql": "ALTER TABLE \"public\".\"PageConfig\" ADD CONSTRAINT \"PageConfig_pageId_version_key\" UNIQUE (\"pageId\", \"version\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"PageConfig_pageId_version_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PageConfig_pageId_version_key",
+          "public",
+          "\"public\".\"PageConfig\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Website.Website_slug_key",
+    "label": "Add unique constraint on \"Website\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Website_slug_key",
+        "table": "Website"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Website_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_slug_key",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Website_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"Website\" ADD CONSTRAINT \"Website_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Website_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_slug_key",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Website.Website_publishedReleaseId_key",
+    "label": "Add unique constraint on \"Website\" (publishedReleaseId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Website_publishedReleaseId_key",
+        "table": "Website"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Website_publishedReleaseId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_publishedReleaseId_key",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Website_publishedReleaseId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Website\" ADD CONSTRAINT \"Website_publishedReleaseId_key\" UNIQUE (\"publishedReleaseId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Website_publishedReleaseId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_publishedReleaseId_key",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Website.Website_id_tenantId_key",
+    "label": "Add unique constraint on \"Website\" (id, tenantId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Website_id_tenantId_key",
+        "table": "Website"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Website_id_tenantId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_id_tenantId_key",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Website_id_tenantId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Website\" ADD CONSTRAINT \"Website_id_tenantId_key\" UNIQUE (\"id\", \"tenantId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Website_id_tenantId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_id_tenantId_key",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.WebsiteRelease.WebsiteRelease_websiteId_releaseNumber_key",
+    "label": "Add unique constraint on \"WebsiteRelease\" (websiteId, releaseNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "WebsiteRelease_websiteId_releaseNumber_key",
+        "table": "WebsiteRelease"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"WebsiteRelease_websiteId_releaseNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteRelease_websiteId_releaseNumber_key",
+          "public",
+          "\"public\".\"WebsiteRelease\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"WebsiteRelease_websiteId_releaseNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"WebsiteRelease\" ADD CONSTRAINT \"WebsiteRelease_websiteId_releaseNumber_key\" UNIQUE (\"websiteId\", \"releaseNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"WebsiteRelease_websiteId_releaseNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteRelease_websiteId_releaseNumber_key",
+          "public",
+          "\"public\".\"WebsiteRelease\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.WebsiteTheme.WebsiteTheme_websiteId_key",
+    "label": "Add unique constraint on \"WebsiteTheme\" (websiteId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "WebsiteTheme_websiteId_key",
+        "table": "WebsiteTheme"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"WebsiteTheme_websiteId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteTheme_websiteId_key",
+          "public",
+          "\"public\".\"WebsiteTheme\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"WebsiteTheme_websiteId_key\"",
+        "sql": "ALTER TABLE \"public\".\"WebsiteTheme\" ADD CONSTRAINT \"WebsiteTheme_websiteId_key\" UNIQUE (\"websiteId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"WebsiteTheme_websiteId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteTheme_websiteId_key",
+          "public",
+          "\"public\".\"WebsiteTheme\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.DataSource.DataSource_websiteId_idx_aa7167ce",
+    "label": "Create index \"DataSource_websiteId_idx_aa7167ce\" on \"DataSource\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "DataSource_websiteId_idx_aa7167ce",
+        "table": "DataSource"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"DataSource_websiteId_idx_aa7167ce\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DataSource_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"DataSource_websiteId_idx_aa7167ce\"",
+        "sql": "CREATE INDEX \"DataSource_websiteId_idx_aa7167ce\" ON \"public\".\"DataSource\" (\"websiteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"DataSource_websiteId_idx_aa7167ce\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DataSource_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Dataset.Dataset_dataSourceId_idx_536a4d74",
+    "label": "Create index \"Dataset_dataSourceId_idx_536a4d74\" on \"Dataset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Dataset_dataSourceId_idx_536a4d74",
+        "table": "Dataset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Dataset_dataSourceId_idx_536a4d74\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Dataset_dataSourceId_idx_536a4d74\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Dataset_dataSourceId_idx_536a4d74\"",
+        "sql": "CREATE INDEX \"Dataset_dataSourceId_idx_536a4d74\" ON \"public\".\"Dataset\" (\"dataSourceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Dataset_dataSourceId_idx_536a4d74\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Dataset_dataSourceId_idx_536a4d74\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Page.Page_websiteId_tenantId_idx_ac8953f0",
+    "label": "Create index \"Page_websiteId_tenantId_idx_ac8953f0\" on \"Page\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Page_websiteId_tenantId_idx_ac8953f0",
+        "table": "Page"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Page_websiteId_tenantId_idx_ac8953f0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Page_websiteId_tenantId_idx_ac8953f0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Page_websiteId_tenantId_idx_ac8953f0\"",
+        "sql": "CREATE INDEX \"Page_websiteId_tenantId_idx_ac8953f0\" ON \"public\".\"Page\" (\"websiteId\", \"tenantId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Page_websiteId_tenantId_idx_ac8953f0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Page_websiteId_tenantId_idx_ac8953f0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PageConfig.PageConfig_pageId_idx_8caaba4f",
+    "label": "Create index \"PageConfig_pageId_idx_8caaba4f\" on \"PageConfig\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PageConfig_pageId_idx_8caaba4f",
+        "table": "PageConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PageConfig_pageId_idx_8caaba4f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PageConfig_pageId_idx_8caaba4f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PageConfig_pageId_idx_8caaba4f\"",
+        "sql": "CREATE INDEX \"PageConfig_pageId_idx_8caaba4f\" ON \"public\".\"PageConfig\" (\"pageId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PageConfig_pageId_idx_8caaba4f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PageConfig_pageId_idx_8caaba4f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WebsiteMigration.WebsiteMigration_sourceReleaseId_idx_7dff7977",
+    "label": "Create index \"WebsiteMigration_sourceReleaseId_idx_7dff7977\" on \"WebsiteMigration\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WebsiteMigration_sourceReleaseId_idx_7dff7977",
+        "table": "WebsiteMigration"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WebsiteMigration_sourceReleaseId_idx_7dff7977\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration_sourceReleaseId_idx_7dff7977\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WebsiteMigration_sourceReleaseId_idx_7dff7977\"",
+        "sql": "CREATE INDEX \"WebsiteMigration_sourceReleaseId_idx_7dff7977\" ON \"public\".\"WebsiteMigration\" (\"sourceReleaseId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WebsiteMigration_sourceReleaseId_idx_7dff7977\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration_sourceReleaseId_idx_7dff7977\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WebsiteMigration.WebsiteMigration_websiteId_createdAt_idx_5579a8b3",
+    "label": "Create index \"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\" on \"WebsiteMigration\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WebsiteMigration_websiteId_createdAt_idx_5579a8b3",
+        "table": "WebsiteMigration"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\"",
+        "sql": "CREATE INDEX \"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\" ON \"public\".\"WebsiteMigration\" (\"websiteId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration_websiteId_createdAt_idx_5579a8b3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WebsiteMigration.WebsiteMigration_websiteId_idx_aa7167ce",
+    "label": "Create index \"WebsiteMigration_websiteId_idx_aa7167ce\" on \"WebsiteMigration\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WebsiteMigration_websiteId_idx_aa7167ce",
+        "table": "WebsiteMigration"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WebsiteMigration_websiteId_idx_aa7167ce\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WebsiteMigration_websiteId_idx_aa7167ce\"",
+        "sql": "CREATE INDEX \"WebsiteMigration_websiteId_idx_aa7167ce\" ON \"public\".\"WebsiteMigration\" (\"websiteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WebsiteMigration_websiteId_idx_aa7167ce\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteMigration_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WebsiteRelease.WebsiteRelease_websiteId_idx_aa7167ce",
+    "label": "Create index \"WebsiteRelease_websiteId_idx_aa7167ce\" on \"WebsiteRelease\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WebsiteRelease_websiteId_idx_aa7167ce",
+        "table": "WebsiteRelease"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WebsiteRelease_websiteId_idx_aa7167ce\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteRelease_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WebsiteRelease_websiteId_idx_aa7167ce\"",
+        "sql": "CREATE INDEX \"WebsiteRelease_websiteId_idx_aa7167ce\" ON \"public\".\"WebsiteRelease\" (\"websiteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WebsiteRelease_websiteId_idx_aa7167ce\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebsiteRelease_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.DataSource.DataSource_websiteId_fkey",
+    "label": "Add foreign key \"DataSource_websiteId_fkey\" on \"DataSource\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "DataSource_websiteId_fkey",
+        "table": "DataSource"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"DataSource_websiteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DataSource_websiteId_fkey",
+          "public",
+          "\"public\".\"DataSource\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"DataSource_websiteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"DataSource\"\nADD CONSTRAINT \"DataSource_websiteId_fkey\"\nFOREIGN KEY (\"websiteId\")\nREFERENCES \"public\".\"Website\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"DataSource_websiteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DataSource_websiteId_fkey",
+          "public",
+          "\"public\".\"DataSource\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Dataset.Dataset_dataSourceId_fkey",
+    "label": "Add foreign key \"Dataset_dataSourceId_fkey\" on \"Dataset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Dataset_dataSourceId_fkey",
+        "table": "Dataset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Dataset_dataSourceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Dataset_dataSourceId_fkey",
+          "public",
+          "\"public\".\"Dataset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Dataset_dataSourceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Dataset\"\nADD CONSTRAINT \"Dataset_dataSourceId_fkey\"\nFOREIGN KEY (\"dataSourceId\")\nREFERENCES \"public\".\"DataSource\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Dataset_dataSourceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Dataset_dataSourceId_fkey",
+          "public",
+          "\"public\".\"Dataset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Page.Page_websiteId_tenantId_fkey",
+    "label": "Add foreign key \"Page_websiteId_tenantId_fkey\" on \"Page\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Page_websiteId_tenantId_fkey",
+        "table": "Page"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Page_websiteId_tenantId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Page_websiteId_tenantId_fkey",
+          "public",
+          "\"public\".\"Page\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Page_websiteId_tenantId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Page\"\nADD CONSTRAINT \"Page_websiteId_tenantId_fkey\"\nFOREIGN KEY (\"websiteId\", \"tenantId\")\nREFERENCES \"public\".\"Website\" (\"id\", \"tenantId\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Page_websiteId_tenantId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Page_websiteId_tenantId_fkey",
+          "public",
+          "\"public\".\"Page\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PageConfig.PageConfig_pageId_fkey",
+    "label": "Add foreign key \"PageConfig_pageId_fkey\" on \"PageConfig\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PageConfig_pageId_fkey",
+        "table": "PageConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PageConfig_pageId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PageConfig_pageId_fkey",
+          "public",
+          "\"public\".\"PageConfig\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PageConfig_pageId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PageConfig\"\nADD CONSTRAINT \"PageConfig_pageId_fkey\"\nFOREIGN KEY (\"pageId\")\nREFERENCES \"public\".\"Page\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PageConfig_pageId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PageConfig_pageId_fkey",
+          "public",
+          "\"public\".\"PageConfig\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Website.Website_publishedReleaseId_fkey",
+    "label": "Add foreign key \"Website_publishedReleaseId_fkey\" on \"Website\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Website_publishedReleaseId_fkey",
+        "table": "Website"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Website_publishedReleaseId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_publishedReleaseId_fkey",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Website_publishedReleaseId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Website\"\nADD CONSTRAINT \"Website_publishedReleaseId_fkey\"\nFOREIGN KEY (\"publishedReleaseId\")\nREFERENCES \"public\".\"WebsiteRelease\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Website_publishedReleaseId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_publishedReleaseId_fkey",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WebsiteMigration.WebsiteMigration_websiteId_fkey",
+    "label": "Add foreign key \"WebsiteMigration_websiteId_fkey\" on \"WebsiteMigration\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WebsiteMigration_websiteId_fkey",
+        "table": "WebsiteMigration"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WebsiteMigration_websiteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteMigration_websiteId_fkey",
+          "public",
+          "\"public\".\"WebsiteMigration\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WebsiteMigration_websiteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WebsiteMigration\"\nADD CONSTRAINT \"WebsiteMigration_websiteId_fkey\"\nFOREIGN KEY (\"websiteId\")\nREFERENCES \"public\".\"Website\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WebsiteMigration_websiteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteMigration_websiteId_fkey",
+          "public",
+          "\"public\".\"WebsiteMigration\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WebsiteMigration.WebsiteMigration_sourceReleaseId_fkey",
+    "label": "Add foreign key \"WebsiteMigration_sourceReleaseId_fkey\" on \"WebsiteMigration\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WebsiteMigration_sourceReleaseId_fkey",
+        "table": "WebsiteMigration"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WebsiteMigration_sourceReleaseId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteMigration_sourceReleaseId_fkey",
+          "public",
+          "\"public\".\"WebsiteMigration\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WebsiteMigration_sourceReleaseId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WebsiteMigration\"\nADD CONSTRAINT \"WebsiteMigration_sourceReleaseId_fkey\"\nFOREIGN KEY (\"sourceReleaseId\")\nREFERENCES \"public\".\"WebsiteRelease\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WebsiteMigration_sourceReleaseId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteMigration_sourceReleaseId_fkey",
+          "public",
+          "\"public\".\"WebsiteMigration\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WebsiteRelease.WebsiteRelease_websiteId_fkey",
+    "label": "Add foreign key \"WebsiteRelease_websiteId_fkey\" on \"WebsiteRelease\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WebsiteRelease_websiteId_fkey",
+        "table": "WebsiteRelease"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WebsiteRelease_websiteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteRelease_websiteId_fkey",
+          "public",
+          "\"public\".\"WebsiteRelease\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WebsiteRelease_websiteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WebsiteRelease\"\nADD CONSTRAINT \"WebsiteRelease_websiteId_fkey\"\nFOREIGN KEY (\"websiteId\")\nREFERENCES \"public\".\"Website\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WebsiteRelease_websiteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteRelease_websiteId_fkey",
+          "public",
+          "\"public\".\"WebsiteRelease\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WebsiteTheme.WebsiteTheme_websiteId_fkey",
+    "label": "Add foreign key \"WebsiteTheme_websiteId_fkey\" on \"WebsiteTheme\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WebsiteTheme_websiteId_fkey",
+        "table": "WebsiteTheme"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WebsiteTheme_websiteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteTheme_websiteId_fkey",
+          "public",
+          "\"public\".\"WebsiteTheme\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WebsiteTheme_websiteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WebsiteTheme\"\nADD CONSTRAINT \"WebsiteTheme_websiteId_fkey\"\nFOREIGN KEY (\"websiteId\")\nREFERENCES \"public\".\"Website\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WebsiteTheme_websiteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebsiteTheme_websiteId_fkey",
+          "public",
+          "\"public\".\"WebsiteTheme\""
+        ]
+      }
+    ]
+  }
+]

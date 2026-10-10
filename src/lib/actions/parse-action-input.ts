@@ -1,4 +1,4 @@
-import { ROOT_FIELD, validationError, fieldPath } from '@lib/errors';
+import { ROOT_FIELD, fieldPath, validationError } from '@lib/errors';
 import type { ValidationAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';

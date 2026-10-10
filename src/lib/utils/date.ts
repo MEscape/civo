@@ -4,6 +4,9 @@
  * presentation (i18n.md), so every formatter takes the zone explicitly.
  */
 
+export const MS_PER_MINUTE = 60_000;
+export const MS_PER_DAY = 86_400_000;
+
 export type DateInput = Date | string | number;
 
 function toDate(input: DateInput): Date {

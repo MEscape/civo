@@ -35,7 +35,7 @@ const ALLOWED_PATHS: ReadonlyArray<{ match: (path: string) => boolean; why: stri
     why: 'generated from prisma/schema.prisma, which stores theme defaults',
   },
   {
-    match: (p) => p.startsWith('modules/auth/infrastructure/mail/'),
+    match: (p) => p === 'lib/mail/email-layout.ts',
     why: 'mail clients do not resolve CSS custom properties',
   },
   {

@@ -101,6 +101,10 @@
           "migrations": {
             "title": "Migrationen",
             "description": "Veröffentlichte Seiten mit den aktuellen Komponentenversionen abgleichen."
+          },
+          "bookings": {
+            "title": "Buchungen",
+            "description": "Termine, Räume und Plätze einrichten und sehen, wer was gebucht hat."
           }
         }
       },

@@ -1,9 +1,11 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    // Needs a database; run by `npm run test:integration` with its own configuration.
+    exclude: [...configDefaults.exclude, '**/*.integration.test.ts'],
     setupFiles: ['./vitest.setup.ts'],
     // The server environment is validated when `@lib/config` is first imported, so any
     // test that touches module code needs a valid one. These are placeholders, not services:

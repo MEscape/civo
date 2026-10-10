@@ -1,5 +1,7 @@
 import { AlertBanner } from '../civic/alert-banner/alert-banner';
 import { AlertBannerSkeleton } from '../civic/alert-banner/alert-banner.skeleton';
+import { BookingBlock } from '../civic/booking/booking-block';
+import { BookingBlockSkeleton } from '../civic/booking/booking-block.skeleton';
 import { ContactCard } from '../civic/contact-card/contact-card';
 import { ContactCardSkeleton } from '../civic/contact-card/contact-card.skeleton';
 import { CouncilBlock } from '../civic/council-block/council-block';
@@ -169,6 +171,12 @@ export const COMPONENT_IMPLEMENTATIONS = {
       <KpiGrid props={props} context={context} loadContent={loadContent} />
     ),
     skeleton: <KpiGridSkeleton />,
+  }),
+  booking: implementComponent('booking', {
+    render: ({ props, context, bookingSection }) => (
+      <BookingBlock props={props} context={context} bookingSection={bookingSection} />
+    ),
+    skeleton: <BookingBlockSkeleton />,
   }),
   map: implementComponent('map', {
     render: ({ props, context, loadContent, mapSection }) => (

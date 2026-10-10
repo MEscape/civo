@@ -8,12 +8,20 @@ This directory contains the core shared infrastructure and utilities for the app
 
 ### `@lib/config` (Environment Variables)
 
-Centralized environment validation via Zod. Do not use `process.env` directly in the application.
+Centralized environment validation via Zod. Do not use `process.env` directly in the application. Each entry point validates once, when first imported.
 
-- `serverEnv`: Validated server-side environment variables.
-- `publicEnv`: Validated client-side environment variables (e.g. `NEXT_PUBLIC_*`).
+- `publicEnv` (`@lib/config`): Validated `NEXT_PUBLIC_*` variables. Safe in any bundle.
+- `serverEnv` (`@lib/config/server`): Validated server variables, including secrets. The module imports `server-only`, so importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. Authentication variables (`AUTH_SECRET`, `AUTH_DATABASE_URL`) are required only while `AUTH_ENABLED=true`; mail settings (`MAIL_*`) are required as soon as a provider is chosen, and production needs `MAIL_PROVIDER=resend`; `DATABASE_URL` is always required. Production refuses `AUTH_ENABLED=false`.
 - `APP_IDENTITY`: The product's name and the literal theme/background colours browsers need (`theme-color`, manifest). Not translated; colours are pinned to the `globals.css` tokens by a test.
 - **Types**: `ServerEnv`, `PublicEnv`.
+
+### `@lib/mail` (Outgoing E-mail)
+
+How a message leaves, shared by every module that sends one (sign-in, bookings). Modules keep their own wording and their own port; they share the transport and the look.
+
+- `renderEmail({ locale, title, intro, facts?, action?, outro })` (`@lib/mail`): the platform layout as plain text and HTML. Every dynamic value is escaped; callers pass plain text.
+- `MailTransport`, `OutboundMail`, `mailDeliveryFailed` (`@lib/mail`): the delivery contract and its one error.
+- `getMailTransport()` (`@lib/mail/server`, server-only): the process's transport (SMTP or Resend, from `MAIL_*`), or `null` while `MAIL_PROVIDER=none`. `resolveMailLocale()` reads the request's language.
 
 ### `@lib/clock` (Time Port)
 
@@ -30,6 +38,7 @@ Prisma database client singleton and error mapping.
 - `disconnectDb(): Promise<void>`
 - `createPersistenceFailures(config: PersistenceFailureConfig)`: Creates a repository's failure translators (`infraOnly`, `orConflict`, `requireRow`). Repositories use these, never `mapPrismaError` directly.
 - `mapPrismaError(thrown: unknown, context: { code: string; message: string }): AppError`: The classifier behind them.
+- Importing `@lib/db` installs the `temporal-polyfill` global when the runtime has no native `Temporal`. Prisma 8's `timestamptz` codec and `now()` defaults need the global; Node 24 (`.nvmrc`) lacks it, Node 26 has it. Nothing else installs it, so any code that reads or writes through Prisma must reach the client through `@lib/db`.
 - `InstantRecord`: Interface for Temporal.Instant used by Prisma 8 for reads.
 - `instantToDate(instant: InstantRecord): Date`: Converts Prisma 8 Temporal reads to `Date`.
 - `dateToInstant(date: Date): string`: Converts `Date` to ISO-8601 string for Prisma 8 writes.
@@ -58,7 +67,7 @@ Typed application errors (Rule 5: Use strongly typed results and errors).
   - `ROOT_FIELD`: Key for validation errors that belong to no single field (`'_form'`).
   - `NestedKeyOf<ObjectType>`: Generates a union of all dotted paths for a nested object type.
   - `fieldPath<T>(...segments: T): JoinPath<T>`: Builds a strictly typed dotted field path (e.g., for `react-hook-form`).
-  - `escalate(error: AppError): never`: Logs and throws an unexpected or infrastructure error to the nearest `error.tsx` boundary.
+  - `escalate(error: AppError): never` (from `@lib/errors/escalate`, server-only): Logs and throws an unexpected or infrastructure error to the nearest `error.tsx` boundary. It is not in the `@lib/errors` barrel, which Client Components import.
 
 ### `@lib/fonts` (Typography)
 
@@ -69,7 +78,7 @@ Next.js font configuration and CSS variables.
 
 ### `@lib/logger` (Observability)
 
-Centralized logging via Pino. Do not use `console.log`.
+Centralized, server-only logging. Do not use `console.log`. Client Components never log through it.
 
 - `logger`: The main logger instance with levels (`debug`, `info`, `warn`, `error`).
 - `logger.withContext(context: LogContext): Logger`
@@ -109,7 +118,6 @@ Builders for route metadata. Pages never assemble canonical URLs or robots direc
 - `buildLocalizedMetadata({ locale, pathname, title, description })`: Translated platform pages: canonical, hreflang alternates, Open Graph with locale.
 - `buildContentMetadata({ pathname, title, description, siteName })`: Untranslated content (published municipal sites): one canonical URL in the default locale.
 - `buildPrivateMetadata(title)`: Pages behind sign-in or single-use emailed links: title and `noindex` only.
-- `buildAlternateLanguages(pathname)`: hreflang map including `x-default` (also used by the sitemap).
 - `toLocalizedPath(locale, pathname)`: `('de', '/')` → `/de`.
 
 ### `@lib/utils` (Pure Utility Functions)

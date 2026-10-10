@@ -1,9 +1,44 @@
-import { isUniqueConstraintViolation, SqlConnectionError } from '@prisma/orm-family-sql/errors';
+import {
+  isUniqueConstraintViolation,
+  SqlConnectionError,
+  SqlQueryError,
+} from '@prisma/orm-family-sql/errors';
 
 import { conflictError, infrastructureError, type AppError } from '@lib/errors';
 import { logger } from '@lib/logger';
 
 const dbLogger = logger.withContext({ module: 'infrastructure.prisma' });
+
+/** Postgres `exclusion_violation`: a row was refused by an `EXCLUDE` constraint. */
+const EXCLUSION_VIOLATION_SQLSTATE = '23P01';
+
+/**
+ * The kinds of `AppError`. A driver error also carries a `kind` field
+ * (`'sql_query'`), so the mere presence of one does not make a value an
+ * `AppError`; only one of these values does.
+ */
+const APP_ERROR_KINDS: ReadonlySet<unknown> = new Set([
+  'validation',
+  'not_found',
+  'conflict',
+  'unauthorized',
+  'forbidden',
+  'infrastructure',
+  'unexpected',
+]);
+
+function isAppError(thrown: unknown): thrown is AppError {
+  return (
+    typeof thrown === 'object' &&
+    thrown !== null &&
+    'kind' in thrown &&
+    APP_ERROR_KINDS.has(thrown.kind)
+  );
+}
+
+function isExclusionViolation(error: unknown): boolean {
+  return SqlQueryError.is(error) && error.sqlState === EXCLUSION_VIOLATION_SQLSTATE;
+}
 
 /**
  * Returns the thrown value and its direct cause. The runtime may hand a
@@ -40,7 +75,9 @@ function withCause(thrown: unknown): readonly unknown[] {
  *   resolves to `null` and is handled by `requireRow` in
  *   `persistence-failures.ts`, so every ORM error is an infrastructure failure.
  *
- * Only unique violations become `conflictError`. Foreign-key, not-null
+ * Only unique and exclusion violations become `conflictError` (an exclusion
+ * constraint is a unique constraint over ranges: two valid writes that
+ * collide, such as two bookings for the same time). Foreign-key, not-null
  * and check violations are deliberately not mapped to a conflict: they
  * usually indicate a caller bug or a missing invariant in the domain, not
  * a legitimate race between two valid writes, so they surface as
@@ -53,13 +90,13 @@ export function mapPrismaError(
   thrown: unknown,
   context: { code: string; message: string },
 ): AppError {
-  if (typeof thrown === 'object' && thrown !== null && 'kind' in thrown) {
-    return thrown as AppError;
+  if (isAppError(thrown)) {
+    return thrown;
   }
 
   const candidates = withCause(thrown);
 
-  if (candidates.some(isUniqueConstraintViolation)) {
+  if (candidates.some(isUniqueConstraintViolation) || candidates.some(isExclusionViolation)) {
     return conflictError(context.code, context.message);
   }
 

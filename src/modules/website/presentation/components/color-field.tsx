@@ -47,11 +47,7 @@ export function ColorField({ control, name, label }: ColorFieldProps) {
         <Input
           id={id}
           className="flex-1"
-          name={field.name}
-          ref={field.ref}
-          value={field.value}
-          onChange={field.onChange}
-          onBlur={field.onBlur}
+          {...field}
           aria-invalid={errorCode ? true : undefined}
           aria-describedby={errorCode ? errorId : undefined}
         />

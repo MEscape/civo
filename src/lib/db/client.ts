@@ -1,6 +1,10 @@
 import postgres from '@prisma/orm-postgres/runtime';
+// Prisma 8 reads and writes `DateTime` through the global `Temporal`, which Node 24 (pinned in
+// `.nvmrc`) lacks. The `global` entry installs the polyfill only when there is no native
+// implementation, and it must run before the first query decodes a row or fills a `now()` default.
+import 'temporal-polyfill/global';
 
-import { serverEnv } from '@lib/config';
+import { serverEnv } from '@lib/config/server';
 import { logger } from '@lib/logger';
 
 import contractJson from './contract.json' with { type: 'json' };

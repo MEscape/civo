@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // 1. Mock the configuration to control database connection parameters
-vi.mock('@lib/config', () => ({
+vi.mock('@lib/config/server', () => ({
   serverEnv: {
     DATABASE_URL: 'postgresql://user:password@localhost:5432/mydb',
     DATABASE_POOL_SIZE: 15,
@@ -81,7 +81,7 @@ describe('Database infrastructure adapter', () => {
   });
 
   it('does not cache the client instance on globalThis in production environments', async () => {
-    const { serverEnv } = await import('@lib/config');
+    const { serverEnv } = await import('@lib/config/server');
     serverEnv.NODE_ENV = 'production';
 
     await import('@lib/db');

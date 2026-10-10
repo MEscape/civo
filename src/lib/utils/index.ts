@@ -11,6 +11,8 @@ export {
   unique,
   literalGuard,
   insertItem,
+  removeAt,
+  replaceAt,
 } from './array';
 
 export {
@@ -113,3 +115,18 @@ export { cn } from './cn';
 export { type Brand } from './brand';
 
 export { parseHexColor, toHexColor, type RgbColor } from './color';
+
+export {
+  arrayOf,
+  isBoolean,
+  isFiniteNumber,
+  isInteger,
+  isString,
+  nullable,
+  objectOf,
+  oneOf,
+  optional,
+} from './shape';
+export type { Guard } from './shape';
+
+export { MS_PER_DAY, MS_PER_MINUTE } from './date';

@@ -1,0 +1,128 @@
+[
+  {
+    "id": "checkConstraint.Booking.Booking_group_size_rule_69eea88d",
+    "label": "Add check constraint \"Booking_group_size_rule_69eea88d\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Booking_group_size_rule_69eea88d",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Booking_group_size_rule_69eea88d\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_group_size_rule_69eea88d",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Booking_group_size_rule_69eea88d\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD CONSTRAINT \"Booking_group_size_rule_69eea88d\" CHECK (\"participants\" >= 1 AND \"participants\" <= \"sessionCapacity\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Booking_group_size_rule_69eea88d\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_group_size_rule_69eea88d",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Booking.Booking_span_check_956c7fbe",
+    "label": "Add check constraint \"Booking_span_check_956c7fbe\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Booking_span_check_956c7fbe",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Booking_span_check_956c7fbe\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_span_check_956c7fbe",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Booking_span_check_956c7fbe\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD CONSTRAINT \"Booking_span_check_956c7fbe\" CHECK (\"start\" < \"end\" AND \"occupiedStart\" <= \"start\" AND \"end\" <= \"occupiedEnd\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Booking_span_check_956c7fbe\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_span_check_956c7fbe",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.BookingResource.BookingResource_span_check_62352ed1",
+    "label": "Add check constraint \"BookingResource_span_check_62352ed1\" on \"BookingResource\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "BookingResource_span_check_62352ed1",
+        "table": "BookingResource"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"BookingResource_span_check_62352ed1\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BookingResource_span_check_62352ed1",
+          "public",
+          "\"public\".\"BookingResource\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"BookingResource_span_check_62352ed1\"",
+        "sql": "ALTER TABLE \"public\".\"BookingResource\" ADD CONSTRAINT \"BookingResource_span_check_62352ed1\" CHECK (\"occupiedStart\" < \"occupiedEnd\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"BookingResource_span_check_62352ed1\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BookingResource_span_check_62352ed1",
+          "public",
+          "\"public\".\"BookingResource\""
+        ]
+      }
+    ]
+  }
+]
