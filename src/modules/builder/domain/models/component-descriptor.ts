@@ -6,6 +6,8 @@ import type {
   PropGroup,
 } from '@modules/component-platform/client';
 
+import type { JsonValue } from '@lib/utils';
+
 import type { PageNodeProps } from './page-node';
 
 /*
@@ -49,10 +51,16 @@ export interface PropFieldDescriptor {
   readonly group: PropGroup | null;
   /** Only meaningful for `select`; empty otherwise. */
   readonly options: readonly PropOptionDescriptor[];
-  /** Limits of a `number` control, as the platform declares them. */
+  /** Limits of a `number` control (or the length of a `datasets` list), as the platform declares them. */
   readonly bounds: CatalogBoundsView | null;
-  /** The content kind a `dataset` control filters by. */
+  /** The content kind the dataset-reading controls (`dataset`, `datasets`, `category`) filter by. */
   readonly canonicalKind: ContentKind | null;
+  /**
+   * What the page renders while the stored value is missing. The panel shows
+   * it as the current value, so a control is never blank for a prop that has
+   * a default. `null`: no default.
+   */
+  readonly defaultValue: JsonValue | null;
   /** The fields of one entry of an `items` control; empty otherwise. */
   readonly itemFields: readonly PropItemFieldDescriptor[];
 }
@@ -69,6 +77,8 @@ export interface ComponentDescriptor {
   readonly category: ComponentCategory;
   readonly labelKey: string;
   readonly descriptionKey: string;
+  /** Translation key of the sample content the palette preview renders from (see `ComponentCatalogEntry`). */
+  readonly sampleKey: string;
   readonly acceptsChildren: boolean;
   /**
    * Child types this component accepts. The adapter precomputes it from the

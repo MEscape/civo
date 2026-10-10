@@ -27,6 +27,7 @@ function toFieldDescriptor(field: CatalogFieldView): PropFieldDescriptor {
     })),
     bounds: field.bounds,
     canonicalKind: field.canonicalKind,
+    defaultValue: field.defaultValue,
     itemFields: field.itemFields.map((itemField) => ({
       key: itemField.key,
       labelKey: itemField.labelKey,
@@ -54,6 +55,7 @@ function toDescriptor(
     category: entry.category,
     labelKey: entry.labelKey,
     descriptionKey: entry.descriptionKey,
+    sampleKey: entry.sampleKey,
     acceptsChildren: entry.canHaveChildren,
     // The platform's own nesting rule, evaluated once and shipped as data.
     allowedChildTypes: all

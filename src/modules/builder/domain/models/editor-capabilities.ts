@@ -1,9 +1,5 @@
-import { literalGuard } from '@lib/utils';
-
 export const EDITOR_MODES = ['internal', 'municipality'] as const;
 export type EditorMode = (typeof EDITOR_MODES)[number];
-
-export const isEditorMode = literalGuard(EDITOR_MODES);
 
 export const EDITOR_CAPABILITIES = [
   'editStructure', // add, remove, reorder components

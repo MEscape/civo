@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { useMessages } from '@i18n/client';
+
 import { createNodeFromBlueprint } from '../../application/contracts/editor-model';
-import { useBuilderSession } from '../components/builder-session-context';
+import { buildPreviewBlueprint, readPreviewSample } from '../properties/preview-blueprint';
 import { requestDraftRender } from '../render/request-draft-render';
 import { useBuilderSelector } from '../state/builder-hooks';
 import { selectPageId } from '../state/builder-selectors';
+import { useBuilderSession } from '../state/builder-session-context';
 
 const HOVER_INTENT_MS = 300;
 /** Fixed, valid seed: a preview node's id never reaches the document. */
@@ -24,8 +27,10 @@ const LOADING: PreviewState = { node: null, isLoading: true, errorCode: null };
 
 /**
  * A live preview of one component, rendered by the same pipeline as the
- * canvas from the component's own default blueprint, so data-aware
- * components preview with real data. Successful results are cached for
+ * canvas from the component's default blueprint plus its translated sample
+ * content (components whose defaults are empty, like an accordion, would
+ * otherwise preview as nothing). Data-aware components preview their sample
+ * data, never a website's real data, so no data source is needed. Successful results are cached for
  * the lifetime of the palette (owner: this hook instance; it disappears
  * with the editing session); failures are retried on the next hover. A
  * short hover-intent delay stops a sweep across the list from costing
@@ -34,6 +39,7 @@ const LOADING: PreviewState = { node: null, isLoading: true, errorCode: null };
 export function useComponentPreview(componentType: string | null): PreviewState {
   const pageId = useBuilderSelector(selectPageId);
   const { catalog } = useBuilderSession();
+  const messages = useMessages();
   const [entries, setEntries] = useState<ReadonlyMap<string, PreviewEntry>>(new Map());
   const cached = componentType === null ? undefined : entries.get(componentType);
   const needsFetch = componentType !== null && (cached === undefined || 'errorCode' in cached);
@@ -56,7 +62,13 @@ export function useComponentPreview(componentType: string | null): PreviewState 
         return;
       }
 
-      createNodeFromBlueprint(descriptor.blueprint, PREVIEW_ID_SEED).match(
+      const blueprint = buildPreviewBlueprint(
+        descriptor,
+        readPreviewSample(messages, descriptor.sampleKey),
+        (type) => catalog.describe(type),
+      );
+
+      createNodeFromBlueprint(blueprint, PREVIEW_ID_SEED).match(
         (node) => {
           void requestDraftRender(pageId, [node]).then((outcome) => {
             remember(outcome.ok ? { node: outcome.node } : { errorCode: outcome.errorCode });
@@ -72,7 +84,7 @@ export function useComponentPreview(componentType: string | null): PreviewState 
       isCurrent = false;
       clearTimeout(timeout);
     };
-  }, [componentType, needsFetch, pageId, catalog]);
+  }, [componentType, needsFetch, pageId, catalog, messages]);
 
   if (componentType === null) {
     return IDLE;

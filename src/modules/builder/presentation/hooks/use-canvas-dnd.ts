@@ -2,10 +2,10 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { RefObject } from 'react';
 
 import { hasCapability } from '../../application/contracts/editor-model';
-import { useBuilderSession } from '../components/builder-session-context';
 import { createCanvasDragController } from '../dnd/canvas-drag-controller';
 import { useBuilderDispatch, useBuilderSelector, useBuilderStore } from '../state/builder-hooks';
 import { selectMode } from '../state/builder-selectors';
+import { useBuilderSession } from '../state/builder-session-context';
 import { applyDrop } from '../state/editing-thunks';
 
 import { useComponentText } from './use-component-text';

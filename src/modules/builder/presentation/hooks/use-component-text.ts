@@ -1,7 +1,7 @@
 import { useMessages } from '@i18n/client';
 
-import { useBuilderSession } from '../components/builder-session-context';
 import { createComponentText } from '../properties/component-text';
+import { useBuilderSession } from '../state/builder-session-context';
 
 import type { ComponentText } from '../properties/component-text';
 
