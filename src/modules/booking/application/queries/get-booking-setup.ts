@@ -12,7 +12,7 @@ import {
 import { toLocationView, toResourceView, toServiceView } from '../booking-view-mappers';
 
 import type { BookingDependencies } from '../booking-dependencies';
-import type { BookingSetupView } from '../contracts/booking-views';
+import type { BookingSetupView } from '../contracts/setup-views';
 
 /** Everything an administrator configures for a website: its locations, resources and services. */
 export class GetBookingSetup {

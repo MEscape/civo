@@ -60,11 +60,10 @@ function requireBookable(
 export function loadBookableContext(
   deps: ContextDependencies,
   scope: { readonly tenantId: TenantId; readonly websiteId: WebsiteId },
-  rawServiceId: string,
-  rawLocationId: string,
+  choice: { readonly serviceId: string; readonly locationId: string },
 ): AppResultAsync<BookableContext, BookableContextError> {
-  return parseBookableServiceId(rawServiceId).asyncAndThen((serviceId) =>
-    parseBookingLocationId(rawLocationId).asyncAndThen((locationId) =>
+  return parseBookableServiceId(choice.serviceId).asyncAndThen((serviceId) =>
+    parseBookingLocationId(choice.locationId).asyncAndThen((locationId) =>
       deps.services
         .findById(serviceId, scope.tenantId)
         .andThen((service) =>

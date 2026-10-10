@@ -30,8 +30,12 @@ export class RescheduleOwnBooking {
     const { audit, clock } = this.deps;
 
     return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
-      loadOwnBooking(this.deps, scope, input.reference, input.email).andThen((parts) =>
-        rescheduleWithPolicy(this.deps, scope.tenantId, parts, input.start, 'customer')
+      loadOwnBooking(this.deps, scope, input).andThen((parts) =>
+        rescheduleWithPolicy(this.deps, parts, {
+          tenantId: scope.tenantId,
+          start: input.start,
+          actor: 'customer',
+        })
           .map((moved) => {
             audit.record({
               type: 'booking.rescheduled',
@@ -40,7 +44,7 @@ export class RescheduleOwnBooking {
               bookingId: moved.id,
               by: 'customer',
             });
-            return toBookingView(moved, parts.service, parts.location, clock.now());
+            return toBookingView({ ...parts, booking: moved }, clock.now());
           })
           .mapErr((error) => {
             if (error.code === 'booking.conflict') {

@@ -8,7 +8,7 @@ import { checkServiceReference } from '../services/reference-checks';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { UpdateBookableServiceInput } from '../contracts/booking-inputs';
-import type { ServiceView } from '../contracts/booking-views';
+import type { ServiceView } from '../contracts/setup-views';
 import type { LoadServiceError } from '../load-authorized-service';
 
 /**
@@ -31,7 +31,11 @@ export class UpdateBookableService {
       ({ actor, service }) =>
         createBookableServiceDraft({ ...input, websiteId: service.websiteId })
           .asyncAndThen((draft) =>
-            checkServiceReference(this.deps, actor.tenantId, service.websiteId, draft),
+            checkServiceReference(
+              this.deps,
+              { tenantId: actor.tenantId, websiteId: service.websiteId },
+              draft,
+            ),
           )
           .andThen((draft) => services.update(service.id, actor.tenantId, draft))
           .map((updated) => {

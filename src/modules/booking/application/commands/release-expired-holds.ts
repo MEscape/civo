@@ -33,7 +33,11 @@ export class ReleaseExpiredHolds {
     return authorization.requireInTenant('booking.manage').andThen((actor) =>
       parseWebsiteId(input.websiteId).asyncAndThen((websiteId) =>
         bookings
-          .releaseExpiredHolds(websiteId, actor.tenantId, clock.now(), MAX_RELEASED_HOLDS_PER_RUN)
+          .releaseExpiredHolds(
+            { websiteId, tenantId: actor.tenantId },
+            clock.now(),
+            MAX_RELEASED_HOLDS_PER_RUN,
+          )
           .map((released) => {
             if (released > 0) {
               audit.record({

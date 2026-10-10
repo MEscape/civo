@@ -8,7 +8,7 @@ import { checkLocationReference } from '../services/reference-checks';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { UpdateBookableResourceInput } from '../contracts/booking-inputs';
-import type { ResourceView } from '../contracts/booking-views';
+import type { ResourceView } from '../contracts/setup-views';
 import type { LoadResourceError } from '../load-authorized-resource';
 
 /** Replaces a resource's configuration: schedule, breaks, absences, skills, capacity. The website is fixed. */
@@ -27,7 +27,11 @@ export class UpdateBookableResource {
       ({ actor, resource }) =>
         createBookableResourceDraft({ ...input, websiteId: resource.websiteId })
           .asyncAndThen((draft) =>
-            checkLocationReference(this.deps, actor.tenantId, resource.websiteId, draft),
+            checkLocationReference(
+              this.deps,
+              { tenantId: actor.tenantId, websiteId: resource.websiteId },
+              draft,
+            ),
           )
           .andThen((draft) => resources.update(resource.id, actor.tenantId, draft))
           .map((updated) => {

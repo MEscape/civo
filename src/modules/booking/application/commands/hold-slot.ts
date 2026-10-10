@@ -1,6 +1,7 @@
 import type { ConflictAppError, InfrastructureAppError } from '@lib/errors';
 import { errAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { MS_PER_MINUTE } from '@lib/utils';
 
 import { bookingConflict, tooManyActiveHolds } from '../../domain/errors/booking-errors';
 import { bookingSessionKey } from '../../domain/models/booking';
@@ -19,8 +20,6 @@ import type { HoldSlotInput } from '../contracts/booking-inputs';
 import type { HoldView } from '../contracts/booking-views';
 import type { BookableContextError } from '../services/bookable-context';
 import type { PublicScopeError } from '../services/public-scope';
-
-const MS_PER_MINUTE = 60_000;
 
 /**
  * Reserves a slot for a visitor who is about to fill in the booking form. The
@@ -43,80 +42,79 @@ export class HoldSlot {
     const now = clock.now();
 
     return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
-      loadBookableContext(this.deps, scope, input.serviceId, input.locationId).andThen(
-        ({ service, location }) =>
-          parseStart(input.start)
-            .andThen((start) =>
-              parseParticipants(service, input.participants).map((participants) => ({
-                start,
-                participants,
-              })),
-            )
-            .asyncAndThen(({ start, participants }) => {
-              const day = localDateOf(start, location.timeZone);
-              return bookings
-                .countLiveHolds(scope.websiteId, scope.tenantId, now)
-                .andThen((holds) =>
-                  holds >= MAX_LIVE_HOLDS_PER_WEBSITE
-                    ? errAsync(tooManyActiveHolds())
-                    : loadSchedulingIndex(this.deps, {
-                        tenantId: scope.tenantId,
-                        service,
-                        location,
-                        range: { from: day, to: day },
-                        now,
-                      }),
-                )
-                .andThen((index) =>
-                  evaluateSlot(index, start, participants).asyncAndThen((slot) => {
-                    const reference = references.next();
-                    const held: NewBooking = {
+      loadBookableContext(this.deps, scope, input).andThen(({ service, location }) =>
+        parseStart(input.start)
+          .andThen((start) =>
+            parseParticipants(service, input.participants).map((participants) => ({
+              start,
+              participants,
+            })),
+          )
+          .asyncAndThen(({ start, participants }) => {
+            const day = localDateOf(start, location.timeZone);
+            return bookings
+              .countLiveHolds(scope, now)
+              .andThen((holds) =>
+                holds >= MAX_LIVE_HOLDS_PER_WEBSITE
+                  ? errAsync(tooManyActiveHolds())
+                  : loadSchedulingIndex(this.deps, {
                       tenantId: scope.tenantId,
-                      websiteId: scope.websiteId,
-                      serviceId: service.id,
-                      locationId: location.id,
-                      reference,
-                      status: 'held',
-                      start: new Date(slot.start),
-                      end: new Date(slot.end),
-                      occupiedStart: new Date(slot.occupied.start),
-                      occupiedEnd: new Date(slot.occupied.end),
-                      participants,
-                      resourceIds: slot.resourceIds,
-                      sessionKey: bookingSessionKey(slot.sharedSessionKey, reference),
-                      sessionCapacity: slot.sessionCapacity,
-                      customer: null,
-                      holdExpiresAt: new Date(now.getTime() + HOLD_MINUTES * MS_PER_MINUTE),
-                      rescheduleCount: 0,
-                      cancelledAt: null,
-                      cancelledBy: null,
-                    };
-                    return bookings.create(held, now);
-                  }),
-                )
-                .map((booking) => {
-                  audit.record({
-                    type: 'booking.held',
+                      service,
+                      location,
+                      range: { from: day, to: day },
+                      now,
+                    }),
+              )
+              .andThen((index) =>
+                evaluateSlot(index, start, participants).asyncAndThen((slot) => {
+                  const reference = references.next();
+                  const held: NewBooking = {
                     tenantId: scope.tenantId,
                     websiteId: scope.websiteId,
-                    bookingId: booking.id,
                     serviceId: service.id,
-                  });
-                  return toHoldView(booking, service, location);
-                })
-                .mapErr((error) => {
-                  if (error.code === bookingConflict().code) {
-                    audit.record({
-                      type: 'booking.conflict_detected',
-                      tenantId: scope.tenantId,
-                      websiteId: scope.websiteId,
-                      serviceId: service.id,
-                      stage: 'hold',
-                    });
-                  }
-                  return error;
+                    locationId: location.id,
+                    reference,
+                    status: 'held',
+                    start: new Date(slot.start),
+                    end: new Date(slot.end),
+                    occupiedStart: new Date(slot.occupied.start),
+                    occupiedEnd: new Date(slot.occupied.end),
+                    participants,
+                    resourceIds: slot.resourceIds,
+                    sessionKey: bookingSessionKey(slot.sharedSessionKey, reference),
+                    sessionCapacity: slot.sessionCapacity,
+                    customer: null,
+                    holdExpiresAt: new Date(now.getTime() + HOLD_MINUTES * MS_PER_MINUTE),
+                    rescheduleCount: 0,
+                    cancelledAt: null,
+                    cancelledBy: null,
+                  };
+                  return bookings.create(held, now);
+                }),
+              )
+              .map((booking) => {
+                audit.record({
+                  type: 'booking.held',
+                  tenantId: scope.tenantId,
+                  websiteId: scope.websiteId,
+                  bookingId: booking.id,
+                  serviceId: service.id,
                 });
-            }),
+                return toHoldView(booking, service, location);
+              })
+              .mapErr((error) => {
+                if (error.code === bookingConflict().code) {
+                  audit.record({
+                    type: 'booking.conflict_detected',
+                    tenantId: scope.tenantId,
+                    websiteId: scope.websiteId,
+                    serviceId: service.id,
+                    stage: 'hold',
+                  });
+                }
+                return error;
+              });
+          }),
       ),
     );
   }

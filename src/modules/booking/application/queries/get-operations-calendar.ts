@@ -24,7 +24,7 @@ import { parseBookingFilter } from '../services/request-parsing';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { GetOperationsCalendarInput } from '../contracts/booking-inputs';
-import type { OperationsCalendarView } from '../contracts/booking-views';
+import type { OperationsCalendarView } from '../contracts/calendar-views';
 
 /**
  * The bookings of a website over a range of days, for the operations
@@ -71,7 +71,10 @@ export class GetOperationsCalendar {
             end: startOfLocalDay(addDays(range.to, 1), chosen.timeZone),
           };
           return bookings
-            .listInRange(websiteId, actor.tenantId, span, filter, MAX_CALENDAR_BOOKINGS_PER_QUERY)
+            .listInRange(
+              { websiteId, tenantId: actor.tenantId },
+              { span, filter, limit: MAX_CALENDAR_BOOKINGS_PER_QUERY },
+            )
             .andThen((found) =>
               services
                 .listByWebsite(websiteId, actor.tenantId, MAX_SERVICES_PER_WEBSITE)

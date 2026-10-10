@@ -29,7 +29,7 @@ export class CancelOwnBooking {
     const { audit, clock } = this.deps;
 
     return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
-      loadOwnBooking(this.deps, scope, input.reference, input.email).andThen((parts) =>
+      loadOwnBooking(this.deps, scope, input).andThen((parts) =>
         cancelWithPolicy(this.deps, parts, 'customer').map((cancelled) => {
           audit.record({
             type: 'booking.cancelled',
@@ -38,7 +38,7 @@ export class CancelOwnBooking {
             bookingId: cancelled.id,
             by: 'customer',
           });
-          return toBookingView(cancelled, parts.service, parts.location, clock.now());
+          return toBookingView({ ...parts, booking: cancelled }, clock.now());
         }),
       ),
     );

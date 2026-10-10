@@ -24,9 +24,8 @@ export class GetPublicBooking {
     input: BookingAccessInput,
   ): AppResultAsync<BookingView, PublicScopeError | OwnBookingError> {
     return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
-      loadOwnBooking(this.deps, scope, input.reference, input.email).map(
-        ({ booking, service, location }) =>
-          toBookingView(booking, service, location, this.deps.clock.now()),
+      loadOwnBooking(this.deps, scope, input).map((parts) =>
+        toBookingView(parts, this.deps.clock.now()),
       ),
     );
   }

@@ -9,7 +9,7 @@ import type { BookableService } from '../../domain/models/bookable-service';
 import type { BookingLocation } from '../../domain/models/booking-location';
 import type { PublicBookingDependencies } from '../booking-dependencies';
 import type { GetBookingCatalogInput } from '../contracts/booking-inputs';
-import type { PublicCatalogView } from '../contracts/booking-views';
+import type { PublicCatalogView } from '../contracts/catalog-views';
 import type { PublicScopeError } from '../services/public-scope';
 
 /**

@@ -6,6 +6,7 @@ import type { BookableResourceRepository } from '../domain/ports/bookable-resour
 import type { BookableServiceRepository } from '../domain/ports/bookable-service.repository';
 import type { BookingAuditLog } from '../domain/ports/booking-audit-log.port';
 import type { BookingLocationRepository } from '../domain/ports/booking-location.repository';
+import type { BookingNotifier } from '../domain/ports/booking-notifier.port';
 import type { BookingReferenceGenerator } from '../domain/ports/booking-reference-generator.port';
 import type { BookingRepository } from '../domain/ports/booking.repository';
 import type { RequestLimiter } from '../domain/ports/request-limiter.port';
@@ -19,6 +20,8 @@ export interface BookingDependencies {
   readonly services: BookableServiceRepository;
   readonly bookings: BookingRepository;
   readonly audit: BookingAuditLog;
+  /** Tells the customer when staff cancel or move their booking. */
+  readonly notifier: BookingNotifier;
   readonly clock: Clock;
 }
 
@@ -44,6 +47,8 @@ export interface PublicBookingDependencies {
 export interface BookingFlowDependencies extends PublicBookingDependencies {
   readonly references: BookingReferenceGenerator;
   readonly audit: BookingAuditLog;
+  /** Confirms, cancellations and moves are sent to the visitor by e-mail. */
+  readonly notifier: BookingNotifier;
 }
 
 /** What the request budget is built from: a limiter and the clock it counts time with. */

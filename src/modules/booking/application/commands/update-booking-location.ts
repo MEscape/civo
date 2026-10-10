@@ -7,7 +7,7 @@ import { loadAuthorizedLocation } from '../load-authorized-location';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { UpdateBookingLocationInput } from '../contracts/booking-inputs';
-import type { LocationView } from '../contracts/booking-views';
+import type { LocationView } from '../contracts/setup-views';
 import type { LoadLocationError } from '../load-authorized-location';
 
 /**

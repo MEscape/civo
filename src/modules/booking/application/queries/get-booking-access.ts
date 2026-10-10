@@ -4,7 +4,7 @@ import type { AuthorizationError } from '@modules/auth';
 import type { AppResultAsync } from '@lib/result';
 
 import type { BookingDependencies } from '../booking-dependencies';
-import type { BookingAccessView } from '../contracts/booking-views';
+import type { BookingAccessView } from '../contracts/setup-views';
 
 /**
  * Tells a screen which actions to offer. Reading bookings is the entry

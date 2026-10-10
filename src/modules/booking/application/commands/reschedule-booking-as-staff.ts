@@ -7,7 +7,7 @@ import { loadBookingParts } from '../services/own-booking';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { RescheduleBookingAsStaffInput } from '../contracts/booking-inputs';
-import type { CalendarBookingView } from '../contracts/booking-views';
+import type { CalendarBookingView } from '../contracts/calendar-views';
 import type { LoadBookingError } from '../load-authorized-booking';
 import type { BookingChangeError } from '../services/booking-changes';
 
@@ -33,9 +33,15 @@ export class RescheduleBookingAsStaff {
           booking,
         )
           .andThen((parts) =>
-            rescheduleWithPolicy(this.deps, actor.tenantId, parts, input.start, 'staff').map(
-              (moved) => ({ moved, serviceName: parts.service.name, serviceId: parts.service.id }),
-            ),
+            rescheduleWithPolicy(this.deps, parts, {
+              tenantId: actor.tenantId,
+              start: input.start,
+              actor: 'staff',
+            }).map((moved) => ({
+              moved,
+              serviceName: parts.service.name,
+              serviceId: parts.service.id,
+            })),
           )
           .map(({ moved, serviceName }) => {
             audit.record({

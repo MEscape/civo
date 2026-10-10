@@ -2,11 +2,11 @@ import type { TenantId } from '@modules/auth';
 
 import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
+import { MS_PER_MINUTE } from '@lib/utils';
 
 import { SERVICE_LIMITS } from '../../domain/models/bookable-service';
 import { buildSchedulingIndex } from '../../domain/scheduling/scheduling-index';
 import { addDays } from '../../domain/time/local-date';
-import { MS_PER_MINUTE } from '../../domain/time/time-of-day';
 import { startOfLocalDay } from '../../domain/time/time-zone';
 import { MAX_BLOCKING_BOOKINGS_PER_QUERY, MAX_RESOURCES_PER_WEBSITE } from '../booking-limits';
 
@@ -56,7 +56,11 @@ export function loadSchedulingIndex(
     .listByWebsite(service.websiteId, tenantId, MAX_RESOURCES_PER_WEBSITE)
     .andThen((resources) =>
       deps.bookings
-        .listBlocking(service.websiteId, tenantId, span, MAX_BLOCKING_BOOKINGS_PER_QUERY)
+        .listBlocking(
+          { websiteId: service.websiteId, tenantId },
+          span,
+          MAX_BLOCKING_BOOKINGS_PER_QUERY,
+        )
         .map((bookings) =>
           buildSchedulingIndex(
             { service, location, resources, bookings, now, ignoreBookingId },

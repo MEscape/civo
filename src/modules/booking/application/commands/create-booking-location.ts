@@ -9,7 +9,7 @@ import { toLocationView } from '../booking-view-mappers';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { CreateBookingLocationInput } from '../contracts/booking-inputs';
-import type { LocationView } from '../contracts/booking-views';
+import type { LocationView } from '../contracts/setup-views';
 
 /** Adds a place where services are offered, with its time zone and opening hours. */
 export class CreateBookingLocation {

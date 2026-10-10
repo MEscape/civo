@@ -23,6 +23,12 @@ function allKnown(ids: readonly string[], known: ReadonlySet<string>): boolean {
   return ids.every((id) => known.has(id));
 }
 
+/** The website a draft belongs to, and the tenant that owns it. */
+export interface ReferenceScope {
+  readonly tenantId: TenantId;
+  readonly websiteId: WebsiteId;
+}
+
 /**
  * Locations and resources a draft names must exist in the same website.
  * (The store holds them as plain id lists, so this is where that integrity is
@@ -31,8 +37,7 @@ function allKnown(ids: readonly string[], known: ReadonlySet<string>): boolean {
  */
 export function checkLocationReference(
   deps: ReferenceDependencies,
-  tenantId: TenantId,
-  websiteId: WebsiteId,
+  { tenantId, websiteId }: ReferenceScope,
   draft: BookableResourceDraft,
 ): AppResultAsync<BookableResourceDraft, ReferenceCheckError> {
   if (draft.locationId === null) {
@@ -65,8 +70,7 @@ function checkServiceReferences(
 
 export function checkServiceReference(
   deps: ReferenceDependencies,
-  tenantId: TenantId,
-  websiteId: WebsiteId,
+  { tenantId, websiteId }: ReferenceScope,
   draft: BookableServiceDraft,
 ): AppResultAsync<BookableServiceDraft, ReferenceCheckError> {
   return deps.locations

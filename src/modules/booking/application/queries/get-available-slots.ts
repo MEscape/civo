@@ -11,7 +11,7 @@ import { loadSchedulingIndex } from '../services/scheduling-context';
 
 import type { PublicBookingDependencies } from '../booking-dependencies';
 import type { GetAvailableSlotsInput } from '../contracts/booking-inputs';
-import type { AvailabilityView } from '../contracts/booking-views';
+import type { AvailabilityView } from '../contracts/catalog-views';
 import type { BookableContextError } from '../services/bookable-context';
 import type { PublicScopeError } from '../services/public-scope';
 
@@ -29,36 +29,33 @@ export class GetAvailableSlots {
     input: GetAvailableSlotsInput,
   ): AppResultAsync<AvailabilityView, PublicScopeError | BookableContextError> {
     return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
-      loadBookableContext(this.deps, scope, input.serviceId, input.locationId).andThen(
-        ({ service, location }) => {
-          const parsed = parseLocalDateRange(
-            input.from,
-            input.to,
-            MAX_AVAILABILITY_RANGE_DAYS,
-          ).andThen((range) =>
-            parseParticipants(service, input.participants).map((participants) => ({
-              range,
-              participants,
-            })),
-          );
-          return parsed.asyncAndThen(({ range, participants }) =>
-            loadSchedulingIndex(this.deps, {
-              tenantId: scope.tenantId,
-              service,
-              location,
-              range,
-              now: this.deps.clock.now(),
-            }).map((index) =>
-              toAvailabilityView(
-                location,
-                service,
-                { from: input.from, to: input.to },
-                findAvailableSlots(index, participants),
-              ),
+      loadBookableContext(this.deps, scope, input).andThen(({ service, location }) => {
+        const parsed = parseLocalDateRange(
+          input.from,
+          input.to,
+          MAX_AVAILABILITY_RANGE_DAYS,
+        ).andThen((range) =>
+          parseParticipants(service, input.participants).map((participants) => ({
+            range,
+            participants,
+          })),
+        );
+        return parsed.asyncAndThen(({ range, participants }) =>
+          loadSchedulingIndex(this.deps, {
+            tenantId: scope.tenantId,
+            service,
+            location,
+            range,
+            now: this.deps.clock.now(),
+          }).map((index) =>
+            toAvailabilityView(
+              { service, location },
+              { from: input.from, to: input.to },
+              findAvailableSlots(index, participants),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      }),
     );
   }
 }

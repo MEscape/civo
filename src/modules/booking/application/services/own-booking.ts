@@ -58,17 +58,16 @@ export function loadBookingParts(
 export function loadOwnBooking(
   deps: OwnDependencies,
   scope: PublicScope,
-  rawReference: string,
-  rawEmail: string,
+  claim: { readonly reference: string; readonly email: string },
 ): AppResultAsync<BookingParts, OwnBookingError> {
-  return parseBookingReference(rawReference).asyncAndThen((reference) =>
+  return parseBookingReference(claim.reference).asyncAndThen((reference) =>
     deps.bookings
       .findByReference(reference, scope.websiteId, scope.tenantId)
       .andThen((booking): AppResultAsync<Booking, NotFoundAppError> => {
         const isOwner =
           booking !== null &&
           booking.customer !== null &&
-          booking.customer.email === normalizeEmail(rawEmail);
+          booking.customer.email === normalizeEmail(claim.email);
         return isOwner ? okAsync(booking) : errAsync(bookingNotFound());
       })
       .andThen((booking) => loadBookingParts(deps, scope, booking)),

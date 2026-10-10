@@ -13,6 +13,7 @@ import { createBookingCustomer, normalizeEmail } from '../../domain/models/booki
 import { parseBookingId } from '../../domain/models/ids';
 import { MAX_LIVE_BOOKINGS_PER_EMAIL } from '../booking-limits';
 import { toBookingView } from '../booking-view-mappers';
+import { notifyCustomer } from '../services/booking-notice';
 import { loadBookingParts } from '../services/own-booking';
 import { resolvePublicScope } from '../services/public-scope';
 
@@ -62,16 +63,11 @@ export class ConfirmBooking {
             if (booking.status === 'confirmed') {
               const isSameVisitor = booking.customer?.email === customer.email;
               return isSameVisitor
-                ? okAsync(toBookingView(booking, service, location, now))
+                ? okAsync(toBookingView({ booking, service, location }, now))
                 : errAsync(bookingNotFound());
             }
             return bookings
-              .countLiveByEmail(
-                scope.websiteId,
-                scope.tenantId,
-                normalizeEmail(customer.email),
-                now,
-              )
+              .countLiveByEmail(scope, normalizeEmail(customer.email), now)
               .andThen((live) =>
                 live >= MAX_LIVE_BOOKINGS_PER_EMAIL
                   ? errAsync(tooManyActiveBookings())
@@ -79,7 +75,7 @@ export class ConfirmBooking {
                       bookings.save(confirmed, booking, now),
                     ),
               )
-              .map((saved) => {
+              .andThen((saved) => {
                 audit.record({
                   type: 'booking.confirmed',
                   tenantId: scope.tenantId,
@@ -87,7 +83,10 @@ export class ConfirmBooking {
                   bookingId: saved.id,
                   serviceId: service.id,
                 });
-                return toBookingView(saved, service, location, now);
+                const stored = { booking: saved, service, location };
+                return notifyCustomer(this.deps.notifier, 'confirmed', stored).map(() =>
+                  toBookingView(stored, now),
+                );
               });
           }),
         ),

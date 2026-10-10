@@ -17,7 +17,7 @@ import { loadSchedulingIndex } from '../services/scheduling-context';
 
 import type { PublicBookingDependencies } from '../booking-dependencies';
 import type { SuggestAlternativeSlotsInput } from '../contracts/booking-inputs';
-import type { AlternativeSlotsView } from '../contracts/booking-views';
+import type { AlternativeSlotsView } from '../contracts/catalog-views';
 import type { BookableContextError } from '../services/bookable-context';
 import type { PublicScopeError } from '../services/public-scope';
 
@@ -35,32 +35,30 @@ export class SuggestAlternativeSlots {
     input: SuggestAlternativeSlotsInput,
   ): AppResultAsync<AlternativeSlotsView, PublicScopeError | BookableContextError> {
     return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
-      loadBookableContext(this.deps, scope, input.serviceId, input.locationId).andThen(
-        ({ service, location }) =>
-          parseStart(input.start)
-            .andThen((start) =>
-              parseParticipants(service, input.participants).map((participants) => ({
-                start,
+      loadBookableContext(this.deps, scope, input).andThen(({ service, location }) =>
+        parseStart(input.start)
+          .andThen((start) =>
+            parseParticipants(service, input.participants).map((participants) => ({
+              start,
+              participants,
+            })),
+          )
+          .asyncAndThen(({ start, participants }) =>
+            loadSchedulingIndex(this.deps, {
+              tenantId: scope.tenantId,
+              service,
+              location,
+              range: alternativeRange(start, location.timeZone, ALTERNATIVE_SEARCH_DAYS),
+              now: this.deps.clock.now(),
+            }).map((index) => ({
+              timeZone: location.timeZone,
+              slots: suggestAlternativeSlots(index, {
+                requestedStart: start,
                 participants,
-              })),
-            )
-            .asyncAndThen(({ start, participants }) =>
-              loadSchedulingIndex(this.deps, {
-                tenantId: scope.tenantId,
-                service,
-                location,
-                range: alternativeRange(start, location.timeZone, ALTERNATIVE_SEARCH_DAYS),
-                now: this.deps.clock.now(),
-              }).map((index) => ({
-                timeZone: location.timeZone,
-                slots: suggestAlternativeSlots(
-                  index,
-                  start,
-                  participants,
-                  Math.min(input.count ?? DEFAULT_ALTERNATIVE_COUNT, MAX_ALTERNATIVE_COUNT),
-                ).map(toSlotView),
-              })),
-            ),
+                limit: Math.min(input.count ?? DEFAULT_ALTERNATIVE_COUNT, MAX_ALTERNATIVE_COUNT),
+              }).map(toSlotView),
+            })),
+          ),
       ),
     );
   }

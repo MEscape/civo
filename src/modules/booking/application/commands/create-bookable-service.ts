@@ -10,7 +10,7 @@ import { checkServiceReference } from '../services/reference-checks';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { CreateBookableServiceInput } from '../contracts/booking-inputs';
-import type { ServiceView } from '../contracts/booking-views';
+import type { ServiceView } from '../contracts/setup-views';
 
 /** Adds a bookable service: what it is, how long it takes, what it needs, where and under which rules. */
 export class CreateBookableService {
@@ -28,7 +28,11 @@ export class CreateBookableService {
       parseWebsiteId(input.websiteId)
         .andThen((websiteId) => createBookableServiceDraft({ ...input, websiteId }))
         .asyncAndThen((draft) =>
-          checkServiceReference(this.deps, actor.tenantId, draft.websiteId, draft),
+          checkServiceReference(
+            this.deps,
+            { tenantId: actor.tenantId, websiteId: draft.websiteId },
+            draft,
+          ),
         )
         .andThen((draft) => services.create({ tenantId: actor.tenantId, draft }))
         .map((service) => {

@@ -1,18 +1,15 @@
 import { toAvailabilityPlanInput } from '../domain/models/availability-plan';
 import { checkCancellation, checkRescheduling } from '../domain/policies/change-policy';
 
+import type { BookingView, HoldView } from './contracts/booking-views';
+import type { CalendarBookingView } from './contracts/calendar-views';
 import type {
   AvailabilityView,
-  BookingView,
-  CalendarBookingView,
-  HoldView,
-  LocationView,
   PublicLocationView,
   PublicServiceView,
-  ResourceView,
-  ServiceView,
   SlotView,
-} from './contracts/booking-views';
+} from './contracts/catalog-views';
+import type { LocationView, ResourceView, ServiceView } from './contracts/setup-views';
 import type { BookableResource } from '../domain/models/bookable-resource';
 import type { BookableService } from '../domain/models/bookable-service';
 import type { Booking } from '../domain/models/booking';
@@ -121,8 +118,7 @@ export function toSlotView(slot: AvailableSlot): SlotView {
 }
 
 export function toAvailabilityView(
-  location: BookingLocation,
-  service: BookableService,
+  { service, location }: { readonly service: BookableService; readonly location: BookingLocation },
   range: { readonly from: string; readonly to: string },
   slots: readonly AvailableSlot[],
 ): AvailabilityView {
@@ -155,9 +151,15 @@ export function toHoldView(
 
 /** The visitor's own view of a booking, with what they may still do to it right now. */
 export function toBookingView(
-  booking: Booking,
-  service: BookableService,
-  location: BookingLocation,
+  {
+    booking,
+    service,
+    location,
+  }: {
+    readonly booking: Booking;
+    readonly service: BookableService;
+    readonly location: BookingLocation;
+  },
   now: Date,
 ): BookingView {
   const isStanding = booking.status === 'confirmed';
@@ -178,8 +180,9 @@ export function toBookingView(
     email: booking.customer?.email ?? null,
     requiredDocuments: service.requiredDocuments,
     instructions: service.instructions,
-    canCancel: isStanding && checkCancellation(service, booking, 'customer', now).isOk(),
-    canReschedule: isStanding && checkRescheduling(service, booking, 'customer', now).isOk(),
+    canCancel: isStanding && checkCancellation(service, booking, { actor: 'customer', now }).isOk(),
+    canReschedule:
+      isStanding && checkRescheduling(service, booking, { actor: 'customer', now }).isOk(),
     rescheduleCount: booking.rescheduleCount,
   };
 }

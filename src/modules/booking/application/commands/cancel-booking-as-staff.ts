@@ -7,7 +7,7 @@ import { loadBookingParts } from '../services/own-booking';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { CancelBookingAsStaffInput } from '../contracts/booking-inputs';
-import type { CalendarBookingView } from '../contracts/booking-views';
+import type { CalendarBookingView } from '../contracts/calendar-views';
 import type { LoadBookingError } from '../load-authorized-booking';
 import type { BookingChangeError } from '../services/booking-changes';
 

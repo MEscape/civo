@@ -19,14 +19,18 @@ import { evaluateSlot } from '../../domain/scheduling/slot-assessment';
 import { parseInstant } from '../../domain/time/instant';
 import { localDateOf } from '../../domain/time/time-zone';
 
+import { notifyCustomer } from './booking-notice';
 import { loadSchedulingIndex } from './scheduling-context';
 
 import type { BookingParts } from './own-booking';
 import type { ChangeActor } from '../../domain/models/bookable-service';
 import type { Booking } from '../../domain/models/booking';
+import type { BookingNotifier } from '../../domain/ports/booking-notifier.port';
 import type { PublicBookingDependencies } from '../booking-dependencies';
 
-type ChangeDependencies = Pick<PublicBookingDependencies, 'resources' | 'bookings' | 'clock'>;
+type ChangeDependencies = Pick<PublicBookingDependencies, 'resources' | 'bookings' | 'clock'> & {
+  readonly notifier: BookingNotifier;
+};
 
 export type BookingChangeError =
   ValidationAppError | NotFoundAppError | ConflictAppError | InfrastructureAppError;
@@ -44,13 +48,17 @@ export function cancelWithPolicy(
 ): AppResultAsync<Booking, BookingChangeError> {
   const now = deps.clock.now();
   const { booking, service } = parts;
-  const checked = checkCancellation(service, booking, actor, now).andThen(() =>
+  const checked = checkCancellation(service, booking, { actor, now }).andThen(() =>
     cancelBooking(booking, actor, now),
   );
   if (checked.isErr()) {
     return errAsync(checked.error);
   }
-  return deps.bookings.save(checked.value, booking, now);
+  return deps.bookings
+    .save(checked.value, booking, now)
+    .andThen((saved) =>
+      notifyCustomer(deps.notifier, 'cancelled', { ...parts, booking: saved }).map(() => saved),
+    );
 }
 
 /**
@@ -61,18 +69,17 @@ export function cancelWithPolicy(
  */
 export function rescheduleWithPolicy(
   deps: ChangeDependencies,
-  tenantId: TenantId,
   parts: BookingParts,
-  rawStart: string,
-  actor: ChangeActor,
+  change: { readonly tenantId: TenantId; readonly start: string; readonly actor: ChangeActor },
 ): AppResultAsync<Booking, BookingChangeError> {
+  const { tenantId, actor } = change;
   const now = deps.clock.now();
   const { booking, service, location } = parts;
-  const allowed = checkRescheduling(service, booking, actor, now);
+  const allowed = checkRescheduling(service, booking, { actor, now });
   if (allowed.isErr()) {
     return errAsync(allowed.error);
   }
-  const start = parseInstant(rawStart);
+  const start = parseInstant(change.start);
   if (start === null) {
     return errAsync(fieldValidationFailed('start', BOOKING_VALIDATION_CODES.dateInvalid));
   }
@@ -92,6 +99,10 @@ export function rescheduleWithPolicy(
     if (moved.isErr()) {
       return errAsync(moved.error);
     }
-    return deps.bookings.save(moved.value, booking, now);
+    return deps.bookings
+      .save(moved.value, booking, now)
+      .andThen((saved) =>
+        notifyCustomer(deps.notifier, 'rescheduled', { ...parts, booking: saved }).map(() => saved),
+      );
   });
 }
