@@ -23,7 +23,7 @@
 
 - scripts
 
-- pre-commit and setup  command
+- pre-commit and setup command
 
 - improved agent md files
 
