@@ -54,6 +54,7 @@
       "participantsInvalid": "Please enter a valid number of people.",
       "skillInvalid": "Skills may only contain letters, digits and hyphens.",
       "resourceTypeUnknown": "Please choose a valid resource type.",
+      "assignmentInvalid": "Only an employee resource can be assigned to a person, and own-hours editing needs an assigned person.",
       "requirementsRequired": "Add at least one resource requirement.",
       "requirementCountInvalid": "The number of resources must be between 1 and {requirementCountMax}.",
       "locationsRequired": "Choose at least one location.",
@@ -150,9 +151,7 @@
     "state": {
       "empty": "Nothing can be booked here yet. Please check back later.",
       "empty-draft": "Nothing can be booked yet, so this shows sample services. Add an active service with a location and opening hours in the booking administration.",
-      "unavailable": "Booking is temporarily unavailable. Please try again later.",
-      "staff-only": "The booking calendar is only shown to signed-in staff.",
-      "no-access": "You do not have access to the booking calendar."
+      "unavailable": "Booking is temporarily unavailable. Please try again later."
     },
     "preview": {
       "notice": "Preview: you can click through the steps, but nothing is reserved or booked.",
@@ -306,7 +305,13 @@
       "kind": "Kind",
       "label": "Description",
       "fromDate": "From date",
-      "toDate": "To date"
+      "toDate": "To date",
+      "presets": {
+        "label": "Start from a template",
+        "office": "Office hours",
+        "mornings": "Mornings only",
+        "everyDay": "Every day"
+      }
     },
     "locations": {
       "title": "Locations",
@@ -341,7 +346,12 @@
       "skillsHint": "Separated by commas, for example: passport, residence.",
       "ownHours": "Own working hours",
       "ownHoursHint": "Limit this resource to its own hours within the location's opening hours.",
-      "active": "Bookable"
+      "active": "Bookable",
+      "assignedEmployee": "Assigned employee",
+      "assignedEmployeeHint": "This calendar belongs to that person, who then sees only its bookings.",
+      "noEmployee": "Nobody",
+      "employeeMayEditHours": "The employee may change their own working hours",
+      "employeeMayEditHoursHint": "Off by default. Everything else of the resource stays with editors."
     },
     "services": {
       "title": "Services",
@@ -433,6 +443,17 @@
       "loading": "Loading bookings…",
       "noEvents": "No bookings in this period.",
       "retry": "Try again"
+    },
+    "own": {
+      "title": "My calendar",
+      "description": "The bookings of the calendars assigned to you.",
+      "upcoming": "Next 14 days",
+      "empty": "No bookings in the next two weeks.",
+      "noCalendars": "No calendar is assigned to you yet. An editor can assign one.",
+      "hoursTitle": "My working hours",
+      "hoursLocked": "Your working hours for {name} are set by an editor.",
+      "hoursSave": "Save my hours",
+      "hoursFor": "Hours for {name}"
     }
   }
 }

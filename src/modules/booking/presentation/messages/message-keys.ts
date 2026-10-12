@@ -79,6 +79,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.participantsInvalid]: fieldPath('validation', 'participantsInvalid'),
   [VALIDATION.skillInvalid]: fieldPath('validation', 'skillInvalid'),
   [VALIDATION.resourceTypeUnknown]: fieldPath('validation', 'resourceTypeUnknown'),
+  [VALIDATION.assignmentInvalid]: fieldPath('validation', 'assignmentInvalid'),
   [VALIDATION.requirementsRequired]: fieldPath('validation', 'requirementsRequired'),
   [VALIDATION.requirementCountInvalid]: fieldPath('validation', 'requirementCountInvalid'),
   [VALIDATION.locationsRequired]: fieldPath('validation', 'locationsRequired'),

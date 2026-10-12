@@ -8,12 +8,17 @@ import type { AppError } from '@lib/errors';
 import { escalate } from '@lib/errors/escalate';
 
 import { bookingAdminQueries } from '../../composition';
-import { toBookingSetupDto } from '../dto/setup-dto';
+import { toBookingSetupDto, toEmployeeOptionDto } from '../dto/setup-dto';
 
 import { BookingAdmin } from './admin/booking-admin.client';
+import { EmployeeBookings } from './employee-bookings';
+
+import type { EmployeeOptionView } from '../../application/contracts/setup-views';
 
 export interface BookingAdministrationProps {
   readonly websiteId: string;
+  /** Who a calendar can be assigned to; empty while nobody holds the employee role. */
+  readonly employees: readonly EmployeeOptionView[];
   /** The URL's locale: a page prerenders on its own, so it must not be read from the request. */
   readonly locale: Locale;
 }
@@ -38,17 +43,23 @@ function failOrNotFound(error: AppError): never {
  * answer as for a website that does not exist; anything unexpected reaches
  * the route's error boundary.
  */
-export async function BookingAdministration({ websiteId, locale }: BookingAdministrationProps) {
-  const [setup, access] = await Promise.all([
-    bookingAdminQueries.getBookingSetup.execute(websiteId),
-    bookingAdminQueries.getBookingAccess.execute(),
-  ]);
-
-  if (setup.isErr()) {
-    failOrNotFound(setup.error);
-  }
+export async function BookingAdministration({
+  websiteId,
+  employees,
+  locale,
+}: BookingAdministrationProps) {
+  const access = await bookingAdminQueries.getBookingAccess.execute();
   if (access.isErr()) {
     failOrNotFound(access.error);
+  }
+  // An employee has no part in the configuration: they get their own calendar and nothing else.
+  if (access.value.isOwnOnly) {
+    return <EmployeeBookings websiteId={websiteId} locale={locale} />;
+  }
+
+  const setup = await bookingAdminQueries.getBookingSetup.execute(websiteId);
+  if (setup.isErr()) {
+    failOrNotFound(setup.error);
   }
 
   return (
@@ -58,7 +69,7 @@ export async function BookingAdministration({ websiteId, locale }: BookingAdmini
         setup={toBookingSetupDto(setup.value)}
         canConfigure={access.value.canConfigure}
         canManage={access.value.canManage}
-        scope="full"
+        employees={employees.map(toEmployeeOptionDto)}
       />
     </I18nProvider>
   );

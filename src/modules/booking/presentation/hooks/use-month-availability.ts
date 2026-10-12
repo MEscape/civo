@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import type { ActionResult } from '@lib/result';
+
 import { getAvailableSlotsAction } from '../actions/get-available-slots-action';
 import {
   compareYearMonth,
@@ -9,6 +11,7 @@ import {
   shiftMonth,
   yearMonthAfterDays,
 } from '../time/month-math';
+import { createSampleAvailability } from '../time/sample-availability';
 
 import type { AvailabilityDto } from '../dto/availability-dto';
 import type { YearMonth } from '../time/month-math';
@@ -34,6 +37,12 @@ export interface MonthAvailabilityQuery {
   readonly horizonDays: number;
   /** A slot is already chosen, so the month it lives in must not jump ahead on its own. */
   readonly hasSelection: boolean;
+  /**
+   * Set for the placeholder services of the editor canvas: they do not exist on
+   * the server, so their times are invented in the browser and the server is
+   * never asked.
+   */
+  readonly sample?: { readonly timeZone: string; readonly durationMinutes: number } | undefined;
 }
 
 export interface MonthAvailability {
@@ -54,7 +63,11 @@ export interface MonthAvailability {
  * most, so a visitor does not land on an empty calendar.
  */
 export function useMonthAvailability(query: MonthAvailabilityQuery): MonthAvailability {
-  const { websiteId, serviceId, locationId, participants, horizonDays, hasSelection } = query;
+  const { websiteId, serviceId, locationId, participants, horizonDays, hasSelection, sample } =
+    query;
+  // Primitives, so a new `sample` object on every render does not restart the load.
+  const sampleTimeZone = sample?.timeZone;
+  const sampleDurationMinutes = sample?.durationMinutes;
   const [month, setMonth] = useState<YearMonth>(() => currentYearMonth());
   const [attempt, setAttempt] = useState(0);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
@@ -68,33 +81,58 @@ export function useMonthAvailability(query: MonthAvailabilityQuery): MonthAvaila
 
   useEffect(() => {
     let cancelled = false;
-    void getAvailableSlotsAction({ websiteId, serviceId, locationId, from, to, participants }).then(
-      (result) => {
-        if (cancelled) {
-          return;
-        }
-        if (!result.ok) {
-          setLoaded({ key: requestKey, outcome: { kind: 'failed', code: result.error.code } });
-          return;
-        }
-        const nextMonth = shiftMonth(month, 1);
-        const shouldAdvance =
-          result.data.slots.length === 0 &&
-          autoAdvanceLeft.current > 0 &&
-          compareYearMonth(nextMonth, lastMonth) <= 0;
-        if (shouldAdvance) {
-          autoAdvanceLeft.current -= 1;
-          setMonth(nextMonth);
-          return;
-        }
-        autoAdvanceLeft.current = 0;
-        setLoaded({ key: requestKey, outcome: { kind: 'ready', availability: result.data } });
-      },
-    );
+    const request: Promise<ActionResult<AvailabilityDto>> =
+      sampleTimeZone === undefined || sampleDurationMinutes === undefined
+        ? getAvailableSlotsAction({ websiteId, serviceId, locationId, from, to, participants })
+        : Promise.resolve({
+            ok: true,
+            data: createSampleAvailability({
+              serviceId,
+              locationId,
+              from,
+              to,
+              timeZone: sampleTimeZone,
+              durationMinutes: sampleDurationMinutes,
+              now: new Date(),
+            }),
+          });
+    void request.then((result) => {
+      if (cancelled) {
+        return;
+      }
+      if (!result.ok) {
+        setLoaded({ key: requestKey, outcome: { kind: 'failed', code: result.error.code } });
+        return;
+      }
+      const nextMonth = shiftMonth(month, 1);
+      const shouldAdvance =
+        result.data.slots.length === 0 &&
+        autoAdvanceLeft.current > 0 &&
+        compareYearMonth(nextMonth, lastMonth) <= 0;
+      if (shouldAdvance) {
+        autoAdvanceLeft.current -= 1;
+        setMonth(nextMonth);
+        return;
+      }
+      autoAdvanceLeft.current = 0;
+      setLoaded({ key: requestKey, outcome: { kind: 'ready', availability: result.data } });
+    });
     return () => {
       cancelled = true;
     };
-  }, [websiteId, serviceId, locationId, participants, from, to, requestKey, month, lastMonth]);
+  }, [
+    websiteId,
+    serviceId,
+    locationId,
+    participants,
+    from,
+    to,
+    requestKey,
+    month,
+    lastMonth,
+    sampleTimeZone,
+    sampleDurationMinutes,
+  ]);
 
   return {
     month,

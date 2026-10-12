@@ -4,6 +4,7 @@ import type {
   LocationView,
   ResourceView,
   ServiceView,
+  EmployeeOptionView,
 } from '../../application/contracts/setup-views';
 
 export interface LocationDto {
@@ -26,6 +27,18 @@ export interface ResourceDto {
   readonly capacity: number | null;
   readonly availability: AvailabilityPlanView | null;
   readonly isActive: boolean;
+  readonly assignedActorId: string | null;
+  readonly employeeMayEditHours: boolean;
+}
+
+/** Someone a calendar can be assigned to. */
+export interface EmployeeOptionDto {
+  readonly id: string;
+  readonly name: string;
+}
+
+export function toEmployeeOptionDto(view: EmployeeOptionView): EmployeeOptionDto {
+  return { id: view.id, name: view.name };
 }
 
 export type ServiceDto = Omit<ServiceView, 'createdAt' | 'updatedAt'>;
@@ -59,6 +72,8 @@ export function toResourceDto(view: ResourceView): ResourceDto {
     capacity: view.capacity,
     availability: view.availability,
     isActive: view.isActive,
+    assignedActorId: view.assignedActorId,
+    employeeMayEditHours: view.employeeMayEditHours,
   };
 }
 

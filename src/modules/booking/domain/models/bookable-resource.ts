@@ -17,6 +17,7 @@ import type { AvailabilityPlan, AvailabilityPlanInput } from './availability-pla
 import type { BookableResourceId, BookingLocationId, WebsiteId } from './ids';
 
 export const RESOURCE_LIMITS = {
+  assignedActorIdMax: 128,
   nameMax: 120,
   skillsMax: 30,
   skillMax: 64,
@@ -71,6 +72,14 @@ export interface BookableResource {
   readonly capacity: number | null;
   readonly availability: AvailabilityPlan | null;
   readonly isActive: boolean;
+  /**
+   * The employee (a member of the tenant) whose calendar this is, or `null`. Only an
+   * `employee` resource can be assigned; the assigned person sees the bookings of
+   * this resource and no others.
+   */
+  readonly assignedActorId: string | null;
+  /** Whether the assigned employee may change `availability` themselves. Off unless an editor allows it. */
+  readonly employeeMayEditHours: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -84,6 +93,8 @@ export interface BookableResourceInput {
   readonly capacity: number | null;
   readonly availability: AvailabilityPlanInput | null;
   readonly isActive: boolean;
+  readonly assignedActorId?: string | null | undefined;
+  readonly employeeMayEditHours?: boolean | undefined;
 }
 
 export type BookableResourceDraft = Omit<
@@ -157,6 +168,28 @@ function parseAvailability(
   return plan.value;
 }
 
+/**
+ * Who a resource belongs to. Only an employee resource has an owner, and
+ * letting the owner edit their hours means there is one.
+ */
+function parseAssignment(
+  input: BookableResourceInput,
+  type: ResourceKind | null,
+  bag: FieldErrorBag,
+): { readonly assignedActorId: string | null; readonly employeeMayEditHours: boolean } {
+  const trimmedActor = input.assignedActorId?.trim() ?? '';
+  const assignedActorId = trimmedActor === '' ? null : trimmedActor;
+  const employeeMayEditHours = input.employeeMayEditHours === true;
+  const isTooLong =
+    assignedActorId !== null && assignedActorId.length > RESOURCE_LIMITS.assignedActorIdMax;
+  const isOwnerless = assignedActorId === null && employeeMayEditHours;
+  const isNotAnEmployee = assignedActorId !== null && type !== 'employee';
+  if (isTooLong || isOwnerless || isNotAnEmployee) {
+    bag.add('assignedActorId', CODES.assignmentInvalid);
+  }
+  return { assignedActorId, employeeMayEditHours };
+}
+
 export function createBookableResourceDraft(
   input: BookableResourceInput,
 ): AppResult<BookableResourceDraft, ValidationAppError> {
@@ -171,6 +204,7 @@ export function createBookableResourceDraft(
   checkCapacity(input.capacity, bag);
   const locationId = parseLocation(input.locationId, bag);
   const availability = parseAvailability(input.availability, bag);
+  const assignment = parseAssignment(input, type, bag);
 
   if (bag.hasErrors || type === null) {
     return err(bag.toError());
@@ -185,5 +219,6 @@ export function createBookableResourceDraft(
     capacity: input.capacity,
     availability,
     isActive: input.isActive,
+    ...assignment,
   });
 }

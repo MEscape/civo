@@ -9,15 +9,14 @@ import { OperationsCalendar } from './operations-calendar.client';
 import { ResourcesPanel } from './resources-panel';
 import { ServicesPanel } from './services-panel';
 
-import type { BookingSetupDto } from '../../dto/setup-dto';
+import type { BookingSetupDto, EmployeeOptionDto } from '../../dto/setup-dto';
 
 export interface BookingAdminProps {
   readonly websiteId: string;
   readonly setup: BookingSetupDto;
   readonly canConfigure: boolean;
   readonly canManage: boolean;
-  /** `calendar`: the operations calendar alone (the page component); `full`: calendar and configuration. */
-  readonly scope: 'calendar' | 'full';
+  readonly employees: readonly EmployeeOptionDto[];
 }
 
 /**
@@ -30,13 +29,9 @@ export function BookingAdmin({
   setup,
   canConfigure,
   canManage,
-  scope,
+  employees,
 }: BookingAdminProps) {
   const t = useTranslations('booking');
-
-  if (scope === 'calendar') {
-    return <OperationsCalendar websiteId={websiteId} setup={setup} canManage={canManage} />;
-  }
 
   return (
     <Tabs defaultValue="calendar" className="space-y-4">
@@ -54,7 +49,12 @@ export function BookingAdmin({
         <ServicesPanel websiteId={websiteId} setup={setup} canConfigure={canConfigure} />
       </TabsContent>
       <TabsContent value="resources">
-        <ResourcesPanel websiteId={websiteId} setup={setup} canConfigure={canConfigure} />
+        <ResourcesPanel
+          websiteId={websiteId}
+          setup={setup}
+          canConfigure={canConfigure}
+          employees={employees}
+        />
       </TabsContent>
       <TabsContent value="locations">
         <LocationsPanel websiteId={websiteId} setup={setup} canConfigure={canConfigure} />

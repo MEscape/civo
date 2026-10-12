@@ -19,11 +19,13 @@ import { RescheduleOwnBooking } from './application/commands/reschedule-own-book
 import { UpdateBookableResource } from './application/commands/update-bookable-resource';
 import { UpdateBookableService } from './application/commands/update-bookable-service';
 import { UpdateBookingLocation } from './application/commands/update-booking-location';
+import { UpdateOwnAvailability } from './application/commands/update-own-availability';
 import { GetAvailableSlots } from './application/queries/get-available-slots';
 import { GetBookingAccess } from './application/queries/get-booking-access';
 import { GetBookingCatalog } from './application/queries/get-booking-catalog';
 import { GetBookingSetup } from './application/queries/get-booking-setup';
 import { GetOperationsCalendar } from './application/queries/get-operations-calendar';
+import { GetOwnResources } from './application/queries/get-own-resources';
 import { GetPublicBooking } from './application/queries/get-public-booking';
 import { SpendRequestBudget } from './application/queries/spend-request-budget';
 import { SuggestAlternativeSlots } from './application/queries/suggest-alternative-slots';
@@ -35,6 +37,7 @@ import { PrismaBookableResourceRepository } from './infrastructure/prisma/prisma
 import { PrismaBookableServiceRepository } from './infrastructure/prisma/prisma-bookable-service.repository';
 import { PrismaBookingLocationRepository } from './infrastructure/prisma/prisma-booking-location.repository';
 import { PrismaBookingRepository } from './infrastructure/prisma/prisma-booking.repository';
+import { PrismaWebsiteBrandRepository } from './infrastructure/prisma/prisma-website-brand.repository';
 import { PrismaWebsiteDirectoryRepository } from './infrastructure/prisma/prisma-website-directory.repository';
 
 import type {
@@ -61,7 +64,7 @@ const locations = new PrismaBookingLocationRepository(systemClock);
 const resources = new PrismaBookableResourceRepository(systemClock);
 const services = new PrismaBookableServiceRepository(systemClock);
 const bookings = new PrismaBookingRepository();
-const notifier = createBookingNotifier();
+const notifier = createBookingNotifier(new PrismaWebsiteBrandRepository());
 
 const adminDependencies: BookingDependencies = {
   authorization: getAccessControl(),
@@ -112,6 +115,7 @@ export const bookingAdminCommands = {
   updateBookingLocation: new UpdateBookingLocation(adminDependencies),
   createBookableResource: new CreateBookableResource(adminDependencies),
   updateBookableResource: new UpdateBookableResource(adminDependencies),
+  updateOwnAvailability: new UpdateOwnAvailability(adminDependencies),
   createBookableService: new CreateBookableService(adminDependencies),
   updateBookableService: new UpdateBookableService(adminDependencies),
   cancelBookingAsStaff: new CancelBookingAsStaff(adminDependencies),
@@ -125,6 +129,7 @@ export const bookingAdminQueries = {
   getBookingAccess: new GetBookingAccess(adminDependencies),
   getBookingSetup: new GetBookingSetup(adminDependencies),
   getOperationsCalendar: new GetOperationsCalendar(adminDependencies),
+  getOwnResources: new GetOwnResources(adminDependencies),
 } as const;
 
 /** One limiter for this server process, shared by every public action (see `MemoryRequestLimiter`). */

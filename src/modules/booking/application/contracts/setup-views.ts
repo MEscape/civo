@@ -35,6 +35,8 @@ export interface ResourceView {
   readonly capacity: number | null;
   readonly availability: AvailabilityPlanView | null;
   readonly isActive: boolean;
+  readonly assignedActorId: string | null;
+  readonly employeeMayEditHours: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -75,8 +77,16 @@ export interface BookingSetupView {
   readonly services: readonly ServiceView[];
 }
 
+/** Someone a calendar can be assigned to, as the screens offer them. */
+export interface EmployeeOptionView {
+  readonly id: string;
+  readonly name: string;
+}
+
 /** What the signed-in person may do, so the screens offer only actions that will work. The server still checks each one. */
 export interface BookingAccessView {
   readonly canConfigure: boolean;
   readonly canManage: boolean;
+  /** Sees only the bookings and calendars assigned to them (the employee role). */
+  readonly isOwnOnly: boolean;
 }

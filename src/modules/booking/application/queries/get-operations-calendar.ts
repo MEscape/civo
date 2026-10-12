@@ -1,3 +1,4 @@
+import { actorHasPermission } from '@modules/auth';
 import type { AuthorizationError } from '@modules/auth';
 
 import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
@@ -30,7 +31,12 @@ import type { OperationsCalendarView } from '../contracts/calendar-views';
  * The bookings of a website over a range of days, for the operations
  * calendar. Days are days of the (chosen or first) location's calendar, so
  * "Monday" means Monday where the people are, whatever zone the browser is
- * in. Contains customer details: it needs `booking.read`.
+ * in. Contains customer details.
+ *
+ * Everyone who may read bookings (`booking.read`) sees all of them. An
+ * employee holds only `booking.read.own` and sees exactly the bookings that
+ * occupy a resource assigned to them: the filter is applied here, on the
+ * server, to what the store returned, so no screen can widen it.
  */
 export class GetOperationsCalendar {
   constructor(private readonly deps: BookingDependencies) {}
@@ -43,7 +49,8 @@ export class GetOperationsCalendar {
   > {
     const { authorization, locations, resources, services, bookings } = this.deps;
 
-    return authorization.requireInTenant('booking.read').andThen((actor) => {
+    return authorization.requireInTenant('booking.read.own').andThen((actor) => {
+      const isOwnOnly = !actorHasPermission(actor, 'booking.read');
       const parsed = parseWebsiteId(input.websiteId).andThen((websiteId) =>
         parseLocalDateRange(input.from, input.to, MAX_CALENDAR_RANGE_DAYS).andThen((range) =>
           parseBookingFilter(input).map((filter) => ({ websiteId, range, filter })),
@@ -81,7 +88,16 @@ export class GetOperationsCalendar {
                 .andThen((storedServices) =>
                   resources
                     .listByWebsite(websiteId, actor.tenantId, MAX_RESOURCES_PER_WEBSITE)
-                    .map((storedResources) => {
+                    .map((allResources) => {
+                      const storedResources = isOwnOnly
+                        ? allResources.filter((resource) => resource.assignedActorId === actor.id)
+                        : allResources;
+                      const ownedIds = new Set(storedResources.map((resource) => resource.id));
+                      const visible = isOwnOnly
+                        ? found.filter((booking) =>
+                            booking.resourceIds.some((resourceId) => ownedIds.has(resourceId)),
+                          )
+                        : found;
                       const names = new Map(
                         storedServices.map((service) => [service.id, service.name]),
                       );
@@ -89,7 +105,7 @@ export class GetOperationsCalendar {
                         timeZone: chosen.timeZone,
                         from: input.from,
                         to: input.to,
-                        bookings: found.map((booking) =>
+                        bookings: visible.map((booking) =>
                           toCalendarBookingView(booking, names.get(booking.serviceId) ?? ''),
                         ),
                         resources: storedResources

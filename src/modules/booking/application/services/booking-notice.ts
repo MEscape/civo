@@ -28,6 +28,7 @@ export function notifyCustomer(
   const wallClock = epochToZonedWallClock(booking.start.getTime(), location.timeZone);
   return notifier.notify({
     kind,
+    websiteId: booking.websiteId,
     to: booking.customer.email,
     reference: booking.reference,
     serviceName: service.name,

@@ -54,6 +54,7 @@
       "participantsInvalid": "Bitte geben Sie eine gültige Personenzahl ein.",
       "skillInvalid": "Fähigkeiten dürfen nur Buchstaben, Ziffern und Bindestriche enthalten.",
       "resourceTypeUnknown": "Bitte wählen Sie einen gültigen Ressourcentyp.",
+      "assignmentInvalid": "Nur eine Mitarbeiter-Ressource kann einer Person zugewiesen werden, und das Bearbeiten eigener Zeiten setzt eine zugewiesene Person voraus.",
       "requirementsRequired": "Fügen Sie mindestens eine Ressourcenanforderung hinzu.",
       "requirementCountInvalid": "Die Anzahl der Ressourcen muss zwischen 1 und {requirementCountMax} liegen.",
       "locationsRequired": "Wählen Sie mindestens einen Standort.",
@@ -150,9 +151,7 @@
     "state": {
       "empty": "Hier kann noch nichts gebucht werden. Bitte schauen Sie später noch einmal vorbei.",
       "empty-draft": "Es kann noch nichts gebucht werden, daher zeigt die Vorschau Beispielleistungen. Legen Sie in der Buchungsverwaltung eine aktive Leistung mit Standort und Öffnungszeiten an.",
-      "unavailable": "Die Buchung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.",
-      "staff-only": "Der Buchungskalender wird nur angemeldetem Personal angezeigt.",
-      "no-access": "Sie haben keinen Zugriff auf den Buchungskalender."
+      "unavailable": "Die Buchung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut."
     },
     "preview": {
       "notice": "Vorschau: Sie können die Schritte durchklicken, es wird aber nichts reserviert oder gebucht.",
@@ -306,7 +305,13 @@
       "kind": "Art",
       "label": "Beschreibung",
       "fromDate": "Von Datum",
-      "toDate": "Bis Datum"
+      "toDate": "Bis Datum",
+      "presets": {
+        "label": "Mit einer Vorlage beginnen",
+        "office": "Bürozeiten",
+        "mornings": "Nur vormittags",
+        "everyDay": "Jeden Tag"
+      }
     },
     "locations": {
       "title": "Standorte",
@@ -341,7 +346,12 @@
       "skillsHint": "Durch Kommas getrennt, zum Beispiel: passport, residence.",
       "ownHours": "Eigene Arbeitszeiten",
       "ownHoursHint": "Beschränkt diese Ressource auf eigene Zeiten innerhalb der Öffnungszeiten des Standorts.",
-      "active": "Buchbar"
+      "active": "Buchbar",
+      "assignedEmployee": "Zugewiesene Mitarbeiterin / zugewiesener Mitarbeiter",
+      "assignedEmployeeHint": "Dieser Kalender gehört der Person, die dann nur dessen Buchungen sieht.",
+      "noEmployee": "Niemand",
+      "employeeMayEditHours": "Die Person darf ihre Arbeitszeiten selbst ändern",
+      "employeeMayEditHoursHint": "Standardmäßig aus. Alles andere an der Ressource bleibt bei den Redakteuren."
     },
     "services": {
       "title": "Leistungen",
@@ -433,6 +443,17 @@
       "loading": "Buchungen werden geladen …",
       "noEvents": "Keine Buchungen in diesem Zeitraum.",
       "retry": "Erneut versuchen"
+    },
+    "own": {
+      "title": "Mein Kalender",
+      "description": "Die Buchungen der Kalender, die Ihnen zugewiesen sind.",
+      "upcoming": "Nächste 14 Tage",
+      "empty": "Keine Buchungen in den nächsten zwei Wochen.",
+      "noCalendars": "Ihnen ist noch kein Kalender zugewiesen. Ein Redakteur kann einen zuweisen.",
+      "hoursTitle": "Meine Arbeitszeiten",
+      "hoursLocked": "Ihre Arbeitszeiten für {name} legt ein Redakteur fest.",
+      "hoursSave": "Meine Zeiten speichern",
+      "hoursFor": "Zeiten für {name}"
     }
   }
 }

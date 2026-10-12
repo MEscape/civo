@@ -78,6 +78,7 @@ export const BOOKING_VALIDATION_CODES = {
   participantsInvalid: 'booking.validation.participants_invalid',
   skillInvalid: 'booking.validation.skill_invalid',
   resourceTypeUnknown: 'booking.validation.resource_type_unknown',
+  assignmentInvalid: 'booking.validation.assignment_invalid',
   requirementsRequired: 'booking.validation.requirements_required',
   requirementCountInvalid: 'booking.validation.requirement_count_invalid',
   locationsRequired: 'booking.validation.locations_required',

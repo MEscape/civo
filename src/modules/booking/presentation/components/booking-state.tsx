@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from '@components/ui/alert';
 
 import { getTranslations } from '@i18n/server';
 
-export type BookingStateKind = 'empty' | 'empty-draft' | 'unavailable' | 'staff-only' | 'no-access';
+export type BookingStateKind = 'empty' | 'empty-draft' | 'unavailable';
 
 export interface BookingStateProps {
   readonly kind: BookingStateKind;
@@ -13,14 +13,11 @@ const VARIANT = {
   empty: 'info',
   'empty-draft': 'info',
   unavailable: 'danger',
-  'staff-only': 'info',
-  'no-access': 'warning',
-} as const satisfies Record<BookingStateKind, 'info' | 'danger' | 'warning'>;
+} as const satisfies Record<BookingStateKind, 'info' | 'danger'>;
 
 /**
  * What the component shows instead of the flow: nothing to book yet, the
- * catalog could not be read, or a staff screen opened by someone who is not
- * allowed to use it. Each has its own words, so a visitor is never shown
+ * catalog could not be read. Each has its own words, so a visitor is never shown
  * editor instructions and an editor is told what to do next.
  */
 export async function BookingState({ kind, heading }: BookingStateProps) {

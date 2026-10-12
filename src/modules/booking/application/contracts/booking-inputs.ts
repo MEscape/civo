@@ -1,3 +1,4 @@
+import type { AvailabilityPlanInput } from '../../domain/models/availability-plan';
 import type { BookableResourceInput } from '../../domain/models/bookable-resource';
 import type { BookableServiceInput } from '../../domain/models/bookable-service';
 import type { BookingLocationInput } from '../../domain/models/booking-location';
@@ -104,4 +105,10 @@ export interface FinishBookingInput {
 
 export interface ReleaseExpiredHoldsInput {
   readonly websiteId: string;
+}
+
+/** An employee's new working hours for a calendar assigned to them. */
+export interface UpdateOwnAvailabilityInput {
+  readonly resourceId: string;
+  readonly availability: AvailabilityPlanInput;
 }

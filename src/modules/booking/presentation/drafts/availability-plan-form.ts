@@ -46,3 +46,55 @@ export function withMondayOnWorkdays(plan: AvailabilityPlanForm): AvailabilityPl
 export function openDay(day: DayForm | undefined): DayForm {
   return day ?? { intervals: [DEFAULT_RANGE], breaks: [] };
 }
+
+const day = (start: string, end: string, breaks: readonly RangeForm[] = []): DayForm => ({
+  intervals: [{ start, end }],
+  breaks: [...breaks],
+});
+
+const LUNCH_BREAK: RangeForm = { start: '12:00', end: '12:30' };
+
+/**
+ * Starting points for a week, so a new resource does not begin from nothing:
+ * the editor picks the closest one and adjusts. Monday first, seven days.
+ */
+export const AVAILABILITY_PRESETS = {
+  office: [
+    day('08:00', '16:00', [LUNCH_BREAK]),
+    day('08:00', '16:00', [LUNCH_BREAK]),
+    day('08:00', '16:00', [LUNCH_BREAK]),
+    day('08:00', '16:00', [LUNCH_BREAK]),
+    day('08:00', '14:00'),
+    NO_HOURS,
+    NO_HOURS,
+  ],
+  mornings: [
+    day('08:00', '12:00'),
+    day('08:00', '12:00'),
+    day('08:00', '12:00'),
+    day('08:00', '12:00'),
+    day('08:00', '12:00'),
+    NO_HOURS,
+    NO_HOURS,
+  ],
+  everyDay: Array.from({ length: WEEKDAYS.length }, () => day('09:00', '17:00')),
+} as const satisfies Record<string, readonly DayForm[]>;
+
+export type AvailabilityPresetKey = keyof typeof AVAILABILITY_PRESETS;
+
+export const AVAILABILITY_PRESET_KEYS = Object.keys(AVAILABILITY_PRESETS).filter(
+  (key): key is AvailabilityPresetKey => Object.hasOwn(AVAILABILITY_PRESETS, key),
+);
+
+/** The plan with its weekly pattern replaced by a preset; exceptions (closures, absences) are kept. */
+export function withPreset(
+  plan: AvailabilityPlanForm,
+  key: AvailabilityPresetKey,
+): AvailabilityPlanForm {
+  return { ...plan, weekly: [...AVAILABILITY_PRESETS[key]] };
+}
+
+/** Whether a plan has no opening hours at all: the state a new resource's plan is in. */
+export function isEmptyPlan(plan: AvailabilityPlanForm): boolean {
+  return plan.exceptions.length === 0 && plan.weekly.every((d) => d.intervals.length === 0);
+}

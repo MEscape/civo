@@ -15,6 +15,8 @@ export interface FlowStepViewProps {
   readonly websiteId: string;
   readonly flow: BookingFlowController;
   readonly readOnly: boolean;
+  /** The catalog is the editor's placeholder one: nothing in it exists on the server. */
+  readonly isSample: boolean;
   readonly onManage: () => void;
 }
 
@@ -53,7 +55,7 @@ const renderParticipants: StepRenderer = ({ flow }) =>
     />
   );
 
-const renderTime: StepRenderer = ({ websiteId, flow, readOnly }) =>
+const renderTime: StepRenderer = ({ websiteId, flow, readOnly, isSample }) =>
   flow.service === null || flow.state.locationId === null ? null : (
     <TimeStep
       websiteId={websiteId}
@@ -63,6 +65,7 @@ const renderTime: StepRenderer = ({ websiteId, flow, readOnly }) =>
       slot={flow.state.slot}
       timeZone={flow.state.timeZone}
       readOnly={readOnly}
+      isSample={isSample}
       onChoose={flow.chooseSlot}
       onTaken={() => {
         flow.dispatch({ type: 'hold-lost' });

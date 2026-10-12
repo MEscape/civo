@@ -39,6 +39,8 @@ function toColumns(draft: BookableResourceDraft) {
     availability:
       draft.availability === null ? null : toJsonValue(toAvailabilityPlanInput(draft.availability)),
     isActive: draft.isActive,
+    assignedActorId: draft.assignedActorId,
+    employeeMayEditHours: draft.employeeMayEditHours,
   };
 }
 

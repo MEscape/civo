@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { confirmBookingAction } from '@modules/booking/presentation/actions/confirm-booking-action';
@@ -338,15 +338,31 @@ describe('failures and the editor preview', () => {
     expect(await screen.findByText(/No times available in/)).toBeInTheDocument();
   });
 
-  it('never reserves anything in the editor preview', async () => {
+  it('walks through the steps in the editor preview without reserving or booking anything', async () => {
+    slots.mockResolvedValue(availability(TEN));
     const user = setup();
     renderFlow({ readOnly: true });
 
     expect(await screen.findByText(/nothing is reserved or booked/)).toBeInTheDocument();
     await pickTime(user, /October 12, 2026/, /10:00/);
-    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(await screen.findByRole('heading', { name: 'Your details' })).toBeInTheDocument();
+    await fillDetails(user);
+    await user.click(screen.getByRole('button', { name: 'Review booking' }));
+
+    expect(await screen.findByRole('button', { name: 'Book now' })).toBeDisabled();
     expect(holdSlot).not.toHaveBeenCalled();
+    expect(release).not.toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('invents the times of the editor placeholder services instead of asking the server', async () => {
+    const user = setup();
+    renderFlow({ readOnly: true, isSample: true });
+
+    await pickTime(user, /October 12, 2026/, /9:00/);
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+    expect(slots).not.toHaveBeenCalled();
   });
 
   it('starts over after a booking is made', async () => {

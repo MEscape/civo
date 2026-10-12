@@ -10,12 +10,15 @@ import { MarkBookingNoShow } from '@modules/booking/application/commands/mark-bo
 import { ReleaseExpiredHolds } from '@modules/booking/application/commands/release-expired-holds';
 import { RescheduleBookingAsStaff } from '@modules/booking/application/commands/reschedule-booking-as-staff';
 import { UpdateBookableService } from '@modules/booking/application/commands/update-bookable-service';
+import { UpdateOwnAvailability } from '@modules/booking/application/commands/update-own-availability';
 import type {
   CreateBookableServiceInput,
   CreateBookingLocationInput,
 } from '@modules/booking/application/contracts/booking-inputs';
+import { GetBookingAccess } from '@modules/booking/application/queries/get-booking-access';
 import { GetBookingSetup } from '@modules/booking/application/queries/get-booking-setup';
 import { GetOperationsCalendar } from '@modules/booking/application/queries/get-operations-calendar';
+import { GetOwnResources } from '@modules/booking/application/queries/get-own-resources';
 import { BOOKING_ERROR_CODES as CODES } from '@modules/booking/domain/errors/booking-errors';
 
 import { OTHER_TENANT, actorWithRole } from '../support/fakes';
@@ -86,7 +89,7 @@ describe('who may do what', () => {
 
   it.each([
     ['viewer', false, false],
-    ['editor', false, true],
+    ['editor', true, true],
     ['admin', true, true],
   ] as const)(
     'gives a %s the right to configure: %s, to manage: %s',
@@ -347,5 +350,187 @@ describe('staff handling a booking', () => {
     expect(result.released).toBe(1);
     expect(world.bookings.all()[0]?.status).toBe('expired');
     expect(world.audit.types()).toContain('booking.holds_expired');
+  });
+});
+
+describe('an employee and their calendar', () => {
+  const MINE = makeResource('emp-mine', { assignedActorId: 'actor-employee' });
+  const COLLEAGUES = makeResource('emp-other', { assignedActorId: 'someone-else' });
+  const RANGE = { websiteId: WEBSITE, from: '2027-01-04', to: '2027-01-08' };
+
+  function worldWithTwoCalendars(role: Role) {
+    const world = createWorld({ actor: as(role), resources: [MINE, COLLEAGUES] });
+    world.bookings.seed(makeBooking({ start: at('2027-01-05', '10:00'), resources: ['emp-mine'] }));
+    world.bookings.seed(
+      makeBooking({ start: at('2027-01-05', '11:00'), resources: ['emp-other'] }),
+    );
+    return world;
+  }
+
+  it('sees only the bookings on the resources assigned to them', async () => {
+    const world = worldWithTwoCalendars('employee');
+
+    const view = (await new GetOperationsCalendar(world.admin).execute(RANGE))._unsafeUnwrap();
+
+    expect(view.bookings).toHaveLength(1);
+    expect(view.resources.map((resource) => resource.id)).toEqual(['emp-mine']);
+  });
+
+  it.each(['admin', 'editor', 'viewer'] as const)(
+    'leaves the whole calendar to a %s',
+    async (role) => {
+      const world = worldWithTwoCalendars(role);
+
+      const view = (await new GetOperationsCalendar(world.admin).execute(RANGE))._unsafeUnwrap();
+
+      expect(view.bookings).toHaveLength(2);
+    },
+  );
+
+  it("cannot see an employee resource that is nobody's as their own", async () => {
+    const world = createWorld({ actor: as('employee'), resources: [makeResource('emp-free')] });
+    world.bookings.seed(makeBooking({ start: at('2027-01-05', '10:00'), resources: ['emp-free'] }));
+
+    const view = (await new GetOperationsCalendar(world.admin).execute(RANGE))._unsafeUnwrap();
+
+    expect(view.bookings).toEqual([]);
+  });
+
+  it('may not configure resources or manage bookings', async () => {
+    const world = createWorld({ actor: as('employee') });
+
+    const resource = await new CreateBookableResource(world.admin).execute({
+      websiteId: WEBSITE,
+      locationId: null,
+      name: 'Desk',
+      type: 'employee',
+      skills: [],
+      capacity: null,
+      availability: null,
+      isActive: true,
+    });
+    const cancelled = await new CancelBookingAsStaff(world.admin).execute({ bookingId: 'x' });
+
+    expect(resource._unsafeUnwrapErr().kind).toBe('forbidden');
+    expect(cancelled._unsafeUnwrapErr().kind).toBe('forbidden');
+  });
+
+  it('is assigned by an editor, but only to an employee resource', async () => {
+    const world = createWorld({ actor: as('editor') });
+    const base = {
+      websiteId: WEBSITE,
+      locationId: null,
+      name: 'Room 1',
+      skills: [],
+      capacity: null,
+      availability: null,
+      isActive: true,
+    } as const;
+
+    const person = await new CreateBookableResource(world.admin).execute({
+      ...base,
+      type: 'employee',
+      assignedActorId: 'actor-employee',
+      employeeMayEditHours: true,
+    });
+    const room = await new CreateBookableResource(world.admin).execute({
+      ...base,
+      type: 'room',
+      assignedActorId: 'actor-employee',
+    });
+    const ownerless = await new CreateBookableResource(world.admin).execute({
+      ...base,
+      type: 'employee',
+      employeeMayEditHours: true,
+    });
+
+    expect(person._unsafeUnwrap()).toMatchObject({
+      assignedActorId: 'actor-employee',
+      employeeMayEditHours: true,
+    });
+    expect(room.isErr()).toBe(true);
+    expect(ownerless.isErr()).toBe(true);
+  });
+});
+
+describe('an employee changing their own hours', () => {
+  const WEEKDAY_HOURS = { intervals: [{ start: '09:00', end: '12:00' }], breaks: [] };
+  const HOURS = {
+    weekly: [
+      WEEKDAY_HOURS,
+      WEEKDAY_HOURS,
+      WEEKDAY_HOURS,
+      WEEKDAY_HOURS,
+      WEEKDAY_HOURS,
+      { intervals: [], breaks: [] },
+      { intervals: [], breaks: [] },
+    ],
+    exceptions: [],
+  };
+  const mine = (overrides: Parameters<typeof makeResource>[1] = {}) =>
+    makeResource('emp-mine', {
+      assignedActorId: 'actor-employee',
+      employeeMayEditHours: true,
+      ...overrides,
+    });
+
+  it('changes only the hours of a calendar assigned to them and allowed by an editor', async () => {
+    const world = createWorld({ actor: as('employee'), resources: [mine()] });
+
+    const updated = await new UpdateOwnAvailability(world.admin).execute({
+      resourceId: 'emp-mine',
+      availability: HOURS,
+    });
+
+    expect(updated._unsafeUnwrap().availability?.weekly[0]?.intervals).toEqual([
+      { start: '09:00', end: '12:00' },
+    ]);
+    expect(updated._unsafeUnwrap()).toMatchObject({
+      name: 'emp-mine',
+      assignedActorId: 'actor-employee',
+      employeeMayEditHours: true,
+    });
+  });
+
+  it.each([
+    ['not allowed by an editor', mine({ employeeMayEditHours: false })],
+    ['assigned to someone else', mine({ assignedActorId: 'someone-else' })],
+    ['assigned to nobody', mine({ assignedActorId: null, employeeMayEditHours: false })],
+  ])('finds nothing to change on a calendar that is %s', async (_name, resource) => {
+    const world = createWorld({ actor: as('employee'), resources: [resource] });
+
+    const result = await new UpdateOwnAvailability(world.admin).execute({
+      resourceId: 'emp-mine',
+      availability: HOURS,
+    });
+
+    expect(result._unsafeUnwrapErr().kind).toBe('not_found');
+  });
+
+  it('is refused to roles without the permission, even for a calendar assigned to their id', async () => {
+    const world = createWorld({
+      actor: as('viewer'),
+      resources: [mine({ assignedActorId: 'actor-viewer' })],
+    });
+
+    const result = await new UpdateOwnAvailability(world.admin).execute({
+      resourceId: 'emp-mine',
+      availability: HOURS,
+    });
+
+    expect(result._unsafeUnwrapErr().kind).toBe('forbidden');
+  });
+
+  it('lists to an employee only the resources assigned to them', async () => {
+    const world = createWorld({
+      actor: as('employee'),
+      resources: [mine(), makeResource('emp-other', { assignedActorId: 'someone-else' })],
+    });
+
+    const own = (await new GetOwnResources(world.admin).execute(WEBSITE))._unsafeUnwrap();
+    const access = (await new GetBookingAccess(world.admin).execute())._unsafeUnwrap();
+
+    expect(own.map((resource) => resource.id)).toEqual(['emp-mine']);
+    expect(access).toEqual({ canConfigure: false, canManage: false, isOwnOnly: true });
   });
 });

@@ -76,9 +76,7 @@ describe.each(Object.entries(LOCALES))('booking messages (%s)', (_locale, catalo
     const keys = [
       ...FLOW_STEPS.map((step) => `steps.${step}`),
       ...['morning', 'afternoon', 'evening'].map((part) => `time.parts.${part}`),
-      ...['empty', 'empty-draft', 'unavailable', 'staff-only', 'no-access'].map(
-        (kind) => `state.${kind}`,
-      ),
+      ...['empty', 'empty-draft', 'unavailable'].map((kind) => `state.${kind}`),
       ...['customer', 'staff'].map((actor) => `actors.${actor}`),
     ];
     expect(keys.filter((key) => !lookup(catalog, key))).toEqual([]);

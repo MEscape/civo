@@ -39,6 +39,7 @@ export {
   addDays,
   compareLocalDates,
   createLocalDate,
+  eachLocalDate,
   formatLocalDate,
   fromEpochDay,
   isSameLocalDate,
@@ -47,7 +48,12 @@ export {
   weekdayOf,
 } from '../../domain/time/local-date';
 export { formatTimeOfDay, parseTimeOfDay, MINUTES_PER_DAY } from '../../domain/time/time-of-day';
-export { epochToZonedWallClock, localDateOf, parseTimeZone } from '../../domain/time/time-zone';
+export {
+  epochToZonedWallClock,
+  localDateOf,
+  parseTimeZone,
+  zonedTimeToEpoch,
+} from '../../domain/time/time-zone';
 export { BOOKING_ERROR_CODES, BOOKING_VALIDATION_CODES } from '../../domain/errors/booking-errors';
 export type { BookingCode } from '../../domain/errors/booking-errors';
 export { MAX_CUSTOMER_RESCHEDULES } from '../../domain/policies/change-policy';

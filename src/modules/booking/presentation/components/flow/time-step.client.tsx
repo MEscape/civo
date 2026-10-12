@@ -9,6 +9,7 @@ import { useTranslations } from '@i18n/client';
 import { BOOKING_ERROR_CODES } from '../../../application/contracts/booking-constraints';
 import { holdSlotAction } from '../../actions/hold-slot-action';
 import { suggestAlternativeSlotsAction } from '../../actions/suggest-alternative-slots-action';
+import { createPreviewHold } from '../../flow/preview-hold';
 import { useZonedFormat } from '../../hooks/use-zoned-format';
 import { ErrorNotice } from '../shared/error-notice';
 
@@ -16,7 +17,7 @@ import { SlotPicker } from './slot-picker.client';
 
 import type { AlternativeSlotsDto, SlotDto } from '../../dto/availability-dto';
 import type { HoldDto } from '../../dto/booking-dto';
-import type { PublicServiceDto } from '../../dto/catalog-dto';
+import type { PublicLocationDto, PublicServiceDto } from '../../dto/catalog-dto';
 
 export interface TimeStepProps {
   readonly websiteId: string;
@@ -27,10 +28,22 @@ export interface TimeStepProps {
   readonly timeZone: string | null;
   /** The editor canvas shows the flow without ever reserving anything. */
   readonly readOnly: boolean;
+  /** The service is a placeholder: it has no availability on the server. */
+  readonly isSample: boolean;
   readonly onChoose: (slot: SlotDto, timeZone: string) => void;
   readonly onHeld: (hold: HoldDto) => void;
   /** The chosen time was taken by someone else: it is no longer a choice. */
   readonly onTaken: () => void;
+}
+
+const DEFAULT_SAMPLE_TIME_ZONE = 'UTC';
+
+function timeZoneOf(location: PublicLocationDto | undefined): string {
+  return location?.timeZone ?? DEFAULT_SAMPLE_TIME_ZONE;
+}
+
+function nameOf(location: PublicLocationDto | undefined): string {
+  return location?.name ?? '';
 }
 
 /** Codes that mean "someone else got there first": the visitor is offered the nearest other times. */
@@ -49,12 +62,15 @@ export function TimeStep({
   slot,
   timeZone,
   readOnly,
+  isSample,
   onChoose,
   onHeld,
   onTaken,
 }: TimeStepProps) {
   const t = useTranslations('booking');
   const format = useZonedFormat(timeZone ?? 'UTC');
+  const location = service.locations.find(({ id }) => id === locationId);
+  const sampleTimeZone = timeZoneOf(location);
   const [isPending, startTransition] = useTransition();
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [alternatives, setAlternatives] = useState<AlternativeSlotsDto | null>(null);
@@ -64,6 +80,20 @@ export function TimeStep({
   function reserve(target: SlotDto, zone: string) {
     setErrorCode(null);
     setAlternatives(null);
+    if (readOnly) {
+      // The editor canvas walks through the steps without asking the server to reserve anything.
+      onHeld(
+        createPreviewHold({
+          slot: target,
+          timeZone: zone,
+          participants,
+          serviceName: service.name,
+          locationName: nameOf(location),
+          now: new Date(),
+        }),
+      );
+      return;
+    }
     startTransition(async () => {
       const held = await holdSlotAction({
         websiteId,
@@ -107,6 +137,11 @@ export function TimeStep({
         horizonDays={service.horizonDays}
         selectedStart={slot?.start ?? null}
         disabled={isPending}
+        sample={
+          isSample
+            ? { timeZone: sampleTimeZone, durationMinutes: service.durationMinutes }
+            : undefined
+        }
         onSelect={(chosen, zone) => {
           setErrorCode(null);
           setAlternatives(null);
@@ -152,14 +187,13 @@ export function TimeStep({
           </p>
           <Button
             type="button"
-            disabled={isPending || readOnly}
+            disabled={isPending}
             onClick={() => {
               reserve(slot, timeZone);
             }}
           >
             {isPending ? t('time.reserving') : t('actions.continue')}
           </Button>
-          {readOnly && <p className="text-xs text-copy-muted">{t('preview.disabled')}</p>}
         </div>
       )}
     </div>

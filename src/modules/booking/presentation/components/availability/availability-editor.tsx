@@ -7,7 +7,12 @@ import { useTranslations } from '@i18n/client';
 import { replaceAt } from '@lib/utils';
 
 import { WEEKDAYS } from '../../../application/contracts/booking-constraints';
-import { NO_HOURS, withMondayOnWorkdays } from '../../drafts/availability-plan-form';
+import {
+  AVAILABILITY_PRESET_KEYS,
+  NO_HOURS,
+  withMondayOnWorkdays,
+  withPreset,
+} from '../../drafts/availability-plan-form';
 import { useZonedFormat } from '../../hooks/use-zoned-format';
 
 import { ExceptionsEditor } from './exceptions-editor';
@@ -47,6 +52,26 @@ export function AvailabilityEditor({ value, onChange, disabled = false }: Availa
           >
             {t('availability.copyMonday')}
           </Button>
+        </div>
+        <div
+          role="group"
+          aria-label={t('availability.presets.label')}
+          className="flex flex-wrap gap-2"
+        >
+          {AVAILABILITY_PRESET_KEYS.map((key) => (
+            <Button
+              key={key}
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              onClick={() => {
+                onChange(withPreset(value, key));
+              }}
+            >
+              {t(`availability.presets.${key}`)}
+            </Button>
+          ))}
         </div>
         <ul className="space-y-3">
           {WEEKDAYS.map((weekday, index) => (

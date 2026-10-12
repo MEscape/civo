@@ -1,7 +1,7 @@
 import type { Locale } from '@i18n';
 
 import { renderEmail } from '@lib/mail';
-import type { RenderedEmail } from '@lib/mail';
+import type { EmailBrand, RenderedEmail } from '@lib/mail';
 
 import type { BookingNotice, BookingNoticeKind } from '../../domain/ports/booking-notifier.port';
 
@@ -117,8 +117,12 @@ function formatWhen(notice: BookingNotice, locale: Locale, zoneNote: string): st
   return `${dateText}, ${timeText} (${zoneNote.replace('{zone}', notice.timeZone)})`;
 }
 
-/** Renders the message for one change to a booking, in the recipient's language. */
-export function renderBookingEmail(notice: BookingNotice, locale: Locale): RenderedEmail {
+/** Renders the message for one change to a booking, in the recipient's language and the website's look. */
+export function renderBookingEmail(
+  notice: BookingNotice,
+  locale: Locale,
+  brand: EmailBrand,
+): RenderedEmail {
   const copy = COPY[locale];
   const { shared } = copy;
   const { subject, intro, outro } = copy.notice[notice.kind];
@@ -143,11 +147,14 @@ export function renderBookingEmail(notice: BookingNotice, locale: Locale): Rende
       : null,
   ].filter((fact) => fact !== null);
 
-  return renderEmail({
-    locale,
-    title: subject,
-    intro: intro.replace('{service}', notice.serviceName),
-    facts,
-    outro,
-  });
+  return renderEmail(
+    {
+      locale,
+      title: subject,
+      intro: intro.replace('{service}', notice.serviceName),
+      facts,
+      outro,
+    },
+    brand,
+  );
 }

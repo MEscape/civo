@@ -1,5 +1,7 @@
 import type { AppResultAsync } from '@lib/result';
 
+import type { WebsiteId } from '../models/ids';
+
 export type BookingNoticeKind = 'confirmed' | 'cancelled' | 'rescheduled';
 
 /**
@@ -10,6 +12,8 @@ export type BookingNoticeKind = 'confirmed' | 'cancelled' | 'rescheduled';
  */
 export interface BookingNotice {
   readonly kind: BookingNoticeKind;
+  /** The website the booking was made on, whose look the message takes. */
+  readonly websiteId: WebsiteId;
   /** The address the visitor gave. Never log it. */
   readonly to: string;
   readonly reference: string;

@@ -24,6 +24,8 @@ export interface ResourceRecord {
   readonly capacity: number | null;
   readonly availability: unknown;
   readonly isActive: boolean;
+  readonly assignedActorId: string | null;
+  readonly employeeMayEditHours: boolean;
   readonly createdAt: InstantRecord;
   readonly updatedAt: InstantRecord;
 }
@@ -39,6 +41,8 @@ export const RESOURCE_SELECT = [
   'capacity',
   'availability',
   'isActive',
+  'assignedActorId',
+  'employeeMayEditHours',
   'createdAt',
   'updatedAt',
 ] as const satisfies ReadonlyArray<keyof ResourceRecord>;
@@ -59,6 +63,8 @@ export function toResource(
     capacity: record.capacity,
     availability: stored.availability,
     isActive: record.isActive,
+    assignedActorId: record.assignedActorId,
+    employeeMayEditHours: record.employeeMayEditHours,
   });
   if (draft.isErr()) {
     return err(persistenceFailed(draft.error));

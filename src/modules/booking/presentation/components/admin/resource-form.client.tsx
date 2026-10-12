@@ -9,7 +9,13 @@ import { useTranslations } from '@i18n/client';
 
 import { RESOURCE_TYPES } from '../../../application/contracts/booking-constraints';
 import { saveResourceAction } from '../../actions/save-resource-action';
-import { ANY_LOCATION, resourceDraftOf, toResourceInput } from '../../drafts/resource-draft';
+import { isEmptyPlan, withPreset } from '../../drafts/availability-plan-form';
+import {
+  ANY_LOCATION,
+  NO_EMPLOYEE,
+  resourceDraftOf,
+  toResourceInput,
+} from '../../drafts/resource-draft';
 import { useErrorText } from '../../hooks/use-error-text';
 import { useSaveForm } from '../../hooks/use-save-form';
 import { RESOURCE_TYPE_MESSAGE_KEYS } from '../../messages/message-keys';
@@ -22,11 +28,13 @@ import { OptionSelectField } from '../shared/option-select-field';
 import { OwnHoursSection } from './own-hours-section';
 
 import type { ResourceDraft } from '../../drafts/resource-draft';
-import type { LocationDto, ResourceDto } from '../../dto/setup-dto';
+import type { EmployeeOptionDto, LocationDto, ResourceDto } from '../../dto/setup-dto';
 
 export interface ResourceFormProps {
   readonly websiteId: string;
   readonly locations: readonly LocationDto[];
+  /** Who a calendar can be assigned to; empty when none are known. */
+  readonly employees: readonly EmployeeOptionDto[];
   readonly resource?: ResourceDto | undefined;
   readonly onSaved: (resource: ResourceDto) => void;
   readonly onCancel: () => void;
@@ -37,6 +45,7 @@ const SHOWN_AT_FIELD = ['name', 'type', 'capacity', 'skills', 'locationId'] as c
 export function ResourceForm({
   websiteId,
   locations,
+  employees,
   resource,
   onSaved,
   onCancel,
@@ -127,6 +136,34 @@ export function ResourceForm({
             }}
           />
         </div>
+        {draft.type === 'employee' && (
+          <>
+            <OptionSelectField
+              id={`${id}-assigned`}
+              label={t('resources.assignedEmployee')}
+              hint={t('resources.assignedEmployeeHint')}
+              value={draft.assignedActorId}
+              error={errorText('assignedActorId')}
+              options={[
+                { value: NO_EMPLOYEE, label: t('resources.noEmployee') },
+                ...employees.map((employee) => ({ value: employee.id, label: employee.name })),
+              ]}
+              onValueChange={(assignedActorId) => {
+                update({ assignedActorId });
+              }}
+            />
+            <CheckboxField
+              id={`${id}-may-edit-hours`}
+              label={t('resources.employeeMayEditHours')}
+              hint={t('resources.employeeMayEditHoursHint')}
+              checked={draft.employeeMayEditHours}
+              disabled={draft.assignedActorId === NO_EMPLOYEE}
+              onChange={(event) => {
+                update({ employeeMayEditHours: event.target.checked });
+              }}
+            />
+          </>
+        )}
         <CheckboxField
           id={`${id}-active`}
           label={t('resources.active')}
@@ -146,7 +183,14 @@ export function ResourceForm({
           plan={draft.availability}
           disabled={form.isPending}
           onEnabledChange={(hasOwnHours) => {
-            update({ hasOwnHours });
+            // Switching hours on starts from a sensible week instead of a closed one.
+            update({
+              hasOwnHours,
+              availability:
+                hasOwnHours && isEmptyPlan(draft.availability)
+                  ? withPreset(draft.availability, 'office')
+                  : draft.availability,
+            });
           }}
           onPlanChange={(availability) => {
             update({ availability });

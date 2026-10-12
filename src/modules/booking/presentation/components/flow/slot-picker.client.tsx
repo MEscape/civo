@@ -15,6 +15,7 @@ import { MonthSlots } from './month-slots.client';
 import { PickerSkeleton } from './picker-skeleton';
 
 import type { SlotDto } from '../../dto/availability-dto';
+import type { MonthAvailabilityQuery } from '../../hooks/use-month-availability';
 
 export interface SlotPickerProps {
   readonly websiteId: string;
@@ -26,6 +27,8 @@ export interface SlotPickerProps {
   /** The slot already chosen, if any, so it is shown as selected when the picker opens. */
   readonly selectedStart: string | null;
   readonly disabled?: boolean;
+  /** The placeholder services of the editor canvas: their times are invented in the browser. */
+  readonly sample?: MonthAvailabilityQuery['sample'];
   readonly onSelect: (slot: SlotDto, timeZone: string) => void;
 }
 
@@ -43,6 +46,7 @@ export function SlotPicker({
   horizonDays,
   selectedStart,
   disabled = false,
+  sample,
   onSelect,
 }: SlotPickerProps) {
   const t = useTranslations('booking');
@@ -54,6 +58,7 @@ export function SlotPicker({
     participants,
     horizonDays,
     hasSelection: selectedStart !== null,
+    sample,
   });
   const availability = outcome?.kind === 'ready' ? outcome.availability : null;
   const format = useZonedFormat(availability?.timeZone ?? 'UTC');

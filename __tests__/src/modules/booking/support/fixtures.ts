@@ -125,6 +125,8 @@ export function makeResource(
     capacity: null,
     availability: null,
     isActive: true,
+    assignedActorId: null,
+    employeeMayEditHours: false,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,

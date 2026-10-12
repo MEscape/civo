@@ -8,12 +8,13 @@ import { EntityPanel } from './entity-panel.client';
 import { ResourceForm } from './resource-form.client';
 
 import type { ResourceKind } from '../../../application/contracts/booking-constraints';
-import type { BookingSetupDto } from '../../dto/setup-dto';
+import type { BookingSetupDto, EmployeeOptionDto } from '../../dto/setup-dto';
 
 export interface ResourcesPanelProps {
   readonly websiteId: string;
   readonly setup: BookingSetupDto;
   readonly canConfigure: boolean;
+  readonly employees: readonly EmployeeOptionDto[];
 }
 
 function isResourceKind(type: string): type is ResourceKind {
@@ -21,7 +22,7 @@ function isResourceKind(type: string): type is ResourceKind {
 }
 
 /** The configured resources (employees, rooms, equipment), with "new" and "edit". */
-export function ResourcesPanel({ websiteId, setup, canConfigure }: ResourcesPanelProps) {
+export function ResourcesPanel({ websiteId, setup, canConfigure, employees }: ResourcesPanelProps) {
   const t = useTranslations('booking');
 
   const locationName = (id: string | null) =>
@@ -58,6 +59,7 @@ export function ResourcesPanel({ websiteId, setup, canConfigure }: ResourcesPane
         <ResourceForm
           websiteId={websiteId}
           locations={setup.locations}
+          employees={employees}
           resource={item}
           onSaved={onSaved}
           onCancel={onCancel}

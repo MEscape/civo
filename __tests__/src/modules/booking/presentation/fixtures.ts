@@ -151,6 +151,8 @@ export function resourceDto(overrides: Partial<ResourceDto> = {}): ResourceDto {
     capacity: null,
     availability: null,
     isActive: true,
+    assignedActorId: null,
+    employeeMayEditHours: false,
     ...overrides,
   };
 }

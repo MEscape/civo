@@ -112,7 +112,7 @@ function renderAdmin(overrides: Partial<Parameters<typeof BookingAdmin>[0]> = {}
       setup={setupDto()}
       canConfigure
       canManage
-      scope="full"
+      employees={[]}
       {...overrides}
     />,
   );
@@ -142,7 +142,7 @@ afterEach(() => {
 
 describe('the operations calendar', () => {
   it('loads the visible range and shows the bookings at the location time', async () => {
-    renderAdmin({ scope: 'calendar' });
+    renderAdmin();
 
     expect(
       await screen.findByRole('button', { name: /Passport · Ada Lovelace 2026-10-12T10:00:00/ }),
@@ -156,7 +156,7 @@ describe('the operations calendar', () => {
 
   it('shows the details of a booking when it is selected', async () => {
     const user = setup();
-    renderAdmin({ scope: 'calendar' });
+    renderAdmin();
     await user.click(await screen.findByRole('button', { name: /Passport · Ada Lovelace/ }));
 
     const panel = screen.getByRole('region', { name: 'Passport' });
@@ -168,7 +168,7 @@ describe('the operations calendar', () => {
 
   it('cancels a booking after confirmation and reloads the calendar', async () => {
     const user = setup();
-    renderAdmin({ scope: 'calendar' });
+    renderAdmin();
     await user.click(await screen.findByRole('button', { name: /Passport · Ada Lovelace/ }));
 
     await user.click(screen.getByRole('button', { name: 'Cancel booking' }));
@@ -183,7 +183,7 @@ describe('the operations calendar', () => {
 
   it('marks a booking as completed or as a no-show', async () => {
     const user = setup();
-    renderAdmin({ scope: 'calendar' });
+    renderAdmin();
     await user.click(await screen.findByRole('button', { name: /Passport · Ada Lovelace/ }));
 
     await user.click(screen.getByRole('button', { name: 'Mark as completed' }));
@@ -195,7 +195,7 @@ describe('the operations calendar', () => {
 
   it('offers no actions to a person who may only read', async () => {
     const user = setup();
-    renderAdmin({ scope: 'calendar', canManage: false });
+    renderAdmin({ canManage: false });
     await user.click(await screen.findByRole('button', { name: /Passport · Ada Lovelace/ }));
 
     expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
@@ -207,7 +207,7 @@ describe('the operations calendar', () => {
     loadCalendar.mockResolvedValue(
       calendarOf(calendarBooking({ status: 'cancelled', cancelledBy: 'customer' })),
     );
-    renderAdmin({ scope: 'calendar' });
+    renderAdmin();
     await user.click(await screen.findByRole('button', { name: /Passport · Ada Lovelace/ }));
 
     expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
@@ -218,7 +218,7 @@ describe('the operations calendar', () => {
   it('shows the server error and lets staff retry', async () => {
     const user = setup();
     loadCalendar.mockResolvedValueOnce(failure('auth.permission_denied'));
-    renderAdmin({ scope: 'calendar' });
+    renderAdmin();
 
     expect(await screen.findByText('You do not have permission to do this.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Try again' }));
@@ -228,7 +228,7 @@ describe('the operations calendar', () => {
   });
 
   it('says what to do when there is no location yet', async () => {
-    renderAdmin({ scope: 'calendar', setup: setupDto({ locations: [] }) });
+    renderAdmin({ setup: setupDto({ locations: [] }) });
     expect(
       screen.getByText('Add a location in the Locations tab to see the calendar.'),
     ).toBeInTheDocument();

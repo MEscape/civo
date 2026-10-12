@@ -42,6 +42,8 @@ export function toResourceView(resource: BookableResource): ResourceView {
     availability:
       resource.availability === null ? null : toAvailabilityPlanInput(resource.availability),
     isActive: resource.isActive,
+    assignedActorId: resource.assignedActorId,
+    employeeMayEditHours: resource.employeeMayEditHours,
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt,
   };

@@ -25,6 +25,8 @@ export interface BookingFlowProps {
   readonly heading: string;
   /** The editor canvas: everything shows, nothing is reserved or booked. */
   readonly readOnly: boolean;
+  /** The catalog is placeholder content for the editor: its times are invented in the browser. */
+  readonly isSample?: boolean;
 }
 
 /**
@@ -38,6 +40,7 @@ export function BookingFlow({
   fixedServiceId,
   heading,
   readOnly,
+  isSample = false,
 }: BookingFlowProps) {
   const t = useTranslations('booking');
   const flow = useBookingFlow({ websiteId, catalog, fixedServiceId, readOnly });
@@ -107,6 +110,7 @@ export function BookingFlow({
         websiteId={websiteId}
         flow={flow}
         readOnly={readOnly}
+        isSample={isSample}
         onManage={() => {
           setView('manage');
         }}
