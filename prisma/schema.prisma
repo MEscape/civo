@@ -1,10 +1,12 @@
 // use prisma-8
 
+/// Lifecycle status of a page revision.
 enum PageConfigStatus {
   DRAFT
   PUBLISHED
 }
 
+/// Lifecycle status of an immutable website snapshot release.
 enum ReleaseStatus {
   DRAFT
   PUBLISHED
@@ -12,28 +14,33 @@ enum ReleaseStatus {
   ROLLED_BACK
 }
 
+/// Lifecycle status of a proposed component version migration.
 enum MigrationStatus {
   PROPOSED
   APPLIED
 }
 
+/// Supported data source types: MOCK for fixture datasets, REST for external APIs.
 enum DataSourceKind {
   MOCK
   REST
 }
 
+/// Health and connectivity status of an external data source.
 enum DataSourceStatus {
   UNKNOWN
   OK
   ERROR
 }
 
+/// Ingestion and mapping health of a typed dataset.
 enum DatasetStatus {
   UNKNOWN
   OK
   ERROR
 }
 
+/// State machine status for appointments and resource reservations.
 enum BookingStatus {
   HELD
   CONFIRMED
@@ -43,6 +50,7 @@ enum BookingStatus {
   EXPIRED
 }
 
+/// Root aggregate representing a municipal or organizational website.
 model Website {
   id          String   @id @default(uuid())
   tenantId    String
@@ -68,6 +76,7 @@ model Website {
   @@unique([id, tenantId])
 }
 
+/// A routed page belonging to a website.
 model Page {
   id        String   @id @default(uuid())
   tenantId  String
@@ -84,6 +93,7 @@ model Page {
   @@unique([websiteId, path])
 }
 
+/// Versioned component tree snapshot of a page's content.
 model PageConfig {
   id        String           @id @default(uuid())
   pageId    String
@@ -98,6 +108,7 @@ model PageConfig {
   @@unique([pageId, version])
 }
 
+/// Visual styling parameters and typography tokens for a website.
 model WebsiteTheme {
   id             String  @id @default(uuid())
   websiteId      String  @unique
@@ -112,6 +123,7 @@ model WebsiteTheme {
   website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 }
 
+/// An immutable published snapshot of a website's pages and component pins.
 model WebsiteRelease {
   id            String   @id @default(uuid())
   websiteId     String
@@ -129,6 +141,7 @@ model WebsiteRelease {
   @@unique([websiteId, releaseNumber])
 }
 
+/// Component version migration audit record and proposed changes.
 model WebsiteMigration {
   id              String          @id @default(uuid())
   websiteId       String
@@ -147,6 +160,7 @@ model WebsiteMigration {
   @@index([websiteId, createdAt])
 }
 
+/// External integration endpoint providing data for datasets.
 model DataSource {
   id            String    @id @default(uuid())
   websiteId     String
@@ -163,12 +177,14 @@ model DataSource {
   datasets      Dataset[]
 }
 
+/// A structured collection of content items retrieved from a data source.
 model Dataset {
   id            String    @id @default(uuid())
   dataSourceId  String
   name          String
   slug          String
   canonicalKind String
+  path          String?
   mapping       Json?
   status        DatasetStatus @default(UNKNOWN)
   lastFetchedAt DateTime?
@@ -180,6 +196,7 @@ model Dataset {
   @@unique([dataSourceId, slug])
 }
 
+/// Association between an authenticated actor and a tenant with an assigned role.
 model Membership {
   id        String   @id @default(uuid())
   actorId   String
@@ -190,11 +207,29 @@ model Membership {
   @@unique([actorId, tenantId, role])
 }
 
+// A pending, single-use offer to join a tenant with a role. Only the SHA-256 hash of the emailed
+// token is stored, so a database read cannot be turned into a working link.
+/// Cryptographic single-use token inviting a user to join a tenant.
+model Invitation {
+  id         String    @id @default(uuid())
+  tenantId   String
+  email      String
+  role       String
+  tokenHash  String    @unique
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([tenantId, email])
+}
+
 // ── Booking & scheduling ────────────────────────────────────────────────────
 // Every booking table carries (websiteId, tenantId) and references the website
 // by that pair, like Page: the database itself refuses a row whose tenant is
 // not the website's tenant.
 
+/// Municipal venue, building, or branch where appointments and bookable services take place.
 model BookingLocation {
   id           String   @id @default(uuid())
   tenantId     String
@@ -214,6 +249,7 @@ model BookingLocation {
   @@index([websiteId])
 }
 
+/// Physical resource, room, equipment, or staff calendar required to fulfill a booking.
 model BookableResource {
   id           String   @id @default(uuid())
   tenantId     String
@@ -225,6 +261,11 @@ model BookableResource {
   capacity     Int?
   availability Json?
   isActive     Boolean  @default(true)
+  // The employee (a Membership actor of this tenant) whose calendar this resource is. No foreign
+  // key: actors live in the authentication database. NULL: not a person's calendar.
+  assignedActorId        String?
+  // Whether the assigned employee may change `availability` themselves.
+  employeeMayEditHours   Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
 
@@ -233,8 +274,10 @@ model BookableResource {
   holds    BookingResource[]
 
   @@index([websiteId])
+  @@index([tenantId, assignedActorId])
 }
 
+/// Administrative service offered to the public with configurable duration and booking rules.
 model BookableService {
   id                     String   @id @default(uuid())
   tenantId               String
@@ -268,6 +311,7 @@ model BookableService {
   @@index([websiteId])
 }
 
+/// An appointment reservation made by a citizen with occupied timespan and status tracking.
 model Booking {
   id              String        @id @default(uuid())
   tenantId        String
@@ -308,6 +352,7 @@ model Booking {
 // One row per resource a booking holds. It repeats the booking's occupied span,
 // session key and liveness so a single table can carry the exclusion
 // constraint that makes double booking impossible (see the migration).
+/// Specific resource reservation holding a capacity slot during an appointment.
 model BookingResource {
   bookingId     String
   resourceId    String
