@@ -59,20 +59,22 @@ describe('architecture of this repository', () => {
       .map((e) => `${e.kind}:${e.name}=${e.category}`)
       .sort();
     expect(exceptions).toEqual([
+      'action:acceptInvitationAction=public',
       'action:cancelOwnBookingAction=public',
       'action:confirmBookingAction=public',
       'action:findBookingAction=public',
       'action:getAvailableSlotsAction=public',
       'action:holdSlotAction=public',
+      'action:readTrendWindowAction=public',
       'action:releaseHoldAction=public',
       'action:requestPasswordResetAction=public',
       'action:rescheduleOwnBookingAction=public',
       'action:resetPasswordAction=public',
       'action:signInAction=public',
       'action:signOutAction=public',
-      'action:signUpAction=public',
       'action:suggestAlternativeSlotsAction=public',
       'route-handler:GET src/app/api/health/route.ts=none',
+      'use-case:AcceptInvitation=public',
       'use-case:BuildMapModel=public',
       'use-case:CanNestComponent=public',
       'use-case:CancelOwnBooking=public',
@@ -98,7 +100,6 @@ describe('architecture of this repository', () => {
       'use-case:ResetPassword=public',
       'use-case:SignIn=public',
       'use-case:SignOut=public',
-      'use-case:SignUp=public',
       'use-case:SpendRequestBudget=public',
       'use-case:SuggestAlternativeSlots=public',
     ]);

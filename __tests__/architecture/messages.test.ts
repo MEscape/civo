@@ -16,6 +16,11 @@ const modulesWithMessages = (project.modules as string[]).filter((m) =>
   project.files.has(`src/modules/${m}/presentation/messages/message-keys.ts`),
 );
 
+/** Glob, not a template-literal import: Vite cannot resolve a dynamic path without a static extension and warns about it. */
+const domainErrorModules = import.meta.glob<Record<string, unknown>>(
+  '../../src/modules/*/domain/errors/*.ts',
+);
+
 const readCatalog = (moduleName: string, locale: string) =>
   (
     JSON.parse(
@@ -52,7 +57,11 @@ describe('module message maps', () => {
       for (const file of project
         .moduleFiles(moduleName)
         .filter((f: { local: string }) => f.local.startsWith('domain/errors/'))) {
-        const exported = (await import(`../../${file.path}`)) as Record<string, unknown>;
+        const load = domainErrorModules[`../../${file.path}`];
+        if (load === undefined) {
+          throw new Error(`${file.path} is not covered by the domain error glob.`);
+        }
+        const exported = await load();
         for (const [name, value] of Object.entries(exported)) {
           if (/_(?:ERROR|VALIDATION)_CODES$/.test(name)) {
             codes.push(...Object.values(value as Record<string, string>));
