@@ -54,6 +54,7 @@ export type NodeMigrationPlan =
   | (NodePlanBase & {
       readonly status: 'unresolvable';
       readonly reason: UnresolvableReason;
+      readonly toVersion?: number | undefined;
     });
 
 export interface PageMigrationPlan {
@@ -91,7 +92,7 @@ function planNode(
   const oldDefaults = components.defaultProps(node.type, fromVersion);
   const newDefaults = components.defaultProps(node.type, toVersion);
   if (oldDefaults === null || newDefaults === null) {
-    return { ...base, status: 'unresolvable', reason: 'version_unregistered' };
+    return { ...base, toVersion, status: 'unresolvable', reason: 'version_unregistered' };
   }
 
   const { merged, conflicts, addedFields } = threeWayMergeProps(

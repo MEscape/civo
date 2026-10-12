@@ -102,7 +102,8 @@ export class PrismaMigrationRepository implements MigrationRepository {
     return fromThrowableAsync(
       async () =>
         db.orm.public.WebsiteMigration.where({ websiteId })
-          .select(...MIGRATION_SUMMARY_SELECT)
+          // The plan is read for the history's per-page change summary; `limit` bounds the cost.
+          .select(...MIGRATION_SELECT)
           // `id` breaks ties so the order is stable between requests.
           .orderBy([(m) => m.createdAt.desc(), (m) => m.id.desc()])
           .limit(limit)

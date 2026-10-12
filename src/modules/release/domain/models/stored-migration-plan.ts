@@ -101,6 +101,12 @@ function readUpgrade(raw: Readonly<Record<string, unknown>>) {
     : null;
 }
 
+/** A target version a node that cannot be migrated may still carry. */
+function readOptionalVersion(raw: Readonly<Record<string, unknown>>) {
+  const { toVersion } = raw;
+  return typeof toVersion === 'number' ? { toVersion } : {};
+}
+
 function readNodePlan(item: unknown): NodeMigrationPlan | null {
   const header = readNodeHeader(item);
   if (header === null) {
@@ -127,7 +133,7 @@ function readNodePlan(item: unknown): NodeMigrationPlan | null {
     case 'unresolvable': {
       const { reason } = raw;
       return typeof reason === 'string' && isUnresolvableReason(reason)
-        ? { ...base, status, reason }
+        ? { ...base, status, reason, ...readOptionalVersion(raw) }
         : null;
     }
     default:

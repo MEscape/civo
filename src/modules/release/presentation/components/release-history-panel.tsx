@@ -4,13 +4,15 @@ import { useId, useState, useTransition } from 'react';
 
 import { EmptyState } from '@components/layout/layout-primitives';
 import { FieldMessage } from '@components/shared/field-message';
-import { Button } from '@components/ui/button';
-import { AlertTriangle } from '@components/ui/icons';
+import { Button, buttonVariants } from '@components/ui/button';
+import { AlertTriangle, ExternalLink } from '@components/ui/icons';
+
+import { Link } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
-import { noop } from '@lib/utils';
+import { cn, noop } from '@lib/utils';
 
 import { publishReleaseAction } from '../actions/publish-release-action';
 import { rollbackReleaseAction } from '../actions/rollback-release-action';
@@ -24,6 +26,7 @@ export interface ReleaseHistoryPanelProps {
   readonly websiteId: string;
   /** Loaded by the Server Component, so the list renders without a client fetch. */
   readonly history: ReleaseHistoryDto;
+  readonly publicSiteHref?: string;
 }
 
 /**
@@ -31,7 +34,11 @@ export interface ReleaseHistoryPanelProps {
  * a rollback the route is refreshed instead of mirroring "which release is
  * active" in local state.
  */
-export function ReleaseHistoryPanel({ websiteId, history }: ReleaseHistoryPanelProps) {
+export function ReleaseHistoryPanel({
+  websiteId,
+  history,
+  publicSiteHref,
+}: ReleaseHistoryPanelProps) {
   const t = useTranslations('release');
 
   const id = useId();
@@ -73,6 +80,17 @@ export function ReleaseHistoryPanel({ websiteId, history }: ReleaseHistoryPanelP
       <Button type="button" onClick={handlePublish} disabled={isPending}>
         {isPending ? t('history.publishing') : t('history.publish')}
       </Button>
+      {publicSiteHref !== undefined && (
+        <Link
+          href={publicSiteHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(buttonVariants({ variant: 'outline' }), 'gap-1.5')}
+        >
+          <ExternalLink className="size-4" aria-hidden="true" />
+          <span>{t('history.publicSite')}</span>
+        </Link>
+      )}
       {publishedNumber !== null && (
         <p role="status" className="text-sm text-success">
           {t('history.published', { number: publishedNumber })}

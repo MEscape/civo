@@ -4,6 +4,7 @@
       "listLabel": "Release history",
       "empty": "No releases published yet. Select “Publish” to put the current pages live.",
       "publish": "Publish current pages",
+      "publicSite": "Public site",
       "publishing": "Publishing…",
       "published": "Release #{number} is live.",
       "releaseNumber": "Release #{number}",
@@ -64,6 +65,7 @@
         "versions": "Version {from} → {to}",
         "addedFields": "New settings with default values: {fields}",
         "unresolvedNote": "{count, plural, one {# component still has an open decision and will be left unchanged.} other {# components still have open decisions and will be left unchanged.}}",
+        "noApplicableUpdates": "None of these components can be automatically applied to drafts. Please edit or replace them in the Builder.",
         "apply": "Apply updates to drafts",
         "applying": "Applying…",
         "applyNote": "Only your drafts change. The live website stays as it is until you publish."
@@ -112,7 +114,12 @@
         "listLabel": "Update history",
         "empty": "No updates have been proposed yet.",
         "proposedAt": "Proposed: {date}",
-        "appliedAt": "Applied: {date}"
+        "appliedAt": "Applied: {date}",
+        "changeCount": "{count, plural, one {# component updated} other {# components updated}}",
+        "detailsToggle": "View details",
+        "noNodeChanges": "No component changes on this page",
+        "versionUnchanged": "(v{version})",
+        "versionChanged": "(v{from} → v{to})"
       },
       "status": {
         "proposed": "Proposed",

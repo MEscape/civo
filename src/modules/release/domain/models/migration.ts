@@ -5,12 +5,23 @@ import type { AppResult } from '@lib/result';
 import { releaseMigrationAlreadyApplied, releaseMigrationStale } from '../errors/release-errors';
 
 import type { MigrationId, ReleaseId, WebsiteId } from './ids';
-import type { MigrationPlan } from './migration-plan';
+import type { MigrationPlan, NodeMigrationStatus } from './migration-plan';
 
 export const MIGRATION_STATUSES = ['proposed', 'applied'] as const;
 export type MigrationStatus = (typeof MIGRATION_STATUSES)[number];
 
-/** A migration without its plan: what lists need, so history never loads plan JSON. */
+export interface MigrationPageSummary {
+  readonly path: string;
+  readonly nodes: ReadonlyArray<{
+    readonly nodeId: string;
+    readonly type: string;
+    readonly fromVersion: number;
+    readonly toVersion?: number | undefined;
+    readonly status: NodeMigrationStatus;
+  }>;
+}
+
+/** A migration without its full plan: carries high-level summary of changed pages and nodes. */
 export interface MigrationSummary {
   readonly id: MigrationId;
   readonly websiteId: WebsiteId;
@@ -19,6 +30,8 @@ export interface MigrationSummary {
   readonly status: MigrationStatus;
   readonly createdAt: Date;
   readonly appliedAt: Date | null;
+  readonly pages?: readonly MigrationPageSummary[] | undefined;
+  readonly changedNodeCount?: number | undefined;
 }
 
 /**

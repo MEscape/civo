@@ -123,7 +123,9 @@ function applyToNode(
         node: { ...node, children },
         updatedNodeIds,
         skippedNodeIds:
-          plan.status === 'needs_review' ? [...skippedNodeIds, node.id] : skippedNodeIds,
+          plan.status === 'needs_review' || plan.status === 'unresolvable'
+            ? [...skippedNodeIds, node.id]
+            : skippedNodeIds,
       };
     }
 

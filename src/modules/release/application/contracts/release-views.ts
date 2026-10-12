@@ -1,6 +1,10 @@
 import type { ConflictResolutionsInput } from '../../domain/models/conflict-resolution';
 import type { MigrationStatus } from '../../domain/models/migration';
-import type { NodeMigrationPlan, NodeStatusCounts } from '../../domain/models/migration-plan';
+import type {
+  NodeMigrationPlan,
+  NodeMigrationStatus,
+  NodeStatusCounts,
+} from '../../domain/models/migration-plan';
 import type { PageOutcome } from '../../domain/models/page-draft';
 import type { ReleaseStatus } from '../../domain/models/release';
 import type {
@@ -112,7 +116,18 @@ export interface MigrationProposalView {
   readonly plan: MigrationPlanView;
 }
 
-/** One row of a website's migration history; carries no plan. */
+export interface MigrationSummaryPageDetailView {
+  readonly path: string;
+  readonly nodes: ReadonlyArray<{
+    readonly nodeId: string;
+    readonly type: string;
+    readonly fromVersion: number;
+    readonly toVersion?: number | undefined;
+    readonly status: NodeMigrationStatus;
+  }>;
+}
+
+/** One row of a website's migration history; carries summary diff information. */
 export interface MigrationSummaryView {
   readonly id: string;
   readonly websiteId: string;
@@ -120,6 +135,8 @@ export interface MigrationSummaryView {
   readonly status: MigrationStatus;
   readonly createdAt: Date;
   readonly appliedAt: Date | null;
+  readonly pages?: readonly MigrationSummaryPageDetailView[] | undefined;
+  readonly changedNodeCount?: number | undefined;
 }
 
 export interface MigrationDetailView extends MigrationSummaryView {

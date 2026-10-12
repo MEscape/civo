@@ -71,6 +71,8 @@ export function toMigrationSummaryView(summary: MigrationSummary): MigrationSumm
     status: summary.status,
     createdAt: summary.createdAt,
     appliedAt: summary.appliedAt,
+    pages: summary.pages,
+    changedNodeCount: summary.changedNodeCount,
   };
 }
 

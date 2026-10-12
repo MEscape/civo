@@ -4,6 +4,7 @@
       "listLabel": "Release-Verlauf",
       "empty": "Noch keine Veröffentlichung. Wählen Sie „Veröffentlichen“, um die aktuellen Seiten live zu schalten.",
       "publish": "Aktuelle Seiten veröffentlichen",
+      "publicSite": "Öffentliche Seite",
       "publishing": "Wird veröffentlicht…",
       "published": "Version #{number} ist live.",
       "releaseNumber": "Release #{number}",
@@ -64,6 +65,7 @@
         "versions": "Version {from} → {to}",
         "addedFields": "Neue Einstellungen mit Standardwerten: {fields}",
         "unresolvedNote": "{count, plural, one {# Komponente hat noch eine offene Entscheidung und bleibt unverändert.} other {# Komponenten haben noch offene Entscheidungen und bleiben unverändert.}}",
+        "noApplicableUpdates": "Keine dieser Komponenten kann automatisch in Entwürfe übernommen werden. Bitte bearbeiten oder ersetzen Sie diese im Builder.",
         "apply": "Updates in Entwürfe übernehmen",
         "applying": "Wird übernommen…",
         "applyNote": "Nur Ihre Entwürfe ändern sich. Die Live-Website bleibt unverändert, bis Sie veröffentlichen."
@@ -112,7 +114,12 @@
         "listLabel": "Update-Verlauf",
         "empty": "Es wurden noch keine Updates vorgeschlagen.",
         "proposedAt": "Vorgeschlagen: {date}",
-        "appliedAt": "Übernommen: {date}"
+        "appliedAt": "Übernommen: {date}",
+        "changeCount": "{count, plural, one {# Komponente aktualisiert} other {# Komponenten aktualisiert}}",
+        "detailsToggle": "Details anzeigen",
+        "noNodeChanges": "Keine Komponentenänderungen auf dieser Seite",
+        "versionUnchanged": "(v{version})",
+        "versionChanged": "(v{from} → v{to})"
       },
       "status": {
         "proposed": "Vorgeschlagen",

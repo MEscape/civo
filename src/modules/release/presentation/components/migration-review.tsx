@@ -50,6 +50,8 @@ export function MigrationReview({ websiteId, migrationId, plan, onApplied }: Mig
   const unresolvedCount = countUnresolvedNodes(plan, choices);
   const isBlocked = hasInvalidChoice(choices);
 
+  const hasApplicableUpdates = plan.counts.upgradable > 0 || plan.counts.needs_review > 0;
+
   function handleChoose(key: string, choice: ConflictChoice) {
     setChoices((current) => ({ ...current, [key]: choice }));
   }
@@ -103,6 +105,12 @@ export function MigrationReview({ websiteId, migrationId, plan, onApplied }: Mig
         </p>
       )}
 
+      {!hasApplicableUpdates && (
+        <p role="status" className="text-sm text-copy-muted">
+          {t('migration.review.noApplicableUpdates')}
+        </p>
+      )}
+
       <FieldMessage
         id={`${id}-error`}
         message={errorKey === null ? undefined : t(errorKey)}
@@ -110,7 +118,11 @@ export function MigrationReview({ websiteId, migrationId, plan, onApplied }: Mig
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" disabled={isPending || isBlocked} onClick={handleApply}>
+        <Button
+          type="button"
+          disabled={isPending || isBlocked || !hasApplicableUpdates}
+          onClick={handleApply}
+        >
           {isPending && <Spinner className="mr-2" aria-hidden="true" />}
           {isPending ? t('migration.review.applying') : t('migration.review.apply')}
         </Button>
