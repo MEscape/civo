@@ -53,6 +53,7 @@ export {
   moveNode,
   nextSelectionAfterRemoval,
   removeNode,
+  stepPlacement,
   updateNodeProps,
 } from '../../domain/tree/tree-operations';
 export type {

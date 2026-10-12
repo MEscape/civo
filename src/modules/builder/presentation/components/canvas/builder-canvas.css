@@ -10,6 +10,8 @@
 
 .civo-canvas-content {
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .civo-canvas-content [data-civo-node-id] {
@@ -17,6 +19,8 @@
   cursor: pointer;
   outline-offset: -1px;
   transition: outline-color 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .civo-canvas-overlay {

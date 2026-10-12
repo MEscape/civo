@@ -122,6 +122,9 @@ export function createCanvasDragController(
     if (!options.isEnabled()) {
       return;
     }
+    if (typeof window !== 'undefined') {
+      window.getSelection()?.removeAllRanges();
+    }
     const container = options.getContainer();
     rects = container === null ? new Map<PageNodeId, Rect>() : measureAllNodeRects(container);
     setState({ session, target: null, indicator: null, isKeyboard });
@@ -257,7 +260,18 @@ export function createCanvasDragController(
         if (!hasExceededActivationDistance(pending, current)) {
           return;
         }
+        if (typeof window !== 'undefined') {
+          window.getSelection()?.removeAllRanges();
+        }
         beginNodeDrag(pending.id, false);
+      }
+      if (state.session !== null) {
+        if (typeof window !== 'undefined') {
+          window.getSelection()?.removeAllRanges();
+        }
+        if (event.cancelable) {
+          event.preventDefault();
+        }
       }
       movePointer(event.clientX, event.clientY);
     }

@@ -1,9 +1,12 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 
 import { builderQueries, CreatePageForm, PageList, toPageSummaryDto } from '@modules/builder';
 
-import { Container, PageHeading, Section } from '@components/layout/layout-primitives';
+import { AdminContainer, PageHeading, Section } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
+import { PageSkeleton } from '@components/shared/page-skeleton';
 
 import { requireLocale } from '@i18n';
 
@@ -23,14 +26,14 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   return buildPrivateMetadata(t('pages.list.title'));
 }
 
-export default async function BuilderPagesPage({ params }: RouteProps) {
-  const locale = requireLocale((await params).locale);
-  const { websiteId } = await params;
+async function BuilderPagesContent({ params }: RouteProps) {
+  const { locale: rawLocale, websiteId } = await params;
+  const locale = requireLocale(rawLocale);
   const t = await getTranslations({ locale, namespace: 'builder' });
   const pages = await orFail(builderQueries.listPages.execute({ websiteId }));
 
   return (
-    <Container className="max-w-4xl">
+    <AdminContainer>
       <Section className="space-y-8">
         <PageHeading title={t('pages.list.title')} description={t('pages.list.description')} />
 
@@ -45,6 +48,14 @@ export default async function BuilderPagesPage({ params }: RouteProps) {
           </I18nProvider>
         </div>
       </Section>
-    </Container>
+    </AdminContainer>
+  );
+}
+
+export default function BuilderPagesPage({ params }: RouteProps) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <BuilderPagesContent params={params} />
+    </Suspense>
   );
 }

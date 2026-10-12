@@ -317,6 +317,25 @@ export function updateNodeProps(
 }
 
 /**
+ * Where a node lands when it moves one step among its siblings, or `null` at
+ * either end (it does not leave its parent).
+ */
+export function stepPlacement(
+  nodes: readonly PageNode[],
+  nodeId: PageNodeId,
+  direction: -1 | 1,
+): Placement | null {
+  const location = locateNode(nodes, nodeId);
+  if (location === null) {
+    return null;
+  }
+  const index = location.index + direction;
+  return index < 0 || index >= location.siblings.length
+    ? null
+    : { parentId: location.parentId, index };
+}
+
+/**
  * Moves a node to `placement` (index counted after the node is lifted out).
  * Refused when the target is the node itself or inside its own subtree (a
  * cycle), when nesting is not allowed or when the depth limit would break.

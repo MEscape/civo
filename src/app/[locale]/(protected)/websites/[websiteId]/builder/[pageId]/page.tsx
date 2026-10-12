@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { cache, Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
@@ -17,6 +17,9 @@ import { componentPlatformQueries } from '@modules/component-platform';
 import { dataSourceQueries } from '@modules/data-sources';
 import { releaseRoutes } from '@modules/release/client';
 import { themeToCssVariables, websiteQueries, websiteRoutes } from '@modules/website';
+
+import { I18nProvider } from '@components/providers/i18n-provider';
+import { PageSkeleton } from '@components/shared/page-skeleton';
 
 import { requireLocale } from '@i18n';
 
@@ -47,8 +50,13 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   };
 }
 
-export default async function BuilderPage({ params }: RouteProps) {
-  const { websiteId, pageId } = await params;
+/**
+ * The editor's Client Components read `builder` text and, through `useComponentText`,
+ * the platform components' labels (`componentPlatform`); only this subtree receives them.
+ */
+async function BuilderContent({ params }: RouteProps) {
+  const { locale: rawLocale, websiteId, pageId } = await params;
+  const locale = requireLocale(rawLocale);
 
   const sessionView = await orFail(loadSession(pageId));
   // The stored page is authoritative; a URL that disagrees with it is simply wrong.
@@ -87,22 +95,32 @@ export default async function BuilderPage({ params }: RouteProps) {
     .match((view) => view, assertNever);
 
   return (
-    <BuilderSessionProvider
-      key={sessionView.page.id}
-      session={toEditorSessionDto(sessionView)}
-      datasetOptions={datasetOptions}
-      categoryOptions={categoryOptions}
-    >
-      <BuilderShell
-        website={{ name: websiteView.name }}
-        pageTitle={sessionView.page.title}
-        themeStyle={themeToCssVariables(websiteView.theme)}
-        links={{
-          websites: websiteRoutes.list(),
-          publicSite: releaseRoutes.publicSite(websiteView.slug),
-          settings: websiteRoutes.settings(websiteView.id),
-        }}
-      />
-    </BuilderSessionProvider>
+    <I18nProvider locale={locale} namespaces={['builder', 'componentPlatform']}>
+      <BuilderSessionProvider
+        key={sessionView.page.id}
+        session={toEditorSessionDto(sessionView)}
+        datasetOptions={datasetOptions}
+        categoryOptions={categoryOptions}
+      >
+        <BuilderShell
+          website={{ name: websiteView.name }}
+          pageTitle={sessionView.page.title}
+          themeStyle={themeToCssVariables(websiteView.theme)}
+          links={{
+            websites: websiteRoutes.list(),
+            publicSite: releaseRoutes.publicSite(websiteView.slug, sessionView.page.path),
+            settings: websiteRoutes.settings(websiteView.id),
+          }}
+        />
+      </BuilderSessionProvider>
+    </I18nProvider>
+  );
+}
+
+export default function BuilderPage({ params }: RouteProps) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <BuilderContent params={params} />
+    </Suspense>
   );
 }

@@ -1,8 +1,6 @@
-import { useRef } from 'react';
+import { Suspense } from 'react';
 
 import { createPortal } from 'react-dom';
-
-import { useScaledHeight } from '@hooks/use-scaled-height';
 
 import { useTranslations } from '@i18n/client';
 
@@ -33,7 +31,10 @@ function popoverTop(anchor: DOMRect): number {
 }
 
 /**
- * A scaled-down live rendering of the hovered component. A visual aid
+ * A scaled-down live rendering of the hovered component, clipped by the
+ * popover's fixed-size stage (a transform does not shrink the layout box, but
+ * the clipped overflow is never seen, so the content needs no measuring: a
+ * measured wrapper showed the unscaled page for a frame on every hover). A visual aid
  * only, so it is hidden from assistive technology: the palette button's
  * own name is the accessible one. It exists only after a hover or focus,
  * i.e. on the client, so touching `document` here is safe.
@@ -47,8 +48,6 @@ export function ComponentPreviewPopover({
   const { catalog } = useBuilderSession();
   const text = useComponentText();
   const { node, isLoading, errorCode } = useComponentPreview(componentType);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const scaledHeight = useScaledHeight(contentRef, PREVIEW_SCALE, node !== null);
 
   const descriptor = componentType === null ? null : catalog.describe(componentType);
   if (descriptor === null || anchorRect === null) {
@@ -72,23 +71,26 @@ export function ComponentPreviewPopover({
         )}
       </div>
       <div className="civo-preview-popover__stage">
-        {isLoading && <div className="civo-preview-popover__status">{t('preview.rendering')}</div>}
-        {errorCode !== null && (
-          <div className="civo-preview-popover__status text-danger">
-            {t(messageKeyForCode(errorCode), MESSAGE_PARAMS)}
-          </div>
-        )}
-        {node !== null && (
-          <div style={{ height: scaledHeight ?? 'auto' }}>
+        <Suspense
+          fallback={<div className="civo-preview-popover__status">{t('preview.rendering')}</div>}
+        >
+          {isLoading && (
+            <div className="civo-preview-popover__status">{t('preview.rendering')}</div>
+          )}
+          {errorCode !== null && (
+            <div className="civo-preview-popover__status text-danger">
+              {t(messageKeyForCode(errorCode), MESSAGE_PARAMS)}
+            </div>
+          )}
+          {node !== null && (
             <div
-              ref={contentRef}
               className="civo-preview-popover__scale"
               style={{ transform: `scale(${PREVIEW_SCALE})` }}
             >
               <CanvasThemeScope themeStyle={themeStyle}>{node}</CanvasThemeScope>
             </div>
-          </div>
-        )}
+          )}
+        </Suspense>
       </div>
     </div>,
     document.body,

@@ -22,7 +22,8 @@ export function useCanvasSelection(
     onMouseOver(event: MouseEvent<HTMLElement>): void {
       onHover(findNodeId(event.target));
     },
-    onMouseOut(): void {
+    // `mouseleave`, not `mouseout`: the latter also fires between a node's own children and made the hover outline blink.
+    onMouseLeave(): void {
       onHover(null);
     },
   };

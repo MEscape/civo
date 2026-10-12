@@ -4,11 +4,11 @@ import {
   duplicateNode,
   findNode,
   insertNewComponent,
-  locateNode,
   moveNode,
   nextSelectionAfterRemoval,
   removeNode,
   resolvePlacement,
+  stepPlacement,
 } from '../../application/contracts/editor-model';
 
 import { noticeRaised } from './builder-actions';
@@ -121,22 +121,16 @@ export function duplicateNodeById(nodeId: PageNodeId): BuilderThunk {
 export function moveNodeBy(nodeId: PageNodeId, direction: -1 | 1): BuilderThunk {
   return (dispatch, getState, { catalog }) => {
     const { children, selectedNodeId } = getState().document.history.present;
-    const location = locateNode(children, nodeId);
-    if (location === null) {
-      return;
-    }
-
-    const index = location.index + direction;
-    if (index < 0 || index >= location.siblings.length) {
+    const placement = stepPlacement(children, nodeId, direction);
+    if (placement === null) {
       return;
     }
     dispatch(
       commit(
-        moveNode(
-          children,
-          { nodeId, placement: { parentId: location.parentId, index } },
-          catalog,
-        ).map((tree) => ({ children: tree, selectedNodeId })),
+        moveNode(children, { nodeId, placement }, catalog).map((tree) => ({
+          children: tree,
+          selectedNodeId,
+        })),
       ),
     );
   };

@@ -26,6 +26,23 @@ function relativeRect(element: Element, container: Element): Rect {
   };
 }
 
+/** Whether two measurements describe the same layout, so an unchanged one keeps its identity and renders nothing. */
+export function areRectMapsEqual(
+  first: ReadonlyMap<PageNodeId, Rect>,
+  second: ReadonlyMap<PageNodeId, Rect>,
+): boolean {
+  if (first.size !== second.size) {
+    return false;
+  }
+  for (const [id, a] of first) {
+    const b = second.get(id);
+    if (b?.top !== a.top || b.left !== a.left || b.width !== a.width || b.height !== a.height) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Rects of every node, relative to `container`, which is where the overlay's coordinates start. */
 export function measureAllNodeRects(container: Element): Map<PageNodeId, Rect> {
   const rects = new Map<PageNodeId, Rect>();

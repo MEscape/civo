@@ -28,6 +28,7 @@ export interface ComponentPaletteProps {
   readonly themeStyle: ThemeStyle;
 }
 
+const PALETTE_ITEM_ATTRIBUTE = 'data-palette-item';
 const HEADING = 'text-xs font-semibold uppercase tracking-wide text-copy-muted';
 
 /**
@@ -46,8 +47,27 @@ export function ComponentPalette({ dnd, themeStyle }: ComponentPaletteProps) {
   const [hovered, setHovered] = useState<HoveredItem | null>(null);
 
   function showPreview(type: string, element: HTMLElement): void {
-    if (!palette.wasDragged()) {
-      setHovered({ type, rect: element.getBoundingClientRect() });
+    if (palette.wasDragged()) {
+      return;
+    }
+    const rect = element.getBoundingClientRect();
+    // Focus follows the pointer's click, and both report the same row: keep the state (and the popover) as it is.
+    setHovered((current) =>
+      current?.type === type && current.rect.top === rect.top && current.rect.left === rect.left
+        ? current
+        : { type, rect },
+    );
+  }
+
+  /**
+   * Hides the preview when the pointer or focus leaves the list, not when it
+   * moves to another row. Hiding on every row's leave and showing on the next
+   * row's enter would unmount and remount the popover between two rows,
+   * replaying its entrance animation and blanking its content on each step.
+   */
+  function hidePreview(next: EventTarget | null): void {
+    if (!(next instanceof Element && next.closest(`[${PALETTE_ITEM_ATTRIBUTE}]`) !== null)) {
+      setHovered(null);
     }
   }
 
@@ -88,12 +108,13 @@ export function ComponentPalette({ dnd, themeStyle }: ComponentPaletteProps) {
                     onFocus={(event) => {
                       showPreview(item.type, event.currentTarget);
                     }}
-                    onPointerLeave={() => {
-                      setHovered(null);
+                    onPointerLeave={(event) => {
+                      hidePreview(event.relatedTarget);
                     }}
-                    onBlur={() => {
-                      setHovered(null);
+                    onBlur={(event) => {
+                      hidePreview(event.relatedTarget);
                     }}
+                    data-palette-item=""
                     className="w-full cursor-grab rounded-token-sm px-2.5 py-2 text-left text-sm text-copy hover:bg-canvas focus-visible:outline-2 focus-visible:outline-accent"
                   >
                     {text.componentLabel(item.type)}

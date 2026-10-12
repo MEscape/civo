@@ -19,6 +19,7 @@ export interface CanvasThemeScopeProps {
 export function CanvasThemeScope({ themeStyle, className, children }: CanvasThemeScopeProps) {
   return (
     <div
+      data-civo-theme
       style={{ ...themeStyle, fontFamily: 'var(--civo-font-body)' }}
       className={cn('bg-canvas', className)}
     >

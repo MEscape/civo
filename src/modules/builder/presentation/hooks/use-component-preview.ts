@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { useMessages } from '@i18n/client';
@@ -52,7 +52,9 @@ export function useComponentPreview(componentType: string | null): PreviewState 
 
     function remember(entry: PreviewEntry): void {
       if (isCurrent && componentType !== null) {
-        setEntries((previous) => new Map(previous).set(componentType, entry));
+        startTransition(() => {
+          setEntries((previous) => new Map(previous).set(componentType, entry));
+        });
       }
     }
 
