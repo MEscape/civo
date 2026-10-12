@@ -12,7 +12,8 @@ export interface ThemePreviewProps {
   readonly theme: WebsiteThemeView;
 }
 
-const SAMPLE_BUTTON = 'px-4 py-2 font-medium rounded-token';
+const SAMPLE_BUTTON =
+  'px-3 py-2 text-xs sm:text-sm font-medium rounded-token text-center flex-1 min-w-16 truncate';
 
 /**
  * Decorative sample of the theme. It is hidden from assistive technology
@@ -23,15 +24,15 @@ export function ThemePreview({ theme }: ThemePreviewProps) {
   const headingId = useId();
 
   return (
-    <section aria-labelledby={headingId}>
+    <section aria-labelledby={headingId} className="flex flex-col">
       <h2 id={headingId} className="mb-6 text-xl font-semibold text-copy">
         {t('themeSettings.previewTitle')}
       </h2>
-      <div className="relative min-h-96 overflow-hidden rounded-xl border border-border bg-surface p-6">
+      <div className="relative flex-1 overflow-hidden rounded-token border border-border bg-surface p-4 sm:p-6">
         <ThemeProvider theme={theme}>
           <div
             aria-hidden="true"
-            className="mx-auto max-w-sm space-y-section rounded-token border border-border bg-canvas p-4 shadow-sm"
+            className="mx-auto max-w-sm space-y-section rounded-token border border-border bg-canvas p-6 shadow-sm"
           >
             <div>
               <p className="mb-2 font-heading text-3xl font-bold text-copy">
@@ -41,7 +42,7 @@ export function ThemePreview({ theme }: ThemePreviewProps) {
                 {t('themeSettings.preview.body')}
               </p>
             </div>
-            <div className="flex gap-3 font-body">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 font-body">
               <span className={`${SAMPLE_BUTTON} bg-primary text-primary-foreground`}>
                 {t('themeSettings.primary')}
               </span>
@@ -52,7 +53,7 @@ export function ThemePreview({ theme }: ThemePreviewProps) {
                 {t('themeSettings.accent')}
               </span>
             </div>
-            <div className="rounded-token border border-border bg-surface p-4">
+            <div className="rounded-token border border-border bg-surface p-5">
               <p className="mb-2 font-heading text-xl font-semibold text-copy">
                 {t('themeSettings.preview.cardTitle')}
               </p>

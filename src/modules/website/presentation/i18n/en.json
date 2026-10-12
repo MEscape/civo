@@ -101,7 +101,8 @@
     },
     "nav": {
       "label": "Website sections",
-      "overview": "Overview"
+      "overview": "Overview",
+      "users": "Users"
     },
     "pages": {
       "list": {
@@ -109,7 +110,14 @@
         "description": "Create and manage your municipality's websites.",
         "empty": "No websites yet",
         "emptyDescription": "Create your first website to get started.",
-        "createTitle": "Create a website"
+        "createTitle": "Create a website",
+        "pagination": {
+          "nav": "Websites pages",
+          "previous": "Previous",
+          "next": "Next",
+          "summary": "{first}–{last} of {total}",
+          "page": "Page {page}"
+        }
       },
       "detail": {
         "releasesTitle": "Releases",

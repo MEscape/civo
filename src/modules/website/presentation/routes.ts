@@ -7,4 +7,6 @@ export const websiteRoutes = {
   list: () => '/websites',
   detail: (id: string) => `/websites/${id}`,
   settings: (id: string) => `/websites/${id}/settings`,
+  /** The members and invitations of the tenant, shown among the website's sections. */
+  users: (id: string) => `/websites/${id}/users`,
 } as const;

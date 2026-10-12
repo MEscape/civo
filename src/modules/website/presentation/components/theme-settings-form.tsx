@@ -9,6 +9,8 @@ import { FieldMessage } from '@components/shared/field-message';
 import { FormSelectField } from '@components/shared/form-select-field';
 import { Button } from '@components/ui/button';
 
+import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+
 import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
@@ -71,6 +73,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
     defaultValues: initialTheme,
   });
   const { isDirty } = form.formState;
+  useBeforeUnloadGuard(isDirty);
   const previewTheme = toPreviewTheme(useWatch({ control: form.control }), initialTheme);
 
   // Derived, not stored: the confirmation disappears as soon as the user edits again.
@@ -95,7 +98,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
 
   return (
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <section aria-labelledby={`${id}-title`}>
+      <section aria-labelledby={`${id}-title`} className="flex flex-col">
         <h2 id={`${id}-title`} className="mb-6 text-xl font-semibold text-copy">
           {t('themeSettings.title')}
         </h2>
@@ -103,7 +106,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
           onSubmit={form.handleSubmit(handleSubmit)}
           noValidate
           aria-busy={isPending}
-          className="space-y-6 rounded-token border border-border bg-surface p-4 sm:p-6"
+          className="flex-1 space-y-6 rounded-token border border-border bg-surface p-4 sm:p-6"
         >
           <fieldset className="space-y-4">
             <legend className="text-sm font-medium text-copy">{t('themeSettings.colors')}</legend>

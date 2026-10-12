@@ -10,6 +10,8 @@ import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
 import { Field, FieldError, Label, Textarea } from '@components/ui/input';
 
+import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+
 import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
@@ -44,6 +46,7 @@ export function GeneralSettingsForm({ websiteId, initialValues, slug }: GeneralS
     defaultValues: initialValues,
   });
   const { errors, isDirty } = form.formState;
+  useBeforeUnloadGuard(isDirty);
 
   // Derived, not stored: the confirmation disappears as soon as the user edits again.
   const showSaved = hasSaved && !isDirty;

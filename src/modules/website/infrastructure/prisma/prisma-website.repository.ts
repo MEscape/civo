@@ -2,6 +2,8 @@ import type { TenantId } from '@modules/auth';
 
 import { db, createPersistenceFailures } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
+import { offsetOf, toPage } from '@lib/pagination';
+import type { Page, PageRequest } from '@lib/pagination';
 import { fromThrowableAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
@@ -67,18 +69,23 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
 
   listByTenant(
     tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly WebsiteSummary[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        db.orm.public.Website.where({ tenantId })
-          .select(...WEBSITE_SUMMARY_SELECT)
-          // `id` breaks ties so the order is stable between requests.
-          .orderBy([(w) => w.updatedAt.desc(), (w) => w.id.asc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('listByTenant'),
-    ).map((records) => records.map(toWebsiteSummary));
+    page: PageRequest,
+  ): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      const total = await db.orm.public.Website.where({ tenantId }).aggregate((aggregate) => ({
+        total: aggregate.count(),
+      }));
+      const records = await db.orm.public.Website.where({ tenantId })
+        .select(...WEBSITE_SUMMARY_SELECT)
+        // `id` breaks ties so the order is stable between requests.
+        .orderBy([(w) => w.updatedAt.desc(), (w) => w.id.asc()])
+        .limit(page.pageSize)
+        .offset(offsetOf(page))
+        .all();
+      return { records, total: total.total };
+    }, failures.infraOnly('listByTenant')).map(({ records, total }) =>
+      toPage(records.map(toWebsiteSummary), total, page),
+    );
   }
 
   create(input: NewWebsite): AppResultAsync<Website, ConflictAppError | InfrastructureAppError> {

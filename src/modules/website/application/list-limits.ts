@@ -1,4 +1,4 @@
-/** Every list is bounded (performance.md). Raise a limit deliberately, never by removing it. */
-export const DEFAULT_WEBSITE_LIST_LIMIT = 50;
-export const MIN_WEBSITE_LIST_LIMIT = 1;
-export const MAX_WEBSITE_LIST_LIMIT = 100;
+import type { PageLimits } from '@lib/pagination';
+
+/** A page of websites is a grid of cards: a few rows, never more than a screen of them (performance.md: every list is bounded). */
+export const WEBSITE_PAGE_LIMITS: PageLimits = { defaultPageSize: 12, maxPageSize: 48 };

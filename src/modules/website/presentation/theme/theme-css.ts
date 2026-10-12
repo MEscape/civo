@@ -1,4 +1,4 @@
-import { readableForeground } from './readable-foreground';
+import { readableCopy, readableForeground } from '@lib/utils';
 
 import type {
   ThemeFontFamily,
@@ -36,8 +36,8 @@ const SECTION_SPACING_VALUE = {
 /**
  * The ONLY bridge from stored theme data to styling. Every value is drawn
  * from a validated token or a fixed lookup table; no stored string is ever
- * emitted as raw CSS. Foreground colours are derived so text stays legible
- * whichever brand colours a municipality picks.
+ * emitted as raw CSS. Foreground and text (`-copy`) colours are derived so text
+ * stays legible whichever brand colours a municipality picks.
  */
 export function themeToCssVariables(theme: WebsiteThemeView): Record<string, string> {
   const { primary, secondary, accent } = theme.colors;
@@ -48,6 +48,9 @@ export function themeToCssVariables(theme: WebsiteThemeView): Record<string, str
     '--civo-color-primary-foreground': readableForeground(primary),
     '--civo-color-secondary-foreground': readableForeground(secondary),
     '--civo-color-accent-foreground': readableForeground(accent),
+    '--civo-color-primary-copy': readableCopy(primary),
+    '--civo-color-secondary-copy': readableCopy(secondary),
+    '--civo-color-accent-copy': readableCopy(accent),
     '--civo-font-heading': FONT_STACK[theme.typography.headingFont],
     '--civo-font-body': FONT_STACK[theme.typography.bodyFont],
     '--civo-radius': RADIUS_VALUE[theme.radius],

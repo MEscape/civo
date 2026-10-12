@@ -8,12 +8,12 @@ import { ReleaseHistoryPanel, releaseQueries } from '@modules/release';
 import { releaseRoutes, toReleaseHistoryDto } from '@modules/release/client';
 import { websiteQueries, websiteRoutes } from '@modules/website';
 
-import { Container, Grid, PageHeading, Section } from '@components/layout/layout-primitives';
+import { AdminContainer, Grid, PageHeading, Section } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
+import { LinkCard } from '@components/shared/link-card';
 import { PageSkeleton } from '@components/shared/page-skeleton';
-import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 
-import { Link, requireLocale } from '@i18n';
+import { requireLocale } from '@i18n';
 import type { Locale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
@@ -62,14 +62,11 @@ async function WebsiteDetails({
       <Grid columns={3} as="ul">
         {links.map(({ key, href }) => (
           <li key={key}>
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <Link href={href}>{t(`pages.detail.links.${key}.title`)}</Link>
-                </CardTitle>
-                <CardDescription>{t(`pages.detail.links.${key}.description`)}</CardDescription>
-              </CardHeader>
-            </Card>
+            <LinkCard
+              href={href}
+              title={t(`pages.detail.links.${key}.title`)}
+              description={t(`pages.detail.links.${key}.description`)}
+            />
           </li>
         ))}
       </Grid>
@@ -79,21 +76,30 @@ async function WebsiteDetails({
           {t('pages.detail.releasesTitle')}
         </h2>
         <I18nProvider locale={locale} namespaces={['release']}>
-          <ReleaseHistoryPanel websiteId={website.id} history={toReleaseHistoryDto(history)} />
+          <ReleaseHistoryPanel
+            websiteId={website.id}
+            history={toReleaseHistoryDto(history)}
+            publicSiteHref={releaseRoutes.publicSite(website.slug)}
+          />
         </I18nProvider>
       </div>
     </Section>
   );
 }
 
-export default async function WebsitePage({ params }: RouteProps) {
-  const locale = requireLocale((await params).locale);
-  const { websiteId } = await params;
+async function WebsiteContent({ params }: RouteProps) {
+  const { locale, websiteId } = await params;
   return (
-    <Container className="max-w-4xl">
-      <Suspense fallback={<PageSkeleton />}>
-        <WebsiteDetails websiteId={websiteId} locale={locale} />
-      </Suspense>
-    </Container>
+    <AdminContainer>
+      <WebsiteDetails websiteId={websiteId} locale={requireLocale(locale)} />
+    </AdminContainer>
+  );
+}
+
+export default function WebsitePage({ params }: RouteProps) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <WebsiteContent params={params} />
+    </Suspense>
   );
 }

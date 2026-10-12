@@ -1,6 +1,7 @@
 import type { TenantId } from '@modules/auth';
 
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
+import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import type { WebsiteId } from '../models/ids';
@@ -31,11 +32,11 @@ export interface WebsiteRepository {
 
   findBySlug(slug: string): AppResultAsync<Website | null, InfrastructureAppError>;
 
-  /** Bounded: never returns more than `limit` items (performance.md). */
+  /** One page, newest activity first, with the total (performance.md: every list is bounded). */
   listByTenant(
     tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly WebsiteSummary[], InfrastructureAppError>;
+    page: PageRequest,
+  ): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError>;
 
   create(input: NewWebsite): AppResultAsync<Website, ConflictAppError | InfrastructureAppError>;
 

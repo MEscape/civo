@@ -101,7 +101,8 @@
     },
     "nav": {
       "label": "Bereiche der Website",
-      "overview": "Übersicht"
+      "overview": "Übersicht",
+      "users": "Benutzer"
     },
     "pages": {
       "list": {
@@ -109,7 +110,14 @@
         "description": "Erstellen und verwalten Sie die Websites Ihrer Kommune.",
         "empty": "Noch keine Websites",
         "emptyDescription": "Erstellen Sie Ihre erste Website, um loszulegen.",
-        "createTitle": "Website erstellen"
+        "createTitle": "Website erstellen",
+        "pagination": {
+          "nav": "Seiten der Webseitenliste",
+          "previous": "Zurück",
+          "next": "Weiter",
+          "summary": "{first}–{last} von {total}",
+          "page": "Seite {page}"
+        }
       },
       "detail": {
         "releasesTitle": "Veröffentlichungen",
