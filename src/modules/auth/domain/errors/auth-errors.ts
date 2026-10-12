@@ -3,6 +3,7 @@ import {
   conflictError,
   forbiddenError,
   infrastructureError,
+  notFoundError,
   unauthorizedError,
   validationError,
 } from '@lib/errors';
@@ -10,6 +11,7 @@ import type {
   ConflictAppError,
   ForbiddenAppError,
   InfrastructureAppError,
+  NotFoundAppError,
   UnauthorizedAppError,
   ValidationAppError,
 } from '@lib/errors';
@@ -39,6 +41,10 @@ export const AUTH_ERROR_CODES = {
   accountConflict: 'auth.account_conflict',
   sessionLookupFailed: 'auth.session_lookup_failed',
   membershipLookupFailed: 'auth.membership_lookup_failed',
+  lastAdmin: 'auth.last_admin',
+  userNotFound: 'auth.user_not_found',
+  invitationFailed: 'auth.invitation_failed',
+  directoryFailed: 'auth.directory_failed',
   providerFailed: 'auth.provider_failed',
   rateLimiterFailed: 'auth.rate_limiter_failed',
   mailerNotConfigured: 'auth.mailer_not_configured',
@@ -57,6 +63,8 @@ export const AUTH_VALIDATION_CODES = {
   nameRequired: 'auth.validation.name_required',
   nameTooLong: 'auth.validation.name_too_long',
   tokenInvalid: 'auth.validation.token_invalid',
+  roleInvalid: 'auth.validation.role_invalid',
+  rolesRequired: 'auth.validation.roles_required',
 } as const;
 
 export type AuthErrorCode = (typeof AUTH_ERROR_CODES)[keyof typeof AUTH_ERROR_CODES];
@@ -176,5 +184,42 @@ export function mailerNotConfigured(): InfrastructureAppError {
   return infrastructureError(
     AUTH_ERROR_CODES.mailerNotConfigured,
     'No email transport is configured for authentication emails.',
+  );
+}
+
+/** Removing or demoting the last administrator (or yourself) would lock the tenant out of its own administration. */
+export function lastAdmin(): ConflictAppError {
+  return conflictError(
+    AUTH_ERROR_CODES.lastAdmin,
+    'The tenant must keep at least one administrator, and you cannot remove your own access.',
+  );
+}
+
+/** Also covers a user of another tenant: one outcome for both, so ids reveal nothing. */
+export function userNotFound(): NotFoundAppError {
+  return notFoundError(AUTH_ERROR_CODES.userNotFound, 'The user was not found.');
+}
+
+export function membershipLookupFailed(cause: unknown): InfrastructureAppError {
+  return infrastructureError(
+    AUTH_ERROR_CODES.membershipLookupFailed,
+    'Memberships could not be read or changed.',
+    cause,
+  );
+}
+
+export function invitationFailed(cause: unknown): InfrastructureAppError {
+  return infrastructureError(
+    AUTH_ERROR_CODES.invitationFailed,
+    'The invitation could not be stored.',
+    cause,
+  );
+}
+
+export function directoryFailed(cause: unknown): InfrastructureAppError {
+  return infrastructureError(
+    AUTH_ERROR_CODES.directoryFailed,
+    'The user directory could not be read.',
+    cause,
   );
 }

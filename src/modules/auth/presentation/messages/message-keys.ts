@@ -9,7 +9,7 @@ import {
   CREDENTIAL_LIMITS,
 } from '../../application/contracts/auth-constraints';
 
-import type { AuthCode } from '../../application/contracts/auth-constraints';
+import type { AuthCode, Role } from '../../application/contracts/auth-constraints';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['auth']>;
 
@@ -35,6 +35,10 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.accountConflict]: fieldPath('errors', 'unexpected'),
   [ERRORS.sessionLookupFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.membershipLookupFailed]: fieldPath('errors', 'infrastructure'),
+  [ERRORS.lastAdmin]: fieldPath('errors', 'lastAdmin'),
+  [ERRORS.userNotFound]: fieldPath('errors', 'userNotFound'),
+  [ERRORS.invitationFailed]: fieldPath('errors', 'invitationFailed'),
+  [ERRORS.directoryFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.providerFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.mailerNotConfigured]: fieldPath('errors', 'infrastructure'),
@@ -48,7 +52,16 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.nameRequired]: fieldPath('validation', 'nameRequired'),
   [VALIDATION.nameTooLong]: fieldPath('validation', 'nameTooLong'),
   [VALIDATION.tokenInvalid]: fieldPath('validation', 'tokenInvalid'),
+  [VALIDATION.roleInvalid]: fieldPath('validation', 'roleInvalid'),
+  [VALIDATION.rolesRequired]: fieldPath('validation', 'rolesRequired'),
 } as const satisfies Record<AuthCode, ValidKeys>;
+
+export const ROLE_MESSAGE_KEYS = {
+  admin: fieldPath('users', 'roles', 'admin'),
+  editor: fieldPath('users', 'roles', 'editor'),
+  viewer: fieldPath('users', 'roles', 'viewer'),
+  employee: fieldPath('users', 'roles', 'employee'),
+} as const satisfies Record<Role, ValidKeys>;
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 

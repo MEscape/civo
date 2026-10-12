@@ -2,11 +2,12 @@ import { renderEmail } from '@lib/mail';
 import type { RenderedEmail } from '@lib/mail';
 
 import { AUTH_LINK_LIFETIME_SECONDS } from '../../domain/models/credentials';
+import { INVITATION_LIFETIME_MS } from '../../domain/models/invitation';
 
 import type { MailLocale } from '../../domain/ports/auth-mailer.port';
 
 export type { MailLocale };
-export type AuthEmailKind = 'verification' | 'password_reset' | 'existing_account';
+export type AuthEmailKind = 'verification' | 'password_reset' | 'existing_account' | 'invitation';
 
 interface EmailCopy {
   readonly subject: string;
@@ -18,12 +19,14 @@ interface EmailCopy {
 
 const SECONDS_PER_MINUTE = 60;
 const LINK_LIFETIME_MINUTES = AUTH_LINK_LIFETIME_SECONDS / SECONDS_PER_MINUTE;
+const MS_PER_DAY = 86_400_000;
+const INVITATION_LIFETIME_DAYS = INVITATION_LIFETIME_MS / MS_PER_DAY;
 
 /**
  * Email copy lives in the adapter, not in the app's translation files
  * (auth-mailer.port.ts): there is no request locale when a mail is sent
  * from a provider hook, so the locale is configuration.
- * `{appName}` and `{minutes}` are the only placeholders.
+ * `{appName}`, `{minutes}` and `{days}` are the only placeholders.
  */
 const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
   de: {
@@ -40,6 +43,14 @@ const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
       actionLabel: 'Neues Passwort festlegen',
       outro:
         'Der Link ist {minutes} Minuten gültig. Wenn Sie das nicht angefordert haben, ist keine Aktion nötig; Ihr Passwort bleibt unverändert.',
+    },
+    invitation: {
+      subject: 'Einladung zu {appName}',
+      intro:
+        'Sie wurden eingeladen, bei {appName} mitzuarbeiten. Legen Sie mit dem Link Ihren Namen und Ihr Passwort fest.',
+      actionLabel: 'Einladung annehmen',
+      outro:
+        'Der Link ist {days} Tage gültig und kann nur einmal verwendet werden. Wenn Sie keine Einladung erwartet haben, können Sie diese Nachricht ignorieren.',
     },
     existing_account: {
       subject: 'Registrierungsversuch mit Ihrer E-Mail-Adresse',
@@ -65,6 +76,14 @@ const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
       outro:
         'The link is valid for {minutes} minutes. If you did not request this, no action is needed; your password stays unchanged.',
     },
+    invitation: {
+      subject: 'Invitation to {appName}',
+      intro:
+        'You have been invited to work with {appName}. Use the link to choose your name and password.',
+      actionLabel: 'Accept invitation',
+      outro:
+        'The link is valid for {days} days and can be used once. If you were not expecting an invitation, you can ignore this message.',
+    },
     existing_account: {
       subject: 'Sign-up attempt with your email address',
       intro:
@@ -78,7 +97,8 @@ const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
 function interpolate(template: string, appName: string): string {
   return template
     .replaceAll('{appName}', appName)
-    .replaceAll('{minutes}', String(LINK_LIFETIME_MINUTES));
+    .replaceAll('{minutes}', String(LINK_LIFETIME_MINUTES))
+    .replaceAll('{days}', String(INVITATION_LIFETIME_DAYS));
 }
 
 /**
@@ -95,7 +115,7 @@ export function renderAuthEmail(input: {
 
   return renderEmail({
     locale: input.locale,
-    title: copy.subject,
+    title: interpolate(copy.subject, input.appName),
     intro: interpolate(copy.intro, input.appName),
     action:
       copy.actionLabel !== null && input.url !== null

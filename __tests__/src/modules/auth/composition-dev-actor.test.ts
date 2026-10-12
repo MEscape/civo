@@ -15,7 +15,7 @@ vi.mock('@lib/config/server', () => ({
     DATABASE_POOL_TIMEOUT_SECONDS: 1,
     AUTH_ENABLED: false,
     AUTH_DEV_ACTOR_ROLE: 'viewer',
-    AUTH_MAIL_PROVIDER: 'none',
+    MAIL_PROVIDER: 'none',
     LOG_LEVEL: 'error',
   },
 }));

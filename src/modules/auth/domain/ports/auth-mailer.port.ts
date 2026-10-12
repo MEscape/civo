@@ -35,6 +35,16 @@ export interface AuthMailer {
    * (enumeration protection), so this email is the only way the real owner
    * learns about the attempt.
    */
+  /**
+   * Sent to the address an administrator invited. `token` is the single-use
+   * secret the adapter turns into the accept link; it must never be logged.
+   */
+  sendInvitation(message: {
+    readonly to: string;
+    readonly token: string;
+    readonly locale: MailLocale;
+  }): AppResultAsync<void, InfrastructureAppError>;
+
   sendExistingAccountNotice(message: {
     readonly to: string;
     /** Runtime-resolved from request headers; falls back to i18n default. */

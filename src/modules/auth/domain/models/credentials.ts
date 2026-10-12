@@ -13,6 +13,9 @@ export const CREDENTIAL_LIMITS = {
   passwordMax: 128,
   nameMax: 100,
   tokenMax: 512,
+  /** Longest id or search text a request may carry. */
+  idMax: 128,
+  searchMax: 100,
 } as const;
 
 /** How long verification and password-reset links stay valid. */

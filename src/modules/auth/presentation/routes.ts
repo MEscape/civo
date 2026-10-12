@@ -15,7 +15,8 @@ export const authRoutes = {
     returnTo === undefined
       ? '/sign-in'
       : `/sign-in?${new URLSearchParams({ returnTo }).toString()}`,
-  signUp: () => '/sign-up',
+  /** Landing page of an invitation link; the token travels as `?token=`. */
+  acceptInvitation: () => '/accept-invitation',
   forgotPassword: () => '/forgot-password',
   /** Landing page of the emailed reset link; Better Auth appends `?token=`. */
   resetPassword: () => '/reset-password',

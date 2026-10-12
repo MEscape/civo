@@ -15,6 +15,11 @@ const LEVEL_BY_EVENT = {
   'authentication.session_revoked': 'info',
   'authentication.account_created': 'info',
   'authentication.password_reset_completed': 'info',
+  'membership.roles_changed': 'info',
+  'membership.removed': 'info',
+  'invitation.created': 'info',
+  'invitation.accepted': 'info',
+  'invitation.revoked': 'info',
 } as const satisfies Record<SecurityEvent['type'], 'info' | 'warn'>;
 
 /** One structured log line per event under `auth.audit`; never throws. */

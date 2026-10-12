@@ -8,31 +8,11 @@
       "submit": "Sign in",
       "submitting": "Signing in…",
       "forgotPassword": "Forgot your password?",
-      "noAccount": "No account yet?",
-      "createAccount": "Create an account",
       "metadata": {
         "title": "Sign in to your account",
         "description": "Sign in to access your dashboard and manage your account."
-      }
-    },
-    "signUp": {
-      "title": "Create an account",
-      "description": "Register with your email address. You will receive a link to confirm it.",
-      "name": "Name",
-      "email": "Email address",
-      "password": "Password",
-      "passwordHint": "At least {passwordMin} characters.",
-      "confirmPassword": "Repeat password",
-      "submit": "Create account",
-      "submitting": "Creating account…",
-      "hasAccount": "Already registered?",
-      "signInLink": "Sign in",
-      "successTitle": "Check your inbox",
-      "success": "If this address can be used for a new account, we have sent a link to confirm it. The link is valid for {minutes} minutes.",
-      "metadata": {
-        "title": "Create a new account",
-        "description": "Register for a new account to get started."
-      }
+      },
+      "byInvitation": "Accounts are created by invitation only. Ask an administrator for one."
     },
     "forgotPassword": {
       "title": "Reset your password",
@@ -102,7 +82,10 @@
       "rateLimited": "Too many attempts. Please wait a while and try again.",
       "validation": "Please check your input.",
       "infrastructure": "A service error occurred. Please try again later.",
-      "unexpected": "An unexpected error occurred."
+      "unexpected": "An unexpected error occurred.",
+      "lastAdmin": "A tenant must keep at least one administrator, and you cannot change or remove your own access.",
+      "userNotFound": "This user was not found.",
+      "invitationFailed": "The invitation could not be processed. Please try again later."
     },
     "validation": {
       "emailRequired": "Please enter your email address.",
@@ -114,7 +97,89 @@
       "passwordMismatch": "The passwords do not match.",
       "nameRequired": "Please enter your name.",
       "nameTooLong": "The name must be at most {nameMax} characters long.",
-      "tokenInvalid": "This link is invalid. Request a new one."
+      "tokenInvalid": "This link is invalid. Request a new one.",
+      "roleInvalid": "Choose a valid role.",
+      "rolesRequired": "Choose at least one role."
+    },
+    "acceptInvitation": {
+      "title": "Accept your invitation",
+      "description": "Choose your name and a password to join.",
+      "name": "Your name",
+      "password": "Password",
+      "passwordHint": "At least {passwordMin} characters.",
+      "confirmPassword": "Repeat the password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "successTitle": "Your account is ready",
+      "success": "Check your inbox: we sent a link to confirm your email address. After that you can sign in.",
+      "signInLink": "Go to sign in",
+      "missingTokenTitle": "This invitation link is incomplete",
+      "missingToken": "Open the link from your invitation email again, or ask for a new invitation.",
+      "metadata": {
+        "title": "Accept your invitation"
+      }
+    },
+    "users": {
+      "metadata": {
+        "title": "Users"
+      },
+      "title": "Users",
+      "description": "Who can work in this organisation, and in which role.",
+      "roles": {
+        "admin": "Administrator",
+        "editor": "Editor",
+        "viewer": "Viewer",
+        "employee": "Employee"
+      },
+      "invite": {
+        "title": "Invite someone",
+        "description": "Accounts are created by invitation only. The person receives a single-use link by email; an existing account gets the role at once.",
+        "email": "Email address",
+        "role": "Role",
+        "submit": "Send invitation",
+        "sending": "Sending…",
+        "outcome": {
+          "invited": "The invitation was sent.",
+          "granted": "This person already has an account and now holds the role."
+        }
+      },
+      "filters": {
+        "search": "Search name or email",
+        "role": "Role",
+        "anyRole": "Any role",
+        "pageSize": "Per page",
+        "apply": "Apply"
+      },
+      "table": {
+        "title": "Members",
+        "name": "Name",
+        "email": "Email",
+        "roles": "Roles",
+        "since": "Member since",
+        "actions": "Actions",
+        "unverified": "Unverified",
+        "you": "You",
+        "empty": "No members match.",
+        "truncated": "This organisation has more members than can be listed at once. Narrow the search.",
+        "editRoles": "Edit roles",
+        "save": "Save",
+        "cancel": "Cancel",
+        "remove": "Remove",
+        "rolesOf": "Roles of {name}",
+        "confirmRemove": "Remove {name} from this organisation? Their account stays, but they lose all access here."
+      },
+      "pagination": {
+        "nav": "Users pages",
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page {page}",
+        "summary": "{first}–{last} of {total}"
+      },
+      "invitations": {
+        "title": "Open invitations",
+        "expires": "expires {date}",
+        "revoke": "Withdraw invitation for {email}"
+      }
     }
   }
 }

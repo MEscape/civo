@@ -10,15 +10,24 @@ import { serverEnv } from '@lib/config/server';
 import type { ServerEnv } from '@lib/config/server';
 import { getMailTransport } from '@lib/mail/server';
 import { ResultAsync } from '@lib/result';
+import { toLocalizedPath } from '@lib/seo';
 import { invariant, isDefined, once } from '@lib/utils';
 
 import { createAuthorizationService } from './application/authorization-service';
+import { AcceptInvitation } from './application/commands/accept-invitation';
+import { ChangeUserRoles } from './application/commands/change-user-roles';
+import { InviteUser } from './application/commands/invite-user';
+import { RemoveUser } from './application/commands/remove-user';
 import { RequestPasswordReset } from './application/commands/request-password-reset';
 import { ResetPassword } from './application/commands/reset-password';
+import { RevokeInvitation } from './application/commands/revoke-invitation';
 import { SignIn } from './application/commands/sign-in';
 import { SignOut } from './application/commands/sign-out';
-import { SignUp } from './application/commands/sign-up';
 import { GetCurrentActor } from './application/queries/get-current-actor';
+import { ListEmployees } from './application/queries/list-employees';
+import { ListInvitations } from './application/queries/list-invitations';
+import { ListUsers } from './application/queries/list-users';
+import { actorHasPermission } from './domain/models/authorize';
 import { toTenantId } from './domain/models/ids';
 import { isRole } from './domain/models/role';
 import { authenticationApiFrom } from './infrastructure/better-auth/better-auth-authentication-api';
@@ -27,17 +36,24 @@ import { BetterAuthCurrentActorProvider } from './infrastructure/better-auth/bet
 import { sessionSourceFrom } from './infrastructure/better-auth/better-auth-session-source';
 import { createAuth } from './infrastructure/better-auth/create-auth';
 import { createAuthRouteHandlers } from './infrastructure/better-auth/create-auth-route-handlers';
+import { Sha256TokenGenerator } from './infrastructure/crypto/sha256-token-generator';
 import { DevCurrentActorProvider } from './infrastructure/dev/dev-current-actor-provider';
 import { loggerSecurityAuditLog } from './infrastructure/logging/logger-security-audit-log';
 import { TransactionalAuthMailer } from './infrastructure/mail/transactional-auth-mailer';
 import { UnconfiguredAuthMailer } from './infrastructure/mail/unconfigured-auth-mailer';
 import { getAuthPool } from './infrastructure/pg/auth-pool';
 import { PgAuthRateLimiter } from './infrastructure/pg/pg-auth-rate-limiter';
+import { PgUserDirectory } from './infrastructure/pg/pg-user-directory';
+import { PrismaInvitationRepository } from './infrastructure/prisma/prisma-invitation.repository';
 import { PrismaMembershipRepository } from './infrastructure/prisma/prisma-membership.repository';
 import { authRoutes } from './presentation/routes';
 
-import type { AuthenticationDependencies } from './application/auth-dependencies';
+import type {
+  AuthenticationDependencies,
+  UserAdministrationDependencies,
+} from './application/auth-dependencies';
 import type { AuthorizationService } from './application/authorization-service';
+import type { Permission } from './domain/models/permission';
 import type { Role } from './domain/models/role';
 import type { AuthMailer } from './domain/ports/auth-mailer.port';
 import type { CurrentActorProvider } from './domain/ports/current-actor-provider.port';
@@ -106,7 +122,17 @@ function buildMailer(): AuthMailer {
   const transport = getMailTransport();
   return transport === null
     ? new UnconfiguredAuthMailer()
-    : new TransactionalAuthMailer(transport, { appName: APP_IDENTITY.name });
+    : new TransactionalAuthMailer(transport, {
+        appName: APP_IDENTITY.name,
+        invitationLink: (locale, token) => {
+          const link = new URL(
+            toLocalizedPath(locale, authRoutes.acceptInvitation()),
+            publicEnv.NEXT_PUBLIC_APP_URL,
+          );
+          link.searchParams.set('token', token);
+          return link.toString();
+        },
+      });
 }
 
 const getMailer = once<AuthMailer>(buildMailer);
@@ -196,12 +222,48 @@ export const getAccessControl = once<AuthorizationService>(() =>
   }),
 );
 
+/**
+ * Which of `candidates` the signed-in actor holds, for screens that show only
+ * what the actor may use (the section tabs). Display only: every use case
+ * still authorizes on its own, so a hidden tab is never the protection. An
+ * unknown or signed-out actor holds none.
+ */
+export async function getHeldPermissions(
+  candidates: readonly Permission[],
+): Promise<ReadonlySet<Permission>> {
+  const actor = await getCurrentActorProvider().getCurrentActor();
+  return new Set(
+    actor.isOk()
+      ? candidates.filter((permission) => actorHasPermission(actor.value, permission))
+      : [],
+  );
+}
+
+/**
+ * Everything user administration is built from. The user directory opens the
+ * auth pool only when it is first asked, so building this needs no auth
+ * configuration (the screens answer 404 while AUTH_ENABLED=false).
+ */
+const getAdministrationDependencies = once((): UserAdministrationDependencies => ({
+  authorization: getAccessControl(),
+  members: getMemberships(),
+  directory: new PgUserDirectory(getPool),
+  invitations: new PrismaInvitationRepository(),
+  tokens: new Sha256TokenGenerator(),
+  mailer: getMailer(),
+  audit: loggerSecurityAuditLog,
+  clock: systemClock,
+}));
+
 export const getAuthQueries = once(
   () =>
     ({
       getCurrentActor: new GetCurrentActor({
         currentActor: getCurrentActorProvider(),
       }),
+      listUsers: new ListUsers(getAdministrationDependencies()),
+      listInvitations: new ListInvitations(getAdministrationDependencies()),
+      listEmployees: new ListEmployees(getAdministrationDependencies()),
     }) as const,
 );
 
@@ -210,7 +272,7 @@ export const getAuthQueries = once(
  * AUTH_ENABLED=true; the pages that host them answer 404 otherwise, and
  * calling this with auth disabled is a programmer error that throws.
  */
-export const getAuthCommands = once(() => {
+const getAuthenticationDependencies = once((): AuthenticationDependencies => {
   const dependencies: AuthenticationDependencies = {
     authenticator: new BetterAuthAuthenticator({
       api: authenticationApiFrom(getAuth()),
@@ -223,13 +285,30 @@ export const getAuthCommands = once(() => {
     rateLimiter: new PgAuthRateLimiter(getPool(), requireAuthCredentials(serverEnv).secret),
     audit: loggerSecurityAuditLog,
   };
+  return dependencies;
+});
+
+export const getAuthCommands = once(() => {
+  const dependencies = getAuthenticationDependencies();
+  const administration = getAdministrationDependencies();
 
   return {
     signIn: new SignIn(dependencies),
-    signUp: new SignUp(dependencies),
     signOut: new SignOut(dependencies),
     requestPasswordReset: new RequestPasswordReset(dependencies),
     resetPassword: new ResetPassword(dependencies),
+    inviteUser: new InviteUser(administration),
+    changeUserRoles: new ChangeUserRoles(administration),
+    removeUser: new RemoveUser(administration),
+    revokeInvitation: new RevokeInvitation(administration),
+    acceptInvitation: new AcceptInvitation({
+      ...dependencies,
+      invitations: administration.invitations,
+      tokens: administration.tokens,
+      members: administration.members,
+      directory: administration.directory,
+      clock: administration.clock,
+    }),
   } as const;
 });
 

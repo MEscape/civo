@@ -1,5 +1,5 @@
 import type { DenialReason } from '../models/authorize';
-import type { ActorId, TenantId } from '../models/ids';
+import type { ActorId, InvitationId, TenantId } from '../models/ids';
 import type { Permission } from '../models/permission';
 import type { AuthRateLimitAction } from '../models/rate-limit';
 
@@ -40,6 +40,36 @@ export type SecurityEvent =
   | {
       readonly type: 'authentication.password_reset_completed';
       readonly actorId: ActorId;
+    }
+  | {
+      readonly type: 'membership.roles_changed';
+      readonly actorId: ActorId;
+      readonly tenantId: TenantId;
+      readonly subjectId: ActorId;
+    }
+  | {
+      readonly type: 'membership.removed';
+      readonly actorId: ActorId;
+      readonly tenantId: TenantId;
+      readonly subjectId: ActorId;
+    }
+  | {
+      readonly type: 'invitation.created';
+      readonly actorId: ActorId;
+      readonly tenantId: TenantId;
+      readonly invitationId: InvitationId;
+    }
+  | {
+      readonly type: 'invitation.accepted';
+      readonly tenantId: TenantId;
+      readonly invitationId: InvitationId;
+      readonly subjectId: ActorId;
+    }
+  | {
+      readonly type: 'invitation.revoked';
+      readonly actorId: ActorId;
+      readonly tenantId: TenantId;
+      readonly invitationId: InvitationId;
     };
 
 /**

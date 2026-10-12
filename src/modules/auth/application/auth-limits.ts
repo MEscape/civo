@@ -22,3 +22,6 @@ export const AUTH_RATE_LIMITS = {
   AuthRateLimitAction,
   { readonly limit: number; readonly windowSeconds: number }
 >;
+
+/** Most employees one assignment list offers; a tenant with more narrows the role first. */
+export const MAX_EMPLOYEES_LISTED = 100;

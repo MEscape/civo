@@ -13,12 +13,13 @@ function notConfigured(): AppResultAsync<void, InfrastructureAppError> {
 /**
  * Fallback while `MAIL_PROVIDER=none`. It fails on every send, and the
  * failure is logged at error level by `deliverAuthEmail`, so a missing
- * mailer is loud instead of silently making sign-up and password reset
+ * mailer is loud instead of silently making invitations and password reset
  * appear to work. It never sees, and so never logs, the message whose URL
  * carries a single-use token.
  */
 export class UnconfiguredAuthMailer implements AuthMailer {
   sendVerification = notConfigured;
   sendPasswordReset = notConfigured;
+  sendInvitation = notConfigured;
   sendExistingAccountNotice = notConfigured;
 }

@@ -16,6 +16,10 @@ const resetTokenSchema = z.object({
   token: tokenSchema.optional().catch(undefined),
 });
 
+const invitationTokenSchema = z.object({
+  token: tokenSchema.optional().catch(undefined),
+});
+
 const verificationSchema = z.object({
   error: z.string().optional().catch(undefined),
 });
@@ -30,6 +34,12 @@ export function parseResetPasswordPageParams(raw: unknown): {
   readonly token: string | undefined;
 } {
   return { token: resetTokenSchema.parse(raw).token };
+}
+
+export function parseAcceptInvitationPageParams(raw: unknown): {
+  readonly token: string | undefined;
+} {
+  return { token: invitationTokenSchema.parse(raw).token };
 }
 
 /** `hasFailed` is true when Better Auth redirected back with an `error` parameter. */

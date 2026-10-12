@@ -14,21 +14,23 @@ import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
 
-import { AUTH_LINK_LIFETIME_SECONDS } from '../../application/contracts/auth-constraints';
-import { signUpAction } from '../actions/sign-up-action';
+import { acceptInvitationAction } from '../actions/accept-invitation-action';
 import { MESSAGE_PARAMS, messageKeyForCode } from '../messages/message-keys';
 import { authRoutes } from '../routes';
-import { signUpSchema } from '../schemas/sign-up-schema';
+import { acceptInvitationSchema } from '../schemas/accept-invitation-schema';
 
 import { AuthLink } from './auth-link';
 import { StatusNotice } from './status-notice';
 
-import type { SignUp } from '../schemas/sign-up-schema';
+import type { AcceptInvitation } from '../schemas/accept-invitation-schema';
 
-const SECONDS_PER_MINUTE = 60;
-const LINK_LIFETIME_MINUTES = AUTH_LINK_LIFETIME_SECONDS / SECONDS_PER_MINUTE;
+export interface AcceptInvitationFormProps {
+  /** The single-use secret of the emailed link. */
+  readonly token: string;
+}
 
-export function SignUpForm() {
+/** Name and password for an invited person; the address and role were fixed by the invitation. */
+export function AcceptInvitationForm({ token }: AcceptInvitationFormProps) {
   const t = useTranslations('auth');
   /** A field's error code as text in this module's language; `undefined` while the field is valid. */
   const errorText = (code: string | undefined) =>
@@ -39,16 +41,16 @@ export function SignUpForm() {
   const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
   const [isDone, setIsDone] = useState(false);
 
-  const form = useForm<SignUp>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
+  const form = useForm<AcceptInvitation>({
+    resolver: zodResolver(acceptInvitationSchema),
+    defaultValues: { token, name: '', password: '', confirmPassword: '' },
   });
   const { errors } = form.formState;
 
-  function handleSubmit(values: SignUp) {
+  function handleSubmit(values: AcceptInvitation) {
     setFormErrorCode(null);
     startTransition(async () => {
-      const result = await signUpAction(values);
+      const result = await acceptInvitationAction(values);
       if (result.ok) {
         setIsDone(true);
         return;
@@ -57,12 +59,11 @@ export function SignUpForm() {
     });
   }
 
-  // Same confirmation for new and existing addresses: it must not reveal which one this was.
   if (isDone) {
     return (
-      <StatusNotice title={t('signUp.successTitle')}>
-        <p>{t('signUp.success', { minutes: LINK_LIFETIME_MINUTES })}</p>
-        <AuthLink href={authRoutes.signIn()}>{t('signUp.signInLink')}</AuthLink>
+      <StatusNotice title={t('acceptInvitation.successTitle')}>
+        <p>{t('acceptInvitation.success')}</p>
+        <AuthLink href={authRoutes.signIn()}>{t('acceptInvitation.signInLink')}</AuthLink>
       </StatusNotice>
     );
   }
@@ -77,24 +78,15 @@ export function SignUpForm() {
       >
         <TextField
           id={`${id}-name`}
-          label={t('signUp.name')}
+          label={t('acceptInvitation.name')}
           autoComplete="name"
           error={errorText(errors.name?.message)}
           {...form.register('name')}
         />
         <TextField
-          id={`${id}-email`}
-          label={t('signUp.email')}
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          error={errorText(errors.email?.message)}
-          {...form.register('email')}
-        />
-        <TextField
           id={`${id}-password`}
-          label={t('signUp.password')}
-          hint={t('signUp.passwordHint', MESSAGE_PARAMS)}
+          label={t('acceptInvitation.password')}
+          hint={t('acceptInvitation.passwordHint', MESSAGE_PARAMS)}
           type="password"
           autoComplete="new-password"
           error={errorText(errors.password?.message)}
@@ -102,7 +94,7 @@ export function SignUpForm() {
         />
         <TextField
           id={`${id}-confirm-password`}
-          label={t('signUp.confirmPassword')}
+          label={t('acceptInvitation.confirmPassword')}
           type="password"
           autoComplete="new-password"
           error={errorText(errors.confirmPassword?.message)}
@@ -118,13 +110,8 @@ export function SignUpForm() {
         )}
 
         <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? t('signUp.submitting') : t('signUp.submit')}
+          {isPending ? t('acceptInvitation.submitting') : t('acceptInvitation.submit')}
         </Button>
-
-        <p className="text-sm text-copy-muted">
-          {t('signUp.hasAccount')}{' '}
-          <AuthLink href={authRoutes.signIn()}>{t('signUp.signInLink')}</AuthLink>
-        </p>
       </form>
     </Card>
   );

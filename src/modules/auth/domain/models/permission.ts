@@ -32,6 +32,11 @@ export const PERMISSIONS = [
   'booking.read',
   'booking.configure',
   'booking.manage',
+  'booking.read.own',
+  'booking.availability.own',
+  'employee.read',
+  'user.read',
+  'user.manage',
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

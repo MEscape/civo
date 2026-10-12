@@ -9,6 +9,8 @@ import type { AuthLinkMessage, AuthMailer } from '../../domain/ports/auth-mailer
 
 export interface TransactionalAuthMailerSettings {
   readonly appName: string;
+  /** The address a person opens to accept an invitation, in their language. Built by the composition root. */
+  readonly invitationLink: (locale: MailLocale, token: string) => string;
 }
 
 /** The real `AuthMailer`: renders the copy and hands it to a `MailTransport`. */
@@ -24,6 +26,19 @@ export class TransactionalAuthMailer implements AuthMailer {
 
   sendPasswordReset(message: AuthLinkMessage): AppResultAsync<void, InfrastructureAppError> {
     return this.send({ kind: 'password_reset', ...message });
+  }
+
+  sendInvitation(message: {
+    readonly to: string;
+    readonly token: string;
+    readonly locale: MailLocale;
+  }): AppResultAsync<void, InfrastructureAppError> {
+    return this.send({
+      kind: 'invitation',
+      to: message.to,
+      locale: message.locale,
+      url: this.settings.invitationLink(message.locale, message.token),
+    });
   }
 
   sendExistingAccountNotice(message: {

@@ -2,7 +2,7 @@ import { literalGuard } from '@lib/utils';
 
 import type { Permission } from './permission';
 
-export const ROLES = ['admin', 'editor', 'viewer'] as const;
+export const ROLES = ['admin', 'editor', 'viewer', 'employee'] as const;
 export type Role = (typeof ROLES)[number];
 
 /**
@@ -37,8 +37,12 @@ const ROLE_PERMISSIONS = {
     'page.delete',
     'page.restructure',
     'booking.read',
+    'booking.read.own',
     'booking.configure',
     'booking.manage',
+    'employee.read',
+    'user.read',
+    'user.manage',
   ],
   editor: [
     'website.read',
@@ -50,7 +54,10 @@ const ROLE_PERMISSIONS = {
     'page.update',
     'page.restructure',
     'booking.read',
+    'booking.read.own',
+    'booking.configure',
     'booking.manage',
+    'employee.read',
   ],
   viewer: [
     'website.read',
@@ -59,7 +66,11 @@ const ROLE_PERMISSIONS = {
     'dataset.read',
     'page.read',
     'booking.read',
+    'booking.read.own',
   ],
+  // An employee sees only the calendars assigned to them (and, where the resource allows it,
+  // adjusts their own working hours). Nothing else of the platform is theirs.
+  employee: ['booking.read.own', 'booking.availability.own'],
 } as const satisfies Record<Role, readonly Permission[]>;
 
 /** Every permission a single role grants. Combining roles is `decide`'s job. */

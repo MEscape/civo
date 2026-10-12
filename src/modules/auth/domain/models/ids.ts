@@ -1,4 +1,7 @@
+import { createIdParser } from '@lib/result';
 import type { Brand } from '@lib/utils';
+
+import { userNotFound } from '../errors/auth-errors';
 
 /** Opaque identity of an authenticated user. Never a Better Auth type. */
 export type ActorId = Brand<string, 'ActorId'>;
@@ -21,3 +24,26 @@ export function toActorId(raw: string): ActorId {
 export function toTenantId(raw: string): TenantId {
   return raw as TenantId; // Brand constructor: the cast is only permitted here.
 }
+
+const ACTOR_ID_MAX_LENGTH = 128;
+
+/** Brands an actor id that arrived from a request, after checking its shape. */
+export const parseActorId = createIdParser({
+  isValid: (raw: string) => raw.length > 0 && raw.length <= ACTOR_ID_MAX_LENGTH,
+  brand: toActorId,
+  mapError: () => userNotFound(),
+});
+
+/** Opaque identity of an invitation. */
+export type InvitationId = Brand<string, 'InvitationId'>;
+
+export function toInvitationId(raw: string): InvitationId {
+  return raw as InvitationId; // Brand constructor: the cast is only permitted here.
+}
+
+/** Brands an invitation id that arrived from a request. Unknown shapes simply match nothing. */
+export const parseInvitationId = createIdParser({
+  isValid: (raw: string) => raw.length > 0 && raw.length <= ACTOR_ID_MAX_LENGTH,
+  brand: toInvitationId,
+  mapError: () => userNotFound(),
+});

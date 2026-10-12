@@ -2,12 +2,13 @@ import { z } from 'zod';
 
 import { AUTH_VALIDATION_CODES as CODES } from '../../application/contracts/auth-constraints';
 
-import { emailSchema, nameSchema, newPasswordSchema } from './auth-fields-schema';
+import { nameSchema, newPasswordSchema, tokenSchema } from './auth-fields-schema';
 
-export const signUpSchema = z
+/** The address is not a field: it belongs to the invitation the token names. */
+export const acceptInvitationSchema = z
   .object({
+    token: tokenSchema,
     name: nameSchema,
-    email: emailSchema,
     password: newPasswordSchema,
     confirmPassword: z.string(),
   })
@@ -16,4 +17,4 @@ export const signUpSchema = z
     message: CODES.passwordMismatch,
   });
 
-export type SignUp = z.infer<typeof signUpSchema>;
+export type AcceptInvitation = z.infer<typeof acceptInvitationSchema>;

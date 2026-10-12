@@ -8,31 +8,11 @@
       "submit": "Anmelden",
       "submitting": "Wird angemeldet…",
       "forgotPassword": "Passwort vergessen?",
-      "noAccount": "Noch kein Konto?",
-      "createAccount": "Konto erstellen",
       "metadata": {
         "title": "In Ihrem Konto anmelden",
         "description": "Melden Sie sich an, um auf Ihr Dashboard zuzugreifen und Ihr Konto zu verwalten."
-      }
-    },
-    "signUp": {
-      "title": "Konto erstellen",
-      "description": "Registrieren Sie sich mit Ihrer E-Mail-Adresse. Sie erhalten einen Link zur Bestätigung.",
-      "name": "Name",
-      "email": "E-Mail-Adresse",
-      "password": "Passwort",
-      "passwordHint": "Mindestens {passwordMin} Zeichen.",
-      "confirmPassword": "Passwort wiederholen",
-      "submit": "Konto erstellen",
-      "submitting": "Konto wird erstellt…",
-      "hasAccount": "Bereits registriert?",
-      "signInLink": "Anmelden",
-      "successTitle": "Bitte prüfen Sie Ihr Postfach",
-      "success": "Wenn diese Adresse für ein neues Konto verwendet werden kann, haben wir einen Bestätigungslink gesendet. Der Link ist {minutes} Minuten gültig.",
-      "metadata": {
-        "title": "Ein neues Konto erstellen",
-        "description": "Registrieren Sie sich für ein neues Konto, um loszulegen."
-      }
+      },
+      "byInvitation": "Konten werden nur auf Einladung angelegt. Bitten Sie eine Administratorin oder einen Administrator darum."
     },
     "forgotPassword": {
       "title": "Passwort zurücksetzen",
@@ -102,7 +82,10 @@
       "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
       "validation": "Bitte überprüfen Sie Ihre Eingabe.",
       "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
-      "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten.",
+      "lastAdmin": "Ein Mandant braucht mindestens einen Administrator, und Sie können Ihren eigenen Zugang nicht ändern oder entfernen.",
+      "userNotFound": "Dieser Benutzer wurde nicht gefunden.",
+      "invitationFailed": "Die Einladung konnte nicht verarbeitet werden. Bitte versuchen Sie es später erneut."
     },
     "validation": {
       "emailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
@@ -114,7 +97,89 @@
       "passwordMismatch": "Die Passwörter stimmen nicht überein.",
       "nameRequired": "Bitte geben Sie Ihren Namen ein.",
       "nameTooLong": "Der Name darf höchstens {nameMax} Zeichen lang sein.",
-      "tokenInvalid": "Dieser Link ist ungültig. Fordern Sie einen neuen an."
+      "tokenInvalid": "Dieser Link ist ungültig. Fordern Sie einen neuen an.",
+      "roleInvalid": "Wählen Sie eine gültige Rolle.",
+      "rolesRequired": "Wählen Sie mindestens eine Rolle."
+    },
+    "acceptInvitation": {
+      "title": "Einladung annehmen",
+      "description": "Wählen Sie Ihren Namen und ein Passwort, um beizutreten.",
+      "name": "Ihr Name",
+      "password": "Passwort",
+      "passwordHint": "Mindestens {passwordMin} Zeichen.",
+      "confirmPassword": "Passwort wiederholen",
+      "submit": "Konto erstellen",
+      "submitting": "Konto wird erstellt …",
+      "successTitle": "Ihr Konto ist bereit",
+      "success": "Prüfen Sie Ihr Postfach: Wir haben einen Link zur Bestätigung Ihrer E-Mail-Adresse gesendet. Danach können Sie sich anmelden.",
+      "signInLink": "Zur Anmeldung",
+      "missingTokenTitle": "Dieser Einladungslink ist unvollständig",
+      "missingToken": "Öffnen Sie den Link aus Ihrer Einladungs-E-Mail erneut oder fordern Sie eine neue Einladung an.",
+      "metadata": {
+        "title": "Einladung annehmen"
+      }
+    },
+    "users": {
+      "metadata": {
+        "title": "Benutzer"
+      },
+      "title": "Benutzer",
+      "description": "Wer in dieser Organisation arbeiten darf, und mit welcher Rolle.",
+      "roles": {
+        "admin": "Administrator",
+        "editor": "Redakteur",
+        "viewer": "Leser",
+        "employee": "Mitarbeiter"
+      },
+      "invite": {
+        "title": "Jemanden einladen",
+        "description": "Konten werden nur auf Einladung angelegt. Die Person erhält einen einmal nutzbaren Link per E-Mail; ein bestehendes Konto erhält die Rolle sofort.",
+        "email": "E-Mail-Adresse",
+        "role": "Rolle",
+        "submit": "Einladung senden",
+        "sending": "Wird gesendet …",
+        "outcome": {
+          "invited": "Die Einladung wurde gesendet.",
+          "granted": "Diese Person hat bereits ein Konto und besitzt jetzt die Rolle."
+        }
+      },
+      "filters": {
+        "search": "Name oder E-Mail suchen",
+        "role": "Rolle",
+        "anyRole": "Jede Rolle",
+        "pageSize": "Pro Seite",
+        "apply": "Anwenden"
+      },
+      "table": {
+        "title": "Mitglieder",
+        "name": "Name",
+        "email": "E-Mail",
+        "roles": "Rollen",
+        "since": "Mitglied seit",
+        "actions": "Aktionen",
+        "unverified": "Unbestätigt",
+        "you": "Sie",
+        "empty": "Keine passenden Mitglieder.",
+        "truncated": "Diese Organisation hat mehr Mitglieder, als auf einmal aufgelistet werden können. Schränken Sie die Suche ein.",
+        "editRoles": "Rollen bearbeiten",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "remove": "Entfernen",
+        "rolesOf": "Rollen von {name}",
+        "confirmRemove": "{name} aus dieser Organisation entfernen? Das Konto bleibt bestehen, hier gehen aber alle Zugriffsrechte verloren."
+      },
+      "pagination": {
+        "nav": "Seiten der Benutzerliste",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "page": "Seite {page}",
+        "summary": "{first}–{last} von {total}"
+      },
+      "invitations": {
+        "title": "Offene Einladungen",
+        "expires": "läuft ab am {date}",
+        "revoke": "Einladung für {email} zurückziehen"
+      }
     }
   }
 }

@@ -102,10 +102,7 @@ export function SignInForm({ returnTo }: SignInFormProps) {
 
         <div className="flex flex-col gap-2">
           <AuthLink href={authRoutes.forgotPassword()}>{t('signIn.forgotPassword')}</AuthLink>
-          <p className="text-sm text-copy-muted">
-            {t('signIn.noAccount')}{' '}
-            <AuthLink href={authRoutes.signUp()}>{t('signIn.createAccount')}</AuthLink>
-          </p>
+          <p className="text-sm text-copy-muted">{t('signIn.byInvitation')}</p>
         </div>
       </form>
     </Card>

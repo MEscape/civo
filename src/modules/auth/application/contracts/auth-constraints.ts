@@ -11,3 +11,7 @@ export {
   CREDENTIAL_LIMITS,
   EMAIL_PATTERN,
 } from '../../domain/models/credentials';
+export { ROLES } from '../../domain/models/role';
+export type { Role } from '../../domain/models/role';
+export { USER_SORT_FIELDS } from '../../domain/ports/user-directory.port';
+export type { UserSortField } from '../../domain/ports/user-directory.port';

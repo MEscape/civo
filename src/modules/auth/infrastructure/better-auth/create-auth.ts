@@ -63,6 +63,9 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
     secret: settings.secret,
     database: deps.pool,
     trustedOrigins: [settings.baseUrl],
+    // Sign-up is closed to the public: accounts exist only through an administrator's invitation,
+    // which calls the server-side API. A disabled path answers 404 over HTTP and stays callable in-process.
+    disabledPaths: ['/sign-up/email'],
 
     emailAndPassword: {
       enabled: true,
