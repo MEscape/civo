@@ -6,21 +6,26 @@ Shared UI used by more than one module or by framework entry points. Nothing her
 
 Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/app/globals.css`. Add a primitive with the shadcn CLI (`npx shadcn add …`) when a module needs it, and remove it when its last consumer goes.
 
-- **Primitives:** Accordion, Alert, Badge (`default`, `secondary`, `outline`, `muted`, status variants), Button (`default`, `secondary`, `accent`, `outline`, `ghost`, `destructive`, `link`; use `buttonVariants` to style a link as a button), Card, Input / Textarea / Label, Select, Skeleton (decorative: the busy region announces loading), Switch, Table, Tabs.
+- **Primitives:** Accordion, Alert, Badge (`default`, `secondary`, `accent`, `outline`, `muted`, status variants), Button (`default`, `secondary`, `accent`, `outline`, `ghost`, `destructive`, `link`; use `buttonVariants` to style a link as a button), Card, Input / Textarea / Label, Select, Skeleton (decorative: the busy region announces loading), Switch, Table, Tabs.
 - **Icons:** `icons.tsx` holds the custom SVG icons on one shared 24×24 stroke canvas; `dynamic-icon.tsx` renders an icon named by content data, falling back to a known icon.
 
 ## `@components/layout` (Layout primitives)
 
 `layout-primitives.tsx`: `PageShell`, `AppHeader`, `Container`, `Section` (`tone`: `default` | `muted`), `PageHeading` (the page's single `h1`), `SectionHeading` (`h2`), `EmptyState` (`variant`: `plain` | `outlined`), `Grid` (container-query columns).
 
-`app-nav.tsx`: `AppNav`, a header's navigation links. A Client Component so the locale-aware `Link` does not read the request while a layout prerenders.
+`AdminContainer`: the one content column of every admin page, so the navigation above a page shares its left edge.
+
+`app-nav.tsx`: `AppNav`, the navigation links of the app bar (`variant="header"`) and the tabs between a website's pages (`variant="section"`), with the current page marked. A Client Component so the locale-aware `Link` and the current path do not read the request while a layout prerenders.
 
 ## `@components/shared` (Composites)
 
 - `text-field.tsx`, `select-field.tsx`, `form-select-field.tsx`, `checkbox-field.tsx`, `field-message.tsx`: labelled form fields with hints and errors wired to `aria-describedby`. `select-field.tsx` is a controlled Radix select (`options`, `value`, `onValueChange`); a Radix select has no native input, so react-hook-form's `register` cannot drive it: `form-select-field.tsx` binds it to a form value through the controller. `checkbox-field.tsx` is a native checkbox with a visible focus ring; module forms and filters use it instead of a bare `<input type="checkbox">`.
+- `link-card.tsx`: `LinkCard`, a card that is one link: the title is the link and stretches over the whole card, so the card is clickable with a single tab stop.
 - `loading-status.tsx`: `LoadingStatus`, the one screen-reader announcement inside loading UI (`app.loading`); skeletons stay `aria-hidden`.
 - `not-found-panel.tsx`: the body of every `not-found.tsx`.
 - `route-error-panel.tsx`: the body of every `error.tsx`; it never shows the raw error message.
+
+- `pagination.tsx` (`Pagination`): previous / next and the pages around the current one, as plain links built by the caller (`hrefFor`), so filters stay in the address. Labels are passed in already translated. Used with `@lib/pagination`.
 
 ## `@components/providers`
 

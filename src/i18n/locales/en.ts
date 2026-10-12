@@ -7,7 +7,7 @@ import { enMap as map } from '@modules/map';
 import { enRelease as release } from '@modules/release';
 import { enWebsite as website } from '@modules/website';
 
-import app from '../messages/en/app.json';
+import enApp from '../en.json';
 
 /**
  * The English catalog: the app shell's own namespace plus one namespace per
@@ -15,7 +15,7 @@ import app from '../messages/en/app.json';
  * namespaces, so a module's message map can only point at keys it owns.
  */
 const messages = {
-  app,
+  app: enApp,
   auth: auth.auth,
   booking: booking.booking,
   builder: builder.builder,

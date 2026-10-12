@@ -7,7 +7,7 @@ import { deMap as map } from '@modules/map';
 import { deRelease as release } from '@modules/release';
 import { deWebsite as website } from '@modules/website';
 
-import app from '../messages/de/app.json';
+import deApp from '../de.json';
 
 /**
  * The German catalog: the app shell's own namespace plus one namespace per
@@ -15,7 +15,7 @@ import app from '../messages/de/app.json';
  * namespaces, so a module's message map can only point at keys it owns.
  */
 const messages = {
-  app,
+  app: deApp,
   auth: auth.auth,
   booking: booking.booking,
   builder: builder.builder,

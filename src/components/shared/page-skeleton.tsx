@@ -1,4 +1,4 @@
-import { Container, Section } from '@components/layout/layout-primitives';
+import { AdminContainer, Section } from '@components/layout/layout-primitives';
 import { Skeleton } from '@components/ui/skeleton';
 
 import { LoadingStatus } from './loading-status';
@@ -11,7 +11,7 @@ import { LoadingStatus } from './loading-status';
  */
 export function PageSkeleton() {
   return (
-    <Container className="max-w-4xl" aria-busy="true">
+    <AdminContainer aria-busy="true">
       <Section className="space-y-8">
         <LoadingStatus />
         <div className="space-y-3" aria-hidden="true">
@@ -23,6 +23,6 @@ export function PageSkeleton() {
           <Skeleton className="h-28 w-full" />
         </div>
       </Section>
-    </Container>
+    </AdminContainer>
   );
 }

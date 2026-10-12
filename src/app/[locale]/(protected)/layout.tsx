@@ -37,10 +37,11 @@ async function ProtectedHeader({ locale }: { readonly locale: Locale }) {
   return (
     <AppHeader className="justify-between gap-4">
       <AppNav
+        variant="header"
         label={app('navigation.label')}
         links={[
           { href: websiteRoutes.list(), label: APP_IDENTITY.name, isBrand: true },
-          { href: websiteRoutes.list(), label: website('pages.list.title') },
+          { href: websiteRoutes.list(), label: website('pages.list.title'), isExact: true },
         ]}
       />
       {isAuthEnabled && (

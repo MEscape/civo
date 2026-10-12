@@ -22,7 +22,7 @@ export function AppHeader({ className, ...props }: HTMLAttributes<HTMLElement>) 
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 flex h-[var(--civo-app-header-height)] shrink-0 items-center',
+        'sticky top-0 z-40 flex h-app-header shrink-0 items-center',
         'border-b border-border bg-surface px-4',
         className,
       )}
@@ -42,6 +42,14 @@ export function Container({ className, ...props }: HTMLAttributes<HTMLDivElement
   return (
     <div className={cn('mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8', className)} {...props} />
   );
+}
+
+/**
+ * The content column of every admin page, so the navigation above a page and
+ * the page itself share one left edge. Widen it here, not per page.
+ */
+export function AdminContainer({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <Container className={cn('max-w-5xl', className)} {...props} />;
 }
 
 const SECTION_TONE_CLASSES = {

@@ -4,7 +4,7 @@ import { RouteErrorPanel } from '@components/shared/route-error-panel';
 
 import { I18N_CONFIG } from '@i18n';
 
-import messages from '../i18n/messages/en/app.json';
+import messages from '@/i18n/en.json';
 
 import './globals.css';
 

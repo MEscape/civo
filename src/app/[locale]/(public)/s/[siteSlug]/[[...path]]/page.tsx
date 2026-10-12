@@ -3,10 +3,12 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 
 import { restoreStoredPageConfig } from '@modules/builder';
 import { renderPageNodes } from '@modules/component-platform';
 import { releaseQueries } from '@modules/release';
+import { releaseRoutes } from '@modules/release/client';
 import { restoreStoredWebsiteTheme, ThemeProvider, websiteQueries } from '@modules/website';
 
 import { buildContentMetadata } from '@lib/seo';
@@ -22,8 +24,12 @@ interface RouteProps {
  * never read here, only the snapshot a release froze, so what visitors see
  * changes only when someone publishes or rolls back. Shared by the metadata
  * and the page within one request.
+ *
+ * The database driver draws random ids, which a prerender may not do; `connection()`
+ * makes the load a per-request one before the first query runs.
  */
 const loadPublishedPage = cache(async (siteSlug: string, path: string) => {
+  await connection();
   const website = await orFail(websiteQueries.getPublicWebsiteBySlug.execute(siteSlug));
   const snapshot = await orFail(releaseQueries.getPublishedSnapshot.execute(website.id));
 
@@ -47,7 +53,7 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   const pagePath = toPath(path);
 
   return buildContentMetadata({
-    pathname: pagePath === '' ? `/s/${siteSlug}` : `/s/${siteSlug}/${pagePath}`,
+    pathname: releaseRoutes.publicSite(siteSlug, pagePath),
     title: `${page.title} | ${snapshot.website.name}`,
     description: snapshot.website.description ?? snapshot.website.name,
     siteName: snapshot.website.name,
