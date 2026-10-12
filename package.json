@@ -26,7 +26,8 @@
     "db:verify": "prisma db verify --strict",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "i18n:check": "vitest run __tests__/architecture/i18n-catalogs.test.ts"
+    "i18n:check": "vitest run __tests__/architecture/i18n-catalogs.test.ts",
+    "components:lock": "tsx scripts/component-version-lock.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "6.1.21",

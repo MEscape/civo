@@ -540,6 +540,7 @@ docs/conventions/
 ├── adding-a-route-handler.md
 ├── adding-a-shared-utility.md
 ├── adding-a-ui-component.md
+├── adding-a-platform-component.md
 ├── adding-an-environment-variable.md
 ├── adding-a-database-migration.md
 ├── adding-a-translation.md

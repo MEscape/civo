@@ -196,10 +196,10 @@ jobs:
       AUTH_ENABLED: "true"
       AUTH_SECRET: ci-placeholder-not-a-secret-000000000000
       AUTH_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci_auth
-      # Production requires a real mail provider when auth is enabled; nothing is sent during a build.
-      AUTH_MAIL_PROVIDER: resend
-      AUTH_MAIL_API_KEY: ci-placeholder-not-a-key
-      AUTH_MAIL_FROM: ci@example.invalid
+      # Production requires a mail provider; nothing is sent during a build.
+      MAIL_PROVIDER: smtp
+      MAIL_SMTP_HOST: localhost
+      MAIL_FROM: ci@example.invalid
 
     steps:
       - uses: actions/checkout@v5
@@ -302,9 +302,10 @@ jobs:
             -e AUTH_ENABLED=true \
             -e AUTH_SECRET=ci-placeholder-not-a-secret-000000000000 \
             -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
-            -e AUTH_MAIL_PROVIDER=smtp \
-            -e AUTH_MAIL_SMTP_HOST=civo-mailhog-ci \
-            -e AUTH_MAIL_SMTP_PORT=1025 \
+            -e MAIL_PROVIDER=smtp \
+            -e MAIL_SMTP_HOST=civo-mailhog-ci \
+            -e MAIL_SMTP_PORT=1025 \
+            -e MAIL_FROM=ci@example.invalid \
             civo:ci
 
           for i in $(seq 1 30); do

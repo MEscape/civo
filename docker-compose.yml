@@ -66,6 +66,7 @@ services:
       MAIL_PROVIDER: smtp
       MAIL_SMTP_HOST: mailhog
       MAIL_SMTP_PORT: "1025"
+      MAIL_FROM: Civo <no-reply@civo.local>
 
       LOG_LEVEL: info
 

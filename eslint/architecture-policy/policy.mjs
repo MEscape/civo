@@ -21,10 +21,10 @@ export const LAYERS = /** @type {const} */ ([
 
 /** Shared libraries (`@lib/<name>`) each layer may import. Anything else is reported. */
 export const SHARED_LIB_ALLOW = {
-  domain: ['errors', 'result', 'utils'],
-  application: ['errors', 'result', 'utils'],
-  infrastructure: ['errors', 'result', 'utils', 'logger', 'db', 'config', 'mail'],
-  presentation: ['errors', 'result', 'utils', 'actions', 'seo', 'config', 'fonts'],
+  domain: ['errors', 'result', 'utils', 'pagination'],
+  application: ['errors', 'result', 'utils', 'pagination'],
+  infrastructure: ['errors', 'result', 'utils', 'logger', 'db', 'config', 'mail', 'pagination'],
+  presentation: ['errors', 'result', 'utils', 'actions', 'seo', 'config', 'fonts', 'pagination'],
   // composition.ts, index.ts and module-root files: everything.
   root: null,
 };

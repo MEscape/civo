@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 
 import createNextIntlPlugin from 'next-intl/plugin';
 
+import { securityHeaders } from './src/lib/security';
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
   // Required by the one application cache (`'use cache'` in data-sources). Lifetimes are
@@ -9,6 +11,13 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   // Recommended together with Cache Components: prefetch the static shell of a route, then stream the rest.
   partialPrefetching: true,
+  headers: () =>
+    Promise.resolve([
+      {
+        source: '/:path*',
+        headers: securityHeaders({ isProduction: process.env.NODE_ENV === 'production' }),
+      },
+    ]),
 };
 
 const withNextIntl = createNextIntlPlugin();
