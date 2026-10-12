@@ -20,7 +20,7 @@ export function invalidateSettings(websiteId: string): void {
 export function invalidateDatasetConsumers(websiteId: string, datasetId: string): void {
   revalidateTag(datasetCacheTag(datasetId), 'default');
   revalidatePath(dataSourceRoutes.settings(websiteId));
-  revalidatePath(dataSourceRoutes.builder(websiteId));
+  revalidatePath(dataSourceRoutes.builder(websiteId), 'layout');
 }
 
 /** Removing a source drops its raw-response cache and everything derived from its datasets. */
@@ -34,5 +34,5 @@ export function invalidateRemovedDataSource(
     revalidateTag(datasetCacheTag(datasetId), 'default');
   });
   revalidatePath(dataSourceRoutes.settings(websiteId));
-  revalidatePath(dataSourceRoutes.builder(websiteId));
+  revalidatePath(dataSourceRoutes.builder(websiteId), 'layout');
 }

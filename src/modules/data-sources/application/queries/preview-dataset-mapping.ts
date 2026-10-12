@@ -22,7 +22,9 @@ export class PreviewDatasetMapping {
     return loadAuthorizedDataset(this.deps, input.datasetId, 'dataset.map').andThen(
       ({ dataset, source }) =>
         createDatasetMapping(dataset.canonicalKind, input.mapping)
-          .asyncAndThen((mapping) => dryRunMapping(this.deps.connector, source, mapping))
+          .asyncAndThen((mapping) =>
+            dryRunMapping(this.deps.connector, { source, path: dataset.path }, mapping),
+          )
           .map((values) => ({ values })),
     );
   }

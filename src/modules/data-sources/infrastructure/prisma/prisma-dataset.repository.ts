@@ -169,6 +169,7 @@ export class PrismaDatasetRepository implements DatasetRepository {
             name: draft.name,
             slug: draft.slug,
             canonicalKind: draft.canonicalKind,
+            path: draft.path,
           });
       },
       failures.orConflict('create', datasetSlugTaken),

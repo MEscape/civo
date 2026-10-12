@@ -38,6 +38,7 @@ export function toDatasetView(dataset: Dataset): DatasetView {
     name: dataset.name,
     slug: dataset.slug,
     canonicalKind: dataset.canonicalKind,
+    path: dataset.path,
     mapping: dataset.mapping,
     status: dataset.status,
     lastFetchedAt: dataset.lastFetchedAt,

@@ -8,6 +8,7 @@ export const newDatasetSchema = z.object({
   name: datasetNameSchema,
   slug: z.string().optional(),
   canonicalKind: canonicalKindSchema,
+  path: z.string().optional(),
 });
 
 export type NewDataset = z.infer<typeof newDatasetSchema>;
@@ -16,5 +17,6 @@ export type NewDataset = z.infer<typeof newDatasetSchema>;
 export const datasetFormSchema = newDatasetSchema.pick({
   name: true,
   canonicalKind: true,
+  path: true,
 });
 export type DatasetForm = z.infer<typeof datasetFormSchema>;

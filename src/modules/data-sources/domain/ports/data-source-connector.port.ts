@@ -2,6 +2,7 @@ import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
 import type { DataSource } from '../models/data-source';
+import type { ReadWindow } from '../pagination/read-window';
 
 /**
  * Failures the port may report. Validation errors mean the SAVED
@@ -31,10 +32,27 @@ export type ConnectorError = ValidationAppError | InfrastructureAppError;
  * status, response text) are logged, never returned. A kind without a
  * connector, such as MOCK, yields `connectorUnavailable()`.
  */
+export interface FetchOptions {
+  /**
+   * Which records the caller shows. A source with pagination is read page by
+   * page until the window is filled; a source without any is answered in one
+   * request and cut to the window.
+   */
+  readonly window: ReadWindow;
+  /**
+   * Relative subpath below the source's base URL (e.g. `/eventfeed/records`).
+   * When provided, it overrides the default path in the source's configuration.
+   */
+  readonly path?: string | null | undefined;
+}
+
 export interface DataSourceConnector {
   /** Checks reachability, authentication and that the response is readable JSON. */
   test(source: DataSource): AppResultAsync<void, ConnectorError>;
 
-  /** The parsed JSON body of the source's configured endpoint, unmapped. */
-  fetchBody(source: DataSource): AppResultAsync<unknown, ConnectorError>;
+  /**
+   * The parsed JSON of the source's configured endpoint, unmapped. A paginated
+   * source answers the records of all pages read, as one list.
+   */
+  fetchBody(source: DataSource, options: FetchOptions): AppResultAsync<unknown, ConnectorError>;
 }

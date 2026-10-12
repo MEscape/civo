@@ -29,6 +29,7 @@ export interface DatasetColumnsRecord {
   readonly name: string;
   readonly slug: string;
   readonly canonicalKind: string;
+  readonly path: string | null;
   readonly mapping: unknown;
   readonly status: string;
   readonly lastFetchedAt: InstantRecord | null;
@@ -72,6 +73,7 @@ export const DATASET_SELECT = [
   'name',
   'slug',
   'canonicalKind',
+  'path',
   'mapping',
   'status',
   'lastFetchedAt',
@@ -142,6 +144,7 @@ export function buildDataset(columns: DatasetColumnsRecord, parent: DatasetParen
     name: columns.name,
     slug: columns.slug,
     canonicalKind: columns.canonicalKind,
+    path: columns.path,
     mapping: restoreMapping(columns.mapping, columns.canonicalKind, columns.id),
     status: toStatus(columns.status),
     lastFetchedAt: columns.lastFetchedAt ? instantToDate(columns.lastFetchedAt) : null,

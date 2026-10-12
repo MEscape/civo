@@ -4,7 +4,7 @@ import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
 import { dataSourceCommands } from '../../composition';
-import { invalidateSettings } from '../cache/invalidate';
+import { invalidateDatasetConsumers } from '../cache/invalidate';
 import { toDatasetDto } from '../dto/dataset-dto';
 import { newDatasetSchema } from '../schemas/new-dataset-schema';
 import { parseDataSourceInput } from '../schemas/parse-data-source-input';
@@ -17,7 +17,7 @@ export async function createDatasetAction(input: unknown): Promise<ActionResult<
   );
 
   if (result.isOk()) {
-    invalidateSettings(result.value.websiteId);
+    invalidateDatasetConsumers(result.value.websiteId, result.value.id);
   }
   return toActionResult(result.map(toDatasetDto));
 }

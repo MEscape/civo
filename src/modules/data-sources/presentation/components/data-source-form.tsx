@@ -10,6 +10,8 @@ import { FormSelectField } from '@components/shared/form-select-field';
 import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
 
+import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+
 import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
@@ -21,7 +23,13 @@ import {
   MESSAGE_PARAMS,
   messageKeyForCode,
 } from '../messages/message-keys';
-import { restSourceFormSchema } from '../schemas/rest-source-form-schema';
+import { toFormFieldErrors, toRestConfig } from '../schemas/rest-source-config-schema';
+import {
+  REST_SOURCE_FORM_DEFAULTS,
+  restSourceFormSchema,
+} from '../schemas/rest-source-form-schema';
+
+import { DataSourcePaginationFields } from './data-source-pagination-fields';
 
 import type { RestSourceForm } from '../schemas/rest-source-form-schema';
 
@@ -43,9 +51,10 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
 
   const form = useForm<RestSourceForm>({
     resolver: zodResolver(restSourceFormSchema),
-    defaultValues: { name: '', baseUrl: '', authMode: 'NONE' },
+    defaultValues: REST_SOURCE_FORM_DEFAULTS,
   });
-  const { errors } = form.formState;
+  const { errors, isDirty } = form.formState;
+  useBeforeUnloadGuard(isDirty);
   const authMode = useWatch({ control: form.control, name: 'authMode' });
 
   const authModeOptions = AUTH_MODES.map((mode) => ({
@@ -63,10 +72,10 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
         websiteId,
         name: values.name,
         kind: 'REST',
-        config: { baseUrl: values.baseUrl, authMode: values.authMode },
+        config: toRestConfig(values),
       });
       if (!result.ok) {
-        setFormErrorCode(applyActionError(result.error, form.setError));
+        setFormErrorCode(applyActionError(toFormFieldErrors(result.error), form.setError));
         return;
       }
       onSaved();
@@ -112,6 +121,14 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
       {authMode !== 'NONE' && (
         <p className="text-xs text-copy-muted">{t('sourceForm.credentialHint')}</p>
       )}
+
+      <DataSourcePaginationFields
+        idPrefix={id}
+        control={form.control}
+        register={form.register}
+        errors={errors}
+        errorText={errorText}
+      />
 
       {formErrorCode !== null && (
         <FieldMessage

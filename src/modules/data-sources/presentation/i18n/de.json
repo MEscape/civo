@@ -13,7 +13,7 @@
       "kind": "Typ",
       "lastChecked": "Zuletzt geprüft",
       "never": "Noch nie",
-      "testHealthy": "Verbindung erfolgreich ({ms} ms).",
+      "testHealthy": "Verbindung erfolgreich.",
       "testing": "Prüft…",
       "test": "Verbindung testen",
       "remove": "Entfernen"
@@ -24,6 +24,35 @@
       "authMode": "Authentifizierung",
       "baseUrl": "API Basis-URL",
       "baseUrlPlaceholder": "https://beispiel-kommune.de/api",
+      "pagination": {
+        "legend": "Datensätze und Paginierung",
+        "recordsPath": "Datensatzpfad (optional)",
+        "recordsPathHint": "Wo die Datensatzliste in der Antwort liegt, als Punktpfad wie data.items. Leer lassen, um gängige Strukturen zu erkennen.",
+        "kind": "Paginierung",
+        "kinds": {
+          "none": "Keine: Eine Anfrage liefert alles",
+          "offset": "Limit und Offset",
+          "page": "Seitennummer",
+          "cursor": "Cursor-Token",
+          "next-url": "Link zur nächsten Seite"
+        },
+        "hints": {
+          "offset": "Die API erwartet Seitengröße und Startposition als Query-Parameter.",
+          "page": "Die API erwartet eine Seitennummer und optional eine Seitengröße.",
+          "cursor": "Jede Antwort nennt ein Token, das für die nächste Seite zurückgesendet wird.",
+          "next-url": "Jede Antwort enthält die Adresse der nächsten Seite. Sie muss auf demselben Host bleiben."
+        },
+        "fields": {
+          "limitParam": "Parameter für die Seitengröße",
+          "offsetParam": "Offset-Parameter",
+          "pageParam": "Parameter für die Seitennummer",
+          "sizeParam": "Parameter für die Seitengröße (optional)",
+          "cursorParam": "Cursor-Parameter",
+          "nextCursorPath": "Pfad des nächsten Cursors in der Antwort",
+          "nextUrlPath": "Pfad des Links zur nächsten Seite in der Antwort",
+          "pageSize": "Datensätze pro Seite (Standard 100)"
+        }
+      },
       "credentialHint": "Das Zugangs-Credential wird nicht hier gespeichert, sondern muss serverseitig als Umgebungsvariable hinterlegt werden. Wenden Sie sich dazu an Ihren Administrator.",
       "saving": "Speichert…",
       "save": "Speichern",
@@ -46,6 +75,9 @@
       "name": "Name",
       "namePlaceholder": "z. B. Veranstaltungen 2026",
       "kind": "Datensatz-Typ",
+      "path": "Pfad (optional)",
+      "pathPlaceholder": "/pfad/zu/datensaetzen",
+      "pathHint": "Wird an die Basis-URL der Datenquelle angehängt. Leer lassen, um den Pfad der Datenquelle zu verwenden.",
       "saving": "Speichert…",
       "add": "Hinzufügen",
       "save": "Speichern",
@@ -109,7 +141,8 @@
         "endDate": "Enddatum",
         "location": "Ort",
         "category": "Kategorie",
-        "imageUrl": "Bild-URL"
+        "imageUrl": "Bild-URL",
+        "href": "Link"
       },
       "NewsItem": {
         "title": "Titel",
@@ -118,6 +151,7 @@
         "imageUrl": "Bild-URL",
         "publishedAt": "Veröffentlichungsdatum",
         "slug": "URL-Slug",
+        "href": "Link",
         "content": "Inhalt"
       },
       "Service": {
@@ -193,10 +227,12 @@
       "connectionTimedOut": "Verbindung fehlgeschlagen: Die Zeitüberschreitung der Anfrage wurde erreicht.",
       "authenticationFailed": "Authentifizierung fehlgeschlagen: Die Datenquelle hat die Anmeldeinformationen abgelehnt.",
       "upstreamError": "Ungültige Antwort: Die Datenquelle hat einen Fehler zurückgegeben.",
+      "upstreamRedirected": "Ungültige Antwort: Die Adresse leitet weiter. Geben Sie die endgültige Adresse der Daten ein (zum Beispiel mit https und vollständigem Pfad).",
       "responseTooLarge": "Ungültige Antwort: Die Antwort der Datenquelle war zu groß.",
       "responseUnreadable": "Ungültige Antwort: Die Antwort der Datenquelle konnte nicht gelesen werden.",
       "responseNotJson": "Ungültige Antwort: Die Datenquelle hat kein gültiges JSON zurückgegeben.",
       "noSampleRecords": "Ungültige Antwort: Die Datenquelle hat keine Beispieldatensätze zurückgegeben.",
+      "recordsNotFound": "Ungültige Antwort: Am konfigurierten Datensatzpfad wurde keine Datensatzliste gefunden. Prüfen Sie den Pfad oder lassen Sie ihn leer.",
       "credentialsMissing": "Ungültige Konfiguration: Die Zugangsdaten sind auf dem Server nicht hinterlegt.",
       "connectorUnavailable": "Ungültige Konfiguration: Für diesen Datenquellentyp ist noch kein Connector verfügbar.",
       "addressNotAllowed": "Ungültige Konfiguration: Diese Adresse ist nicht erlaubt.",
@@ -215,6 +251,11 @@
       "urlCredentialsNotAllowed": "Adressen mit Benutzername oder Passwort sind nicht erlaubt.",
       "urlAddressNotAllowed": "Diese Adresse ist nicht erlaubt.",
       "pathInvalid": "Der Pfad ist ungültig.",
+      "methodUnsupported": "Wählen Sie GET oder POST.",
+      "requestBodyInvalid": "Der Request-Body muss ein JSON-Objekt sein, und nur POST-Quellen senden einen.",
+      "recordsPathInvalid": "Der Datensatzpfad ist ungültig. Verwenden Sie einen Punktpfad wie data.items.",
+      "paginationInvalid": "Die Paginierungs-Einstellungen sind unvollständig oder ungültig.",
+      "windowInvalid": "Der angeforderte Datensatzbereich ist ungültig.",
       "authModeUnsupported": "Dieser Authentifizierungstyp ist nicht verfügbar.",
       "datasetNameTooShort": "Der Name muss mindestens {datasetNameMin} Zeichen lang sein.",
       "datasetNameTooLong": "Der Name darf höchstens {datasetNameMax} Zeichen lang sein.",

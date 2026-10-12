@@ -48,6 +48,8 @@ export interface DatasetView {
   readonly name: string;
   readonly slug: string;
   readonly canonicalKind: CanonicalKind;
+  /** The endpoint below the source's base URL; null uses the source's own. */
+  readonly path: string | null;
   readonly mapping: DatasetMappingView | null;
   readonly status: DataSourceStatus;
   readonly lastFetchedAt: Date | null;

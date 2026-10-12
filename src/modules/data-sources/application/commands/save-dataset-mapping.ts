@@ -31,7 +31,9 @@ export class SaveDatasetMapping {
       ({ actor, dataset, source }) =>
         createDatasetMapping(dataset.canonicalKind, input.mapping)
           .andThen((mapping) => ensureRequiredTargets(dataset.canonicalKind, mapping))
-          .asyncAndThen((mapping) => dryRunMapping(connector, source, mapping).map(() => mapping))
+          .asyncAndThen((mapping) =>
+            dryRunMapping(connector, { source, path: dataset.path }, mapping).map(() => mapping),
+          )
           .andThen((mapping) => datasets.saveMapping(dataset.id, actor.tenantId, mapping))
           .map((saved) => {
             audit.record({

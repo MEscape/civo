@@ -21,10 +21,12 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
     { path: 'location', required: false },
     { path: 'category', required: false },
     { path: 'imageUrl', required: false },
+    { path: 'href', required: false },
   ],
   NewsItem: [
     { path: 'title', required: true },
-    { path: 'slug', required: true },
+    { path: 'slug', required: false },
+    { path: 'href', required: false },
     { path: 'excerpt', required: false },
     { path: 'content', required: false },
     { path: 'imageUrl', required: false },

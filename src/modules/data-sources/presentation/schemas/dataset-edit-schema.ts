@@ -6,6 +6,7 @@ export const datasetEditSchema = z.object({
   datasetId: idSchema,
   name: datasetNameSchema.optional(),
   slug: z.string().optional(),
+  path: z.string().optional(),
 });
 
 export type DatasetEdit = z.infer<typeof datasetEditSchema>;

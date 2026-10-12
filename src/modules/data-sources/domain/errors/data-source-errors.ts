@@ -37,10 +37,12 @@ export const DATA_SOURCE_ERROR_CODES = {
   connectionTimedOut: 'data_source.connection_timed_out',
   authenticationFailed: 'data_source.authentication_failed',
   upstreamError: 'data_source.upstream_error',
+  upstreamRedirected: 'data_source.upstream_redirected',
   responseTooLarge: 'data_source.response_too_large',
   responseUnreadable: 'data_source.response_unreadable',
   responseNotJson: 'data_source.response_not_json',
   noSampleRecords: 'data_source.no_sample_records',
+  recordsNotFound: 'data_source.records_not_found',
   // The saved configuration cannot be used
   credentialsMissing: 'data_source.credentials_missing',
   connectorUnavailable: 'data_source.connector_unavailable',
@@ -59,6 +61,11 @@ export const DATA_SOURCE_VALIDATION_CODES = {
   urlCredentialsNotAllowed: 'data_source.validation.url_credentials_not_allowed',
   urlAddressNotAllowed: 'data_source.validation.url_address_not_allowed',
   pathInvalid: 'data_source.validation.path_invalid',
+  methodUnsupported: 'data_source.validation.method_unsupported',
+  requestBodyInvalid: 'data_source.validation.request_body_invalid',
+  recordsPathInvalid: 'data_source.validation.records_path_invalid',
+  paginationInvalid: 'data_source.validation.pagination_invalid',
+  windowInvalid: 'data_source.validation.window_invalid',
   authModeUnsupported: 'data_source.validation.auth_mode_unsupported',
   credentialsMissing: 'data_source.validation.credentials_missing',
   connectorUnavailable: 'data_source.validation.connector_unavailable',
@@ -177,6 +184,14 @@ export function upstreamError(): InfrastructureAppError {
   return infrastructureError(CODES.upstreamError, 'The data source returned an error.');
 }
 
+/** The endpoint answered with a redirect, which is never followed (the target is not vetted). */
+export function upstreamRedirected(): InfrastructureAppError {
+  return infrastructureError(
+    CODES.upstreamRedirected,
+    'The data source redirected the request elsewhere.',
+  );
+}
+
 export function responseTooLarge(): InfrastructureAppError {
   return infrastructureError(CODES.responseTooLarge, 'The data source response is too large.');
 }
@@ -195,6 +210,14 @@ export function responseNotJson(cause?: unknown): InfrastructureAppError {
 
 export function noSampleRecords(): InfrastructureAppError {
   return infrastructureError(CODES.noSampleRecords, 'The data source returned no sample records.');
+}
+
+/** The configured `recordsPath` leads nowhere in the answer, so there is no list to read. */
+export function recordsNotFound(): InfrastructureAppError {
+  return infrastructureError(
+    CODES.recordsNotFound,
+    'The response holds no record list at the configured path.',
+  );
 }
 
 export function credentialsMissing(): ValidationAppError {

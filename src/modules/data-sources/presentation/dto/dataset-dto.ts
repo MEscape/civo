@@ -21,6 +21,7 @@ export interface DatasetDto {
   readonly name: string;
   readonly slug: string;
   readonly canonicalKind: CanonicalKind;
+  readonly path: string | null;
   readonly mapping: DatasetMappingView | null;
   readonly status: DataSourceStatus;
   readonly lastFetchedAt: string | null;
@@ -39,6 +40,7 @@ export function toDatasetDto(view: DatasetView): DatasetDto {
     name: view.name,
     slug: view.slug,
     canonicalKind: view.canonicalKind,
+    path: view.path,
     mapping: view.mapping,
     status: view.status,
     lastFetchedAt: view.lastFetchedAt?.toISOString() ?? null,

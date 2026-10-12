@@ -20,7 +20,8 @@ export interface DataDiscovery {
 
 export const DISCOVERY_LIMITS = {
   sampleSize: 5,
-  maxDepth: 4,
+  /** Levels of nested objects followed into dot paths; deeper objects are offered as one field. */
+  maxDepth: 8,
   maxFields: 200,
   maxPreviewLength: 80,
 } as const;

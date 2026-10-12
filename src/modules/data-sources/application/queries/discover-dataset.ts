@@ -1,6 +1,7 @@
 import type { AppResultAsync } from '@lib/result';
 
-import { discoverFromBody } from '../../domain/discovery/discovery';
+import { DISCOVERY_LIMITS, discoverFromBody } from '../../domain/discovery/discovery';
+import { firstRecords } from '../../domain/pagination/read-window';
 import { loadAuthorizedDataset } from '../load-authorized-dataset';
 
 import type { ConnectorError } from '../../domain/ports/data-source-connector.port';
@@ -17,10 +18,15 @@ export class DiscoverDataset {
   constructor(private readonly deps: ConnectedDataSourceDependencies) {}
 
   execute(id: string): AppResultAsync<DiscoveryView, LoadDatasetError | ConnectorError> {
-    return loadAuthorizedDataset(this.deps, id, 'dataset.map').andThen(({ source }) =>
-      this.deps.connector.fetchBody(source).map((body) => ({
-        fields: discoverFromBody(body).fields,
-      })),
+    return loadAuthorizedDataset(this.deps, id, 'dataset.map').andThen(({ dataset, source }) =>
+      this.deps.connector
+        .fetchBody(source, {
+          window: firstRecords(DISCOVERY_LIMITS.sampleSize),
+          path: dataset.path,
+        })
+        .map((body) => ({
+          fields: discoverFromBody(body).fields,
+        })),
     );
   }
 }

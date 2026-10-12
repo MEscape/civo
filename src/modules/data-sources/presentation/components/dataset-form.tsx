@@ -10,6 +10,8 @@ import { FormSelectField } from '@components/shared/form-select-field';
 import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
 
+import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+
 import { useTranslations } from '@i18n/client';
 
 import { applyActionError } from '@lib/actions';
@@ -39,6 +41,14 @@ export interface DatasetFormProps {
 
 const DEFAULT_CANONICAL_KIND = CANONICAL_KINDS[0];
 
+function toDefaultValues(dataset: DatasetFormProps['dataset']): DatasetFormValues {
+  return {
+    name: dataset?.name ?? '',
+    canonicalKind: dataset?.canonicalKind ?? DEFAULT_CANONICAL_KIND,
+    path: dataset?.path ?? '',
+  };
+}
+
 export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: DatasetFormProps) {
   const t = useTranslations('dataSources');
   /** A field's error code as text in this module's language; `undefined` while the field is valid. */
@@ -51,12 +61,10 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
 
   const form = useForm<DatasetFormValues>({
     resolver: zodResolver(datasetFormSchema),
-    defaultValues: {
-      name: dataset?.name ?? '',
-      canonicalKind: dataset?.canonicalKind ?? DEFAULT_CANONICAL_KIND,
-    },
+    defaultValues: toDefaultValues(dataset),
   });
-  const { errors } = form.formState;
+  const { errors, isDirty } = form.formState;
+  useBeforeUnloadGuard(isDirty);
   const kindOptions = CANONICAL_KINDS.map((kind) => ({
     value: kind,
     label: t(CANONICAL_KIND_MESSAGE_KEYS[kind]),
@@ -114,6 +122,14 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
           label={t('datasetForm.kind')}
           options={kindOptions}
           errorText={errorText}
+        />
+        <TextField
+          id={`${id}-path`}
+          label={t('datasetForm.path')}
+          hint={t('datasetForm.pathHint')}
+          placeholder={t('datasetForm.pathPlaceholder')}
+          error={errorText(errors.path?.message)}
+          {...form.register('path')}
         />
       </div>
 

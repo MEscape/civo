@@ -12,6 +12,7 @@ import type { DataSource } from '../../domain/models/data-source';
 import type {
   ConnectorError,
   DataSourceConnector,
+  FetchOptions,
 } from '../../domain/ports/data-source-connector.port';
 
 const log = logger.withContext({ module: 'data-source.cache' });
@@ -43,12 +44,19 @@ export class CachedDataSourceConnector implements DataSourceConnector {
     return this.live.test(source);
   }
 
-  fetchBody(source: DataSource): AppResultAsync<unknown, ConnectorError> {
+  fetchBody(source: DataSource, options: FetchOptions): AppResultAsync<unknown, ConnectorError> {
     if (source.kind !== 'REST') {
-      return this.live.fetchBody(source);
+      return this.live.fetchBody(source, options);
     }
     return fromThrowableAsync(
-      () => readCachedRestBody(source.tenantId, source.id, source.config),
+      () =>
+        readCachedRestBody({
+          tenantId: source.tenantId,
+          dataSourceId: source.id,
+          rawConfig: source.config,
+          path: options.path ?? null,
+          window: options.window,
+        }),
       toConnectorError,
     );
   }

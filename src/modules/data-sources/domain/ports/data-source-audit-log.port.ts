@@ -50,7 +50,7 @@ export type DataSourceEvent =
       readonly tenantId: TenantId;
       readonly websiteId: WebsiteId;
       readonly datasetId: DatasetId;
-      readonly changedFields: ReadonlyArray<'name' | 'slug'>;
+      readonly changedFields: ReadonlyArray<'name' | 'slug' | 'path'>;
     }
   | {
       readonly type: 'dataset.mapping_saved';

@@ -13,7 +13,7 @@
       "kind": "Type",
       "lastChecked": "Last checked",
       "never": "Never",
-      "testHealthy": "Connection successful ({ms} ms).",
+      "testHealthy": "Connection successful.",
       "testing": "Checking…",
       "test": "Test connection",
       "remove": "Remove"
@@ -24,6 +24,35 @@
       "authMode": "Authentication",
       "baseUrl": "API base URL",
       "baseUrlPlaceholder": "https://example-municipality.org/api",
+      "pagination": {
+        "legend": "Records and pagination",
+        "recordsPath": "Records path (optional)",
+        "recordsPathHint": "Where the list of records sits in the response, as a dot path such as data.items. Leave empty to detect common layouts.",
+        "kind": "Pagination",
+        "kinds": {
+          "none": "None: one request returns everything",
+          "offset": "Limit and offset",
+          "page": "Page number",
+          "cursor": "Cursor token",
+          "next-url": "Link to the next page"
+        },
+        "hints": {
+          "offset": "The API takes a page size and a start position as query parameters.",
+          "page": "The API takes a page number, and optionally a page size.",
+          "cursor": "Each response names a token that is sent back to get the next page.",
+          "next-url": "Each response contains the address of the next page. It must stay on the same host."
+        },
+        "fields": {
+          "limitParam": "Page size parameter",
+          "offsetParam": "Offset parameter",
+          "pageParam": "Page number parameter",
+          "sizeParam": "Page size parameter (optional)",
+          "cursorParam": "Cursor parameter",
+          "nextCursorPath": "Path of the next cursor in the response",
+          "nextUrlPath": "Path of the next page link in the response",
+          "pageSize": "Records per page (default 100)"
+        }
+      },
       "credentialHint": "The credential is not stored here. It must be set on the server as an environment variable; ask your administrator.",
       "saving": "Saving…",
       "save": "Save",
@@ -46,6 +75,9 @@
       "name": "Name",
       "namePlaceholder": "e.g. Events 2026",
       "kind": "Dataset type",
+      "path": "Path (optional)",
+      "pathPlaceholder": "/path/to/records",
+      "pathHint": "Appended to the source's base URL. Leave empty to use the source's own path.",
       "saving": "Saving…",
       "add": "Add",
       "save": "Save",
@@ -109,7 +141,8 @@
         "endDate": "End date",
         "location": "Location",
         "category": "Category",
-        "imageUrl": "Image URL"
+        "imageUrl": "Image URL",
+        "href": "Link"
       },
       "NewsItem": {
         "title": "Title",
@@ -118,6 +151,7 @@
         "imageUrl": "Image URL",
         "publishedAt": "Publication date",
         "slug": "URL slug",
+        "href": "Link",
         "content": "Content"
       },
       "Service": {
@@ -193,10 +227,12 @@
       "connectionTimedOut": "Connection failed: the request timed out.",
       "authenticationFailed": "Authentication failed: the data source rejected the credentials.",
       "upstreamError": "Invalid response: the data source returned an error.",
+      "upstreamRedirected": "Invalid response: the address redirects elsewhere. Enter the final address of the data (for example with https and the full path).",
       "responseTooLarge": "Invalid response: the data source's response was too large.",
       "responseUnreadable": "Invalid response: the data source's response could not be read.",
       "responseNotJson": "Invalid response: the data source did not return valid JSON.",
       "noSampleRecords": "Invalid response: the data source returned no sample records.",
+      "recordsNotFound": "Invalid response: no record list was found at the configured records path. Check the path or leave it empty.",
       "credentialsMissing": "Invalid configuration: the credentials are not set up on the server.",
       "connectorUnavailable": "Invalid configuration: no connector is available for this data source type yet.",
       "addressNotAllowed": "Invalid configuration: this address is not allowed.",
@@ -215,6 +251,11 @@
       "urlCredentialsNotAllowed": "Addresses containing a username or password are not allowed.",
       "urlAddressNotAllowed": "This address is not allowed.",
       "pathInvalid": "The path is invalid.",
+      "methodUnsupported": "Choose GET or POST.",
+      "requestBodyInvalid": "The request body must be a JSON object, and only POST sources send one.",
+      "recordsPathInvalid": "The records path is invalid. Use a dot path such as data.items.",
+      "paginationInvalid": "The pagination settings are incomplete or invalid.",
+      "windowInvalid": "The requested range of records is invalid.",
       "authModeUnsupported": "This authentication type is not available.",
       "datasetNameTooShort": "The name must be at least {datasetNameMin} characters long.",
       "datasetNameTooLong": "The name must be at most {datasetNameMax} characters long.",

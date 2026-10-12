@@ -1,4 +1,6 @@
-import { getPath, isPlainObject, stableStringify } from '@lib/utils';
+import { getPath, stableStringify } from '@lib/utils';
+
+import { locateRecords } from '../pagination/records-locator';
 
 import { applyMapping } from './apply-mapping';
 
@@ -14,12 +16,9 @@ export interface MappedRecords {
   readonly records: readonly MappedRecord[];
   /** Records that failed their mapping and were left out. */
   readonly skipped: number;
-  /** True when the response held more records than `MAX_MAPPED_RECORDS`. */
+  /** True when the response held more records than the budget allowed. */
   readonly truncated: boolean;
 }
-
-/** Avoids unbounded in-memory processing of a large external response. */
-export const MAX_MAPPED_RECORDS = 1000;
 
 const ID_FIELDS = ['id', '_id', 'uuid', 'guid'] as const;
 const FALLBACK_ID_LENGTH = 16;
@@ -50,42 +49,36 @@ export function deriveMappedRecordId(
   return hash(stableStringify(mapped)).slice(0, FALLBACK_ID_LENGTH);
 }
 
-/** A GeoJSON FeatureCollection is a list of its features, so open-data GeoJSON endpoints map like any array. */
-function geoJsonFeatures(body: unknown): readonly unknown[] | null {
-  if (!isPlainObject(body) || body['type'] !== 'FeatureCollection') {
-    return null;
-  }
-  const features = body['features'];
-  return Array.isArray(features) ? features : null;
-}
-
 /**
- * A top-level array (or a GeoJSON FeatureCollection) is a list of records;
- * any other body is a single record; empty or null yields none. The one
- * place this rule lives: mapping and discovery both read it.
+ * The records of a response: its record list (a top-level array, a GeoJSON
+ * FeatureCollection or a common envelope, see `locateRecords`), else the body
+ * itself as one record; empty or null yields none. Mapping and discovery both
+ * read it.
  */
 export function toRecordList(body: unknown): readonly unknown[] {
-  if (Array.isArray(body)) {
-    return body;
-  }
-  const features = geoJsonFeatures(body);
-  if (features !== null) {
-    return features;
+  const located = locateRecords(body);
+  if (located !== null) {
+    return located;
   }
   return body === null || body === undefined ? [] : [body];
 }
 
-/** Maps every record of a response, skipping (and counting) the ones that do not fit. */
-export function mapRecords(
-  mapping: DatasetMapping,
-  body: unknown,
-  hash: TextHasher,
-): MappedRecords {
+export interface MapRecordsInput {
+  readonly mapping: DatasetMapping;
+  /** The records of the window, plus one when there are more (see `ReadWindow`). */
+  readonly body: unknown;
+  readonly hash: TextHasher;
+  /** How many records the caller shows; the one beyond it only marks the result as cut. */
+  readonly limit: number;
+}
+
+/** Maps up to `limit` records of a response, skipping and counting the ones that do not fit. */
+export function mapRecords({ mapping, body, hash, limit }: MapRecordsInput): MappedRecords {
   const all = toRecordList(body);
   const records: MappedRecord[] = [];
   let skipped = 0;
 
-  for (const raw of all.slice(0, MAX_MAPPED_RECORDS)) {
+  for (const raw of all.slice(0, limit)) {
     const mapped = applyMapping(mapping, raw);
     if (mapped.isErr()) {
       skipped += 1;
@@ -96,5 +89,5 @@ export function mapRecords(
       });
     }
   }
-  return { records, skipped, truncated: all.length > MAX_MAPPED_RECORDS };
+  return { records, skipped, truncated: all.length > limit };
 }

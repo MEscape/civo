@@ -11,7 +11,11 @@ import {
   MAPPING_LIMITS,
 } from '../../application/contracts/data-source-constraints';
 
-import type { AuthMode, DataSourceCode } from '../../application/contracts/data-source-constraints';
+import type {
+  AuthMode,
+  DataSourceCode,
+  PaginationKind,
+} from '../../application/contracts/data-source-constraints';
 import type {
   CanonicalKind,
   DataSourceKind,
@@ -39,10 +43,12 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.connectionTimedOut]: fieldPath('errors', 'connectionTimedOut'),
   [ERRORS.authenticationFailed]: fieldPath('errors', 'authenticationFailed'),
   [ERRORS.upstreamError]: fieldPath('errors', 'upstreamError'),
+  [ERRORS.upstreamRedirected]: fieldPath('errors', 'upstreamRedirected'),
   [ERRORS.responseTooLarge]: fieldPath('errors', 'responseTooLarge'),
   [ERRORS.responseUnreadable]: fieldPath('errors', 'responseUnreadable'),
   [ERRORS.responseNotJson]: fieldPath('errors', 'responseNotJson'),
   [ERRORS.noSampleRecords]: fieldPath('errors', 'noSampleRecords'),
+  [ERRORS.recordsNotFound]: fieldPath('errors', 'recordsNotFound'),
   [ERRORS.credentialsMissing]: fieldPath('errors', 'credentialsMissing'),
   [ERRORS.connectorUnavailable]: fieldPath('errors', 'connectorUnavailable'),
   [ERRORS.addressNotAllowed]: fieldPath('errors', 'addressNotAllowed'),
@@ -56,6 +62,11 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.urlCredentialsNotAllowed]: fieldPath('validation', 'urlCredentialsNotAllowed'),
   [VALIDATION.urlAddressNotAllowed]: fieldPath('validation', 'urlAddressNotAllowed'),
   [VALIDATION.pathInvalid]: fieldPath('validation', 'pathInvalid'),
+  [VALIDATION.methodUnsupported]: fieldPath('validation', 'methodUnsupported'),
+  [VALIDATION.requestBodyInvalid]: fieldPath('validation', 'requestBodyInvalid'),
+  [VALIDATION.recordsPathInvalid]: fieldPath('validation', 'recordsPathInvalid'),
+  [VALIDATION.paginationInvalid]: fieldPath('validation', 'paginationInvalid'),
+  [VALIDATION.windowInvalid]: fieldPath('validation', 'windowInvalid'),
   [VALIDATION.authModeUnsupported]: fieldPath('validation', 'authModeUnsupported'),
   [VALIDATION.credentialsMissing]: fieldPath('errors', 'credentialsMissing'),
   [VALIDATION.connectorUnavailable]: fieldPath('errors', 'connectorUnavailable'),
@@ -121,6 +132,14 @@ export const AUTH_MODE_MESSAGE_KEYS = {
   API_KEY: fieldPath('authModes', 'API_KEY'),
   BEARER_TOKEN: fieldPath('authModes', 'BEARER_TOKEN'),
 } as const satisfies Record<AuthMode, string>;
+
+export const PAGINATION_KIND_MESSAGE_KEYS = {
+  none: fieldPath('sourceForm', 'pagination', 'kinds', 'none'),
+  offset: fieldPath('sourceForm', 'pagination', 'kinds', 'offset'),
+  page: fieldPath('sourceForm', 'pagination', 'kinds', 'page'),
+  cursor: fieldPath('sourceForm', 'pagination', 'kinds', 'cursor'),
+  'next-url': fieldPath('sourceForm', 'pagination', 'kinds', 'next-url'),
+} as const satisfies Record<PaginationKind, string>;
 
 export const CANONICAL_KIND_MESSAGE_KEYS = {
   Event: fieldPath('canonicalKinds', 'Event'),

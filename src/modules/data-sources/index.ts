@@ -10,6 +10,7 @@ export { dataSourceQueries } from './composition';
 export { DataSourcesSettings } from './presentation/components/data-sources-settings';
 
 export type { CanonicalKind, MappedRecordsView } from './application/contracts/data-source-views';
+export type { MappedRecordsRequest } from './application/queries/get-mapped-dataset-records';
 
 export { default as enDataSource } from './presentation/i18n/en.json';
 export { default as deDataSource } from './presentation/i18n/de.json';

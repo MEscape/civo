@@ -8,6 +8,7 @@ import type { DataSource } from '../../domain/models/data-source';
 import type {
   ConnectorError,
   DataSourceConnector,
+  FetchOptions,
 } from '../../domain/ports/data-source-connector.port';
 
 /**
@@ -25,9 +26,11 @@ export class KindRoutingConnector implements DataSourceConnector {
     return connector === null ? errAsync(connectorUnavailable()) : connector.test(source);
   }
 
-  fetchBody(source: DataSource): AppResultAsync<unknown, ConnectorError> {
+  fetchBody(source: DataSource, options: FetchOptions): AppResultAsync<unknown, ConnectorError> {
     const connector = this.forKind(source);
-    return connector === null ? errAsync(connectorUnavailable()) : connector.fetchBody(source);
+    return connector === null
+      ? errAsync(connectorUnavailable())
+      : connector.fetchBody(source, options);
   }
 
   private forKind(source: DataSource): DataSourceConnector | null {

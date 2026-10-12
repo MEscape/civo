@@ -7,6 +7,7 @@ import { dataSourceCacheTag } from '../../application/contracts/cache-tags';
 import { toDataSourceId } from '../../domain/models/ids';
 import { restJsonConnector } from '../connector/rest-json-connector';
 
+import type { ReadWindow } from '../../domain/pagination/read-window';
 import type { ConnectorError } from '../../domain/ports/data-source-connector.port';
 
 /**
@@ -24,8 +25,10 @@ export class SourceReadFailure extends Error {
  * CACHE: the raw external response of ONE source.
  *
  *  Owner         this module (infrastructure).
- *  Key           the ids and the stored config blob, so a changed URL,
- *                path or auth mode is a different entry. Volatile fields
+ *  Key           the ids, the stored config blob and the window (limit
+ *                and offset), so a changed URL, path, pagination or auth mode
+ *                is a different entry, and a window of 100 records never
+ *                serves one of 1000 or another position in the dataset. Volatile fields
  *                of the source (status, last check) are deliberately not
  *                arguments: a connection test must not evict the entry.
  *                Not in the key: the credential. It is a secret and must
@@ -45,20 +48,28 @@ export class SourceReadFailure extends Error {
  */
 const FRESHNESS = { stale: 60, revalidate: 120, expire: 900 } as const;
 
-/** Arguments are plain JSON, as `'use cache'` requires: ids are branded inside. */
-export async function readCachedRestBody(
-  tenantId: string,
-  dataSourceId: string,
-  rawConfig: unknown,
-): Promise<unknown> {
+/** What one cached read is keyed by. Plain JSON, as `'use cache'` requires: ids are branded inside. */
+export interface CachedRestRead {
+  readonly tenantId: string;
+  readonly dataSourceId: string;
+  readonly rawConfig: unknown;
+  readonly path?: string | null | undefined;
+  readonly window: ReadWindow;
+}
+
+export async function readCachedRestBody(read: CachedRestRead): Promise<unknown> {
   'use cache';
-  cacheTag(dataSourceCacheTag(dataSourceId));
+  cacheTag(dataSourceCacheTag(read.dataSourceId));
   cacheLife(FRESHNESS);
 
   const result = await restJsonConnector.fetchRestBody({
-    tenantId: toTenantId(tenantId),
-    dataSourceId: toDataSourceId(dataSourceId),
-    rawConfig,
+    target: {
+      tenantId: toTenantId(read.tenantId),
+      dataSourceId: toDataSourceId(read.dataSourceId),
+      rawConfig: read.rawConfig,
+    },
+    window: read.window,
+    path: read.path,
   });
   if (result.isErr()) {
     throw new SourceReadFailure(result.error);

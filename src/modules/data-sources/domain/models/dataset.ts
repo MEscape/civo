@@ -3,7 +3,7 @@ import type { TenantId } from '@modules/auth';
 import type { FieldErrorBag, ValidationAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
-import { isDefined, slugify, trimToNull } from '@lib/utils';
+import { slugify, trimToNull } from '@lib/utils';
 
 import {
   DATA_SOURCE_VALIDATION_CODES,
@@ -24,6 +24,7 @@ export const DATASET_LIMITS = {
   nameMin: 2,
   nameMax: 100,
   slugMax: 50,
+  pathMax: 500,
 } as const;
 
 /** Kept as before (not the stricter website slug) so existing dataset slugs stay valid. */
@@ -54,6 +55,11 @@ export interface Dataset {
   readonly name: string;
   readonly slug: string;
   readonly canonicalKind: CanonicalKind;
+  /**
+   * Endpoint of this dataset below the source's base URL (`/eventfeed/records`),
+   * so one source can serve several datasets. Null uses the source's own path.
+   */
+  readonly path: string | null;
   /** Null when none was saved, or when the stored one no longer validates. */
   readonly mapping: DatasetMapping | null;
   readonly status: DataSourceStatus;
@@ -74,6 +80,7 @@ export interface DatasetDraft {
   readonly name: string;
   readonly slug: string;
   readonly canonicalKind: CanonicalKind;
+  readonly path: string | null;
 }
 
 export interface DatasetDraftInput {
@@ -81,17 +88,21 @@ export interface DatasetDraftInput {
   /** Derived from the name when omitted or blank. */
   readonly slug?: string | undefined;
   readonly canonicalKind: string;
+  /** Blank means none. */
+  readonly path?: string | null | undefined;
 }
 
-/** `undefined` leaves a field alone. */
+/** `undefined` leaves a field alone; a blank `path` clears it. */
 export interface DatasetChangesInput {
   readonly name?: string | undefined;
   readonly slug?: string | undefined;
+  readonly path?: string | null | undefined;
 }
 
 export interface DatasetChanges {
   readonly name?: string;
   readonly slug?: string;
+  readonly path?: string | null;
 }
 
 function checkName(name: string, bag: FieldErrorBag): void {
@@ -112,6 +123,19 @@ function checkSlug(slug: string, bag: FieldErrorBag): void {
   }
 }
 
+/**
+ * Blank is "none". A set path must be relative to the base URL: a second host
+ * (`//evil`) is rejected here, and again against the SSRF policy at fetch time.
+ */
+function checkPath(path: string | null, bag: FieldErrorBag): void {
+  if (path === null) {
+    return;
+  }
+  if (path.length > DATASET_LIMITS.pathMax || !path.startsWith('/') || path.startsWith('//')) {
+    bag.add('path', CODES.pathInvalid);
+  }
+}
+
 /** The only way a new dataset enters the system. Reports every invalid field. */
 export function createDatasetDraft(
   dataSourceId: DataSourceId,
@@ -121,9 +145,11 @@ export function createDatasetDraft(
   const name = input.name.trim();
   const slug = trimToNull(input.slug) ?? slugify(name).slice(0, DATASET_LIMITS.slugMax);
   const canonicalKind = isCanonicalKind(input.canonicalKind) ? input.canonicalKind : null;
+  const path = trimToNull(input.path);
 
   checkName(name, bag);
   checkSlug(slug, bag);
+  checkPath(path, bag);
   if (canonicalKind === null) {
     bag.add('canonicalKind', CODES.canonicalKindUnknown);
   }
@@ -131,7 +157,7 @@ export function createDatasetDraft(
   if (bag.hasErrors || canonicalKind === null) {
     return err(bag.toError());
   }
-  return ok({ dataSourceId, name, slug, canonicalKind });
+  return ok({ dataSourceId, name, slug, canonicalKind, path });
 }
 
 /** Validates a partial update; only the fields that were provided are checked. */
@@ -139,15 +165,19 @@ export function parseDatasetChanges(
   input: DatasetChangesInput,
 ): AppResult<DatasetChanges, ValidationAppError> {
   const bag = createDataSourceErrorBag();
-  const changes: { name?: string; slug?: string } = {};
+  const changes: { name?: string; slug?: string; path?: string | null } = {};
 
-  if (isDefined(input.name)) {
+  if (input.name !== undefined) {
     changes.name = input.name.trim();
     checkName(changes.name, bag);
   }
-  if (isDefined(input.slug)) {
+  if (input.slug !== undefined) {
     changes.slug = input.slug.trim();
     checkSlug(changes.slug, bag);
+  }
+  if (input.path !== undefined) {
+    changes.path = trimToNull(input.path);
+    checkPath(changes.path, bag);
   }
 
   return bag.hasErrors ? err(bag.toError()) : ok(changes);
