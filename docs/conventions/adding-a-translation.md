@@ -4,7 +4,7 @@ Owning rules: [`i18n.md`](../rules/i18n.md), [`naming.md`](../rules/naming.md), 
 
 ## Checklist
 
-1. Add the key with a stable, semantic, dot-separated name in the owning namespace: the module's `presentation/i18n/<locale>.json`, or `src/i18n/messages/<locale>/app.json` for framework entry points. See [`naming.md`](../rules/naming.md).
+1. Add the key with a stable, semantic, dot-separated name in the owning namespace: the module's `presentation/i18n/<locale>.json`, or `src/i18n/<locale>.json` for framework entry points. See [`naming.md`](../rules/naming.md).
 2. Add it for every supported locale in the same change. A missing locale is a defect, not a follow-up.
 3. Use variables, not string concatenation. Give the translator the whole sentence and its placeholders.
 4. Use the locale-aware API for dates, times, numbers, and currencies. Do not pre-format them into the string.

@@ -18,6 +18,7 @@
 - Use `proxy.ts` only for request-level concerns.
 - Do not put business authorization rules in `proxy.ts`. See [`security.md`](security.md).
 - Use `loading.tsx` for meaningful route loading states.
+- A page that streams per-request data puts its `loading.tsx` in its OWN segment (or wraps the data in `<Suspense>` inside the page). A client navigation re-renders only the segments below the one that changed, so a boundary in a parent route group cannot catch the page's load and Cache Components reports "uncached data during prerendering or a navigation".
 - Use `error.tsx` for unexpected route-level failures. It shows translated generic text, never `error.message`; the shared `RouteErrorPanel` and `NotFoundPanel` render the bodies. `global-error.tsx` covers failures of the locale layout.
 - Use `not-found.tsx` or `notFound()` for missing resources.
 - Use Suspense boundaries for independently streamable UI. See [`performance.md`](performance.md).

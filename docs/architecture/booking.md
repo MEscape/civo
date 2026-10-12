@@ -11,7 +11,7 @@ The `booking` module (`src/modules/booking`) is one scheduling engine for two jo
 | Who may configure / manage                                        | Auth (`booking.read`, `booking.configure`, `booking.manage`) |
 | Calendar widget                                                   | FullCalendar, behind one adapter file                        |
 
-The component only carries `mode` (`public` / `adminCalendar`), `heading`, `serviceId` and `category`. The website is taken from the render context, never from a prop.
+The component only carries `heading`, `serviceId` and `category`. Staff never use it: the operations calendar lives on the website's Bookings page. The website is taken from the render context, never from a prop.
 
 ## Layers
 
@@ -61,7 +61,7 @@ The website id is public and the tenant is derived server-side. Lookup of a book
 
 ## E-mail
 
-The visitor is told by e-mail when a booking is confirmed, moved or cancelled (also when staff do it). The port is `BookingNotifier` (domain); `EmailBookingNotifier` renders the message (`booking-email-templates.ts`, German and English, in the language of the request) and sends it through the shared transport of `@lib/mail`. The booking is stored first: a message that cannot be sent is logged once (never with the address) and never undoes the booking. While `MAIL_PROVIDER=none` the notifier logs `booking.email_skipped` instead; production refuses to start without a mail provider.
+The visitor is told by e-mail when a booking is confirmed, moved or cancelled (also when staff do it). The port is `BookingNotifier` (domain); `EmailBookingNotifier` renders the message (`booking-email-templates.ts`, German and English, in the language of the request) and sends it through the shared transport of `@lib/mail`. The message uses the shared layout (the same as the sign-in mails of `auth`) in the look of the website the booking was made on: the website's primary colour, read from its stored theme and checked by `createEmailBrand`; a website whose theme cannot be read gets the platform's look. The booking is stored first: a message that cannot be sent is logged once (never with the address) and never undoes the booking. While `MAIL_PROVIDER=none` the notifier logs `booking.email_skipped` instead; production refuses to start without a mail provider.
 
 ## Operations calendar
 
@@ -81,6 +81,14 @@ Booking data is never cached for visitors: `BookingSection` calls `connection()`
 | Boundaries        | `calendar-isolation.test.ts`, `__tests__/architecture`                  |
 | Real PostgreSQL   | `npm run test:integration` with `BOOKING_TEST_DATABASE_URL`             |
 
+## Employees
+
+A resource of type `employee` can be assigned to a person (`assignedActorId`, a member of the tenant with the `employee` role) and can allow that person to change their own working hours (`employeeMayEditHours`, off by default). Editors and administrators (`booking.configure`) assign calendars; an employee holds only `booking.read.own` and `booking.availability.own`.
+
+- Reading: `GetOperationsCalendar` lets everyone with `booking.read.own` in, and an actor without `booking.read` receives only the bookings that occupy a resource assigned to them. The filter runs in the use case on what the store returned. `GetBookingAccess` reports `isOwnOnly`, and the booking page then shows the employee's own view (`EmployeeBookings`) instead of the configuration.
+- Writing: `UpdateOwnAvailability` changes the availability of one resource, only when it is assigned to the actor and the flag is set; otherwise "not found". Every other property is kept as configured.
+- Presets: the availability editor offers starting weeks (`AVAILABILITY_PRESETS`); a new resource that gets its own hours starts from the office preset.
+
 ## Known limitations
 
 - Rate limiting is in memory, per server instance.
@@ -92,5 +100,4 @@ Booking data is never cached for visitors: `BookingSection` calls `connection()`
 - Time inputs cannot express `24:00`.
 - ICS line folding counts characters, not octets.
 - Editors type the service id and category in the component props.
-- `adminCalendar` mode on a published page shows a staff-only state to visitors.
 - No browser end-to-end test was run (see the report).

@@ -15,6 +15,7 @@ Conventions link to rules and never restate them. If a convention and a rule dis
 | Add a Route Handler         | [`adding-a-route-handler.md`](adding-a-route-handler.md)                 |
 | Add a shared utility        | [`adding-a-shared-utility.md`](adding-a-shared-utility.md)               |
 | Add a UI component          | [`adding-a-ui-component.md`](adding-a-ui-component.md)                   |
+| Add a platform component    | [`adding-a-platform-component.md`](adding-a-platform-component.md)       |
 | Add an environment variable | [`adding-an-environment-variable.md`](adding-an-environment-variable.md) |
 | Add a database migration    | [`adding-a-database-migration.md`](adding-a-database-migration.md)       |
 | Add a translation           | [`adding-a-translation.md`](adding-a-translation.md)                     |
