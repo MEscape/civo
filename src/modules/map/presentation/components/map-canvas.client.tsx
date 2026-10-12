@@ -74,6 +74,11 @@ export function MapCanvas(props: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [renderer, setRenderer] = useState<MapRenderer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // The one renderer that is alive. React can hide this subtree while a Suspense
+  // boundary above it waits (a new server render of the canvas): that destroys the
+  // map, and when the subtree is shown again the effects below first run with the
+  // `renderer` of the last render, a destroyed map, before a new one exists.
+  const liveRenderer = useRef<MapRenderer | null>(null);
 
   // The renderer is created once; it reads the latest callbacks and labels
   // through this ref, so a new selection, filter or render never rebuilds the map.
@@ -126,6 +131,7 @@ export function MapCanvas(props: MapCanvasProps) {
           return;
         }
         created = instance;
+        liveRenderer.current = instance;
         setRenderer(instance);
       })
       .catch(() => {
@@ -138,6 +144,7 @@ export function MapCanvas(props: MapCanvasProps) {
 
     return () => {
       isCancelled = true;
+      liveRenderer.current = null;
       created?.destroy();
       container.remove();
       setRenderer(null);
@@ -147,7 +154,10 @@ export function MapCanvas(props: MapCanvasProps) {
   const { styles, layers, selectedKey, focusKey } = props;
 
   useEffect(() => {
-    renderer?.setLayers(
+    if (renderer === null || liveRenderer.current !== renderer) {
+      return;
+    }
+    renderer.setLayers(
       layers.flatMap((layer): RenderLayer[] => {
         const style = styles.find((candidate) => candidate.layerId === layer.layerId);
         return style === undefined ? [] : [{ style, features: layer.features }];
@@ -156,11 +166,13 @@ export function MapCanvas(props: MapCanvasProps) {
   }, [renderer, styles, layers]);
 
   useEffect(() => {
-    renderer?.setSelected(selectedKey);
+    if (renderer !== null && liveRenderer.current === renderer) {
+      renderer.setSelected(selectedKey);
+    }
   }, [renderer, selectedKey]);
 
   useEffect(() => {
-    if (renderer === null || focusKey === null) {
+    if (renderer === null || liveRenderer.current !== renderer || focusKey === null) {
       return;
     }
     const bounds = boundsOfFeature(layers, focusKey);
