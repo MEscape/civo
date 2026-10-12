@@ -17,9 +17,9 @@ export interface SmtpMailTransportOptions {
   /** Sender address, e.g. `Civo <no-reply@example.org>`. */
   readonly from: string;
   /** Optional SMTP authentication username. */
-  readonly user?: string;
+  readonly user?: string | undefined;
   /** Optional SMTP authentication password. */
-  readonly pass?: string;
+  readonly pass?: string | undefined;
   /** Whether to use TLS. Usually false for a local catcher. */
   readonly secure?: boolean;
 }

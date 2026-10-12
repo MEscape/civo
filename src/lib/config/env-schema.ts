@@ -42,11 +42,12 @@ export const serverEnvSchema = serverEnvBaseSchema
       });
     }
 
-    if (env.NODE_ENV === 'production' && env.MAIL_PROVIDER !== 'resend') {
+    if (env.NODE_ENV === 'production' && env.MAIL_PROVIDER === 'none') {
       ctx.addIssue({
         code: 'custom',
         path: ['MAIL_PROVIDER'],
-        message: 'MAIL_PROVIDER must be "resend" in production: sign-in and bookings send e-mail.',
+        message:
+          'MAIL_PROVIDER must be "smtp" or "resend" in production: sign-in and bookings send e-mail.',
       });
     }
 

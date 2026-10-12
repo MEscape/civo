@@ -27,6 +27,8 @@ export function createMailTransport(env: MailEnv): MailTransport | null {
         host,
         port: env.MAIL_SMTP_PORT,
         secure: env.MAIL_SMTP_SECURE,
+        user: env.MAIL_SMTP_USER,
+        pass: env.MAIL_SMTP_PASSWORD,
         from,
       });
     }

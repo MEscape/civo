@@ -63,15 +63,101 @@ export function normalizeWhitespace(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+const HTML_ENTITIES: Readonly<Record<string, string>> = {
+  quot: '"',
+  amp: '&',
+  apos: "'",
+  lt: '<',
+  gt: '>',
+  nbsp: ' ',
+  ndash: '–',
+  mdash: '—',
+  lsquo: '‘',
+  rsquo: '’',
+  ldquo: '“',
+  rdquo: '”',
+  hellip: '…',
+  bull: '•',
+  copy: '©',
+  reg: '®',
+  trade: '™',
+  euro: '€',
+  pound: '£',
+  yen: '¥',
+  sect: '§',
+  deg: '°',
+  plusmn: '±',
+  auml: 'ä',
+  Auml: 'Ä',
+  ouml: 'ö',
+  Ouml: 'Ö',
+  uuml: 'ü',
+  Uuml: 'Ü',
+  szlig: 'ß',
+  eacute: 'é',
+  Eacute: 'É',
+  egrave: 'è',
+  Egrave: 'È',
+  ecirc: 'ê',
+  Ecirc: 'Ê',
+  agrave: 'à',
+  Agrave: 'À',
+  acirc: 'â',
+  Acirc: 'Â',
+  ccedil: 'ç',
+  Ccedil: 'Ç',
+};
+
+const MAX_UNICODE_CODE_POINT = 0x10ffff;
+
+function parseCodePoint(raw: string, radix: number): string | null {
+  const code = Number.parseInt(raw, radix);
+  if (!Number.isInteger(code) || code < 0 || code > MAX_UNICODE_CODE_POINT) {
+    return null;
+  }
+  try {
+    return String.fromCodePoint(code);
+  } catch {
+    return null;
+  }
+}
+
+/** Decodes named, decimal and hexadecimal HTML entities into their plain characters. */
+export function decodeHtmlEntities(text: string): string {
+  return text.replace(
+    /&(?:#x([0-9a-fA-F]+)|#([0-9]+)|([a-zA-Z0-9]+));/g,
+    (match, hex?: string, dec?: string, named?: string) => {
+      if (hex !== undefined) {
+        return parseCodePoint(hex, 16) ?? match;
+      }
+      if (dec !== undefined) {
+        return parseCodePoint(dec, 10) ?? match;
+      }
+      if (named !== undefined) {
+        return HTML_ENTITIES[named] ?? match;
+      }
+      return match;
+    },
+  );
+}
+
 /**
- * Removes HTML tags for plain-text previews. This is NOT a sanitizer:
+ * Removes HTML tags and decodes entities for plain-text previews. This is NOT a sanitizer:
  * never use its output to make untrusted markup safe to render as HTML
  * (security.md: "never render untrusted content as raw HTML; sanitize it
  * first if unavoidable" — this function is a preview helper, not that
  * sanitizer).
  */
 export function stripHtml(html: string): string {
-  return normalizeWhitespace(html.replace(/<[^>]*>/g, ' '));
+  const withoutScripts = html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ');
+  const spacedBlocks = withoutScripts.replace(
+    /<\/?(?:p|div|br|hr|li|h[1-6]|tr|td|th|blockquote|section|article|header|footer)[^>]*>/gi,
+    ' ',
+  );
+  const stripped = spacedBlocks.replace(/<[^>]*>/g, ' ');
+  return normalizeWhitespace(decodeHtmlEntities(stripped));
 }
 
 /** Escapes the characters that are significant in HTML text and attribute values. */
@@ -92,5 +178,5 @@ export function isBlank(text: string | null | undefined): boolean {
 /** Trims the text; returns `null` when only whitespace is left. For optional text stored as NULL. */
 export function trimToNull(text: string | null | undefined): string | null {
   const trimmed = text?.trim();
-  return trimmed ?? null;
+  return trimmed === undefined || trimmed === '' ? null : trimmed;
 }

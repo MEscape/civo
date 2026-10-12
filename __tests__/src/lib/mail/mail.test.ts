@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { MailEnv } from '@lib/config/mail-env-schema';
-import { renderEmail } from '@lib/mail';
+import { PLATFORM_EMAIL_BRAND, createEmailBrand, renderEmail } from '@lib/mail';
 import { createMailTransport } from '@lib/mail/create-mail-transport';
 import { ResendMailTransport } from '@lib/mail/resend-mail-transport';
 import { SmtpMailTransport } from '@lib/mail/smtp-mail-transport';
@@ -42,6 +42,37 @@ describe('renderEmail', () => {
     expect(mail.text).toBe('I\n\nO');
     expect(mail.html).toContain('<html lang="de">');
     expect(mail.html).not.toContain('<a ');
+  });
+});
+
+describe('createEmailBrand', () => {
+  it('takes the primary colour, with text that reads on it and as a link on the card', () => {
+    const brand = createEmailBrand('#F5D000');
+
+    expect(brand.primary).toBe('#f5d000');
+    expect(brand.primaryForeground).toBe('#000000');
+    expect(brand.primaryCopy).not.toBe('#f5d000');
+    expect(brand.radius).toBe(PLATFORM_EMAIL_BRAND.radius);
+  });
+
+  it('puts the colour on the card edge and the button of the message', () => {
+    const mail = renderEmail(
+      {
+        locale: 'en',
+        title: 'T',
+        intro: 'I',
+        action: { label: 'Go', url: 'https://example.org' },
+        outro: 'O',
+      },
+      createEmailBrand('#7a1f3d'),
+    );
+
+    expect(mail.html).toContain('border-top: 4px solid #7a1f3d');
+    expect(mail.html).toContain('background-color: #7a1f3d');
+  });
+
+  it('looks like the platform when the colour is not a hex colour', () => {
+    expect(createEmailBrand('purple')).toEqual(PLATFORM_EMAIL_BRAND);
   });
 });
 

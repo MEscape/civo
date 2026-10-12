@@ -12,6 +12,9 @@ const mailEnvObjectSchema = z.object({
   MAIL_API_URL: z.url().default(DEFAULT_RESEND_API_URL),
   MAIL_SMTP_HOST: z.string().min(1).optional(),
   MAIL_SMTP_PORT: z.coerce.number().int().positive().default(DEFAULT_SMTP_PORT),
+  /** Credentials of an authenticated relay. A local catcher (Mailpit) needs neither. */
+  MAIL_SMTP_USER: z.string().min(1).optional(),
+  MAIL_SMTP_PASSWORD: z.string().min(1).optional(),
   MAIL_SMTP_SECURE: z
     .enum(['true', 'false'])
     .optional()
@@ -36,6 +39,16 @@ export const mailEnvSchema = mailEnvObjectSchema.superRefine((env, ctx) => {
       code: 'custom',
       path: ['MAIL_SMTP_HOST'],
       message: 'MAIL_SMTP_HOST is required when MAIL_PROVIDER is "smtp".',
+    });
+  }
+  if (
+    env.MAIL_PROVIDER === 'smtp' &&
+    Boolean(env.MAIL_SMTP_USER) !== Boolean(env.MAIL_SMTP_PASSWORD)
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [env.MAIL_SMTP_USER ? 'MAIL_SMTP_PASSWORD' : 'MAIL_SMTP_USER'],
+      message: 'MAIL_SMTP_USER and MAIL_SMTP_PASSWORD must be set together.',
     });
   }
   if (env.MAIL_PROVIDER !== 'none' && !env.MAIL_FROM) {

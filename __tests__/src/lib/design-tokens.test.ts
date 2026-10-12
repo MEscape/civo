@@ -43,8 +43,8 @@ const ALLOWED_PATHS: ReadonlyArray<{ match: (path: string) => boolean; why: stri
     why: 'a website theme IS colour data; its default is a value, not styling',
   },
   {
-    match: (p) => p === 'modules/website/presentation/theme/readable-foreground.ts',
-    why: 'computes the foreground token values for a theme colour',
+    match: (p) => p === 'lib/utils/color.ts',
+    why: 'computes the foreground and text token values for a theme colour, against the page backgrounds',
   },
   {
     match: (p) => p === 'modules/website/presentation/components/color-field.tsx',

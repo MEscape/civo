@@ -1,4 +1,4 @@
-export { renderEmail } from './email-layout';
-export type { EmailContent, EmailFact, RenderedEmail } from './email-layout';
+export { PLATFORM_EMAIL_BRAND, createEmailBrand, renderEmail } from './email-layout';
+export type { EmailBrand, EmailContent, EmailFact, RenderedEmail } from './email-layout';
 export { MAIL_DELIVERY_FAILED, mailDeliveryFailed } from './mail-errors';
 export type { MailTransport, OutboundMail } from './mail-transport';

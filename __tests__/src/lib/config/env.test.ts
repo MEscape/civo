@@ -263,14 +263,31 @@ describe('serverEnvSchema: mail', () => {
     ).toEqual(expect.arrayContaining(['MAIL_API_KEY', 'MAIL_FROM']));
   });
 
-  it('requires mail to be configured in production, whatever else is on', () => {
+  it('refuses a production start with mail switched off', () => {
+    expect(paths({ NODE_ENV: 'production', MAIL_PROVIDER: 'none' })).toEqual(
+      expect.arrayContaining(['MAIL_PROVIDER']),
+    );
+  });
+
+  it('accepts smtp in production', () => {
     expect(
       paths({
         NODE_ENV: 'production',
+        AUTH_ENABLED: 'true',
+        AUTH_SECRET: 'x'.repeat(40),
+        AUTH_DATABASE_URL: 'postgres://localhost/auth',
         MAIL_PROVIDER: 'smtp',
-        MAIL_SMTP_HOST: 'h',
+        MAIL_SMTP_HOST: 'smtp.example.org',
+        MAIL_SMTP_USER: 'mailer',
+        MAIL_SMTP_PASSWORD: 'secret',
         MAIL_FROM: 'a@b.c',
       }),
-    ).toEqual(expect.arrayContaining(['MAIL_PROVIDER']));
+    ).toBeUndefined();
+  });
+
+  it('needs the smtp user and password together', () => {
+    const smtp = { MAIL_PROVIDER: 'smtp', MAIL_SMTP_HOST: 'h', MAIL_FROM: 'a@b.c' } as const;
+    expect(paths({ ...smtp, MAIL_SMTP_USER: 'mailer' })).toEqual(['MAIL_SMTP_PASSWORD']);
+    expect(paths({ ...smtp, MAIL_SMTP_PASSWORD: 'secret' })).toEqual(['MAIL_SMTP_USER']);
   });
 });

@@ -11,7 +11,7 @@ This directory contains the core shared infrastructure and utilities for the app
 Centralized environment validation via Zod. Do not use `process.env` directly in the application. Each entry point validates once, when first imported.
 
 - `publicEnv` (`@lib/config`): Validated `NEXT_PUBLIC_*` variables. Safe in any bundle.
-- `serverEnv` (`@lib/config/server`): Validated server variables, including secrets. The module imports `server-only`, so importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. Authentication variables (`AUTH_SECRET`, `AUTH_DATABASE_URL`) are required only while `AUTH_ENABLED=true`; mail settings (`MAIL_*`) are required as soon as a provider is chosen, and production needs `MAIL_PROVIDER=resend`; `DATABASE_URL` is always required. Production refuses `AUTH_ENABLED=false`.
+- `serverEnv` (`@lib/config/server`): Validated server variables, including secrets. The module imports `server-only`, so importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. Authentication variables (`AUTH_SECRET`, `AUTH_DATABASE_URL`) are required only while `AUTH_ENABLED=true`; mail settings (`MAIL_*`) are required as soon as a provider is chosen, and production needs `MAIL_PROVIDER=smtp` or `resend` (`resend` is refused outside production; SMTP credentials `MAIL_SMTP_USER`/`MAIL_SMTP_PASSWORD` are set together or not at all); `DATABASE_URL` is always required. Production refuses `AUTH_ENABLED=false`.
 - `APP_IDENTITY`: The product's name and the literal theme/background colours browsers need (`theme-color`, manifest). Not translated; colours are pinned to the `globals.css` tokens by a test.
 - **Types**: `ServerEnv`, `PublicEnv`.
 
@@ -19,7 +19,7 @@ Centralized environment validation via Zod. Do not use `process.env` directly in
 
 How a message leaves, shared by every module that sends one (sign-in, bookings). Modules keep their own wording and their own port; they share the transport and the look.
 
-- `renderEmail({ locale, title, intro, facts?, action?, outro })` (`@lib/mail`): the platform layout as plain text and HTML. Every dynamic value is escaped; callers pass plain text.
+- `renderEmail({ locale, title, intro, facts?, action?, outro }, brand?)` (`@lib/mail`): the shared layout as plain text and HTML. Every dynamic value is escaped; callers pass plain text. Mail that belongs to the platform (sign-in) uses the default `PLATFORM_EMAIL_BRAND`; mail sent for a website (bookings) passes that website's `EmailBrand`, built from its primary colour with `createEmailBrand(primary)`.
 - `MailTransport`, `OutboundMail`, `mailDeliveryFailed` (`@lib/mail`): the delivery contract and its one error.
 - `getMailTransport()` (`@lib/mail/server`, server-only): the process's transport (SMTP or Resend, from `MAIL_*`), or `null` while `MAIL_PROVIDER=none`. `resolveMailLocale()` reads the request's language.
 
@@ -120,6 +120,22 @@ Builders for route metadata. Pages never assemble canonical URLs or robots direc
 - `buildPrivateMetadata(title)`: Pages behind sign-in or single-use emailed links: title and `noindex` only.
 - `toLocalizedPath(locale, pathname)`: `('de', '/')` → `/de`.
 
+### `@lib/security` (Response headers)
+
+What every response carries; `next.config.ts` applies it to all routes.
+
+- `securityHeaders({ isProduction })`: CSP without script rules (`object-src`, `base-uri`, `form-action`, `frame-ancestors`), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and HSTS in production. A script-src policy needs a per-request nonce and belongs in `proxy.ts`.
+
+### `@lib/pagination` (Paging a list)
+
+How every list that can grow is sliced. The address carries the state (`?page=3&pageSize=25&sort=-createdAt`), so a page can be shared and works without script.
+
+- `resolvePageRequest({ page, pageSize }, limits?)`: untrusted query text to a `PageRequest`. Never throws; junk falls back to page 1 and the default size, and the size never exceeds `maxPageSize` (default 25 / 100).
+- `offsetOf(request)`, `pageCountOf(total, pageSize)`, `toPage(items, total, request)`, `clampToLastPage(request, total)`: the arithmetic and the `Page<T>` a screen draws from.
+- `resolveSort(raw, allowedFields, fallback)` / `formatSort(spec)`: `field` or `-field` against an allowlist, so a query value never becomes a column name.
+- `PAGE_SIZE_OPTIONS`: the sizes a user can choose.
+- Pair with `<Pagination>` (`@components/shared/pagination`). Repositories take a `PageRequest` and return the items plus a `total`; filtering, ordering and counting happen in the store, never in memory over an unbounded read.
+
 ### `@lib/utils` (Pure Utility Functions)
 
 Zero-dependency, pure utility functions organized by domain.
@@ -151,6 +167,9 @@ Zero-dependency, pure utility functions organized by domain.
 - **Color**:
   - `parseHexColor(hex: string): RgbColor | null` (`#rrggbb` only)
   - `toHexColor(color: RgbColor): string`
+  - `contrastRatio(first: string, second: string): number` (WCAG, `#rrggbb`)
+  - `readableForeground(background: string): string`: white or black, whichever reads on the colour
+  - `readableCopy(color: string): string`: the colour as text on the page backgrounds (`PAGE_BACKGROUNDS`), darkened until it reaches 4.5:1
 - **Date**:
   - `formatDate(input: DateInput, locale: string, timeZone: string, options?: Intl.DateTimeFormatOptions): string`
   - `formatDateTime(input: DateInput, locale: string, timeZone: string): string`

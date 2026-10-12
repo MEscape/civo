@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   capitalize,
+  decodeHtmlEntities,
   escapeHtml,
   isBlank,
   normalizeWhitespace,
@@ -62,9 +63,46 @@ describe('normalizeWhitespace', () => {
   });
 });
 
+describe('decodeHtmlEntities', () => {
+  it('decodes named entities', () => {
+    expect(decodeHtmlEntities('Unter dem Motto &quot;Marktleben um 1525&quot;')).toBe(
+      'Unter dem Motto "Marktleben um 1525"',
+    );
+    expect(decodeHtmlEntities('Information &amp; Ticket Service')).toBe(
+      'Information & Ticket Service',
+    );
+    expect(decodeHtmlEntities('K&ouml;ln und D&uuml;sseldorf')).toBe('Köln und Düsseldorf');
+  });
+
+  it('decodes decimal and hex entities', () => {
+    expect(decodeHtmlEntities('&#34;W&uuml;rzburg&#34; &#x26; Bayern')).toBe('"Würzburg" & Bayern');
+  });
+});
+
 describe('stripHtml', () => {
   it('removes tags and normalizes whitespace', () => {
     expect(stripHtml('<p>Hello <b>World</b></p>')).toBe('Hello World');
+  });
+
+  it('inserts space between block elements so words do not collide', () => {
+    expect(stripHtml('<p>Erster Absatz</p><p>Zweiter Absatz</p>')).toBe(
+      'Erster Absatz Zweiter Absatz',
+    );
+    expect(stripHtml('Zeile 1<br/>Zeile 2<hr/>Zeile 3')).toBe('Zeile 1 Zeile 2 Zeile 3');
+  });
+
+  it('removes script and style tags completely', () => {
+    expect(
+      stripHtml('<style>body { color: red; }</style><p>Text</p><script>alert(1);</script>'),
+    ).toBe('Text');
+  });
+
+  it('decodes HTML entities in stripped content', () => {
+    const raw =
+      '<p>Unter dem Motto &quot;Marktleben um 1525&quot; entf&uuml;hrt der Markt...</p><p>Tourist &amp; Ticket Service</p>';
+    expect(stripHtml(raw)).toBe(
+      'Unter dem Motto "Marktleben um 1525" entführt der Markt... Tourist & Ticket Service',
+    );
   });
 });
 
