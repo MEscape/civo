@@ -1,7 +1,7 @@
-import { number, oneOf, optional } from '../models/field-schema';
+import { number, oneOf, optional } from '../../models/field-schema';
+import { defineContent } from '../define-content';
+import { label, recordId, title } from '../shared-fields';
 
-import { defineContent } from './define-content';
-import { label, recordId, title } from './shared-fields';
 import { smartCityCategory } from './smart-city-fields';
 
 export const METRIC_TRENDS = ['up', 'down', 'flat'] as const;

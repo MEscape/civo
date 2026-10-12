@@ -1,8 +1,7 @@
-import { email, list, object, optional } from '../models/field-schema';
-
-import { CONTENT_LIMITS as LIMITS } from './content-limits';
-import { defineContent } from './define-content';
-import { optionalLinkTarget, recordId, shortText, title } from './shared-fields';
+import { email, list, object, optional } from '../../models/field-schema';
+import { CONTENT_LIMITS as LIMITS } from '../content-limits';
+import { defineContent } from '../define-content';
+import { optionalLinkTarget, recordId, shortText, title } from '../shared-fields';
 
 /** A department with its contact persons. */
 export const departmentContent = defineContent({
@@ -11,13 +10,15 @@ export const departmentContent = defineContent({
     name: title(),
     description: shortText(),
     href: optionalLinkTarget(),
-    contacts: list(
-      object({
-        id: recordId(),
-        name: title(),
-        email: optional(email(LIMITS.label)),
-      }),
-      LIMITS.contacts,
+    contacts: optional(
+      list(
+        object({
+          id: recordId(),
+          name: title(),
+          email: optional(email(LIMITS.label)),
+        }),
+        LIMITS.contacts,
+      ),
     ),
   },
   rule: {},

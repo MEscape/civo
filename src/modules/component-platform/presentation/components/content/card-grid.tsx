@@ -2,7 +2,7 @@ import { Container, Grid, Section, SectionHeading } from '@components/layout/lay
 import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 import { ContentLink } from '@components/ui/content-link';
 
-import { trimToNull } from '@lib/utils';
+import { stripHtml, trimToNull } from '@lib/utils';
 
 import type { ComponentProps } from '../../../application/contracts/component-platform-constraints';
 
@@ -36,7 +36,7 @@ export function CardGrid({ props }: CardGridComponentProps) {
                     )}
                   </CardTitle>
                   {card.description !== undefined && (
-                    <CardDescription>{card.description}</CardDescription>
+                    <CardDescription>{stripHtml(card.description)}</CardDescription>
                   )}
                 </CardHeader>
               </Card>

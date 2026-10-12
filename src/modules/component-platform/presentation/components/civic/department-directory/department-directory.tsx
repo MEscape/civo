@@ -5,7 +5,7 @@ import { Mail } from '@components/ui/icons';
 
 import { getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -67,26 +67,28 @@ export async function DepartmentDirectory({
                     )}
                   </CardTitle>
                   {department.description !== undefined && (
-                    <CardDescription>{department.description}</CardDescription>
+                    <CardDescription>{stripHtml(department.description)}</CardDescription>
                   )}
-                  <ul className="mt-auto flex flex-col gap-1.5 pt-3 text-sm">
-                    {department.contacts.map((contact) => (
-                      <li key={contact.id} className="flex items-center justify-between gap-2">
-                        <span className="text-copy">{contact.name}</span>
-                        {contact.email !== undefined && (
-                          <ContentLink
-                            href={`mailto:${contact.email}`}
-                            aria-label={t('departmentDirectory.writeTo', {
-                              name: contact.name,
-                            })}
-                            className="flex items-center gap-1.5 text-primary-copy hover:underline"
-                          >
-                            <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-                          </ContentLink>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                  {department.contacts !== undefined && department.contacts.length > 0 && (
+                    <ul className="mt-auto flex flex-col gap-1.5 pt-3 text-sm">
+                      {department.contacts.map((contact) => (
+                        <li key={contact.id} className="flex items-center justify-between gap-2">
+                          <span className="text-copy">{contact.name}</span>
+                          {contact.email !== undefined && (
+                            <ContentLink
+                              href={`mailto:${contact.email}`}
+                              aria-label={t('departmentDirectory.writeTo', {
+                                name: contact.name,
+                              })}
+                              className="flex items-center gap-1.5 text-primary-copy hover:underline"
+                            >
+                              <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+                            </ContentLink>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </CardHeader>
               </Card>
             </li>

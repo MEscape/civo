@@ -1,4 +1,4 @@
-import { SMART_CITY_CATEGORIES } from '../../content/smart-city-fields';
+import { SMART_CITY_CATEGORIES } from '../../content/smartcity/smart-city-fields';
 import { prop } from '../../models/prop-field';
 
 /** Sentinel for "no category filter"; the renderer maps it to `undefined`. */

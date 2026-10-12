@@ -1,0 +1,118 @@
+{
+  "section": {
+    "version": 1,
+    "fingerprint": "e63db36fab6b2f36"
+  },
+  "accordion": {
+    "version": 1,
+    "fingerprint": "3e6450fb02cba956"
+  },
+  "callToAction": {
+    "version": 1,
+    "fingerprint": "4f10b3d837940dfc"
+  },
+  "cardGrid": {
+    "version": 1,
+    "fingerprint": "10fcfde251f5a56b"
+  },
+  "hero": {
+    "version": 1,
+    "fingerprint": "cfaafe2591f09b73"
+  },
+  "richText": {
+    "version": 1,
+    "fingerprint": "41da41b9a86fe27f"
+  },
+  "tabs": {
+    "version": 1,
+    "fingerprint": "fcccb8a37176f98c"
+  },
+  "alertBanner": {
+    "version": 1,
+    "fingerprint": "7d139d5bb95c8a8f"
+  },
+  "booking": {
+    "version": 1,
+    "fingerprint": "df0196a1b2ae28bb"
+  },
+  "contactCard": {
+    "version": 1,
+    "fingerprint": "8ca5c5729fc3bf3d"
+  },
+  "councilBlock": {
+    "version": 1,
+    "fingerprint": "0e5889fcabbb95ff"
+  },
+  "departmentDirectory": {
+    "version": 1,
+    "fingerprint": "e3d9ee8269ee7d60"
+  },
+  "eventsGrid": {
+    "version": 1,
+    "fingerprint": "25c2e63416fa16fa"
+  },
+  "newsAndEventsSplit": {
+    "version": 1,
+    "fingerprint": "987d9f7e39390b6a"
+  },
+  "newsGrid": {
+    "version": 1,
+    "fingerprint": "274b72a847d5b8bb"
+  },
+  "openingHours": {
+    "version": 1,
+    "fingerprint": "932a1352b8a16c6c"
+  },
+  "quickLinks": {
+    "version": 1,
+    "fingerprint": "1a03303a32dfd4df"
+  },
+  "serviceFinder": {
+    "version": 1,
+    "fingerprint": "89f665413ed7249f"
+  },
+  "serviceGrid": {
+    "version": 1,
+    "fingerprint": "98b9bb20186a0ab5"
+  },
+  "wasteCalendar": {
+    "version": 1,
+    "fingerprint": "274794b034cf94c5"
+  },
+  "dashboardGrid": {
+    "version": 3,
+    "fingerprint": "9654358998e58c97"
+  },
+  "kpiGrid": {
+    "version": 1,
+    "fingerprint": "4a1c0d98f21434db"
+  },
+  "map": {
+    "version": 1,
+    "fingerprint": "8f53fe4f1517604b"
+  },
+  "metricChart": {
+    "version": 1,
+    "fingerprint": "94e1f29e779de9d6"
+  },
+  "metricComparisonChart": {
+    "version": 1,
+    "fingerprint": "4e1ba9bf05eb1336"
+  },
+  "metricDonut": {
+    "version": 1,
+    "fingerprint": "f9d4f8b9280fc50a"
+  },
+  "metricGauge": {
+    "version": 1,
+    "fingerprint": "cc2d7ed27b7b5667"
+  },
+  "metricTable": {
+    "version": 1,
+    "fingerprint": "f7d3f19ae89bf607"
+  },
+  "metricTrendChart": {
+    "version": 1,
+    "fingerprint": "49756f0212aa8181"
+  }
+}

@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
 
 import { getAppFormatters, getTranslations } from '@i18n/server';
@@ -14,7 +16,6 @@ import type {
   ComponentProps,
   RenderContext,
 } from '../../../../application/contracts/component-platform-constraints';
-import type { ContentOrigin } from '../../../../application/contracts/content-views';
 import type { LoadContent } from '../../page-renderer/load-content';
 
 const DAY_FORMAT = { day: '2-digit', month: 'short' } as const;
@@ -36,14 +37,21 @@ function splitState(results: readonly ColumnResult[]): 'error' | 'empty' | 'cont
   return isEmpty ? 'empty' : 'content';
 }
 
-/** The note about placeholder records is shown once for the whole block, not once per column. */
-function firstSampleOrigin(results: readonly ColumnResult[]): ContentOrigin | null {
-  for (const result of results) {
-    if (result.isOk() && result.value.origin.kind === 'sample') {
-      return result.value.origin;
-    }
-  }
-  return null;
+const HEADING_ROW = 1;
+/** A column that failed still shows its one-line notice below the heading. */
+const NOTICE_ROW = 1;
+
+/**
+ * The rows of the split's grid: the heading plus as many cards as the longer
+ * column has. A count is data, so it travels as a custom property that the
+ * grid's class reads; React's `CSSProperties` has no custom-property keys.
+ */
+function splitRows(results: readonly ColumnResult[]): CSSProperties {
+  const cards = Math.max(
+    NOTICE_ROW,
+    ...results.map((result) => (result.isOk() ? result.value.items.length : 0)),
+  );
+  return { '--split-rows': HEADING_ROW + cards } as CSSProperties;
 }
 
 /**
@@ -82,25 +90,47 @@ export async function NewsAndEventsSplit({
     return <ContentState kind={state} heading={heading} />;
   }
 
-  const sampleOrigin = firstSampleOrigin(results);
+  const newsOrigin =
+    newsResult.isOk() && newsResult.value.origin.kind === 'sample' ? newsResult.value.origin : null;
+  const eventsOrigin =
+    eventsResult.isOk() && eventsResult.value.origin.kind === 'sample'
+      ? eventsResult.value.origin
+      : null;
 
   return (
     <Section>
       <Container>
         <SectionHeading>{heading}</SectionHeading>
-        {sampleOrigin !== null && <ContentOriginBadge origin={sampleOrigin} placement="inline" />}
         <div className="@container">
-          <div className="grid grid-cols-1 gap-10 @3xl:grid-cols-2">
+          <div
+            className="grid grid-cols-1 gap-10 @3xl:grid-cols-2 @3xl:gap-x-10 @3xl:gap-y-4 @3xl:grid-rows-[repeat(var(--split-rows),auto)]"
+            style={splitRows(results)}
+          >
             <NewsColumn
               heading={t('newsAndEventsSplit.newsHeading')}
               unavailableText={t('render.sectionUnavailable')}
+              emptyText={t('states.empty')}
+              showMoreLabel={t('render.showMore')}
+              showLessLabel={t('render.showLess')}
               list={newsResult.isOk() ? newsResult.value : null}
+              formatDay={(instant) => format.date(instant, DAY_FORMAT)}
+              badge={
+                newsOrigin !== null ? (
+                  <ContentOriginBadge origin={newsOrigin} placement="inline" />
+                ) : null
+              }
             />
             <EventsColumn
               heading={t('newsAndEventsSplit.eventsHeading')}
               unavailableText={t('render.sectionUnavailable')}
+              emptyText={t('states.empty')}
               list={eventsResult.isOk() ? eventsResult.value : null}
               formatDay={(instant) => format.date(instant, DAY_FORMAT)}
+              badge={
+                eventsOrigin !== null ? (
+                  <ContentOriginBadge origin={eventsOrigin} placement="inline" />
+                ) : null
+              }
             />
           </div>
         </div>

@@ -15,7 +15,6 @@ import { ContentState } from '../../shared/content-state';
 import { columnsForCount } from '../../shared/grid-columns';
 import { MetricDonutChartClient } from '../donut-chart/metric-donut-chart.client';
 import { categoryFilter } from '../support/category-filter';
-import { BREAKDOWN_LIMIT, OBSERVATION_LIMIT } from '../support/dataset-limits';
 import { MetricCard } from '../support/metric-card';
 import { MetricTrendChartClient } from '../trend-chart/metric-trend-chart.client';
 
@@ -42,8 +41,10 @@ type Distribution = NonNullable<ReturnType<typeof pickDistribution>>;
  */
 function loadDashboard({ props, context, loadContent }: DashboardGridComponentProps) {
   const isNothingBound = trimToNull(props.datasetId) === null;
-  const wantsTrend = isNothingBound || trimToNull(props.trendDatasetId) !== null;
-  const wantsDistribution = isNothingBound || trimToNull(props.breakdownDatasetId) !== null;
+  const wantsTrend =
+    props.showTrend && (isNothingBound || trimToNull(props.trendDatasetId) !== null);
+  const wantsDistribution =
+    props.showBreakdown && (isNothingBound || trimToNull(props.breakdownDatasetId) !== null);
   const base = { mode: context.mode, websiteId: context.websiteId };
   const category = categoryFilter(props.category);
 
@@ -55,7 +56,7 @@ function loadDashboard({ props, context, loadContent }: DashboardGridComponentPr
           kind: 'SmartCityObservation',
           datasetId: props.trendDatasetId,
           category,
-          limit: OBSERVATION_LIMIT,
+          limit: props.limit,
         })
       : null,
     wantsDistribution
@@ -63,7 +64,7 @@ function loadDashboard({ props, context, loadContent }: DashboardGridComponentPr
           ...base,
           kind: 'SmartCityBreakdownEntry',
           datasetId: props.breakdownDatasetId,
-          limit: BREAKDOWN_LIMIT,
+          limit: props.limit,
         })
       : null,
   ]);
@@ -85,30 +86,33 @@ async function DashboardCharts({ series, distribution }: DashboardChartsProps) {
   }
   const t = await getTranslations('componentPlatform');
 
+  // Container query, not a viewport breakpoint: the editor's phone-sized canvas sits in a wide window.
   return (
-    <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-      {series !== null && (
-        <Card>
-          <CardContent className="pt-5">
-            <p className="mb-3 text-sm font-medium text-copy">
-              {t('dashboardGrid.trendTitle', { label: series.name })}
-            </p>
-            <MetricTrendChartClient data={series.points} unit={series.unit} />
-          </CardContent>
-        </Card>
-      )}
-      {distribution !== null && (
-        <Card>
-          <CardContent className="pt-5">
-            <p className="mb-3 text-sm font-medium text-copy">
-              {distribution.group === undefined
-                ? t('dashboardGrid.distributionFallbackTitle')
-                : t('dashboardGrid.distributionTitle', { label: distribution.group })}
-            </p>
-            <MetricDonutChartClient data={distribution.parts} />
-          </CardContent>
-        </Card>
-      )}
+    <div className="@container mt-8">
+      <div className="grid grid-cols-1 gap-8 @3xl:grid-cols-2">
+        {series !== null && (
+          <Card>
+            <CardContent className="pt-5">
+              <p className="mb-3 text-sm font-medium text-copy">
+                {t('dashboardGrid.trendTitle', { label: series.name })}
+              </p>
+              <MetricTrendChartClient data={series.points} unit={series.unit} />
+            </CardContent>
+          </Card>
+        )}
+        {distribution !== null && (
+          <Card>
+            <CardContent className="pt-5">
+              <p className="mb-3 text-sm font-medium text-copy">
+                {distribution.group === undefined
+                  ? t('dashboardGrid.distributionFallbackTitle')
+                  : t('dashboardGrid.distributionTitle', { label: distribution.group })}
+              </p>
+              <MetricDonutChartClient data={distribution.parts} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
@@ -142,13 +146,15 @@ export async function DashboardGrid(input: DashboardGridComponentProps) {
       <Container>
         <SectionHeading>{heading}</SectionHeading>
 
-        <Grid as="ul" columns={columnsForCount(items.length)}>
-          {items.map((metric) => (
-            <li key={metric.id}>
-              <MetricCard metric={metric} size="compact" />
-            </li>
-          ))}
-        </Grid>
+        {input.props.showKpis && (
+          <Grid as="ul" columns={columnsForCount(items.length, input.props.columns)}>
+            {items.map((metric) => (
+              <li key={metric.id}>
+                <MetricCard metric={metric} size="compact" />
+              </li>
+            ))}
+          </Grid>
+        )}
 
         <DashboardCharts
           series={trend === null ? null : pickSeries(trend.items, null)}

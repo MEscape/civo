@@ -6,7 +6,7 @@ import { getContentDefinition } from '../../domain/content/content-definitions';
 import { selectContent } from '../../domain/content/select-content';
 import { contentDatasetNotFound } from '../../domain/errors/component-platform-errors';
 import { parseDatasetId, parseWebsiteId } from '../../domain/models/ids';
-import { resolveListLimit } from '../list-limits';
+import { resolveListLimit, resolveListOffset } from '../list-limits';
 
 import type { ContentKind, ContentOf } from '../../domain/content/content-definitions';
 import type { ContentBatch } from '../../domain/ports/content-source.port';
@@ -83,15 +83,17 @@ export class ListContent {
     const now = clock.now().toISOString();
     const category = trimToNull(request.category);
     const limit = resolveListLimit(request.kind, request.limit);
+    const window = { limit, offset: resolveListOffset(request.offset) };
     const isDraft = request.mode === 'draft';
 
     const present = (
       records: ReadonlyArray<ContentOf<K>>,
       origin: ContentOrigin,
-    ): ContentListView<K> => ({
-      ...selectContent(request.kind, records, { now, category, limit }),
-      origin,
-    });
+      hasMore = false,
+    ): ContentListView<K> => {
+      const selection = selectContent(request.kind, records, { now, category, limit });
+      return { ...selection, truncated: selection.truncated || hasMore, origin };
+    };
     const sampled = (cause: string | null): ContentListView<K> =>
       present(getContentDefinition(request.kind).sample(now), {
         kind: 'sample',
@@ -117,10 +119,16 @@ export class ListContent {
     // Every dataset must answer: a calendar that silently lacks one district is worse than none.
     return combineAsync(
       parsedDatasets.value.map((datasetId) =>
-        live.list({ kind: request.kind, datasetId, websiteId }),
+        live.list({ kind: request.kind, datasetId, websiteId, window }),
       ),
     )
-      .map((batches) => present(mergeBatches(batches), { kind: 'live' }))
+      .map((batches) =>
+        present(
+          mergeBatches(batches),
+          { kind: 'live' },
+          batches.some((batch) => batch.hasMore),
+        ),
+      )
       .orElse(fallback);
   }
 }

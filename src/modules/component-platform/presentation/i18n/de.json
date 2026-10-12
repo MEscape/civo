@@ -239,15 +239,8 @@
       },
       "booking": {
         "label": "Buchung",
-        "description": "Termine und Ressourcen buchen: Besuchende wählen eine Zeit, Personal sieht den Kalender.",
+        "description": "Termine und Ressourcen buchen: Besuchende wählen eine Zeit.",
         "fields": {
-          "mode": {
-            "label": "Anzeige",
-            "options": {
-              "public": "Besuchende buchen",
-              "adminCalendar": "Personalkalender (nur für angemeldetes Personal)"
-            }
-          },
           "heading": {
             "label": "Überschrift"
           },
@@ -310,6 +303,9 @@
           },
           "heading": {
             "label": "Überschrift"
+          },
+          "limit": {
+            "label": "Limit (angezeigte Datensätze)"
           },
           "pointStyle": {
             "label": "Darstellung von Punkten",
@@ -522,6 +518,9 @@
           "heading": {
             "label": "Überschrift"
           },
+          "limit": {
+            "label": "Limit (angezeigte Datensätze)"
+          },
           "category": {
             "label": "Kategorie",
             "options": {
@@ -531,6 +530,18 @@
               "energy": "Energie",
               "other": "Sonstiges"
             }
+          },
+          "showKpis": {
+            "label": "Kennzahlen anzeigen"
+          },
+          "showTrend": {
+            "label": "Verlaufsdiagramm anzeigen"
+          },
+          "showBreakdown": {
+            "label": "Verteilung anzeigen"
+          },
+          "columns": {
+            "label": "Spalten der Kacheln"
           }
         }
       },
@@ -613,6 +624,9 @@
           "heading": {
             "label": "Überschrift"
           },
+          "limit": {
+            "label": "Limit (angezeigte Datensätze)"
+          },
           "group": {
             "label": "Gruppe",
             "placeholder": "z. B. Energiemix"
@@ -667,6 +681,9 @@
           "heading": {
             "label": "Überschrift"
           },
+          "limit": {
+            "label": "Limit (angezeigte Datensätze)"
+          },
           "series": {
             "label": "Reihe",
             "placeholder": "z. B. CO₂-Emissionen"
@@ -692,6 +709,8 @@
       "empty": "Hier gibt es derzeit nichts anzuzeigen."
     },
     "render": {
+      "showMore": "Mehr anzeigen",
+      "showLess": "Weniger anzeigen",
       "sectionUnavailable": "Dieser Abschnitt ist vorübergehend nicht verfügbar.",
       "unknownComponent": "Unbekannte Komponente:"
     },
@@ -814,7 +833,16 @@
     },
     "metricTrendChart": {
       "defaultHeading": "Entwicklung über Zeit",
-      "title": "{heading} · {label}"
+      "title": "{heading} · {label}",
+      "window": {
+        "group": "Diagrammbereich",
+        "zoomIn": "Hineinzoomen",
+        "zoomOut": "Herauszoomen",
+        "earlier": "Früher",
+        "later": "Später",
+        "failed": "Der Bereich konnte nicht geladen werden.",
+        "status": "Zeigt bis zu {limit} Werte ab Wert {offset}."
+      }
     }
   }
 }

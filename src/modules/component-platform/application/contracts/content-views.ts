@@ -34,7 +34,10 @@ export interface ContentListRequest<K extends ContentKind> {
   /** Further datasets read together with `datasetId`; all must provide the same kind. */
   readonly additionalDatasetIds?: readonly string[] | undefined;
   readonly category?: string | undefined;
+  /** How many records are shown; the Limit an editor set. Bounded by the kind's scale. */
   readonly limit?: number | undefined;
+  /** Where the window starts, for a view the visitor moves (a chart panned, a map moved). */
+  readonly offset?: number | undefined;
 }
 
 /**

@@ -5,12 +5,11 @@ import {
   optional,
   scalarMap,
   withFallback,
-} from '../models/field-schema';
-
-import { CONTENT_LIMITS as LIMITS } from './content-limits';
-import { defineContent } from './define-content';
-import { sampleInstant } from './sample-instant';
-import { label, optionalLinkTarget, recordId, shortText, title } from './shared-fields';
+} from '../../models/field-schema';
+import { CONTENT_LIMITS as LIMITS } from '../content-limits';
+import { defineContent } from '../define-content';
+import { sampleInstant } from '../sample-instant';
+import { label, optionalLinkTarget, recordId, shortText, title } from '../shared-fields';
 
 /**
  * One located thing on a map: a point, a line or an area. The contract is
@@ -31,6 +30,7 @@ function positions(
 }
 
 export const geoFeatureContent = defineContent({
+  scale: 'dataset',
   shape: {
     id: recordId(),
     name: title(),

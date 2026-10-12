@@ -1,8 +1,7 @@
-import { list, optional, text } from '../models/field-schema';
-
-import { CONTENT_LIMITS as LIMITS } from './content-limits';
-import { defineContent } from './define-content';
-import { label, linkTarget, recordId, shortText, title } from './shared-fields';
+import { list, optional, text } from '../../models/field-schema';
+import { CONTENT_LIMITS as LIMITS } from '../content-limits';
+import { defineContent } from '../define-content';
+import { label, linkTarget, recordId, shortText, title } from '../shared-fields';
 
 /** A service with everything the searchable directory needs. */
 export const serviceDetailContent = defineContent({

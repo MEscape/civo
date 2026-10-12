@@ -1,7 +1,7 @@
-import { number } from '../models/field-schema';
+import { number } from '../../models/field-schema';
+import { defineContent } from '../define-content';
+import { label, recordId, title } from '../shared-fields';
 
-import { defineContent } from './define-content';
-import { label, recordId, title } from './shared-fields';
 import { smartCityCategory } from './smart-city-fields';
 
 /**

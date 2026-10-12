@@ -13,11 +13,14 @@ describe('the booking component', () => {
   });
 
   it('starts as the public booking flow with no filter', () => {
-    expect(bookingDefinition.defaultProps).toMatchObject({ mode: 'public' });
-    expect(bookingDefinition.parseProps({})).toMatchObject({ mode: 'public' });
+    expect(bookingDefinition.fields.map((field) => field.key)).toEqual([
+      'heading',
+      'serviceId',
+      'category',
+    ]);
   });
 
-  it('lets a municipality edit the wording and the category but not the mode or service', () => {
+  it('lets a municipality edit the wording and the category but not the service', () => {
     expect([...bookingDefinition.municipalFields].sort()).toEqual(['category', 'heading']);
   });
 
@@ -25,7 +28,7 @@ describe('the booking component', () => {
     expect(bookingDefinition.fields.map((field) => field.key)).not.toContain('websiteId');
   });
 
-  it('falls back to the default mode when a stored page holds a mode that no longer exists', () => {
-    expect(bookingDefinition.parseProps({ mode: 'kiosk' })).toMatchObject({ mode: 'public' });
+  it('offers no staff screen: a stored page that still holds the removed mode renders as a public flow', () => {
+    expect(bookingDefinition.parseProps({ mode: 'adminCalendar' })).not.toHaveProperty('mode');
   });
 });

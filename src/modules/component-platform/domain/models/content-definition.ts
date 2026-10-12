@@ -1,6 +1,8 @@
 import type { ValidationAppError } from '@lib/errors';
 import type { AppResult } from '@lib/result';
 
+import type { ListScale } from '../content/list-scale';
+
 /** How one kind of content is filtered, ordered and categorised for display. */
 export interface ContentRule<R> {
   /** Drops records that are no longer relevant (past events, inactive alerts). `now` is a canonical instant. */
@@ -21,6 +23,8 @@ export interface ContentRule<R> {
  */
 export interface ContentDefinition<R> {
   readonly version: number;
+  /** How much of a dataset this kind shows at once; see `LIST_LIMITS`. */
+  readonly scale: ListScale;
   /** Total over unknown input: a record that breaks the contract is an error, never a partial value. */
   readonly parse: (raw: unknown) => AppResult<R, ValidationAppError>;
   /**

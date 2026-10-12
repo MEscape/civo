@@ -1,9 +1,10 @@
 import { Container, Grid, Section, SectionHeading } from '@components/layout/layout-primitives';
 import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
+import { ContentLink } from '@components/ui/content-link';
 
 import { getAppFormatters, getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -57,11 +58,21 @@ export async function EventsGrid({ props, context, loadContent }: EventsGridComp
             const time = t('eventsGrid.time', {
               time: fmt.date(event.startDate, TIME_FORMAT),
             });
-            const details = [time, event.location].filter(Boolean).join(' · ');
+            const details = [event.category, time, event.location].filter(Boolean).join(' · ');
 
             return (
               <li key={event.id}>
-                <Card className="h-full">
+                <Card className="h-full overflow-hidden">
+                  {event.imageUrl !== undefined && (
+                    // eslint-disable-next-line @next/next/no-img-element -- the URL comes from municipal content on any host; next/image would need each host allow-listed
+                    <img
+                      src={event.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="h-40 w-full object-cover"
+                    />
+                  )}
                   <CardHeader>
                     <div className="flex items-start gap-3">
                       <time
@@ -71,13 +82,29 @@ export async function EventsGrid({ props, context, loadContent }: EventsGridComp
                         {fmt.date(event.startDate, DAY_FORMAT)}
                       </time>
                       <div>
-                        <CardTitle>{event.title}</CardTitle>
+                        <CardTitle>
+                          {event.href !== undefined ? (
+                            <ContentLink href={event.href} className="hover:text-primary-copy">
+                              {event.title}
+                            </ContentLink>
+                          ) : (
+                            event.title
+                          )}
+                        </CardTitle>
                         <p className="mt-1 text-xs text-copy-muted">{details}</p>
                       </div>
                     </div>
-                    {event.description !== undefined && (
-                      <CardDescription className="mt-2">{event.description}</CardDescription>
-                    )}
+                    {(() => {
+                      const description =
+                        event.description !== undefined
+                          ? trimToNull(stripHtml(event.description))
+                          : null;
+                      return (
+                        description !== null && (
+                          <CardDescription className="mt-2">{description}</CardDescription>
+                        )
+                      );
+                    })()}
                   </CardHeader>
                 </Card>
               </li>

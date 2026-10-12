@@ -1,4 +1,4 @@
-import type { CanonicalKind, MappedRecordsView } from '@modules/data-sources';
+import type { CanonicalKind, MappedRecordsRequest, MappedRecordsView } from '@modules/data-sources';
 
 import type { AppError } from '@lib/errors';
 import { logger } from '@lib/logger';
@@ -30,8 +30,7 @@ import type {
  * `composition.ts` passes the real function in.
  */
 export type FetchMappedRecords = (
-  datasetId: string,
-  websiteId: string,
+  request: MappedRecordsRequest,
 ) => AppResultAsync<MappedRecordsView>;
 
 const sourceLogger = logger.withContext({ module: 'component-platform.dataset-source' });
@@ -90,6 +89,7 @@ function validate<K extends ContentKind>(
       ...normalizeInstants(record.values, definition.instantFields),
       id: record.id,
     };
+
     const parsed = definition.parse(candidate);
     if (parsed.isOk()) {
       items.push(parsed.value);
@@ -107,7 +107,7 @@ function validate<K extends ContentKind>(
       truncated: view.truncated,
     });
   }
-  return { items };
+  return { items, hasMore: view.truncated };
 }
 
 /**
@@ -121,7 +121,11 @@ export class DatasetContentSource implements ContentSource {
   list<K extends ContentKind>(
     request: ContentRequest<K>,
   ): AppResultAsync<ContentBatch<K>, ContentSourceError> {
-    return this.fetchRecords(request.datasetId, request.websiteId)
+    return this.fetchRecords({
+      datasetId: request.datasetId,
+      websiteId: request.websiteId,
+      window: request.window,
+    })
       .mapErr(toSourceError)
       .andThen((view): AppResultAsync<ContentBatch<K>, ContentSourceError> =>
         view.canonicalKind === toCanonicalKind(request.kind)

@@ -172,6 +172,30 @@ export function oneOf<const V extends string | number>(values: readonly V[]): Fi
   });
 }
 
+/** Matches either canonical values or known aliases, normalizing to the canonical value. */
+export function mappedOneOf<const V extends string>(
+  canonical: readonly V[],
+  aliases?: Readonly<Record<string, V>>,
+): FieldSchema<V> {
+  return schema((raw) => {
+    if (typeof raw !== 'string') {
+      return fail(CODES.typeInvalid);
+    }
+    const match = canonical.find((value) => value === raw);
+    if (match !== undefined) {
+      return pass(match);
+    }
+    if (aliases !== undefined) {
+      const normalizedKey = raw.toLowerCase().trim();
+      const aliasMatch = aliases[normalizedKey];
+      if (aliasMatch !== undefined) {
+        return pass(aliasMatch);
+      }
+    }
+    return fail(CODES.optionUnknown);
+  });
+}
+
 function prefixed(failures: readonly FieldFailure[], segment: string): FieldFailure[] {
   return failures.map(({ code, path }) => ({
     code,
@@ -276,14 +300,20 @@ export function scalarMap(
   });
 }
 
-/** Absent (`undefined`) is acceptable; anything else must satisfy `inner`. */
+/** Absent (`undefined`, `null`) is acceptable; anything else must satisfy `inner`. */
 export function optional<T>(inner: FieldSchema<T>): FieldSchema<T | undefined> {
-  return schema((raw) => (raw === undefined ? pass(undefined) : inner.parse(raw)), inner.isInstant);
+  return schema(
+    (raw) => (raw === undefined || raw === null ? pass(undefined) : inner.parse(raw)),
+    inner.isInstant,
+  );
 }
 
 /** Absent becomes `value`; a present but invalid value still fails. */
 export function withDefault<T>(inner: FieldSchema<T>, value: T): FieldSchema<T> {
-  return schema((raw) => (raw === undefined ? pass(value) : inner.parse(raw)), inner.isInstant);
+  return schema(
+    (raw) => (raw === undefined || raw === null ? pass(value) : inner.parse(raw)),
+    inner.isInstant,
+  );
 }
 
 /**

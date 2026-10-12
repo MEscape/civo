@@ -1,3 +1,4 @@
+import { LIST_LIMITS } from '../../content/list-scale';
 import { prop } from '../../models/prop-field';
 import { defineComponent } from '../define-component';
 import { PROP_LIMITS } from '../prop-limits';
@@ -13,6 +14,7 @@ import { PROP_LIMITS } from '../prop-limits';
  */
 export const mapDefinition = defineComponent({
   type: 'map',
+  version: 1,
   category: 'smartcity',
   municipallyEditable: true,
   props: {
@@ -22,6 +24,7 @@ export const mapDefinition = defineComponent({
       group: 'content',
       municipal: true,
     }),
+    limit: prop.number(LIST_LIMITS.dataset, { group: 'content', municipal: true }),
     pointStyle: prop.select(['circles', 'markers', 'clusters', 'heatmap'], 'circles', {
       group: 'appearance',
       municipal: true,

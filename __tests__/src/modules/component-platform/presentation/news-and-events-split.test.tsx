@@ -45,8 +45,16 @@ function findAll(node: ReactNode, matches: (element: ReactElement) => boolean): 
     return [];
   }
   const own = matches(node) ? [node] : [];
-  const { children } = node.props as { children?: ReactNode };
-  return [...own, ...findAll(children, matches)];
+  const props = node.props as Record<string, unknown>;
+  const extraElements = Object.entries(props)
+    .filter(([key, val]) => key !== 'children' && isValidElement(val))
+    .map(([, val]) => val as ReactElement);
+  const children = props['children'] as ReactNode;
+  return [
+    ...own,
+    ...findAll(children, matches),
+    ...extraElements.flatMap((el) => findAll(el, matches)),
+  ];
 }
 
 function renderSplit(loadContent: LoadContent) {
@@ -62,18 +70,21 @@ function badges(tree: ReactNode) {
 }
 
 describe('NewsAndEventsSplit', () => {
-  it('shows the sample-data note once for the whole block, above the two columns', async () => {
+  it('shows the sample-data note per column when both use sample data', async () => {
     const tree = await renderSplit(loaderWith({ news: SAMPLE, events: SAMPLE }));
 
     const found = badges(tree);
-    expect(found).toHaveLength(1);
+    expect(found).toHaveLength(2);
     expect(found[0]?.props).toMatchObject({ origin: SAMPLE, placement: 'inline' });
+    expect(found[1]?.props).toMatchObject({ origin: SAMPLE, placement: 'inline' });
   });
 
   it('shows the note when only one column uses sample data', async () => {
     const tree = await renderSplit(loaderWith({ news: LIVE, events: SAMPLE }));
 
-    expect(badges(tree)).toHaveLength(1);
+    const found = badges(tree);
+    expect(found).toHaveLength(1);
+    expect(found[0]?.props).toMatchObject({ origin: SAMPLE, placement: 'inline' });
   });
 
   it('shows no note while both columns carry real data', async () => {
@@ -106,5 +117,20 @@ describe('NewsAndEventsSplit', () => {
       true,
       false,
     ]);
+  });
+
+  it('passes emptyText when a column has no records', async () => {
+    const emptyEvents: LoadContent = (request) =>
+      request.kind === 'Event'
+        ? Promise.resolve(ok({ items: [], origin: LIVE, truncated: false }))
+        : loaderWith({ news: LIVE, events: LIVE })(request);
+
+    const tree = await renderSplit(emptyEvents);
+
+    const columns = findAll(tree, (element) => 'list' in (element.props as object));
+    const eventsColumn = columns[1];
+    expect(eventsColumn?.props).toMatchObject({
+      emptyText: 'states.empty',
+    });
   });
 });

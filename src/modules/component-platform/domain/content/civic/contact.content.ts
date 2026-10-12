@@ -1,8 +1,7 @@
-import { email, optional, text } from '../models/field-schema';
-
-import { CONTENT_LIMITS as LIMITS } from './content-limits';
-import { defineContent } from './define-content';
-import { label, recordId, title } from './shared-fields';
+import { email, optional, text } from '../../models/field-schema';
+import { CONTENT_LIMITS as LIMITS } from '../content-limits';
+import { defineContent } from '../define-content';
+import { label, recordId, title } from '../shared-fields';
 
 /** A contact person. */
 export const contactContent = defineContent({

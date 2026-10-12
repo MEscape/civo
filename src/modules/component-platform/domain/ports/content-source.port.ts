@@ -12,11 +12,20 @@ export interface ContentRequest<K extends ContentKind> {
   readonly datasetId: DatasetId;
   /** From the render context, never from component props: the dataset must belong to this website. */
   readonly websiteId: WebsiteId;
+  readonly window: ContentWindow;
+}
+
+/** Which records of the dataset are wanted: `limit` from `offset`. */
+export interface ContentWindow {
+  readonly limit: number;
+  readonly offset: number;
 }
 
 export interface ContentBatch<K extends ContentKind> {
   /** Only records that satisfy the canonical contract. Rejected records are the adapter's to report. */
   readonly items: ReadonlyArray<ContentOf<K>>;
+  /** The dataset holds records beyond the window: the view shows part of it. */
+  readonly hasMore: boolean;
 }
 
 /**

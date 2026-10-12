@@ -1,4 +1,10 @@
+import type { ReactNode } from 'react';
+
 import { Card, CardHeader, CardTitle } from '@components/ui/card';
+import { ContentLink } from '@components/ui/content-link';
+
+import { SplitColumn } from './split-column';
+import { SplitList } from './split-list';
 
 import type { ContentListView } from '../../../../application/contracts/content-views';
 
@@ -6,24 +12,31 @@ export interface EventsColumnProps {
   readonly heading: string;
   /** What replaces the list while its source is unavailable. */
   readonly unavailableText: string;
+  /** What replaces the list when the source is empty. */
+  readonly emptyText: string;
   /** `null`: the source failed. */
   readonly list: ContentListView<'Event'> | null;
   /** The day box of an event, formatted for the request's locale by the caller. */
   readonly formatDay: (instant: string) => string;
+  readonly badge?: ReactNode;
 }
 
 /** The events half of the split. A failing source degrades this column only. */
-export function EventsColumn({ heading, unavailableText, list, formatDay }: EventsColumnProps) {
+export function EventsColumn({
+  heading,
+  unavailableText,
+  emptyText,
+  list,
+  formatDay,
+  badge,
+}: EventsColumnProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <h3 className="text-sm font-medium uppercase tracking-wide text-copy-muted">{heading}</h3>
-      {list === null ? (
-        <p className="text-sm text-copy-muted">{unavailableText}</p>
-      ) : (
-        <ul className="flex flex-col gap-4">
+    <SplitColumn heading={heading} badge={badge}>
+      {list !== null && list.items.length > 0 ? (
+        <SplitList>
           {list.items.map((event) => (
             <li key={event.id}>
-              <Card>
+              <Card className="h-full">
                 <CardHeader>
                   <div className="flex items-start gap-3">
                     <time
@@ -33,7 +46,15 @@ export function EventsColumn({ heading, unavailableText, list, formatDay }: Even
                       {formatDay(event.startDate)}
                     </time>
                     <div>
-                      <CardTitle>{event.title}</CardTitle>
+                      <CardTitle>
+                        {event.href !== undefined ? (
+                          <ContentLink href={event.href} className="hover:text-primary-copy">
+                            {event.title}
+                          </ContentLink>
+                        ) : (
+                          event.title
+                        )}
+                      </CardTitle>
                       {event.location !== undefined && (
                         <p className="mt-1 text-xs text-copy-muted">{event.location}</p>
                       )}
@@ -43,8 +64,10 @@ export function EventsColumn({ heading, unavailableText, list, formatDay }: Even
               </Card>
             </li>
           ))}
-        </ul>
+        </SplitList>
+      ) : (
+        <p className="text-sm text-copy-muted">{list === null ? unavailableText : emptyText}</p>
       )}
-    </div>
+    </SplitColumn>
   );
 }

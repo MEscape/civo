@@ -4,12 +4,15 @@ import { getTranslations } from '@i18n/server';
 
 import { trimToNull } from '@lib/utils';
 
-import { pickSeries } from '../../../../application/contracts/component-platform-constraints';
+import {
+  LIST_LIMITS,
+  pickSeries,
+} from '../../../../application/contracts/component-platform-constraints';
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
 import { categoryFilter } from '../support/category-filter';
-import { OBSERVATION_LIMIT } from '../support/dataset-limits';
 
+import { MetricTrendChartWindow } from './metric-trend-chart-window.client';
 import { MetricTrendChartClient } from './metric-trend-chart.client';
 
 import type {
@@ -37,9 +40,10 @@ export async function MetricTrendChart({
       websiteId: context.websiteId,
       datasetId: props.datasetId,
       category: categoryFilter(props.category),
-      limit: OBSERVATION_LIMIT,
+      limit: props.limit,
     }),
   ]);
+  const datasetId = trimToNull(props.datasetId);
   const heading = trimToNull(props.heading) ?? t('metricTrendChart.defaultHeading');
 
   if (result.isErr()) {
@@ -58,7 +62,30 @@ export async function MetricTrendChart({
         <SectionHeading>
           {t('metricTrendChart.title', { heading, label: series.name })}
         </SectionHeading>
-        <MetricTrendChartClient data={series.points} unit={series.unit} />
+        {context.mode === 'published' && datasetId !== null ? (
+          <MetricTrendChartWindow
+            initial={{ points: series.points, unit: series.unit, hasMore: result.value.truncated }}
+            source={{
+              websiteId: context.websiteId,
+              datasetId,
+              series: trimToNull(props.series),
+              category: categoryFilter(props.category),
+            }}
+            initialLimit={props.limit}
+            bounds={LIST_LIMITS.dataset}
+            labels={{
+              group: t('metricTrendChart.window.group'),
+              zoomIn: t('metricTrendChart.window.zoomIn'),
+              zoomOut: t('metricTrendChart.window.zoomOut'),
+              earlier: t('metricTrendChart.window.earlier'),
+              later: t('metricTrendChart.window.later'),
+              failed: t('metricTrendChart.window.failed'),
+              status: t('metricTrendChart.window.status', { limit: '{limit}', offset: '{offset}' }),
+            }}
+          />
+        ) : (
+          <MetricTrendChartClient data={series.points} unit={series.unit} />
+        )}
       </Container>
     </Section>
   );

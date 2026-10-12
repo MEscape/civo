@@ -1,5 +1,5 @@
-import { defineContent } from './define-content';
-import { label, linkTarget, recordId, shortText, title } from './shared-fields';
+import { defineContent } from '../define-content';
+import { label, linkTarget, recordId, shortText, title } from '../shared-fields';
 
 /**
  * The fields of a citizen service. Exported on its own because a service

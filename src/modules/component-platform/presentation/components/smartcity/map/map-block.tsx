@@ -31,9 +31,6 @@ export interface MapBlockProps {
   readonly mapSection: ComponentType<MapSectionProps>;
 }
 
-/** A map shows every feature of its datasets; the data-sources mapping already caps a dataset at this size. */
-const FEATURE_LIMIT = 1_000;
-
 interface Slot {
   readonly layerId: string;
   readonly label: string;
@@ -46,17 +43,21 @@ interface LoadedLayer {
   readonly error: ContentLoadError | null;
 }
 
-async function loadSlot(
-  slot: Slot,
-  context: RenderContext,
-  loadContent: LoadContent,
-): Promise<LoadedLayer> {
+interface SlotLoad {
+  readonly slot: Slot;
+  readonly context: RenderContext;
+  readonly loadContent: LoadContent;
+  /** The Limit the editor set on the map. */
+  readonly limit: number | undefined;
+}
+
+async function loadSlot({ slot, context, loadContent, limit }: SlotLoad): Promise<LoadedLayer> {
   const result = await loadContent({
     kind: 'GeoFeature',
     mode: context.mode,
     websiteId: context.websiteId,
     datasetId: slot.datasetId,
-    limit: FEATURE_LIMIT,
+    limit,
   });
   return result.match<LoadedLayer>(
     (view) => ({
@@ -102,7 +103,9 @@ export async function MapBlock({
   // Nothing chosen yet: still ask once, so the editor sees sample data and visitors an empty map.
   const requested = bound.length > 0 ? bound : slots.slice(0, 1);
 
-  const loaded = await Promise.all(requested.map((slot) => loadSlot(slot, context, loadContent)));
+  const loaded = await Promise.all(
+    requested.map((slot) => loadSlot({ slot, context, loadContent, limit: props.limit })),
+  );
 
   const failed = loaded.filter((entry) => entry.error !== null).length;
   if (failed === loaded.length) {

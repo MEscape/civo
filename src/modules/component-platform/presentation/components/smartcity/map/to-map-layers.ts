@@ -1,5 +1,7 @@
 import type { Attributes, MapFeatureInput, MapLayerInput } from '@modules/map';
 
+import { stripHtml } from '@lib/utils';
+
 import type { ContentOf } from '../../../../application/contracts/component-platform-constraints';
 
 type GeoFeatureRecord = ContentOf<'GeoFeature'>;
@@ -20,7 +22,7 @@ export function geoFeatureToMapFeature(record: GeoFeatureRecord): MapFeatureInpu
     ...(record.geometry === undefined ? {} : { geometry: record.geometry }),
     latitude: record.latitude,
     longitude: record.longitude,
-    description: record.description,
+    description: record.description !== undefined ? stripHtml(record.description) : undefined,
     href: record.href,
     attributes: {
       ...record.properties,

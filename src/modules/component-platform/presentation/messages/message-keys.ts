@@ -32,6 +32,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.datasetNotMapped]: fieldPath('origin', 'datasetNotMapped'),
   [ERRORS.datasetKindMismatch]: fieldPath('origin', 'datasetKindMismatch'),
   [ERRORS.sourceFailed]: fieldPath('origin', 'sourceFailed'),
+  [ERRORS.requestInvalid]: REQUEST_INVALID,
   [ERRORS.recordInvalid]: REQUEST_INVALID,
   [ERRORS.componentNotRegistered]: fieldPath('render', 'unknownComponent'),
   [VALIDATION.idInvalid]: REQUEST_INVALID,

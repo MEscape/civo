@@ -10,6 +10,8 @@ import { DynamicIcon } from '@components/ui/dynamic-icon';
 import { Search } from '@components/ui/icons';
 import { Input } from '@components/ui/input';
 
+import { stripHtml } from '@lib/utils';
+
 const FALLBACK_ICON = 'arrowRight' as const;
 
 export interface ServiceFinderItem {
@@ -45,7 +47,8 @@ function matches(service: ServiceFinderItem, query: string, category: string): b
   }
   return (
     service.title.toLowerCase().includes(query) ||
-    (service.description?.toLowerCase().includes(query) ?? false) ||
+    (service.description !== undefined &&
+      stripHtml(service.description).toLowerCase().includes(query)) ||
     (service.keywords?.some((keyword) => keyword.toLowerCase().includes(query)) ?? false)
   );
 }
@@ -64,7 +67,6 @@ function CategoryChip({ label, active, onSelect }: CategoryChipProps) {
       variant={active ? 'default' : 'ghost'}
       onClick={onSelect}
       aria-pressed={active}
-      className="rounded-full"
     >
       {label}
     </Button>
@@ -92,8 +94,8 @@ export function ServiceFinderClient({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-4">
+        <div className="relative">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-copy-muted"
             aria-hidden="true"
@@ -140,7 +142,7 @@ export function ServiceFinderClient({
             <li key={service.id}>
               <ContentLink
                 href={service.href}
-                className="group flex items-start gap-4 py-4 hover:bg-surface"
+                className="group flex items-start gap-3 py-4 hover:bg-surface sm:gap-4"
               >
                 <Card className="flex h-10 w-10 shrink-0 items-center justify-center border-0 bg-surface">
                   <DynamicIcon
@@ -150,12 +152,14 @@ export function ServiceFinderClient({
                     aria-hidden="true"
                   />
                 </Card>
-                <CardContent className="flex-1 p-0">
+                <CardContent className="min-w-0 flex-1 p-0 break-words">
                   <p className="text-sm font-medium text-copy group-hover:text-primary-copy">
                     {service.title}
                   </p>
                   {service.description !== undefined && (
-                    <p className="mt-0.5 text-sm text-copy-muted">{service.description}</p>
+                    <p className="mt-0.5 text-sm text-copy-muted">
+                      {stripHtml(service.description)}
+                    </p>
                   )}
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {service.department !== undefined && (

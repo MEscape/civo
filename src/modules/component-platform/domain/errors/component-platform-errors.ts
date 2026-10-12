@@ -26,6 +26,7 @@ export const COMPONENT_PLATFORM_ERROR_CODES = {
   datasetKindMismatch: 'content.dataset_kind_mismatch',
   sourceFailed: 'content.source_failed',
   recordInvalid: 'content.record_invalid',
+  requestInvalid: 'content.request_invalid',
   componentNotRegistered: 'component.not_registered',
 } as const;
 

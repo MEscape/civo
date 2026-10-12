@@ -4,6 +4,7 @@ import type { AppResultAsync } from '@lib/result';
 import { categoriesOf, sampleCategoriesOf } from '../../domain/content/content-categories';
 import { isContentKind } from '../../domain/content/content-definitions';
 import { parseDatasetId, parseWebsiteId } from '../../domain/models/ids';
+import { maxListLimit } from '../list-limits';
 
 import type { ContentKind } from '../../domain/content/content-definitions';
 import type { DatasetId, WebsiteId } from '../../domain/models/ids';
@@ -25,7 +26,7 @@ function readCategories(
 ): AppResultAsync<DatasetCategories, never> {
   const { kind, rawId, datasetId, websiteId } = read;
   return live
-    .list({ kind, datasetId, websiteId })
+    .list({ kind, datasetId, websiteId, window: { limit: maxListLimit(kind), offset: 0 } })
     .map((batch): DatasetCategories => [rawId, categoriesOf(kind, batch.items)])
     .orElse(() => okAsync<DatasetCategories>([rawId, []]));
 }

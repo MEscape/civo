@@ -7,7 +7,6 @@ import { trimToNull } from '@lib/utils';
 import { pickDistribution } from '../../../../application/contracts/component-platform-constraints';
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
-import { BREAKDOWN_LIMIT } from '../support/dataset-limits';
 
 import { MetricDonutChartClient } from './metric-donut-chart.client';
 
@@ -39,7 +38,7 @@ export async function MetricDonutChart({
       mode: context.mode,
       websiteId: context.websiteId,
       datasetId: props.datasetId,
-      limit: BREAKDOWN_LIMIT,
+      limit: props.limit,
     }),
   ]);
   const heading = trimToNull(props.heading) ?? t('metricDonut.defaultHeading');

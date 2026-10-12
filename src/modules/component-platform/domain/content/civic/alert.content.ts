@@ -1,8 +1,7 @@
-import { instant, oneOf, optional, withFallback } from '../models/field-schema';
-
-import { defineContent } from './define-content';
-import { sampleInstant } from './sample-instant';
-import { optionalLinkTarget, recordId, shortText, title } from './shared-fields';
+import { instant, oneOf, optional, withFallback } from '../../models/field-schema';
+import { defineContent } from '../define-content';
+import { sampleInstant } from '../sample-instant';
+import { optionalLinkTarget, recordId, shortText, title } from '../shared-fields';
 
 export const ALERT_SEVERITIES = ['info', 'warning', 'urgent'] as const;
 

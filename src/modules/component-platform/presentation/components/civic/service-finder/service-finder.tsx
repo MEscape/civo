@@ -38,6 +38,7 @@ export async function ServiceFinder({ props, context, loadContent }: ServiceFind
   const heading = trimToNull(props.heading) ?? t('serviceFinder.defaultHeading');
   const description = trimToNull(props.description);
   const placeholder = trimToNull(props.placeholder) ?? t('serviceFinder.defaultPlaceholder');
+  const initialCategory = trimToNull(props.initialCategory) ?? '';
 
   if (result.isErr()) {
     return <ContentState kind="error" heading={heading} />;
@@ -55,10 +56,12 @@ export async function ServiceFinder({ props, context, loadContent }: ServiceFind
         {description !== null && (
           <p className="-mt-6 mb-8 max-w-2xl text-sm text-copy-muted">{description}</p>
         )}
+        {/* Keyed by the start category: the client seeds its state from it once, so a changed prop (the editor) must restart it. */}
         <ServiceFinderClient
+          key={initialCategory}
           services={items}
           placeholder={placeholder}
-          initialCategory={trimToNull(props.initialCategory) ?? ''}
+          initialCategory={initialCategory}
           labels={{
             allCategories: t('serviceFinder.allCategories'),
             noResults: t('serviceFinder.noResults'),

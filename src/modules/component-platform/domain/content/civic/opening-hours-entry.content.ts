@@ -1,6 +1,5 @@
-import { boolean, oneOf, optional, text, withDefault } from '../models/field-schema';
-
-import { defineContent } from './define-content';
+import { boolean, oneOf, optional, text, withDefault } from '../../models/field-schema';
+import { defineContent } from '../define-content';
 
 export const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 

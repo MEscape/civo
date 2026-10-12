@@ -1,4 +1,14 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
+import type { ReactNode } from 'react';
+
+import { Card, CardHeader, CardTitle } from '@components/ui/card';
+import { ContentLink } from '@components/ui/content-link';
+
+import { stripHtml, trimToNull } from '@lib/utils';
+
+import { ClampedText } from '../../shared/clamped-text.client';
+
+import { SplitColumn } from './split-column';
+import { SplitList } from './split-list';
 
 import type { ContentListView } from '../../../../application/contracts/content-views';
 
@@ -6,34 +16,76 @@ export interface NewsColumnProps {
   readonly heading: string;
   /** What replaces the list while its source is unavailable. */
   readonly unavailableText: string;
+  /** What replaces the list when the source is empty. */
+  readonly emptyText: string;
+  readonly showMoreLabel: string;
+  readonly showLessLabel: string;
   /** `null`: the source failed. */
   readonly list: ContentListView<'NewsItem'> | null;
+  readonly badge?: ReactNode;
+  readonly formatDay?: ((instant: string) => string) | undefined;
 }
 
 /** The news half of the split. A failing source degrades this column only. */
-export function NewsColumn({ heading, unavailableText, list }: NewsColumnProps) {
+export function NewsColumn({
+  heading,
+  unavailableText,
+  emptyText,
+  showMoreLabel,
+  showLessLabel,
+  list,
+  badge,
+  formatDay,
+}: NewsColumnProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <h3 className="text-sm font-medium uppercase tracking-wide text-copy-muted">{heading}</h3>
-      {list === null ? (
-        <p className="text-sm text-copy-muted">{unavailableText}</p>
+    <SplitColumn heading={heading} badge={badge}>
+      {list !== null && list.items.length > 0 ? (
+        <SplitList>
+          {list.items.map((item) => {
+            const rawText = item.excerpt ?? item.content;
+            const description =
+              rawText !== undefined ? (trimToNull(stripHtml(rawText)) ?? undefined) : undefined;
+
+            return (
+              <li key={item.id}>
+                <Card className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-2 text-xs text-copy-muted">
+                      {item.category !== undefined ? (
+                        <span className="font-medium text-accent-copy">{item.category}</span>
+                      ) : (
+                        <span />
+                      )}
+                      {formatDay !== undefined && (
+                        <time dateTime={item.publishedAt}>{formatDay(item.publishedAt)}</time>
+                      )}
+                    </div>
+                    <CardTitle>
+                      {item.href !== undefined ? (
+                        <ContentLink href={item.href} className="hover:text-primary-copy">
+                          {item.title}
+                        </ContentLink>
+                      ) : (
+                        item.title
+                      )}
+                    </CardTitle>
+                    {description !== undefined && (
+                      <ClampedText
+                        text={description}
+                        showMoreLabel={showMoreLabel}
+                        showLessLabel={showLessLabel}
+                        className="text-sm text-copy-muted"
+                      />
+                    )}
+                  </CardHeader>
+                </Card>
+              </li>
+            );
+          })}
+        </SplitList>
       ) : (
-        <ul className="flex flex-col gap-4">
-          {list.items.map((item) => (
-            <li key={item.id}>
-              <Card>
-                <CardHeader>
-                  {item.category !== undefined && (
-                    <p className="text-xs font-medium text-accent-copy">{item.category}</p>
-                  )}
-                  <CardTitle>{item.title}</CardTitle>
-                  {item.excerpt !== undefined && <CardDescription>{item.excerpt}</CardDescription>}
-                </CardHeader>
-              </Card>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-copy-muted">{list === null ? unavailableText : emptyText}</p>
       )}
-    </div>
+    </SplitColumn>
   );
 }

@@ -1,8 +1,8 @@
-import { instant, number } from '../models/field-schema';
+import { instant, number } from '../../models/field-schema';
+import { defineContent } from '../define-content';
+import { sampleInstant } from '../sample-instant';
+import { compareText, label, recordId, title } from '../shared-fields';
 
-import { defineContent } from './define-content';
-import { sampleInstant } from './sample-instant';
-import { compareText, label, recordId, title } from './shared-fields';
 import { smartCityCategory } from './smart-city-fields';
 
 const DAYS_PER_MONTH = 30;
@@ -16,6 +16,7 @@ const DAYS_PER_MONTH = 30;
  * chart orders the chosen series chronologically.
  */
 export const smartCityObservationContent = defineContent({
+  scale: 'dataset',
   shape: {
     id: recordId(),
     series: title(),

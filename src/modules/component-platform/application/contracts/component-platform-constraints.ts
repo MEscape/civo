@@ -13,9 +13,9 @@ export type {
 } from '../../domain/errors/component-platform-errors';
 export { CONTENT_KINDS } from '../../domain/content/content-definitions';
 export type { ContentKind, ContentOf } from '../../domain/content/content-definitions';
-export { ALERT_SEVERITIES } from '../../domain/content/alert.content';
-export { WEEKDAYS } from '../../domain/content/opening-hours-entry.content';
-export { WASTE_TYPES } from '../../domain/content/waste-collection-entry.content';
+export { ALERT_SEVERITIES } from '../../domain/content/civic/alert.content';
+export { WEEKDAYS } from '../../domain/content/civic/opening-hours-entry.content';
+export { WASTE_TYPES } from '../../domain/content/civic/waste-collection-entry.content';
 export { GRID_COLUMN_COUNTS, PROP_CONTROLS, PROP_GROUPS } from '../../domain/models/prop-field';
 export type { GridColumnCount, PropControl, PropGroup } from '../../domain/models/prop-field';
 export { COMPONENT_CATEGORIES } from '../../domain/models/component-definition';
@@ -29,5 +29,13 @@ export type {
   RegisteredComponentName,
 } from '../../domain/components/component-definitions';
 export type { ContentSourceError } from '../../domain/ports/content-source.port';
-export { pickDistribution, pickSeries } from '../../domain/content/pick-smart-city-series';
-export type { PickedDistribution, PickedSeries } from '../../domain/content/pick-smart-city-series';
+export {
+  pickDistribution,
+  pickSeries,
+} from '../../domain/content/smartcity/pick-smart-city-series';
+export type {
+  PickedDistribution,
+  PickedSeries,
+} from '../../domain/content/smartcity/pick-smart-city-series';
+export { LIST_LIMITS, MAX_LIST_OFFSET } from '../../domain/content/list-scale';
+export { PROP_LIMITS } from '../../domain/components/prop-limits';

@@ -239,15 +239,8 @@
       },
       "booking": {
         "label": "Booking",
-        "description": "Appointments and resource booking: visitors choose a time, staff see the calendar.",
+        "description": "Appointments and resource booking: visitors choose a time.",
         "fields": {
-          "mode": {
-            "label": "Display",
-            "options": {
-              "public": "Visitors book",
-              "adminCalendar": "Staff calendar (signed-in staff only)"
-            }
-          },
           "heading": {
             "label": "Heading"
           },
@@ -310,6 +303,9 @@
           },
           "heading": {
             "label": "Heading"
+          },
+          "limit": {
+            "label": "Limit (records shown)"
           },
           "pointStyle": {
             "label": "Point display",
@@ -522,6 +518,9 @@
           "heading": {
             "label": "Heading"
           },
+          "limit": {
+            "label": "Limit (records shown)"
+          },
           "category": {
             "label": "Category",
             "options": {
@@ -531,6 +530,18 @@
               "energy": "Energy",
               "other": "Other"
             }
+          },
+          "showKpis": {
+            "label": "Show key figures"
+          },
+          "showTrend": {
+            "label": "Show trend chart"
+          },
+          "showBreakdown": {
+            "label": "Show distribution"
+          },
+          "columns": {
+            "label": "Columns of the tiles"
           }
         }
       },
@@ -613,6 +624,9 @@
           "heading": {
             "label": "Heading"
           },
+          "limit": {
+            "label": "Limit (records shown)"
+          },
           "group": {
             "label": "Group",
             "placeholder": "e.g. Energy mix"
@@ -667,6 +681,9 @@
           "heading": {
             "label": "Heading"
           },
+          "limit": {
+            "label": "Limit (records shown)"
+          },
           "series": {
             "label": "Series",
             "placeholder": "e.g. CO₂ emissions"
@@ -692,6 +709,8 @@
       "empty": "There is nothing to show here yet."
     },
     "render": {
+      "showMore": "Show more",
+      "showLess": "Show less",
       "sectionUnavailable": "This section is temporarily unavailable.",
       "unknownComponent": "Unknown component:"
     },
@@ -814,7 +833,16 @@
     },
     "metricTrendChart": {
       "defaultHeading": "Development over time",
-      "title": "{heading} · {label}"
+      "title": "{heading} · {label}",
+      "window": {
+        "group": "Chart range",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "earlier": "Earlier",
+        "later": "Later",
+        "failed": "The range could not be loaded.",
+        "status": "Showing up to {limit} values, starting at value {offset}."
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
-import { compareText } from './shared-fields';
+import { compareText } from '../shared-fields';
 
-import type { ContentOf } from './content-definitions';
+import type { ContentOf } from '../content-definitions';
 
 export interface SeriesPoint {
   readonly date: string;

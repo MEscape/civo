@@ -20,12 +20,6 @@ export interface BookingBlockProps {
   readonly bookingSection: ComponentType<BookingSectionProps>;
 }
 
-/** The editor's mode names, in the booking module's words. */
-const SECTION_MODE = {
-  public: 'public',
-  adminCalendar: 'admin',
-} as const satisfies Record<ComponentProps<'booking'>['mode'], BookingSectionProps['mode']>;
-
 /**
  * Places the booking module's screens on a page. The component platform owns
  * only WHERE booking appears and WHICH services a visitor may choose from;
@@ -46,7 +40,6 @@ export async function BookingBlock({
         <SectionHeading>{heading}</SectionHeading>
         <BookingSection
           websiteId={context.websiteId}
-          mode={SECTION_MODE[props.mode]}
           renderMode={context.mode}
           heading={heading}
           serviceId={trimToNull(props.serviceId) ?? undefined}

@@ -1,5 +1,6 @@
 import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
 import { Badge } from '@components/ui/badge';
+import type { BadgeProps } from '@components/ui/badge';
 import { Card, CardContent } from '@components/ui/card';
 import { Trash2 } from '@components/ui/icons';
 
@@ -19,13 +20,14 @@ import type { LoadContent } from '../../page-renderer/load-content';
 
 type WasteKind = (typeof WASTE_TYPES)[number];
 
+/** One distinct token colour per bin, so neighbouring dates are told apart at a glance; the label carries the meaning too. */
 const BADGE_VARIANTS = {
-  restmuell: 'muted',
-  biomuell: 'default',
-  papier: 'muted',
+  restmuell: 'secondary',
+  biomuell: 'success',
+  papier: 'info',
   gelberSack: 'warning',
-  sperrmuell: 'warning',
-} as const satisfies Record<WasteKind, 'default' | 'muted' | 'warning'>;
+  sperrmuell: 'accent',
+} as const satisfies Record<WasteKind, BadgeProps['variant']>;
 
 const DATE_FORMAT = {
   weekday: 'short',

@@ -4,7 +4,7 @@ import { Card, CardContent } from '@components/ui/card';
 
 import { getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -54,26 +54,28 @@ export async function CouncilBlock({ props, context, loadContent }: CouncilBlock
                 <CardContent className="pt-5">
                   <h3 className="font-heading text-lg text-copy">{body.name}</h3>
                   {body.description !== undefined && (
-                    <p className="mt-1 text-sm text-copy-muted">{body.description}</p>
+                    <p className="mt-1 text-sm text-copy-muted">{stripHtml(body.description)}</p>
                   )}
-                  <ul className="mt-4 flex flex-col divide-y divide-border">
-                    {body.members.map((member) => (
-                      <li
-                        key={member.id}
-                        className="flex items-center justify-between gap-3 py-2.5"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-copy">{member.name}</p>
-                          {member.role !== undefined && (
-                            <p className="text-xs text-copy-muted">{member.role}</p>
+                  {body.members !== undefined && body.members.length > 0 && (
+                    <ul className="mt-4 flex flex-col divide-y divide-border">
+                      {body.members.map((member) => (
+                        <li
+                          key={member.id}
+                          className="flex items-center justify-between gap-3 py-2.5"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-copy">{member.name}</p>
+                            {member.role !== undefined && (
+                              <p className="text-xs text-copy-muted">{member.role}</p>
+                            )}
+                          </div>
+                          {member.party !== undefined && (
+                            <Badge variant="muted">{member.party}</Badge>
                           )}
-                        </div>
-                        {member.party !== undefined && (
-                          <Badge variant="muted">{member.party}</Badge>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </CardContent>
               </Card>
             </li>

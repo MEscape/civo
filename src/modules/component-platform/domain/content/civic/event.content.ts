@@ -1,8 +1,15 @@
-import { instant, optional } from '../models/field-schema';
-
-import { defineContent } from './define-content';
-import { sampleInstant } from './sample-instant';
-import { compareText, imageUrl, label, longText, recordId, title } from './shared-fields';
+import { instant, optional } from '../../models/field-schema';
+import { defineContent } from '../define-content';
+import { sampleInstant } from '../sample-instant';
+import {
+  compareText,
+  imageUrl,
+  label,
+  longText,
+  optionalLinkTarget,
+  recordId,
+  title,
+} from '../shared-fields';
 
 /** An event on the municipal calendar. */
 export const eventContent = defineContent({
@@ -15,6 +22,7 @@ export const eventContent = defineContent({
     location: label(),
     category: label(),
     imageUrl: imageUrl(),
+    href: optionalLinkTarget(),
   },
   rule: {
     isRelevant: (event, now) => (event.endDate ?? event.startDate) >= now,

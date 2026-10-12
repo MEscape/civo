@@ -1,4 +1,4 @@
-import { oneOf, withFallback } from '../models/field-schema';
+import { oneOf, withFallback } from '../../models/field-schema';
 
 /**
  * Fields the smart-city kinds have in common. Only what is genuinely the

@@ -27,8 +27,8 @@ import type { PublicComponentPlatformDependencies } from './application/componen
  */
 const deps: PublicComponentPlatformDependencies = {
   registry: COMPONENT_REGISTRY,
-  live: new DatasetContentSource((datasetId, websiteId) =>
-    dataSourceQueries.getMappedDatasetRecords.execute(datasetId, websiteId),
+  live: new DatasetContentSource((request) =>
+    dataSourceQueries.getMappedDatasetRecords.execute(request),
   ),
   clock: systemClock,
 };

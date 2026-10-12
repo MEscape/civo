@@ -4,7 +4,7 @@ import { AlertOctagon, AlertTriangle, Info } from '@components/ui/icons';
 
 import { getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -90,7 +90,7 @@ export async function AlertBanner({ props, context, loadContent }: AlertBannerCo
                   )}
                 </p>
                 {alert.message !== undefined && (
-                  <p className="mt-0.5 opacity-90">{alert.message}</p>
+                  <p className="mt-0.5 opacity-90">{stripHtml(alert.message)}</p>
                 )}
               </div>
             </div>

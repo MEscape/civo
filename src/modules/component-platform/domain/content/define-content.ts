@@ -1,5 +1,6 @@
 import { instantKeys, parseRecord } from '../models/field-schema';
 
+import type { ListScale } from './list-scale';
 import type { ContentDefinition, ContentRule } from '../models/content-definition';
 import type { Infer, Shape } from '../models/field-schema';
 
@@ -7,6 +8,8 @@ const INITIAL_VERSION = 1;
 
 export interface ContentSpec<S extends Shape> {
   readonly version?: number;
+  /** `dataset` for kinds shown whole (a map, a chart); cards otherwise. */
+  readonly scale?: ListScale;
   readonly shape: S;
   readonly rule?: ContentRule<Infer<S>>;
 }
@@ -36,6 +39,7 @@ export function defineContent<S extends Shape>(spec: ContentSpec<S>): ContentBui
   return {
     withSample: (sample) => ({
       version: spec.version ?? INITIAL_VERSION,
+      scale: spec.scale ?? 'cards',
       parse: (raw) => parseRecord(spec.shape, raw),
       instantFields: instantKeys(spec.shape),
       fieldNames,

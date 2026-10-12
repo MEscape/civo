@@ -1,39 +1,33 @@
 import { clamp, isDefined } from '@lib/utils';
 
+import { getContentDefinition } from '../domain/content/content-definitions';
+import { LIST_LIMITS, MAX_LIST_OFFSET } from '../domain/content/list-scale';
+
 import type { ContentKind } from '../domain/content/content-definitions';
 
-/** Every list is bounded (performance.md). Raise a limit deliberately, never by removing it. */
-export const DEFAULT_CONTENT_LIST_LIMIT = 12;
-export const MIN_CONTENT_LIST_LIMIT = 1;
-
 /**
- * The ceiling of a card list (news, events, services…). Component props cap
- * themselves far lower (50 at most); this is the backstop for a request that
- * bypasses them.
+ * Every list is bounded (performance.md). These limits say how many ITEMS a
+ * component shows; the bounds come from the kind's own scale
+ * (`LIST_LIMITS`), the same ones the builder offers for the Limit. What the
+ * data-sources module reads is exactly this window, so nothing is fetched
+ * that no component can show.
  */
-export const MAX_CONTENT_LIST_LIMIT = 100;
 
-/**
- * The ceiling of a list that reads a dataset as data rather than as cards:
- * a map shows every feature, a chart one row per point or part. It matches
- * the data-sources mapping cap (1000 records per dataset).
- */
-export const MAX_DATASET_LIST_LIMIT = 1_000;
-
-/** Kinds whose components consume a whole dataset instead of a page of cards. */
-const DATASET_SCALE_KINDS: ReadonlySet<ContentKind> = new Set<ContentKind>([
-  'GeoFeature',
-  'SmartCityObservation',
-  'SmartCityBreakdownEntry',
-]);
-
-export function maxListLimitFor(kind: ContentKind): number {
-  return DATASET_SCALE_KINDS.has(kind) ? MAX_DATASET_LIST_LIMIT : MAX_CONTENT_LIST_LIMIT;
+/** The limit a request gets: its own when it is a whole number, else the scale's initial one, always within the scale's bounds. */
+export function resolveListLimit(kind: ContentKind, requested: number | undefined): number {
+  const bounds = LIST_LIMITS[getContentDefinition(kind).scale];
+  const wanted = isDefined(requested) && Number.isInteger(requested) ? requested : bounds.initial;
+  return clamp(wanted, bounds.min, bounds.max);
 }
 
-/** The limit a request gets: its own when it is a whole number, else the default, always within the kind's bounds. */
-export function resolveListLimit(kind: ContentKind, requested: number | undefined): number {
-  const wanted =
-    isDefined(requested) && Number.isInteger(requested) ? requested : DEFAULT_CONTENT_LIST_LIMIT;
-  return clamp(wanted, MIN_CONTENT_LIST_LIMIT, maxListLimitFor(kind));
+/** The widest window a kind may be read in: what the editor's category choices are collected from. */
+export function maxListLimit(kind: ContentKind): number {
+  return LIST_LIMITS[getContentDefinition(kind).scale].max;
+}
+
+/** Where the window starts: a whole number from 0, anything else is the start of the dataset. */
+export function resolveListOffset(requested: number | undefined): number {
+  return isDefined(requested) && Number.isInteger(requested)
+    ? clamp(requested, 0, MAX_LIST_OFFSET)
+    : 0;
 }

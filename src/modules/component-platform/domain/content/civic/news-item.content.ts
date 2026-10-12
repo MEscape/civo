@@ -1,8 +1,16 @@
-import { instant } from '../models/field-schema';
-
-import { defineContent } from './define-content';
-import { sampleInstant } from './sample-instant';
-import { compareText, imageUrl, label, recordId, shortText, title } from './shared-fields';
+import { instant } from '../../models/field-schema';
+import { defineContent } from '../define-content';
+import { sampleInstant } from '../sample-instant';
+import {
+  compareText,
+  imageUrl,
+  label,
+  longText,
+  optionalLinkTarget,
+  recordId,
+  shortText,
+  title,
+} from '../shared-fields';
 
 /** A news article of the municipality, newest first. */
 export const newsItemContent = defineContent({
@@ -10,9 +18,11 @@ export const newsItemContent = defineContent({
     id: recordId(),
     title: title(),
     excerpt: shortText(),
+    content: longText(),
     category: label(),
     imageUrl: imageUrl(),
     publishedAt: instant(),
+    href: optionalLinkTarget(),
   },
   rule: {
     compare: (first, second) => compareText(second.publishedAt, first.publishedAt),

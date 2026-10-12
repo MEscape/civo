@@ -1,8 +1,7 @@
-import { list, object } from '../models/field-schema';
-
-import { CONTENT_LIMITS as LIMITS } from './content-limits';
-import { defineContent } from './define-content';
-import { label, recordId, shortText, title } from './shared-fields';
+import { list, object, optional } from '../../models/field-schema';
+import { CONTENT_LIMITS as LIMITS } from '../content-limits';
+import { defineContent } from '../define-content';
+import { label, recordId, shortText, title } from '../shared-fields';
 
 /** A council or committee with its members. */
 export const councilBodyContent = defineContent({
@@ -10,9 +9,11 @@ export const councilBodyContent = defineContent({
     id: recordId(),
     name: title(),
     description: shortText(),
-    members: list(
-      object({ id: recordId(), name: title(), role: label(), party: label() }),
-      LIMITS.members,
+    members: optional(
+      list(
+        object({ id: recordId(), name: title(), role: label(), party: label() }),
+        LIMITS.members,
+      ),
     ),
   },
   rule: {},

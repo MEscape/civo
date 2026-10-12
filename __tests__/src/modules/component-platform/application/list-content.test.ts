@@ -5,6 +5,7 @@ import { ListContent } from '@modules/component-platform/application/queries/lis
 import { ListContentCategories } from '@modules/component-platform/application/queries/list-content-categories';
 import { COMPONENT_REGISTRY } from '@modules/component-platform/domain/components/platform-registry';
 import type { ContentKind } from '@modules/component-platform/domain/content/content-definitions';
+import { LIST_LIMITS } from '@modules/component-platform/domain/content/list-scale';
 import { contentDatasetNotFound } from '@modules/component-platform/domain/errors/component-platform-errors';
 import type {
   ContentBatch,
@@ -44,6 +45,8 @@ const RECORDS: Readonly<Record<string, readonly WasteRecord[]>> = {
 /** A content source that serves fixed records per dataset and fails for the ids in `failing`. */
 class FakeContentSource implements ContentSource {
   readonly requested: string[] = [];
+  readonly windows: Array<ContentRequest<ContentKind>['window']> = [];
+  hasMore = false;
 
   constructor(private readonly failing: ReadonlySet<string> = new Set()) {}
 
@@ -51,12 +54,13 @@ class FakeContentSource implements ContentSource {
     request: ContentRequest<K>,
   ): AppResultAsync<ContentBatch<K>, ContentSourceError> {
     this.requested.push(request.datasetId);
+    this.windows.push(request.window);
     if (this.failing.has(request.datasetId)) {
       return errAsync(contentDatasetNotFound());
     }
     // The fake only holds waste records; the tests below only ask for that kind.
     const items = (RECORDS[request.datasetId] ?? []) as unknown as ContentBatch<K>['items'];
-    return okAsync({ items });
+    return okAsync({ items, hasMore: this.hasMore });
   }
 }
 
@@ -217,5 +221,41 @@ describe('ListContentCategories', () => {
     });
 
     expect(result._unsafeUnwrap().byDataset).toEqual({ [FIRST]: [], [SECOND]: ['Süd'] });
+  });
+});
+
+describe('ListContent window', () => {
+  const request = {
+    kind: 'WasteCollectionEntry',
+    mode: 'published',
+    websiteId: WEBSITE_ID,
+    datasetId: FIRST,
+  } as const;
+
+  it('reads exactly the Limit the editor set, from the start of the dataset', async () => {
+    const source = new FakeContentSource();
+
+    await new ListContent(dependencies(source)).execute({ ...request, limit: 7 });
+
+    expect(source.windows).toEqual([{ limit: 7, offset: 0 }]);
+  });
+
+  it('moves the window where the visitor moved it, and bounds it by the kind', async () => {
+    const source = new FakeContentSource();
+
+    await new ListContent(dependencies(source)).execute({ ...request, limit: 5_000, offset: 40 });
+
+    expect(source.windows).toEqual([{ limit: LIST_LIMITS.cards.max, offset: 40 }]);
+  });
+
+  it('says the list was cut when the dataset holds more than the window', async () => {
+    const source = new FakeContentSource();
+    source.hasMore = true;
+
+    const view = (
+      await new ListContent(dependencies(source)).execute({ ...request, limit: 10 })
+    )._unsafeUnwrap();
+
+    expect(view.truncated).toBe(true);
   });
 });

@@ -1,18 +1,18 @@
-import { alertContent } from './alert.content';
-import { contactContent } from './contact.content';
-import { councilBodyContent } from './council-body.content';
-import { departmentContent } from './department.content';
-import { eventContent } from './event.content';
-import { geoFeatureContent } from './geo-feature.content';
-import { newsItemContent } from './news-item.content';
-import { openingHoursEntryContent } from './opening-hours-entry.content';
-import { serviceDetailContent } from './service-detail.content';
-import { serviceContent } from './service.content';
-import { smartCityBreakdownEntryContent } from './smart-city-breakdown-entry.content';
-import { smartCityGoalContent } from './smart-city-goal.content';
-import { smartCityMetricContent } from './smart-city-metric.content';
-import { smartCityObservationContent } from './smart-city-observation.content';
-import { wasteCollectionEntryContent } from './waste-collection-entry.content';
+import { alertContent } from './civic/alert.content';
+import { contactContent } from './civic/contact.content';
+import { councilBodyContent } from './civic/council-body.content';
+import { departmentContent } from './civic/department.content';
+import { eventContent } from './civic/event.content';
+import { newsItemContent } from './civic/news-item.content';
+import { openingHoursEntryContent } from './civic/opening-hours-entry.content';
+import { serviceDetailContent } from './civic/service-detail.content';
+import { serviceContent } from './civic/service.content';
+import { wasteCollectionEntryContent } from './civic/waste-collection-entry.content';
+import { geoFeatureContent } from './smartcity/geo-feature.content';
+import { smartCityBreakdownEntryContent } from './smartcity/smart-city-breakdown-entry.content';
+import { smartCityGoalContent } from './smartcity/smart-city-goal.content';
+import { smartCityMetricContent } from './smartcity/smart-city-metric.content';
+import { smartCityObservationContent } from './smartcity/smart-city-observation.content';
 
 import type { ContentDefinition } from '../models/content-definition';
 

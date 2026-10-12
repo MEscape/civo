@@ -1,8 +1,7 @@
-import { number, optional, text } from '../models/field-schema';
-
-import { CONTENT_LIMITS as LIMITS } from './content-limits';
-import { defineContent } from './define-content';
-import { label, recordId, title } from './shared-fields';
+import { number, optional, text } from '../../models/field-schema';
+import { CONTENT_LIMITS as LIMITS } from '../content-limits';
+import { defineContent } from '../define-content';
+import { label, recordId, title } from '../shared-fields';
 
 /**
  * One part of a whole. Rows that share a `group` form one distribution
@@ -10,6 +9,7 @@ import { label, recordId, title } from './shared-fields';
  * Parts are never negative: a negative share has no slice.
  */
 export const smartCityBreakdownEntryContent = defineContent({
+  scale: 'dataset',
   shape: {
     id: recordId(),
     label: title(),

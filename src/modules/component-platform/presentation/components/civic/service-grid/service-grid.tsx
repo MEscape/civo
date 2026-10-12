@@ -5,7 +5,7 @@ import { DynamicIcon } from '@components/ui/dynamic-icon';
 
 import { getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -62,7 +62,14 @@ export async function ServiceGrid({ props, context, loadContent }: ServiceGridCo
                       className="h-5 w-5 shrink-0 text-primary-copy"
                       aria-hidden="true"
                     />
-                    <span className="text-sm font-medium text-copy">{service.title}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-medium text-copy">{service.title}</span>
+                      {service.description !== undefined && (
+                        <p className="mt-0.5 line-clamp-2 text-xs text-copy-muted">
+                          {stripHtml(service.description)}
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </ContentLink>
