@@ -20,8 +20,8 @@ export async function updateWebsiteAction(input: unknown): Promise<ActionResult<
 
   if (result.isOk()) {
     revalidatePath(websiteRoutes.list());
-    revalidatePath(websiteRoutes.detail(result.value.id));
-    revalidatePath(websiteRoutes.settings(result.value.id));
+    // The name and details are part of what a publish would change.
+    revalidatePath(websiteRoutes.detail(result.value.id), 'layout');
   }
   return toActionResult(result.map(toWebsiteDto));
 }

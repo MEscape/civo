@@ -1,9 +1,8 @@
 import type { AuthorizationError } from '@modules/auth';
 
 import type { InfrastructureAppError } from '@lib/errors';
-import { clampToLastPage, resolvePageRequest } from '@lib/pagination';
+import { loadClampedPage, resolvePageRequest } from '@lib/pagination';
 import type { Page } from '@lib/pagination';
-import { okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { WEBSITE_PAGE_LIMITS } from '../list-limits';
@@ -19,8 +18,10 @@ export interface ListWebsitesOptions {
 }
 
 /**
- * One page of the actor's own tenant's websites, newest activity first. A
- * page past the end (websites were deleted meanwhile) answers the last one.
+ * One page of every website of the platform, newest activity first. Only the
+ * platform administrator may list them; a tenant's members know their own
+ * website and nothing else. A page past the end (websites were deleted
+ * meanwhile) answers the last one.
  */
 export class ListWebsites {
   constructor(private readonly deps: WebsiteDependencies) {}
@@ -32,15 +33,8 @@ export class ListWebsites {
     const { websites } = this.deps;
 
     return this.deps.authorization
-      .requireInTenant('website.read')
-      .andThen((actor) =>
-        websites.listByTenant(actor.tenantId, requested).andThen((first) => {
-          const request = clampToLastPage(requested, first.total);
-          return request.page === first.page
-            ? okAsync(first)
-            : websites.listByTenant(actor.tenantId, request);
-        }),
-      )
+      .requireInTenant('website.list.all')
+      .andThen(() => loadClampedPage(requested, (request) => websites.list(request)))
       .map((found) => ({ ...found, items: found.items.map(toWebsiteSummaryView) }));
   }
 }

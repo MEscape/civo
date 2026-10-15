@@ -7,6 +7,7 @@ import { UpdateWebsite } from './application/commands/update-website';
 import { UpdateWebsiteTheme } from './application/commands/update-website-theme';
 import { GetPublicWebsiteBySlug } from './application/queries/get-public-website-by-slug';
 import { GetWebsiteById } from './application/queries/get-website-by-id';
+import { ListWebsiteNames } from './application/queries/list-website-names';
 import { ListWebsites } from './application/queries/list-websites';
 import { restoreWebsiteTheme } from './domain/models/website-theme';
 import { loggerWebsiteAuditLog } from './infrastructure/logging/logger-website-audit-log';
@@ -37,6 +38,7 @@ export const websiteCommands = {
 export const websiteQueries = {
   getWebsiteById: new GetWebsiteById(dependencies),
   listWebsites: new ListWebsites(dependencies),
+  listWebsiteNames: new ListWebsiteNames({ websites }),
   getPublicWebsiteBySlug: new GetPublicWebsiteBySlug({ websites }),
 } as const;
 

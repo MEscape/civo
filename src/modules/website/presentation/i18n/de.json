@@ -102,7 +102,13 @@
     "nav": {
       "label": "Bereiche der Website",
       "overview": "Übersicht",
-      "users": "Benutzer"
+      "builder": "Seiten",
+      "bookings": "Buchungen",
+      "releases": "Releases",
+      "settings": "Einstellungen",
+      "users": "Benutzer",
+      "switch": "Website wechseln",
+      "allWebsites": "Alle Websites"
     },
     "pages": {
       "list": {
@@ -117,26 +123,47 @@
           "next": "Weiter",
           "summary": "{first}–{last} von {total}",
           "page": "Seite {page}"
-        }
+        },
+        "memberDescription": "Die Websites, zu denen Sie gehören. Wählen Sie eine zum Arbeiten."
       },
       "detail": {
-        "releasesTitle": "Veröffentlichungen",
-        "links": {
-          "builder": {
-            "title": "Seiten",
-            "description": "Seiten dieser Website bearbeiten und veröffentlichen."
-          },
-          "settings": {
-            "title": "Einstellungen",
-            "description": "Design und Datenquellen."
-          },
-          "migrations": {
-            "title": "Migrationen",
-            "description": "Veröffentlichte Seiten mit den aktuellen Komponentenversionen abgleichen."
-          },
-          "bookings": {
-            "title": "Buchungen",
-            "description": "Termine, Räume und Plätze einrichten und sehen, wer was gebucht hat."
+        "publicSite": "Öffentliche Seite",
+        "about": {
+          "title": "Website",
+          "address": "Adresse",
+          "pages": "Seiten",
+          "dataSources": "Datenquellen",
+          "created": "Erstellt",
+          "updated": "Zuletzt geändert",
+          "copy": "Adresse kopieren",
+          "copied": "Adresse kopiert"
+        },
+        "viewSite": "Website ansehen",
+        "editSite": "Im Editor bearbeiten",
+        "live": "Live",
+        "notPublished": "Nicht veröffentlicht",
+        "onboarding": {
+          "title": "Erste Schritte",
+          "progress": "{done} von {total} erledigt",
+          "done": "Erledigt",
+          "start": "Starten",
+          "steps": {
+            "page": {
+              "title": "Seite anlegen",
+              "description": "Jede Website beginnt mit einer Startseite."
+            },
+            "publish": {
+              "title": "Website veröffentlichen",
+              "description": "Stellen Sie Ihre Seiten für Besucher online."
+            },
+            "booking": {
+              "title": "Buchung einrichten",
+              "description": "Bürger buchen Termine direkt auf Ihrer Website."
+            },
+            "dataSource": {
+              "title": "Datenquelle verbinden",
+              "description": "Zum Beispiel Standorte oder Öffnungszeiten."
+            }
           }
         }
       },

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
+import { PlatformAdmins } from '@modules/auth';
 import { CreateWebsiteForm, websiteQueries, websiteRoutes } from '@modules/website';
 
 import {
@@ -23,7 +24,9 @@ import { getTranslations } from '@i18n/server';
 import { buildPrivateMetadata } from '@lib/seo';
 import { buildQueryString } from '@lib/utils';
 
+import { MemberWebsites } from '@/app/_lib/member-websites';
 import { orFail } from '@/app/_lib/or-fail';
+import { getWebsiteAccess } from '@/app/_lib/website-access';
 
 interface RouteProps {
   readonly params: Promise<{ locale: string }>;
@@ -40,11 +43,18 @@ async function WebsitesContent({ params, searchParams }: RouteProps) {
   const locale = requireLocale((await params).locale);
   const t = await getTranslations({ locale, namespace: 'website' });
   const { page, pageSize } = await searchParams;
+  const access = await getWebsiteAccess();
+
+  // Only the platform administrator sees the websites. Everyone else belongs to one,
+  // and starts there.
+  if (!access.may('website.list.all')) {
+    return <MemberWebsites locale={locale} landing={access.landing()} />;
+  }
   const websites = await orFail(websiteQueries.listWebsites.execute({ page, pageSize }));
 
   return (
     <AdminContainer>
-      <Section className="space-y-8">
+      <Section className="space-y-8 py-8">
         <PageHeading title={t('pages.list.title')} description={t('pages.list.description')} />
 
         {websites.total === 0 ? (
@@ -87,14 +97,18 @@ async function WebsitesContent({ params, searchParams }: RouteProps) {
           />
         )}
 
-        <div className="space-y-4">
-          <h2 className="font-heading text-lg font-semibold text-copy">
-            {t('pages.list.createTitle')}
-          </h2>
-          <I18nProvider locale={locale} namespaces={['website']}>
-            <CreateWebsiteForm />
-          </I18nProvider>
-        </div>
+        {access.may('website.create') && (
+          <div className="space-y-4">
+            <h2 className="font-heading text-lg font-semibold text-copy">
+              {t('pages.list.createTitle')}
+            </h2>
+            <I18nProvider locale={locale} namespaces={['website']}>
+              <CreateWebsiteForm />
+            </I18nProvider>
+          </div>
+        )}
+
+        {access.may('platform.admin.manage') && <PlatformAdmins locale={locale} />}
       </Section>
     </AdminContainer>
   );

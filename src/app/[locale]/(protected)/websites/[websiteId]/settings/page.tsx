@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
+import { notFound } from 'next/navigation';
+
 import { DataSourcesSettings } from '@modules/data-sources';
 import { GeneralSettingsForm, ThemeSettingsForm, websiteQueries } from '@modules/website';
 
@@ -16,6 +18,7 @@ import { getTranslations } from '@i18n/server';
 import { buildPrivateMetadata } from '@lib/seo';
 
 import { orFail } from '@/app/_lib/or-fail';
+import { getWebsiteAccess } from '@/app/_lib/website-access';
 
 interface RouteProps {
   readonly params: Promise<{ locale: string; websiteId: string }>;
@@ -31,23 +34,34 @@ async function WebsiteSettingsContent({ params }: RouteProps) {
   const { locale: rawLocale, websiteId } = await params;
   const locale = requireLocale(rawLocale);
   const t = await getTranslations({ locale, namespace: 'website' });
-  const website = await orFail(websiteQueries.getWebsiteById.execute(websiteId));
+  const [website, access] = await Promise.all([
+    orFail(websiteQueries.getWebsiteById.execute(websiteId)),
+    getWebsiteAccess(),
+  ]);
+  // Nothing here is for an actor who may change none of it.
+  if (!access.maySection('settings')) {
+    notFound();
+  }
 
   return (
     <AdminContainer>
-      <Section className="space-y-10">
+      <Section className="space-y-10 py-8">
         <PageHeading
           title={t('pages.settings.title')}
           description={t('pages.settings.description')}
         />
         <I18nProvider locale={locale} namespaces={['website', 'dataSources']}>
-          <GeneralSettingsForm
-            websiteId={website.id}
-            slug={website.slug}
-            initialValues={{ name: website.name, description: website.description ?? '' }}
-          />
-          <ThemeSettingsForm websiteId={website.id} initialTheme={website.theme} />
-          <DataSourcesSettings websiteId={website.id} />
+          {access.may('website.update') && (
+            <GeneralSettingsForm
+              websiteId={website.id}
+              slug={website.slug}
+              initialValues={{ name: website.name, description: website.description ?? '' }}
+            />
+          )}
+          {access.may('theme.update') && (
+            <ThemeSettingsForm websiteId={website.id} initialTheme={website.theme} />
+          )}
+          {access.may('datasource.create') && <DataSourcesSettings websiteId={website.id} />}
         </I18nProvider>
       </Section>
     </AdminContainer>

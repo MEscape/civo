@@ -102,7 +102,13 @@
     "nav": {
       "label": "Website sections",
       "overview": "Overview",
-      "users": "Users"
+      "builder": "Pages",
+      "bookings": "Bookings",
+      "releases": "Releases",
+      "settings": "Settings",
+      "users": "Users",
+      "switch": "Switch website",
+      "allWebsites": "All websites"
     },
     "pages": {
       "list": {
@@ -117,26 +123,47 @@
           "next": "Next",
           "summary": "{first}–{last} of {total}",
           "page": "Page {page}"
-        }
+        },
+        "memberDescription": "The websites you belong to. Choose one to work in."
       },
       "detail": {
-        "releasesTitle": "Releases",
-        "links": {
-          "builder": {
-            "title": "Pages",
-            "description": "Edit and publish the pages of this website."
-          },
-          "settings": {
-            "title": "Settings",
-            "description": "Theme and data sources."
-          },
-          "migrations": {
-            "title": "Migrations",
-            "description": "Check published pages against current component versions."
-          },
-          "bookings": {
-            "title": "Bookings",
-            "description": "Appointments, rooms and pitches: set them up and see who booked what."
+        "publicSite": "Public site",
+        "about": {
+          "title": "Website",
+          "address": "Address",
+          "pages": "Pages",
+          "dataSources": "Data sources",
+          "created": "Created",
+          "updated": "Last changed",
+          "copy": "Copy address",
+          "copied": "Address copied"
+        },
+        "viewSite": "View website",
+        "editSite": "Edit in editor",
+        "live": "Live",
+        "notPublished": "Not published",
+        "onboarding": {
+          "title": "Getting started",
+          "progress": "{done} of {total} done",
+          "done": "Done",
+          "start": "Start",
+          "steps": {
+            "page": {
+              "title": "Create a page",
+              "description": "Every website starts with a home page."
+            },
+            "publish": {
+              "title": "Publish your website",
+              "description": "Put your pages online for visitors."
+            },
+            "booking": {
+              "title": "Set up booking",
+              "description": "Citizens book appointments directly on your website."
+            },
+            "dataSource": {
+              "title": "Connect a data source",
+              "description": "For example locations or opening hours."
+            }
           }
         }
       },

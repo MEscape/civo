@@ -2,8 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { builderRoutes } from '@modules/builder/client';
-
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
@@ -21,9 +19,8 @@ export async function updateWebsiteThemeAction(input: unknown): Promise<ActionRe
   );
 
   if (result.isOk()) {
-    revalidatePath(websiteRoutes.detail(result.value.id));
-    revalidatePath(websiteRoutes.settings(result.value.id));
-    revalidatePath(builderRoutes.pages(result.value.id));
+    // The theme is part of what a publish would change, and the builder previews it.
+    revalidatePath(websiteRoutes.detail(result.value.id), 'layout');
   }
   return toActionResult(result.map(toWebsiteDto));
 }

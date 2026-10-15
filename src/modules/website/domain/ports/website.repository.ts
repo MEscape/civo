@@ -9,7 +9,6 @@ import type { Website, WebsiteChanges, WebsiteDraft, WebsiteSummary } from '../m
 import type { WebsiteTheme } from '../models/website-theme';
 
 export interface NewWebsite {
-  readonly tenantId: TenantId;
   readonly draft: WebsiteDraft;
   readonly theme: WebsiteTheme;
 }
@@ -32,12 +31,26 @@ export interface WebsiteRepository {
 
   findBySlug(slug: string): AppResultAsync<Website | null, InfrastructureAppError>;
 
-  /** One page, newest activity first, with the total (performance.md: every list is bounded). */
-  listByTenant(
-    tenantId: TenantId,
-    page: PageRequest,
-  ): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError>;
+  /**
+   * One page of every website of the platform, newest activity first, with the
+   * total (performance.md: every list is bounded). Not tenant-scoped: only the
+   * platform administrator's use case calls it.
+   */
+  list(page: PageRequest): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError>;
 
+  /** The names of the websites of these tenants (a tenant is its website), by name. Bounded by `limit`; tenants that name no website are skipped. */
+  findNames(
+    tenantIds: readonly TenantId[],
+    limit: number,
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>,
+    InfrastructureAppError
+  >;
+
+  /**
+   * Stores the website as its own tenant: a tenant is its website, so the
+   * store gives the website one id and uses it as the tenant too.
+   */
   create(input: NewWebsite): AppResultAsync<Website, ConflictAppError | InfrastructureAppError>;
 
   update(

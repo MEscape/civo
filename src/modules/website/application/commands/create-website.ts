@@ -28,7 +28,8 @@ export type CreateWebsiteError =
   | UnexpectedAppError;
 
 /**
- * Creates a website and its template-generated home page.
+ * Creates a website, as its own tenant, and its template-generated home page.
+ * Only the platform administrator may.
  *
  * The two writes live in different modules and cannot share a transaction,
  * so a failed home page is compensated by deleting the website again. The
@@ -45,11 +46,7 @@ export class CreateWebsite {
       createWebsiteDraft(input)
         .asyncAndThen((draft) =>
           websites
-            .create({
-              tenantId: actor.tenantId,
-              draft,
-              theme: DEFAULT_WEBSITE_THEME,
-            })
+            .create({ draft, theme: DEFAULT_WEBSITE_THEME })
             .map((website) => ({ website, templateKey: draft.templateKey })),
         )
         .andThen(({ website, templateKey }) =>
@@ -62,7 +59,7 @@ export class CreateWebsite {
           audit.record({
             type: 'website.created',
             actorId: actor.id,
-            tenantId: actor.tenantId,
+            tenantId: website.tenantId,
             websiteId: website.id,
             templateKey,
           });

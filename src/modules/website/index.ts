@@ -10,6 +10,10 @@ export { restoreStoredWebsiteTheme, websiteQueries } from './composition';
 
 export { GeneralSettingsForm } from './presentation/components/general-settings-form';
 export { CreateWebsiteForm } from './presentation/components/create-website-form';
+export { OnboardingCard } from './presentation/components/onboarding-card';
+export { WebsiteAboutCard } from './presentation/components/website-about-card';
+export { WebsiteSwitcher } from './presentation/components/website-switcher';
+export type { OnboardingStep } from './presentation/components/onboarding-card';
 export { ThemeProvider } from './presentation/components/theme-provider';
 export { ThemeSettingsForm } from './presentation/components/theme-settings-form';
 export { themeToCssVariables } from './presentation/theme/theme-css';

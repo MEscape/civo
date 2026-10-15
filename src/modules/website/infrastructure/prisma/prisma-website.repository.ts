@@ -1,10 +1,12 @@
+import { randomUUID } from 'node:crypto';
+
 import type { TenantId } from '@modules/auth';
 
 import { db, createPersistenceFailures } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import { offsetOf, toPage } from '@lib/pagination';
 import type { Page, PageRequest } from '@lib/pagination';
-import { fromThrowableAsync } from '@lib/result';
+import { fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -12,6 +14,7 @@ import {
   websiteNotFound,
   websiteSlugTaken,
 } from '../../domain/errors/website-errors';
+import { toWebsiteId } from '../../domain/models/ids';
 
 import {
   THEME_SELECT,
@@ -67,33 +70,55 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     ).map((record) => record && toWebsite(record));
   }
 
-  listByTenant(
-    tenantId: TenantId,
-    page: PageRequest,
-  ): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
+  findNames(
+    tenantIds: readonly TenantId[],
+    limit: number,
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>,
+    InfrastructureAppError
+  > {
+    if (tenantIds.length === 0) {
+      return okAsync([]);
+    }
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Website.where((website) => website.id.in([...tenantIds]))
+          .select('id', 'name')
+          .orderBy([(website) => website.name.asc(), (website) => website.id.asc()])
+          .limit(limit)
+          .all(),
+      failures.infraOnly('findNames'),
+    ).map((records) =>
+      records.map((record) => ({ id: toWebsiteId(record.id), name: record.name })),
+    );
+  }
+
+  list(page: PageRequest): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
-      const total = await db.orm.public.Website.where({ tenantId }).aggregate((aggregate) => ({
+      const total = await db.orm.public.Website.aggregate((aggregate) => ({
         total: aggregate.count(),
       }));
-      const records = await db.orm.public.Website.where({ tenantId })
-        .select(...WEBSITE_SUMMARY_SELECT)
+      const records = await db.orm.public.Website.select(...WEBSITE_SUMMARY_SELECT)
         // `id` breaks ties so the order is stable between requests.
         .orderBy([(w) => w.updatedAt.desc(), (w) => w.id.asc()])
         .limit(page.pageSize)
         .offset(offsetOf(page))
         .all();
       return { records, total: total.total };
-    }, failures.infraOnly('listByTenant')).map(({ records, total }) =>
+    }, failures.infraOnly('list')).map(({ records, total }) =>
       toPage(records.map(toWebsiteSummary), total, page),
     );
   }
 
   create(input: NewWebsite): AppResultAsync<Website, ConflictAppError | InfrastructureAppError> {
-    const { tenantId, draft, theme } = input;
+    const { draft, theme } = input;
+    // A tenant is its website: one id serves as both (the table refuses any other pairing).
+    const id = randomUUID();
     return fromThrowableAsync(
       async () =>
         websiteWithTheme().create({
-          tenantId,
+          id,
+          tenantId: id,
           name: draft.name,
           slug: draft.slug,
           description: draft.description,
