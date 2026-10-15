@@ -12,7 +12,7 @@ import { LoadingStatus } from './loading-status';
 export function PageSkeleton() {
   return (
     <AdminContainer aria-busy="true">
-      <Section className="space-y-8">
+      <Section className="space-y-8 py-8">
         <LoadingStatus />
         <div className="space-y-3" aria-hidden="true">
           <Skeleton className="h-8 w-1/3" />

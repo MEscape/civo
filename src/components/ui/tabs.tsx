@@ -7,20 +7,25 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 import { cn } from '@lib/utils';
 
+/** The look of a tab strip and of its tabs, shared by `Tabs` and by tabs that are links (`LinkTabs`). */
+export const TABS_LIST_CLASS_NAME =
+  'inline-flex h-9 items-center justify-center rounded-token bg-canvas p-1 text-copy-muted';
+export const TABS_TRIGGER_CLASS_NAME = [
+  'inline-flex items-center justify-center whitespace-nowrap rounded-token-sm px-3 py-1 text-sm font-medium transition-all',
+  'ring-offset-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+  'hover:bg-surface/60 hover:text-copy',
+  'disabled:pointer-events-none disabled:opacity-50',
+  'data-[state=active]:bg-surface data-[state=active]:text-copy data-[state=active]:shadow-sm',
+  'aria-[current=page]:bg-surface aria-[current=page]:text-copy aria-[current=page]:shadow-sm',
+].join(' ');
+
 const Tabs = TabsPrimitive.Root;
 
 const TabsList = forwardRef<
   React.ComponentRef<typeof TabsPrimitive.List>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      'inline-flex h-9 items-center justify-center rounded-token bg-canvas p-1 text-copy-muted',
-      className,
-    )}
-    {...props}
-  />
+  <TabsPrimitive.List ref={ref} className={cn(TABS_LIST_CLASS_NAME, className)} {...props} />
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
@@ -28,17 +33,7 @@ const TabsTrigger = forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Trigger>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-token-sm px-3 py-1 text-sm font-medium transition-all',
-      'ring-offset-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
-      'disabled:pointer-events-none disabled:opacity-50',
-      'data-[state=active]:bg-surface data-[state=active]:text-copy data-[state=active]:shadow-sm',
-      className,
-    )}
-    {...props}
-  />
+  <TabsPrimitive.Trigger ref={ref} className={cn(TABS_TRIGGER_CLASS_NAME, className)} {...props} />
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 

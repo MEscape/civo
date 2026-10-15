@@ -27,22 +27,16 @@ async function SignedInGate({ children }: { readonly children: ReactNode }) {
   return children;
 }
 
-/** The admin area's frame: the way back to the website list, and signing out when there is a session to end. */
+/** The admin area's frame: the brand, which leads back to the website list, and signing out when there is a session to end. */
 async function ProtectedHeader({ locale }: { readonly locale: Locale }) {
-  const [app, website] = await Promise.all([
-    getTranslations({ locale, namespace: 'app' }),
-    getTranslations({ locale, namespace: 'website' }),
-  ]);
+  const app = await getTranslations({ locale, namespace: 'app' });
 
   return (
     <AppHeader className="justify-between gap-4">
       <AppNav
         variant="header"
         label={app('navigation.label')}
-        links={[
-          { href: websiteRoutes.list(), label: APP_IDENTITY.name, isBrand: true },
-          { href: websiteRoutes.list(), label: website('pages.list.title'), isExact: true },
-        ]}
+        links={[{ href: websiteRoutes.list(), label: APP_IDENTITY.name, isBrand: true }]}
       />
       {isAuthEnabled && (
         <I18nProvider locale={locale} namespaces={['auth']}>

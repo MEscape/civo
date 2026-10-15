@@ -198,7 +198,21 @@ export const Icons = {
       <path d="m21 21-4.3-4.3" />
     </>,
   ),
+  calendar: strokeIcon(
+    <>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </>,
+  ),
   minus: strokeIcon(<path d="M5 12h14" />),
+  refreshCw: strokeIcon(
+    <>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+    </>,
+  ),
   trendingUp: strokeIcon(
     <>
       <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
@@ -215,6 +229,7 @@ export const Icons = {
 
 // Named exports — allow importing icons by PascalCase name as an alternative
 // to the `Icons` object, e.g. `import { Undo2, GripVertical } from '@components/ui/icons'`.
+export const Calendar = Icons.calendar;
 export const Spinner = Icons.spinner;
 export const Check = Icons.check;
 export const ChevronRight = Icons.chevronRight;
@@ -247,5 +262,6 @@ export const Phone = Icons.phone;
 export const ArrowRight = Icons.arrowRight;
 export const Search = Icons.search;
 export const Minus = Icons.minus;
+export const RefreshCw = Icons.refreshCw;
 export const TrendingUp = Icons.trendingUp;
 export const TrendingDown = Icons.trendingDown;

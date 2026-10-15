@@ -19,26 +19,27 @@ export interface AppNavProps {
   /** Names the landmark for screen readers, e.g. "Main navigation". */
   readonly label: string;
   readonly links: readonly AppNavLink[];
-  /** `header`: links in the app bar; `section`: tabs between the pages of one area. */
+  /** `header`: links in the app bar; `section`: the website bar, whose first link may name the website and the rest are tabs between its areas. */
   readonly variant: keyof typeof VARIANT_CLASSES;
-  /** The editor owns the whole screen: at or below this path no links are drawn. */
-  readonly hiddenBelow?: string;
 }
 
 const VARIANT_CLASSES = {
   header: {
     nav: 'flex items-center gap-6',
     list: 'flex items-center gap-6',
+    item: '',
     link: 'text-sm',
     brand: 'font-heading text-lg font-semibold text-copy',
     current: 'text-copy',
     other: 'text-copy-muted hover:text-copy',
   },
   section: {
-    nav: 'mb-6 border-b border-border',
-    list: '-mb-px flex flex-wrap gap-x-6 gap-y-1',
-    link: 'inline-block border-b-2 py-2 text-sm font-medium',
-    brand: 'border-transparent font-heading text-lg font-semibold text-copy',
+    nav: 'h-full min-w-0',
+    list: 'flex h-full items-stretch gap-6 overflow-x-auto',
+    item: 'flex',
+    link: 'flex items-center whitespace-nowrap border-b-2 text-sm font-medium',
+    brand:
+      'flex items-center whitespace-nowrap border-b-2 border-transparent pr-2 font-heading text-sm font-semibold text-copy',
     current: 'border-primary text-copy',
     other: 'border-transparent text-copy-muted hover:text-copy',
   },
@@ -69,7 +70,7 @@ function NavList({ label, links, variant, pathname }: NavListProps) {
         {links.map((link) => {
           const current = isCurrent(pathname, link);
           return (
-            <li key={link.href + link.label}>
+            <li key={link.href + link.label} className={classes.item}>
               <Link
                 href={link.href}
                 aria-current={current ? 'page' : undefined}
@@ -88,30 +89,21 @@ function NavList({ label, links, variant, pathname }: NavListProps) {
   );
 }
 
-function CurrentPathNav({ hiddenBelow, ...rest }: AppNavProps) {
-  const pathname = usePathname();
-
-  if (hiddenBelow !== undefined && pathname.startsWith(`${hiddenBelow}/`)) {
-    return null;
-  }
-  return <NavList {...rest} pathname={pathname} />;
+function CurrentPathNav(props: AppNavProps) {
+  return <NavList {...props} pathname={usePathname()} />;
 }
 
 /**
- * The app's navigation links, in the header or as the tabs between a
- * website's pages, with the current page marked. A Client Component on
- * purpose: the locale-aware `Link` and the current path come from context
- * here, while on the server they come from the request, which keeps a layout
- * from prerendering. The path is runtime data, so the links first render
- * unmarked as the prerendered shell; where the links may be hidden by the
- * path (`hiddenBelow`), the shell shows none rather than flash them.
+ * The app's navigation links, in the header or as the website bar's tabs,
+ * with the current page marked. A Client Component on purpose: the
+ * locale-aware `Link` and the current path come from context here, while on
+ * the server they come from the request, which keeps a layout from
+ * prerendering. The path is runtime data, so the links first render unmarked
+ * as the prerendered shell.
  */
 export function AppNav(props: AppNavProps) {
-  const { hiddenBelow, ...rest } = props;
-  const shell = hiddenBelow === undefined ? <NavList {...rest} pathname={null} /> : null;
-
   return (
-    <Suspense fallback={shell}>
+    <Suspense fallback={<NavList {...props} pathname={null} />}>
       <CurrentPathNav {...props} />
     </Suspense>
   );

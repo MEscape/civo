@@ -75,9 +75,11 @@
   --civo-radius: 6px;
   --civo-section-spacing: 4rem;
 
-  /* Height of the internal app header. Full-height workspaces (builder,
-       settings) size themselves to the space below it via `h-app-body`. */
+  /* Height of the internal app header, and of the bar under it that names a
+       website and holds its sections. The builder sizes itself to the space
+       below both via `h-website-body`. */
   --civo-app-header-height: 3.5rem;
+  --civo-website-bar-height: 2.75rem;
 
   --background: var(--civo-color-background);
   --foreground: var(--civo-color-text);
@@ -126,6 +128,14 @@
     var(--civo-color-secondary-copy) 45%,
     var(--civo-color-surface)
   );
+
+  /*
+   * Calendars mark the current day with a tint of the brand accent, not with
+   * the info blue, which belongs to "information" and clashes with the
+   * palette. 16% over the page keeps the day numbers above 4.5:1. Derived from
+   * a themable token, so it is declared here with the chart palette (see above).
+   */
+  --civo-color-today: color-mix(in oklab, var(--civo-color-accent) 16%, var(--civo-color-surface));
 }
 
 /*
@@ -176,6 +186,8 @@
   --color-info-border: var(--civo-color-info-border);
   --color-status-foreground: var(--civo-color-status-foreground);
 
+  --color-today: var(--civo-color-today);
+
   --color-chart-1: var(--civo-chart-1);
   --color-chart-2: var(--civo-chart-2);
   --color-chart-3: var(--civo-chart-3);
@@ -185,6 +197,7 @@
 
   --spacing-section: var(--civo-section-spacing);
   --spacing-app-header: var(--civo-app-header-height);
+  --spacing-website-bar: var(--civo-website-bar-height);
 
   --radius-token: var(--civo-radius);
   --radius-token-sm: calc(var(--civo-radius) - 2px);
@@ -196,13 +209,13 @@
 }
 
 /*
- * Full-height workspace below the app header. `dvh` follows the mobile
+ * Full-height workspace below the app header and the website bar. `dvh` follows the mobile
  * browser's collapsing toolbar (plain `vh` does not, and overflows behind
  * it); the first declaration is the fallback for browsers without `dvh`.
  */
-@utility h-app-body {
-  height: calc(100vh - var(--civo-app-header-height));
-  height: calc(100dvh - var(--civo-app-header-height));
+@utility h-website-body {
+  height: calc(100vh - var(--civo-app-header-height) - var(--civo-website-bar-height));
+  height: calc(100dvh - var(--civo-app-header-height) - var(--civo-website-bar-height));
 }
 
 /*
@@ -222,6 +235,25 @@
   h4 {
     overflow-wrap: anywhere;
     hyphens: auto;
+  }
+}
+
+/*
+ * Tailwind's preflight leaves every control with the arrow cursor. Anything the
+ * visitor can press says so with the pointer, unless it is disabled; a utility
+ * can still override it.
+ */
+@layer base {
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label[for],
+  input:is([type='checkbox'], [type='radio'], [type='submit'], [type='button']):not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='tab']:not([aria-disabled='true']),
+  [role='option']:not([aria-disabled='true']),
+  [role='switch']:not([aria-disabled='true']) {
+    cursor: pointer;
   }
 }
 

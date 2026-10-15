@@ -6,7 +6,8 @@ Shared UI used by more than one module or by framework entry points. Nothing her
 
 Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/app/globals.css`. Add a primitive with the shadcn CLI (`npx shadcn add …`) when a module needs it, and remove it when its last consumer goes.
 
-- **Primitives:** Accordion, Alert, Badge (`default`, `secondary`, `accent`, `outline`, `muted`, status variants), Button (`default`, `secondary`, `accent`, `outline`, `ghost`, `destructive`, `link`; use `buttonVariants` to style a link as a button), Card, Input / Textarea / Label, Select, Skeleton (decorative: the busy region announces loading), Switch, Table, Tabs.
+- **Primitives:** Accordion, Alert, Badge (`default`, `secondary`, `accent`, `outline`, `muted`, status variants), Button (`default`, `secondary`, `accent`, `outline`, `ghost`, `destructive`, `link`; use `buttonVariants` to style a link as a button), Card, Input / Textarea / Label, Select, Skeleton (decorative: the busy region announces loading), Switch, Table, Tabs (`TABS_LIST_CLASS_NAME` / `TABS_TRIGGER_CLASS_NAME` carry the look, with a hover state, for tabs that are links).
+- **Pointer:** `globals.css` gives every enabled control (buttons, `summary`, selects, checkboxes, `role=button|tab|option|switch`) the pointer cursor in `@layer base`; do not repeat `cursor-pointer` per component.
 - **Icons:** `icons.tsx` holds the custom SVG icons on one shared 24×24 stroke canvas; `dynamic-icon.tsx` renders an icon named by content data, falling back to a known icon.
 
 ## `@components/layout` (Layout primitives)
@@ -15,16 +16,27 @@ Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/ap
 
 `AdminContainer`: the one content column of every admin page, so the navigation above a page shares its left edge.
 
-`app-nav.tsx`: `AppNav`, the navigation links of the app bar (`variant="header"`) and the tabs between a website's pages (`variant="section"`), with the current page marked. A Client Component so the locale-aware `Link` and the current path do not read the request while a layout prerenders.
+`app-nav.tsx`: `AppNav`, the navigation links of the app bar (`variant="header"`) and the website bar under it (`variant="section"`: the website's name, then the tabs between its sections, the editor included), with the current page marked. A Client Component so the locale-aware `Link` and the current path do not read the request while a layout prerenders.
 
 ## `@components/shared` (Composites)
 
+- `confirm-dialog.tsx`: `ConfirmDialog`, a modal question with a confirm (destructive by default, `confirmVariant="default"` when it only goes ahead), optional `children` for what the question needs beside its words (a list, a note field) and a cancel that holds the initial focus, on the platform's `<dialog>` (focus trap, Escape cancels). Pair with `useUnsavedNavigationGuard` (`@hooks/use-unsaved-navigation-guard`) to ask before in-app links, and controls marked `data-navigation-guard-leaves` (sign-out), discard unsaved work. **Limit:** the browser's back and forward buttons are not covered (the App Router has no supported hook for them, and a `popstate` workaround would be fragile); tab close, reload and external links stay with `useBeforeUnloadGuard`.
 - `text-field.tsx`, `select-field.tsx`, `form-select-field.tsx`, `checkbox-field.tsx`, `field-message.tsx`: labelled form fields with hints and errors wired to `aria-describedby`. `select-field.tsx` is a controlled Radix select (`options`, `value`, `onValueChange`); a Radix select has no native input, so react-hook-form's `register` cannot drive it: `form-select-field.tsx` binds it to a form value through the controller. `checkbox-field.tsx` is a native checkbox with a visible focus ring; module forms and filters use it instead of a bare `<input type="checkbox">`.
+- `combobox-field.tsx`: `ComboboxField`, a searchable list to pick from (ARIA combobox: arrow keys, Enter picks and never submits the form, Escape closes), single or multiple selection (chips with remove buttons, Backspace removes the last), optional "add what I typed" row (`createText`, `normalizeCreated`). The options are the complete set and are filtered locally (`combobox-model.ts`: accent- and case-insensitive); for options that come from a search pass `onQueryChange` (the owner debounces and drops stale answers) and the options are shown as given. All text arrives translated.
+- `unsaved-changes-guard.tsx`: `UnsavedChangesGuard` and `useReportUnsavedChanges`, the guard for a screen made of several forms: each form reports whether it holds unsaved work, and while any does, in-app links ask first (`ConfirmDialog`) and tab close asks through the browser. All text is passed in already translated.
+- `link-tabs.tsx`: `LinkTabs`, tabs that are addresses (the part shown lives in the URL, `aria-current` marks the current one), styled like `Tabs`.
 - `link-card.tsx`: `LinkCard`, a card that is one link: the title is the link and stretches over the whole card, so the card is clickable with a single tab stop.
 - `loading-status.tsx`: `LoadingStatus`, the one screen-reader announcement inside loading UI (`app.loading`); skeletons stay `aria-hidden`.
 - `not-found-panel.tsx`: the body of every `not-found.tsx`.
 - `route-error-panel.tsx`: the body of every `error.tsx`; it never shows the raw error message.
 
+- `copy-button.tsx` (`CopyButton`): copies a value and says so for a moment; quiet where the clipboard is refused.
+- `refresh-on-focus.tsx` (`RefreshOnFocus`): re-reads the page when its tab becomes visible again (at most every 30 seconds), so a screen left open is current on return. Renders nothing.
+- `progress-bar.tsx` (`ProgressBar`): how far along something is, as a thin bar with an accessible name; the numbers go beside it in words.
+- `data-panel.tsx` (`DataPanel`): the frame of a list or table that is the subject of a screen: a tinted header with the title and the actions on the whole list, the rows, an optional footer. Put a `Table` inside with `containerClassName="rounded-none border-0"`.
+- `breadcrumbs.tsx` (`Breadcrumbs`): where a page sits and the way back up; the last step is the page itself.
+- `process-steps.tsx` (`ProcessSteps`): how something goes, as numbered steps in order.
+- `overview-card.tsx` (`OverviewCard`, `OverviewRow`): a block of an overview page, a quiet title with an optional link to the subject's own page, and rows of facts divided by hairlines. For information at a glance, not for forms.
 - `pagination.tsx` (`Pagination`): previous / next and the pages around the current one, as plain links built by the caller (`hrefFor`), so filters stay in the address. Labels are passed in already translated. Used with `@lib/pagination`.
 
 ## `@components/providers`

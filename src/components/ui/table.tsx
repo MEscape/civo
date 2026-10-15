@@ -2,9 +2,19 @@ import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 
 import { cn } from '@lib/utils';
 
-function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>) {
+interface TableProps extends HTMLAttributes<HTMLTableElement> {
+  /** Styles the scrolling frame around the table, e.g. `rounded-none border-0` when a panel already frames it. */
+  readonly containerClassName?: string;
+}
+
+function Table({ className, containerClassName, ...props }: TableProps) {
   return (
-    <div className="relative w-full overflow-auto rounded-token border border-border">
+    <div
+      className={cn(
+        'relative w-full overflow-auto rounded-token border border-border',
+        containerClassName,
+      )}
+    >
       <table className={cn('w-full caption-bottom text-sm', className)} {...props} />
     </div>
   );
