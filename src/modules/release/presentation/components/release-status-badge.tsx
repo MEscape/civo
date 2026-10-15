@@ -11,9 +11,9 @@ import type { ReleaseStatus } from '../../application/contracts/release-constrai
 const VARIANT_BY_STATUS = {
   draft: 'outline',
   published: 'default',
-  rolled_back: 'secondary',
+  rolled_back: 'warning',
   failed: 'danger',
-} as const satisfies Record<ReleaseStatus, 'default' | 'secondary' | 'danger' | 'outline'>;
+} as const satisfies Record<ReleaseStatus, 'default' | 'warning' | 'danger' | 'outline'>;
 
 export interface ReleaseStatusBadgeProps {
   readonly status: ReleaseStatus;

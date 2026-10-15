@@ -1,4 +1,5 @@
 import type { ConflictAppError } from '@lib/errors';
+import type { Page } from '@lib/pagination';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
 import { literalGuard } from '@lib/utils';
@@ -6,6 +7,7 @@ import { literalGuard } from '@lib/utils';
 import { releaseNotRestorable } from '../errors/release-errors';
 
 import type { ReleaseId, WebsiteId } from './ids';
+import type { ReleaseChanges } from './release-changes';
 import type { ReleaseSnapshot } from './release-snapshot';
 
 /**
@@ -32,6 +34,12 @@ export interface ReleaseSummary {
   /** Sequential per website, starting at 1. */
   readonly releaseNumber: number;
   readonly status: ReleaseStatus;
+  /** What the editor wrote when publishing; `null` when nothing was written, or before notes existed. */
+  readonly note: string | null;
+  /** What it changed against the release before it; `null` for releases made before this was kept. */
+  readonly changes: ReleaseChanges | null;
+  /** The actor who published it, as an id: the name is looked up where it is shown. `null` for releases made before it was kept. */
+  readonly publishedBy: string | null;
   readonly publishedAt: Date | null;
   readonly createdAt: Date;
 }
@@ -41,11 +49,10 @@ export interface Release extends ReleaseSummary {
   readonly snapshot: ReleaseSnapshot;
 }
 
-export interface ReleaseHistory {
+/** One page of a website's releases, newest first. */
+export interface ReleaseHistory extends Page<ReleaseSummary> {
   /** The release the public site currently serves; `null` if never published. */
   readonly activeReleaseId: ReleaseId | null;
-  /** Newest first. */
-  readonly releases: readonly ReleaseSummary[];
 }
 
 export function nextReleaseNumber(latest: number | null): number {

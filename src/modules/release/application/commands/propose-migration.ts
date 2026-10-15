@@ -5,19 +5,18 @@ import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { releaseNotPublished } from '../../domain/errors/release-errors';
-import { isUpToDate, planMigration } from '../../domain/models/migration-plan';
-import { toMigrationSource } from '../../domain/models/migration-source';
+import { isUpToDate } from '../../domain/models/migration-plan';
 import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
 import { toMigrationProposalView } from '../release-view-mappers';
+import { planLiveRelease } from '../services/live-release-plan';
 
 import type { WebsiteId } from '../../domain/models/ids';
-import type { MigrationPlan } from '../../domain/models/migration-plan';
-import type { MigrationSource } from '../../domain/models/migration-source';
 import type { Release } from '../../domain/models/release';
 import type { ReleaseReadError } from '../../domain/ports/release.repository';
 import type { MigrationProposalView, ProposeMigrationInput } from '../contracts/release-views';
 import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
 import type { ProposeMigrationDependencies } from '../release-dependencies';
+import type { LiveReleasePlan } from '../services/live-release-plan';
 
 export type ProposeMigrationError = LoadReleaseWebsiteError | ReleaseReadError | UnexpectedAppError;
 
@@ -40,7 +39,7 @@ export class ProposeMigration {
   execute(
     input: ProposeMigrationInput,
   ): AppResultAsync<MigrationProposalView, ProposeMigrationError> {
-    const { releases, pages, components } = this.deps;
+    const { releases } = this.deps;
 
     return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish').andThen(
       ({ actor, website }) =>
@@ -48,17 +47,10 @@ export class ProposeMigration {
           .findPublished(website.id)
           .andThen(requirePublished)
           .andThen((release) =>
-            pages
-              .readTrees(release.snapshot.pages)
-              .asyncAndThen((trees) => okAsync(toMigrationSource(release, trees))),
+            planLiveRelease(this.deps, release).asyncAndThen((planned) => okAsync(planned)),
           )
-          .andThen((source) =>
-            this.record({
-              actor,
-              websiteId: website.id,
-              source,
-              plan: planMigration(source, components),
-            }),
+          .andThen(({ source, plan }) =>
+            this.record({ actor, websiteId: website.id, source, plan }),
           ),
     );
   }
@@ -71,8 +63,8 @@ export class ProposeMigration {
   }: {
     readonly actor: Actor;
     readonly websiteId: WebsiteId;
-    readonly source: MigrationSource;
-    readonly plan: MigrationPlan;
+    readonly source: LiveReleasePlan['source'];
+    readonly plan: LiveReleasePlan['plan'];
   }): AppResultAsync<MigrationProposalView, InfrastructureAppError> {
     const { migrations, audit } = this.deps;
     const sourceReleaseId = source.releaseId;

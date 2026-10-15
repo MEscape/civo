@@ -7,6 +7,7 @@
 export { RELEASE_ERROR_CODES, RELEASE_VALIDATION_CODES } from '../../domain/errors/release-errors';
 export type { ReleaseCode } from '../../domain/errors/release-errors';
 export { RELEASE_ID_MAX_LENGTH, WEBSITE_ID_MAX_LENGTH } from '../../domain/models/ids';
+export { RELEASE_NOTE_MAX_LENGTH } from '../../domain/models/release-changes';
 export { RELEASE_STATUSES } from '../../domain/models/release';
 export type { ReleaseStatus } from '../../domain/models/release';
 export { MIGRATION_ID_MAX_LENGTH } from '../../domain/models/ids';

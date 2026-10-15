@@ -12,7 +12,9 @@ import { PublishRelease } from './application/commands/publish-release';
 import { RollbackRelease } from './application/commands/rollback-release';
 import { FindWebsitesUsingComponent } from './application/queries/find-websites-using-component';
 import { GetMigration } from './application/queries/get-migration';
+import { GetPublicationStatus } from './application/queries/get-publication-status';
 import { GetPublishedSnapshot } from './application/queries/get-published-snapshot';
+import { GetReleasePreview } from './application/queries/get-release-preview';
 import { ListMigrations } from './application/queries/list-migrations';
 import { ListReleases } from './application/queries/list-releases';
 import { ComponentPlatformCatalog } from './infrastructure/component-platform/component-platform-catalog';
@@ -57,14 +59,12 @@ const components = new ComponentPlatformCatalog(
 
 const clock = systemClock;
 
+/** Publishing, and reading where a website stands before it, work from the same pages and components. */
+const publishDependencies = { ...dependencies, pages, components, clock };
+
 /** The only place adapters are chosen. Everything else sees ports. */
 export const releaseCommands = {
-  publishRelease: new PublishRelease({
-    ...dependencies,
-    pages,
-    components,
-    clock,
-  }),
+  publishRelease: new PublishRelease(publishDependencies),
   rollbackRelease: new RollbackRelease(dependencies),
   proposeMigration: new ProposeMigration({
     ...migrationDependencies,
@@ -79,6 +79,8 @@ export const releaseCommands = {
 } as const;
 
 export const releaseQueries = {
+  getPublicationStatus: new GetPublicationStatus(publishDependencies),
+  getReleasePreview: new GetReleasePreview({ ...dependencies, components }),
   listReleases: new ListReleases(dependencies),
   getPublishedSnapshot: new GetPublishedSnapshot({ releases }),
   findWebsitesUsingComponent: new FindWebsitesUsingComponent(dependencies),

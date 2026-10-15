@@ -8,6 +8,8 @@ import type {
   UnexpectedAppError,
 } from '@lib/errors';
 import { logger } from '@lib/logger';
+import { offsetOf, toPage } from '@lib/pagination';
+import type { PageRequest } from '@lib/pagination';
 import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
@@ -37,6 +39,7 @@ import type {
   Activation,
   NewRelease,
   PublishedDependencies,
+  ReleaseNeighbours,
   ReleaseReadError,
   ReleaseRepository,
 } from '../../domain/ports/release.repository';
@@ -88,24 +91,59 @@ function restore(record: ReleaseRecord | null): AppResultAsync<Release | null, U
 export class PrismaReleaseRepository implements ReleaseRepository {
   findHistory(
     websiteId: WebsiteId,
-    limit: number,
+    page: PageRequest,
   ): AppResultAsync<ReleaseHistory, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
       const website = await db.orm.public.Website.where({ id: websiteId })
         .select('publishedReleaseId')
         .first();
+      const total = await db.orm.public.WebsiteRelease.where({ websiteId }).aggregate(
+        (aggregate) => ({ total: aggregate.count() }),
+      );
       const records = await db.orm.public.WebsiteRelease.where({ websiteId })
         .select(...RELEASE_SUMMARY_SELECT)
         // The release number is unique per website, so the order is stable.
         .orderBy([(r) => r.releaseNumber.desc()])
-        .limit(limit)
+        .limit(page.pageSize)
+        .offset(offsetOf(page))
         .all();
-      return [website, records] as const;
-    }, failures.infraOnly('findHistory')).map(([website, records]) => {
+      return { website, records, total: total.total };
+    }, failures.infraOnly('findHistory')).map(({ website, records, total }) => {
+      const activeId = website?.publishedReleaseId ?? null;
+      return {
+        ...toPage(records.map(toReleaseSummary), total, page),
+        activeReleaseId: activeId === null ? null : toReleaseId(activeId),
+      };
+    });
+  }
+
+  findNeighbours(
+    websiteId: WebsiteId,
+    releaseNumber: number,
+  ): AppResultAsync<ReleaseNeighbours, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      const website = await db.orm.public.Website.where({ id: websiteId })
+        .select('publishedReleaseId')
+        .first();
+      const older = await db.orm.public.WebsiteRelease.where({ websiteId })
+        .where((r) => r.releaseNumber.lt(releaseNumber))
+        .select('id', 'releaseNumber')
+        .orderBy([(r) => r.releaseNumber.desc()])
+        .first();
+      const newer = await db.orm.public.WebsiteRelease.where({ websiteId })
+        .where((r) => r.releaseNumber.gt(releaseNumber))
+        .select('id', 'releaseNumber')
+        .orderBy([(r) => r.releaseNumber.asc()])
+        .first();
+      return { website, older, newer };
+    }, failures.infraOnly('findNeighbours')).map(({ website, older, newer }) => {
+      const toRef = (row: { id: string; releaseNumber: number } | null) =>
+        row === null ? null : { id: toReleaseId(row.id), releaseNumber: row.releaseNumber };
       const activeId = website?.publishedReleaseId ?? null;
       return {
         activeReleaseId: activeId === null ? null : toReleaseId(activeId),
-        releases: records.map(toReleaseSummary),
+        older: toRef(older),
+        newer: toRef(newer),
       };
     });
   }
@@ -170,7 +208,7 @@ export class PrismaReleaseRepository implements ReleaseRepository {
   publish(
     input: NewRelease,
   ): AppResultAsync<ReleaseSummary, ConflictAppError | InfrastructureAppError> {
-    const { websiteId, snapshot, publishedAt } = input;
+    const { websiteId, snapshot, note, changes, publishedBy, publishedAt } = input;
     const stored = toStoredSnapshot(snapshot);
     const snapshotHash = hashStoredSnapshot(stored);
 
@@ -193,6 +231,9 @@ export class PrismaReleaseRepository implements ReleaseRepository {
             status: RECORD_STATUS.published,
             snapshot: toJsonValue(stored),
             snapshotHash,
+            note,
+            changes: toJsonValue(changes),
+            publishedBy,
             // Prisma 8 does not accept a `Date` for a `DateTime` column.
             publishedAt: dateToInstant(publishedAt),
           });

@@ -1,6 +1,7 @@
 import type { ActorId } from '@modules/auth';
 
 import type { ConflictAppError, InfrastructureAppError, UnexpectedAppError } from '@lib/errors';
+import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import type { ConflictResolutions } from '../models/conflict-resolution';
@@ -45,11 +46,11 @@ export interface MigrationRepository {
     id: MigrationId,
   ): AppResultAsync<Migration | null, MigrationReadError>;
 
-  /** Bounded: never returns more than `limit` items, newest first (performance.md). */
+  /** One page of the history, newest first; bounded by the page size (performance.md). */
   listByWebsite(
     websiteId: WebsiteId,
-    limit: number,
-  ): AppResultAsync<readonly MigrationSummary[], InfrastructureAppError>;
+    page: PageRequest,
+  ): AppResultAsync<Page<MigrationSummary>, InfrastructureAppError>;
 
   /**
    * Moves a PROPOSED migration to APPLIED in one conditional update, so two

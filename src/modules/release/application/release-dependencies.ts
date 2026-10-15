@@ -24,6 +24,11 @@ export interface PublishReleaseDependencies extends ReleaseDependencies {
   readonly clock: Clock;
 }
 
+/** Looking at an earlier release also asks how well today's components can draw it. */
+export interface ReleasePreviewDependencies extends ReleaseDependencies {
+  readonly components: ComponentCatalog;
+}
+
 /** The public site has no actor, so it gets no authorization service. */
 export interface PublicReleaseDependencies {
   readonly releases: ReleaseRepository;

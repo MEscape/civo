@@ -7,11 +7,14 @@ import type { ReleaseHistoryView } from '../../application/contracts/release-vie
 export interface ReleaseHistoryDto {
   readonly activeReleaseId: string | null;
   readonly releases: readonly ReleaseSummaryDto[];
+  /** Every release of the website, not only this page of them. */
+  readonly total: number;
 }
 
 export function toReleaseHistoryDto(view: ReleaseHistoryView): ReleaseHistoryDto {
   return {
     activeReleaseId: view.activeReleaseId,
-    releases: view.releases.map(toReleaseSummaryDto),
+    releases: view.items.map(toReleaseSummaryDto),
+    total: view.total,
   };
 }

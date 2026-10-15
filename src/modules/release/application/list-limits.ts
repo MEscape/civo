@@ -1,11 +1,14 @@
+import type { PageLimits } from '@lib/pagination';
+
 /** Every list is bounded (performance.md). Raise a limit deliberately, never by removing it. */
-export const DEFAULT_HISTORY_LIMIT = 50;
-export const MIN_HISTORY_LIMIT = 1;
-export const MAX_HISTORY_LIMIT = 100;
+export const RELEASE_HISTORY_PAGE_LIMITS: PageLimits = { defaultPageSize: 10, maxPageSize: 50 };
+
+/** Each row carries the change summary of its plan, so a page costs more than a release row does. */
+export const MIGRATION_HISTORY_PAGE_LIMITS: PageLimits = { defaultPageSize: 10, maxPageSize: 50 };
+
+/** Releases and changed pages the publication status previews; the full lists have their own pages. */
+export const PUBLICATION_RECENT_RELEASES = 3;
+export const PUBLICATION_CHANGE_PREVIEW = 10;
 
 /** Upper bound on live releases read per call; there is no dependency index yet. */
 export const MAX_SCANNED_WEBSITES = 500;
-
-export const DEFAULT_MIGRATION_LIST_LIMIT = 50;
-export const MIN_MIGRATION_LIST_LIMIT = 1;
-export const MAX_MIGRATION_LIST_LIMIT = 100;

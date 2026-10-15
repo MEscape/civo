@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { builderRoutes } from '@modules/builder/client';
 import { websiteRoutes } from '@modules/website/client';
 
 import { toActionResult } from '@lib/result';
@@ -27,8 +26,8 @@ export async function rollbackReleaseAction(
   );
 
   if (result.isOk()) {
-    revalidatePath(websiteRoutes.detail(result.value.websiteId));
-    revalidatePath(builderRoutes.pages(result.value.websiteId));
+    // The website's pages, the release screen and the bar above them all show what is live.
+    revalidatePath(websiteRoutes.detail(result.value.websiteId), 'layout');
   }
   return toActionResult(result.map(toReleaseSummaryDto));
 }

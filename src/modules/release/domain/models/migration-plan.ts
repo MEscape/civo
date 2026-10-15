@@ -166,6 +166,94 @@ export function countNodesByStatus(plan: MigrationPlan): NodeStatusCounts {
   return counts;
 }
 
+export interface ComponentUpdateSummary {
+  readonly type: string;
+  /** The version the live release was built with. */
+  readonly fromVersion: number;
+  /** The version a migration would move to; `null` when there is none to move to. */
+  readonly toVersion: number | null;
+  /** How many places use it. */
+  readonly usageCount: number;
+  /** On how many pages. */
+  readonly pageCount: number;
+  readonly status: Exclude<NodeMigrationStatus, 'unchanged'>;
+  /** The pages it is on, by path. */
+  readonly pagePaths: readonly string[];
+  /** Settings the newer version introduces; they start with their default value. */
+  readonly addedFields: readonly string[];
+  /** Settings the editor changed that the newer version also changed or dropped: a person decides. */
+  readonly conflictFields: readonly string[];
+}
+
+/** What a person has to act on first: components that cannot be moved, then the ones that need a decision. */
+const UPDATE_RANK = { upgradable: 0, needs_review: 1, unresolvable: 2 } as const;
+
+/**
+ * The plan seen by component rather than by node: one line per component type
+ * that has something to update, worst first. A component whose uses differ
+ * reports the hardest of them.
+ */
+export function summarizeComponentUpdates(plan: MigrationPlan): readonly ComponentUpdateSummary[] {
+  const byType = new Map<string, Accumulated>();
+  for (const page of plan.pages) {
+    for (const node of page.nodes) {
+      if (node.status === 'unchanged') {
+        continue;
+      }
+      const entry = byType.get(node.type) ?? emptyAccumulated(node);
+      entry.pages.add(page.path);
+      entry.usageCount += 1;
+      if (UPDATE_RANK[node.status] > UPDATE_RANK[entry.status]) {
+        entry.status = node.status;
+      }
+      if (node.status === 'upgradable' || node.status === 'needs_review') {
+        node.addedFields.forEach((field) => entry.addedFields.add(field));
+      }
+      if (node.status === 'needs_review') {
+        node.conflicts.forEach((conflict) => entry.conflictFields.add(conflict.key));
+      }
+      byType.set(node.type, entry);
+    }
+  }
+  return [...byType.values()]
+    .map((entry): ComponentUpdateSummary => ({
+      type: entry.type,
+      fromVersion: entry.fromVersion,
+      toVersion: entry.toVersion,
+      usageCount: entry.usageCount,
+      pageCount: entry.pages.size,
+      pagePaths: [...entry.pages].sort(),
+      status: entry.status,
+      addedFields: [...entry.addedFields].sort(),
+      conflictFields: [...entry.conflictFields].sort(),
+    }))
+    .sort((a, b) => UPDATE_RANK[b.status] - UPDATE_RANK[a.status] || a.type.localeCompare(b.type));
+}
+
+interface Accumulated {
+  readonly type: string;
+  readonly fromVersion: number;
+  readonly toVersion: number | null;
+  usageCount: number;
+  status: ComponentUpdateSummary['status'];
+  readonly pages: Set<string>;
+  readonly addedFields: Set<string>;
+  readonly conflictFields: Set<string>;
+}
+
+function emptyAccumulated(node: Exclude<NodeMigrationPlan, { status: 'unchanged' }>): Accumulated {
+  return {
+    type: node.type,
+    fromVersion: node.fromVersion,
+    toVersion: node.toVersion ?? null,
+    usageCount: 0,
+    status: node.status,
+    pages: new Set(),
+    addedFields: new Set(),
+    conflictFields: new Set(),
+  };
+}
+
 /** Nothing to migrate: every node already runs the current version. */
 export function isUpToDate(plan: MigrationPlan): boolean {
   return allNodes(plan).every((node) => node.status === 'unchanged');

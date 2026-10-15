@@ -24,6 +24,9 @@ import type { ApplyMigrationResultDto } from '../dto/migration-result-dto';
 import type { MessageKey } from '../messages/message-keys';
 import type { ChoiceMap, ConflictChoice } from '../resolutions/resolution-choices';
 
+/** Pages of the review drawn at first and with each "show more": a website with many pages stays readable. */
+const REVIEW_PAGES_STEP = 5;
+
 export interface MigrationReviewProps {
   readonly websiteId: string;
   readonly migrationId: string;
@@ -43,10 +46,19 @@ export function MigrationReview({ websiteId, migrationId, plan, onApplied }: Mig
   const [isPending, startTransition] = useTransition();
   const [choices, setChoices] = useState<ChoiceMap>({});
   const [errorKey, setErrorKey] = useState<MessageKey | null>(null);
+  const [visibleCount, setVisibleCount] = useState(REVIEW_PAGES_STEP);
 
-  const reviewPages = plan.pages.filter((page) =>
-    page.nodes.some((node) => node.status !== 'unchanged'),
-  );
+  // Pages that need a decision come first; the choices live here, so pages not drawn yet lose nothing.
+  const reviewPages = plan.pages
+    .filter((page) => page.nodes.some((node) => node.status !== 'unchanged'))
+    .sort(
+      (a, b) =>
+        Number(
+          b.nodes.some((node) => node.status !== 'upgradable' && node.status !== 'unchanged'),
+        ) -
+        Number(a.nodes.some((node) => node.status !== 'upgradable' && node.status !== 'unchanged')),
+    );
+  const hiddenCount = Math.max(0, reviewPages.length - visibleCount);
   const unresolvedCount = countUnresolvedNodes(plan, choices);
   const isBlocked = hasInvalidChoice(choices);
 
@@ -74,7 +86,7 @@ export function MigrationReview({ websiteId, migrationId, plan, onApplied }: Mig
 
   return (
     <div className="space-y-6" aria-busy={isPending}>
-      {reviewPages.map((page) => {
+      {reviewPages.slice(0, visibleCount).map((page) => {
         const headingId = `${id}-${page.path || 'home'}`;
         return (
           <section key={page.path} aria-labelledby={headingId} className="space-y-3">
@@ -98,6 +110,19 @@ export function MigrationReview({ websiteId, migrationId, plan, onApplied }: Mig
           </section>
         );
       })}
+
+      {hiddenCount > 0 && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setVisibleCount((current) => current + REVIEW_PAGES_STEP);
+          }}
+        >
+          {t('migration.review.showMore', { count: hiddenCount })}
+        </Button>
+      )}
 
       {unresolvedCount > 0 && (
         <p role="status" className="text-sm text-copy-muted">

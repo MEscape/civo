@@ -33,16 +33,16 @@ export function MigrationHistoryList({ history }: MigrationHistoryListProps) {
   }
 
   return (
-    <ul className="flex flex-col gap-2" aria-label={t('migration.history.listLabel')}>
+    <ul
+      className="divide-y divide-border overflow-hidden rounded-token border border-border bg-surface"
+      aria-label={t('migration.history.listLabel')}
+    >
       {history.migrations.map((migration) => {
         const pages = migration.pages ?? [];
         const totalChanges = migration.changedNodeCount ?? 0;
 
         return (
-          <li
-            key={migration.id}
-            className="flex flex-col gap-2 rounded-token border border-border bg-surface p-4"
-          >
+          <li key={migration.id} className="flex flex-col gap-2 px-4 py-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={migration.status === 'applied' ? 'success' : 'outline'}>

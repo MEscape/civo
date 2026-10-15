@@ -3,13 +3,13 @@
 import { revalidatePath } from 'next/cache';
 
 import { builderRoutes } from '@modules/builder/client';
+import { websiteRoutes } from '@modules/website/client';
 
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
 import { releaseCommands } from '../../composition';
 import { toApplyMigrationResultDto } from '../dto/migration-result-dto';
-import { releaseRoutes } from '../routes';
 import { applyMigrationSchema } from '../schemas/apply-migration-schema';
 import { parseReleaseInput } from '../schemas/parse-release-input';
 
@@ -30,7 +30,8 @@ export async function applyMigrationAction(
 
   if (result.isOk()) {
     revalidatePath(builderRoutes.pages(result.value.websiteId));
-    revalidatePath(releaseRoutes.migrations(result.value.websiteId));
+    // The overview and the bar above it count the drafts this just wrote as unpublished changes.
+    revalidatePath(websiteRoutes.detail(result.value.websiteId), 'layout');
   }
   return toActionResult(result.map(toApplyMigrationResultDto));
 }

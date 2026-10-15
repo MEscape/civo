@@ -1,3 +1,5 @@
+import type { Page } from '@lib/pagination';
+
 import type { ConflictResolutionsInput } from '../../domain/models/conflict-resolution';
 import type { MigrationStatus } from '../../domain/models/migration';
 import type {
@@ -33,14 +35,113 @@ export interface ReleaseSummaryView {
   readonly status: ReleaseStatus;
   readonly isActive: boolean;
   readonly canRollback: boolean;
+  /** What the editor wrote when publishing; `null` when nothing was. */
+  readonly note: string | null;
+  /** What it changed against the release before it; `null` for releases made before this was kept. */
+  readonly changes: ReleaseChangesView | null;
+  /** The actor id of who published it; the screen names them. */
+  readonly publishedBy: string | null;
   readonly publishedAt: Date | null;
   readonly createdAt: Date;
 }
 
-export interface ReleaseHistoryView {
+/** One page of a website's releases, newest first. */
+export interface ReleaseHistoryView extends Page<ReleaseSummaryView> {
   readonly activeReleaseId: string | null;
+}
+
+export type PageChangeKindView = 'added' | 'changed' | 'removed';
+
+export interface ReleaseChangesView {
+  /** Every page that differed, not only the ones listed. */
+  readonly pageChangeCount: number;
+  /** The first few, by path. */
+  readonly pageChanges: readonly PageChangeView[];
+  readonly websiteChanged: boolean;
+  readonly themeChanged: boolean;
+}
+
+export interface ComponentUpdateView {
+  readonly type: string;
+  readonly fromVersion: number;
+  readonly toVersion: number | null;
+  readonly usageCount: number;
+  readonly pageCount: number;
+  readonly status: 'upgradable' | 'needs_review' | 'unresolvable';
+  /** The pages it is on, by path (the home page has an empty one). */
+  readonly pagePaths: readonly string[];
+  /** Settings the newer version introduces; they start with their default value. */
+  readonly addedFields: readonly string[];
+  /** Settings a person has to decide about. */
+  readonly conflictFields: readonly string[];
+}
+
+export interface PageChangeView {
+  /** The root page has an empty path. */
+  readonly path: string;
+  readonly title: string;
+  readonly kind: PageChangeKindView;
+}
+
+/** Where a website stands between its pages and the live site, for the overview and the release screen. */
+export interface PublicationStatusView {
+  /** When this was read: it is computed on every request, so this is how fresh it is. */
+  readonly checkedAt: Date;
+  /** The release the public site serves; `null` until the first publish. */
+  readonly live: ReleaseSummaryView | null;
+  readonly releaseCount: number;
+  /** The number the next release gets. */
+  readonly nextReleaseNumber: number;
   /** Newest first. */
-  readonly releases: readonly ReleaseSummaryView[];
+  readonly recent: readonly ReleaseSummaryView[];
+  readonly draft: {
+    readonly pageCount: number;
+    /** Pages that stop a publish as they are. */
+    readonly blockedPageCount: number;
+    /** Every page that differs from the live site, not only the ones listed. */
+    readonly pageChangeCount: number;
+    /** The first few, by path. */
+    readonly pageChanges: readonly PageChangeView[];
+    readonly websiteChanged: boolean;
+    readonly themeChanged: boolean;
+    readonly hasChanges: boolean;
+  };
+  /** `null` while nothing is live: there is no release to hold against today's components. */
+  readonly componentUpdates: {
+    /** Components a newer version can replace. */
+    readonly available: number;
+    /** Of those, the ones a person has to look at first. */
+    readonly needReview: number;
+    /** Components that cannot be moved to a newer version: it is gone, or the version it was built with is. */
+    readonly unresolvable: number;
+    /** One line per component that has something to update, the ones needing most attention first. */
+    readonly components: readonly ComponentUpdateView[];
+  } | null;
+}
+
+/** How faithfully today's components can draw an earlier release. */
+export interface PreviewFidelityView {
+  readonly status: 'exact' | 'changed' | 'unavailable';
+  /** Only the components that differ, gone ones first. */
+  readonly deviations: ReadonlyArray<{
+    readonly type: string;
+    readonly pinnedVersion: number;
+    readonly currentVersion: number | null;
+  }>;
+}
+
+export interface ReleaseRefView {
+  readonly id: string;
+  readonly releaseNumber: number;
+}
+
+/** One release as it can be looked at: its pages, its place in the history and how faithfully it can be drawn. */
+export interface ReleasePreviewView {
+  readonly release: ReleaseSummaryView;
+  readonly snapshot: PublishedSnapshotView;
+  readonly fidelity: PreviewFidelityView;
+  readonly older: ReleaseRefView | null;
+  readonly newer: ReleaseRefView | null;
 }
 
 /** Everything the public site renders, and nothing about ownership or history. */
@@ -67,6 +168,8 @@ export interface ComponentUsageView {
 
 export interface PublishReleaseInput {
   readonly websiteId: string;
+  /** What the editor wrote about this release; optional. */
+  readonly note?: string | undefined;
 }
 
 export interface RollbackReleaseInput {

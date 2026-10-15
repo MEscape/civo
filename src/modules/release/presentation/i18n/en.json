@@ -2,8 +2,15 @@
   "release": {
     "history": {
       "listLabel": "Release history",
+      "pagination": {
+        "nav": "Release pages",
+        "previous": "Previous",
+        "next": "Next",
+        "summary": "{first}–{last} of {total}",
+        "page": "Page {page}"
+      },
       "empty": "No releases published yet. Select “Publish” to put the current pages live.",
-      "publish": "Publish current pages",
+      "publish": "Publish",
       "publicSite": "Public site",
       "publishing": "Publishing…",
       "published": "Release #{number} is live.",
@@ -15,7 +22,10 @@
       "rollbackLabel": "Restore release #{number}",
       "buildFailed": "Build failed",
       "restored": "Release #{number} is live again.",
-      "rollbackNote": "Restoring a release reactivates the unchanged version from back then — nothing is rebuilt."
+      "rollbackNote": "Restoring a release reactivates the unchanged version from back then — nothing is rebuilt.",
+      "actions": "Actions",
+      "publishedBy": "Published by {name}",
+      "publishedByFormer": "Published by a former member"
     },
     "status": {
       "draft": "Draft",
@@ -52,10 +62,9 @@
     "migration": {
       "panel": {
         "title": "Component updates",
-        "description": "Check whether the components on your published website have newer versions. Updates are written to your drafts, never to the live site, so you can review and publish them yourself.",
         "check": "Check for updates",
-        "checking": "Checking…",
-        "upToDate": "All components on your published website are up to date.",
+        "review": "Review changes",
+        "needLive": "Publish your website first, then its components can be checked.",
         "upgradable": "{count, plural, one {# update ready} other {# updates ready}}",
         "needsReview": "{count, plural, one {# needs your decision} other {# need your decision}}",
         "unresolvable": "{count, plural, one {# cannot be updated} other {# cannot be updated}}"
@@ -68,7 +77,8 @@
         "noApplicableUpdates": "None of these components can be automatically applied to drafts. Please edit or replace them in the Builder.",
         "apply": "Apply updates to drafts",
         "applying": "Applying…",
-        "applyNote": "Only your drafts change. The live website stays as it is until you publish."
+        "applyNote": "Only your drafts change. The live website stays as it is until you publish.",
+        "showMore": "Show {count, plural, one {# more page} other {# more pages}}"
       },
       "nodeStatus": {
         "unchanged": "Up to date",
@@ -112,6 +122,13 @@
       "history": {
         "title": "Update history",
         "listLabel": "Update history",
+        "pagination": {
+          "nav": "Update history pages",
+          "previous": "Previous",
+          "next": "Next",
+          "summary": "{first}–{last} of {total}",
+          "page": "Page {page}"
+        },
         "empty": "No updates have been proposed yet.",
         "proposedAt": "Proposed: {date}",
         "appliedAt": "Applied: {date}",
@@ -127,9 +144,155 @@
       }
     },
     "pages": {
-      "migrations": {
-        "title": "Migrations",
-        "description": "Check a published website against today's component versions and review the proposed changes."
+      "releases": {
+        "title": "Releases",
+        "description": "Publish your pages, restore an earlier release and keep components current.",
+        "tabs": {
+          "label": "Release sections",
+          "releases": "Releases",
+          "updates": "Component updates"
+        }
+      }
+    },
+    "publication": {
+      "kind": {
+        "added": "New",
+        "changed": "Edited",
+        "removed": "Removed"
+      },
+      "morePages": "+{count} more",
+      "websiteChanged": "Website details changed",
+      "themeChanged": "Theme changed",
+      "blocked": "Publishing is blocked: {count, plural, one {# page needs} other {# pages need}} attention in the editor.",
+      "allReleases": "All releases"
+    },
+    "banner": {
+      "liveTitle": "Everything is published",
+      "liveDescription": "Release #{number} · live since {date} · visitors see the current state.",
+      "changesTitle": "{count, plural, one {# change is not live yet} other {# changes are not live yet}}",
+      "firstTitle": "Your website is not published yet",
+      "firstDescription": "Publish to put your pages online.",
+      "updates": "{count, plural, one {# component update available} other {# component updates available}}",
+      "updatesReview": "Review"
+    },
+    "publish": {
+      "review": "Review & publish",
+      "allPublished": "Everything published",
+      "changesChip": "{count, plural, one {# change} other {# changes}}",
+      "title": "Publish changes",
+      "first": "This is your first release. These pages go live:",
+      "pages": "{count, plural, one {This page goes live:} other {These # pages go live:}}",
+      "settingsOnly": "Only settings change: the pages stay as they are.",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "e.g. Contact details updated",
+      "noteHint": "Shown in the release history. {count} of {max} characters.",
+      "info": "Visitors see the changes immediately. You can restore an earlier release at any time.",
+      "confirm": "Publish as release #{number}",
+      "cancel": "Cancel",
+      "chipLabel": "{count, plural, one {# change} other {# changes}} · Review & publish"
+    },
+    "table": {
+      "release": "Release",
+      "changes": "Changes",
+      "pagesCount": "{count, plural, one {# page} other {# pages}}",
+      "settingsChanged": "Settings",
+      "noDetails": "No details kept",
+      "firstRelease": "First release",
+      "count": "{shown} of {total} releases",
+      "preview": "Preview",
+      "previewLabel": "Preview release #{number}",
+      "title": "Release history",
+      "liveShort": "Live"
+    },
+    "restore": {
+      "title": "Restore release #{number}?",
+      "description": "The live website is set back to the state from {date}. Your drafts in the editor stay as they are, and nothing is deleted.",
+      "confirm": "Restore",
+      "cancel": "Cancel"
+    },
+    "updates": {
+      "summary": "{count, plural, one {# update available} other {# updates available}}",
+      "detail": "{ready} compatible · {review} need your decision · {blocked} cannot be updated",
+      "upToDateTitle": "All components are up to date",
+      "columns": {
+        "component": "Component",
+        "version": "Version",
+        "affects": "Affects",
+        "status": "Status"
+      },
+      "status": {
+        "upgradable": "Compatible",
+        "needs_review": "Needs review",
+        "unresolvable": "Cannot be updated"
+      },
+      "versionChange": "v{from} → v{to}",
+      "noTarget": "v{from} → none",
+      "historyTitle": "History ({count})",
+      "historyEmpty": "No updates proposed yet",
+      "uses": "{count, plural, one {# use} other {# uses}}",
+      "blockedSummary": "{count, plural, one {# component cannot be updated} other {# components cannot be updated}}",
+      "checkedAt": "Checked {time}",
+      "refreshing": "Checking…",
+      "lastProposed": "Last proposed {date}",
+      "details": "Show details",
+      "detailsLabel": "Details for {component}",
+      "noSettingChange": "No settings change.",
+      "blockedHint": "The component or the version it was built with no longer exists. Replace it in the editor.",
+      "panelTitle": "Components",
+      "panelDescription": "The live release against today’s versions",
+      "flow": {
+        "label": "How component updates work",
+        "propose": {
+          "title": "Proposed",
+          "description": "Newer versions are found for you."
+        },
+        "review": {
+          "title": "Review in drafts",
+          "description": "You check the changes in your drafts."
+        },
+        "publish": {
+          "title": "Publish",
+          "description": "Updates never go live directly."
+        }
+      },
+      "affectedPages": "On these pages",
+      "newSettings": "New settings, starting with their default value",
+      "decisionSettings": "Settings you changed that the new version also changed",
+      "readyCount": "{count} compatible",
+      "reviewCount": "{count} need review",
+      "blockedCount": "{count} cannot be updated"
+    },
+    "activity": {
+      "title": "Activity",
+      "published": "Release #{number} published",
+      "empty": "Nothing published yet.",
+      "by": "by {name}"
+    },
+    "preview": {
+      "title": "Preview of release #{number}",
+      "description": "The pages exactly as they were published. Nothing here can be edited.",
+      "back": "All releases",
+      "pagesLabel": "Pages of this release",
+      "home": "Home page",
+      "live": "Live now",
+      "crumbReleases": "Releases",
+      "crumbLabel": "You are here",
+      "older": "Older",
+      "newer": "Newer",
+      "olderLabel": "Older release #{number}",
+      "newerLabel": "Newer release #{number}",
+      "navLabel": "Releases next to this one",
+      "fidelity": {
+        "changedTitle": "This release can look different today",
+        "changed": "It was built with older component versions. The preview draws its pages with today’s components, so it can differ from what visitors saw then.",
+        "unavailableTitle": "This release cannot be shown as it was",
+        "unavailable": "Some of its components no longer exist and appear as placeholders. The pages are kept unchanged, and restoring the release brings back exactly what was stored.",
+        "versionChange": "{component} (v{from} → v{to})",
+        "gone": "{component} (v{from}, no longer available)"
+      },
+      "broken": {
+        "title": "This page cannot be shown",
+        "description": "Its stored content no longer has a shape this version can read. Other pages of this release may still open."
       }
     }
   }

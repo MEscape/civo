@@ -1,7 +1,7 @@
+import { loadClampedPage, resolvePageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
-import { clamp } from '@lib/utils';
 
-import { DEFAULT_HISTORY_LIMIT, MAX_HISTORY_LIMIT, MIN_HISTORY_LIMIT } from '../list-limits';
+import { RELEASE_HISTORY_PAGE_LIMITS } from '../list-limits';
 import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
 import { toReleaseHistoryView } from '../release-view-mappers';
 
@@ -9,11 +9,13 @@ import type { ReleaseHistoryView } from '../contracts/release-views';
 import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
 import type { ReleaseDependencies } from '../release-dependencies';
 
+/** The page asked for, as the address carries it: untrusted text, resolved here. */
 export interface ListReleasesOptions {
-  readonly limit?: number;
+  readonly page?: unknown;
+  readonly pageSize?: unknown;
 }
 
-/** A website's release history, newest first. Always bounded. */
+/** One page of a website's release history, newest first. A page past the end answers the last one. */
 export class ListReleases {
   constructor(private readonly deps: ReleaseDependencies) {}
 
@@ -21,14 +23,14 @@ export class ListReleases {
     rawWebsiteId: string,
     options: ListReleasesOptions = {},
   ): AppResultAsync<ReleaseHistoryView, LoadReleaseWebsiteError> {
-    const requested =
-      options.limit !== undefined && Number.isInteger(options.limit)
-        ? options.limit
-        : DEFAULT_HISTORY_LIMIT;
-    const limit = clamp(requested, MIN_HISTORY_LIMIT, MAX_HISTORY_LIMIT);
+    const requested = resolvePageRequest(options, RELEASE_HISTORY_PAGE_LIMITS);
 
     return loadAuthorizedReleaseWebsite(this.deps, rawWebsiteId, 'release.read')
-      .andThen(({ website }) => this.deps.releases.findHistory(website.id, limit))
+      .andThen(({ website }) =>
+        loadClampedPage(requested, (request) =>
+          this.deps.releases.findHistory(website.id, request),
+        ),
+      )
       .map(toReleaseHistoryView);
   }
 }

@@ -2,8 +2,15 @@
   "release": {
     "history": {
       "listLabel": "Release-Verlauf",
+      "pagination": {
+        "nav": "Seiten des Release-Verlaufs",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "summary": "{first}–{last} von {total}",
+        "page": "Seite {page}"
+      },
       "empty": "Noch keine Veröffentlichung. Wählen Sie „Veröffentlichen“, um die aktuellen Seiten live zu schalten.",
-      "publish": "Aktuelle Seiten veröffentlichen",
+      "publish": "Veröffentlichen",
       "publicSite": "Öffentliche Seite",
       "publishing": "Wird veröffentlicht…",
       "published": "Version #{number} ist live.",
@@ -15,7 +22,10 @@
       "rollbackLabel": "Release #{number} wiederherstellen",
       "buildFailed": "Build fehlgeschlagen",
       "restored": "Release #{number} ist wieder live.",
-      "rollbackNote": "Das Wiederherstellen eines Releases aktiviert die unveränderliche Version von damals — keine Neuerstellung erforderlich."
+      "rollbackNote": "Das Wiederherstellen eines Releases aktiviert die unveränderliche Version von damals — keine Neuerstellung erforderlich.",
+      "actions": "Aktionen",
+      "publishedBy": "Veröffentlicht von {name}",
+      "publishedByFormer": "Veröffentlicht von einem ehemaligen Mitglied"
     },
     "status": {
       "draft": "Entwurf",
@@ -52,10 +62,9 @@
     "migration": {
       "panel": {
         "title": "Komponenten-Updates",
-        "description": "Prüfen Sie, ob für die Komponenten Ihrer veröffentlichten Website neuere Versionen vorliegen. Updates werden in Ihre Entwürfe geschrieben, nie in die Live-Website. So können Sie sie prüfen und selbst veröffentlichen.",
-        "check": "Auf Updates prüfen",
-        "checking": "Wird geprüft…",
-        "upToDate": "Alle Komponenten Ihrer veröffentlichten Website sind auf dem neuesten Stand.",
+        "check": "Nach Updates suchen",
+        "review": "Änderungen prüfen",
+        "needLive": "Veröffentlichen Sie zuerst Ihre Website, danach können die Komponenten geprüft werden.",
         "upgradable": "{count, plural, one {# Update bereit} other {# Updates bereit}}",
         "needsReview": "{count, plural, one {# braucht Ihre Entscheidung} other {# brauchen Ihre Entscheidung}}",
         "unresolvable": "{count, plural, one {# kann nicht aktualisiert werden} other {# können nicht aktualisiert werden}}"
@@ -68,7 +77,8 @@
         "noApplicableUpdates": "Keine dieser Komponenten kann automatisch in Entwürfe übernommen werden. Bitte bearbeiten oder ersetzen Sie diese im Builder.",
         "apply": "Updates in Entwürfe übernehmen",
         "applying": "Wird übernommen…",
-        "applyNote": "Nur Ihre Entwürfe ändern sich. Die Live-Website bleibt unverändert, bis Sie veröffentlichen."
+        "applyNote": "Nur Ihre Entwürfe ändern sich. Die Live-Website bleibt unverändert, bis Sie veröffentlichen.",
+        "showMore": "{count, plural, one {# weitere Seite} other {# weitere Seiten}} anzeigen"
       },
       "nodeStatus": {
         "unchanged": "Aktuell",
@@ -112,6 +122,13 @@
       "history": {
         "title": "Update-Verlauf",
         "listLabel": "Update-Verlauf",
+        "pagination": {
+          "nav": "Seiten des Update-Verlaufs",
+          "previous": "Zurück",
+          "next": "Weiter",
+          "summary": "{first}–{last} von {total}",
+          "page": "Seite {page}"
+        },
         "empty": "Es wurden noch keine Updates vorgeschlagen.",
         "proposedAt": "Vorgeschlagen: {date}",
         "appliedAt": "Übernommen: {date}",
@@ -127,9 +144,155 @@
       }
     },
     "pages": {
-      "migrations": {
-        "title": "Migrationen",
-        "description": "Eine veröffentlichte Website mit den heutigen Komponentenversionen abgleichen und die vorgeschlagenen Änderungen prüfen."
+      "releases": {
+        "title": "Releases",
+        "description": "Seiten veröffentlichen, ein früheres Release wiederherstellen und Komponenten aktuell halten.",
+        "tabs": {
+          "label": "Bereiche der Releases",
+          "releases": "Releases",
+          "updates": "Komponenten-Updates"
+        }
+      }
+    },
+    "publication": {
+      "kind": {
+        "added": "Neu",
+        "changed": "Geändert",
+        "removed": "Entfernt"
+      },
+      "morePages": "+{count} weitere",
+      "websiteChanged": "Website-Angaben geändert",
+      "themeChanged": "Design geändert",
+      "blocked": "Veröffentlichen ist blockiert: {count, plural, one {# Seite braucht} other {# Seiten brauchen}} Aufmerksamkeit im Editor.",
+      "allReleases": "Alle Releases"
+    },
+    "banner": {
+      "liveTitle": "Alles veröffentlicht",
+      "liveDescription": "Release #{number} · live seit {date} · Besucher sehen den aktuellen Stand.",
+      "changesTitle": "{count, plural, one {# Änderung ist noch nicht live} other {# Änderungen sind noch nicht live}}",
+      "firstTitle": "Ihre Website ist noch nicht veröffentlicht",
+      "firstDescription": "Veröffentlichen Sie, um Ihre Seiten online zu stellen.",
+      "updates": "{count, plural, one {# Komponenten-Update verfügbar} other {# Komponenten-Updates verfügbar}}",
+      "updatesReview": "Prüfen"
+    },
+    "publish": {
+      "review": "Prüfen & veröffentlichen",
+      "allPublished": "Alles veröffentlicht",
+      "changesChip": "{count, plural, one {# Änderung} other {# Änderungen}}",
+      "title": "Änderungen veröffentlichen",
+      "first": "Das ist Ihr erstes Release. Diese Seiten gehen live:",
+      "pages": "{count, plural, one {Diese Seite geht live:} other {Diese # Seiten gehen live:}}",
+      "settingsOnly": "Nur Einstellungen ändern sich: die Seiten bleiben, wie sie sind.",
+      "noteLabel": "Notiz (optional)",
+      "notePlaceholder": "z. B. Kontaktdaten aktualisiert",
+      "noteHint": "Wird im Release-Verlauf angezeigt. {count} von {max} Zeichen.",
+      "info": "Besucher sehen die Änderungen sofort. Sie können jederzeit ein früheres Release wiederherstellen.",
+      "confirm": "Als Release #{number} veröffentlichen",
+      "cancel": "Abbrechen",
+      "chipLabel": "{count, plural, one {# Änderung} other {# Änderungen}} · Prüfen & veröffentlichen"
+    },
+    "table": {
+      "release": "Release",
+      "changes": "Änderungen",
+      "pagesCount": "{count, plural, one {# Seite} other {# Seiten}}",
+      "settingsChanged": "Einstellungen",
+      "noDetails": "Keine Details gespeichert",
+      "firstRelease": "Erstes Release",
+      "count": "{shown} von {total} Releases",
+      "preview": "Vorschau",
+      "previewLabel": "Vorschau von Release #{number}",
+      "title": "Release-Verlauf",
+      "liveShort": "Live"
+    },
+    "restore": {
+      "title": "Release #{number} wiederherstellen?",
+      "description": "Die Live-Website wird auf den Stand vom {date} zurückgesetzt. Ihre Entwürfe im Editor bleiben, wie sie sind, und nichts wird gelöscht.",
+      "confirm": "Wiederherstellen",
+      "cancel": "Abbrechen"
+    },
+    "updates": {
+      "summary": "{count, plural, one {# Update verfügbar} other {# Updates verfügbar}}",
+      "detail": "{ready} kompatibel · {review} brauchen Ihre Entscheidung · {blocked} nicht aktualisierbar",
+      "upToDateTitle": "Alle Komponenten sind aktuell",
+      "columns": {
+        "component": "Komponente",
+        "version": "Version",
+        "affects": "Betrifft",
+        "status": "Status"
+      },
+      "status": {
+        "upgradable": "Kompatibel",
+        "needs_review": "Prüfung nötig",
+        "unresolvable": "Nicht aktualisierbar"
+      },
+      "versionChange": "v{from} → v{to}",
+      "noTarget": "v{from} → keine",
+      "historyTitle": "Verlauf ({count})",
+      "historyEmpty": "Noch keine Updates vorgeschlagen",
+      "uses": "{count, plural, one {# Verwendung} other {# Verwendungen}}",
+      "blockedSummary": "{count, plural, one {# Komponente kann nicht aktualisiert werden} other {# Komponenten können nicht aktualisiert werden}}",
+      "checkedAt": "Geprüft {time}",
+      "refreshing": "Wird geprüft…",
+      "lastProposed": "Zuletzt vorgeschlagen {date}",
+      "details": "Details anzeigen",
+      "detailsLabel": "Details zu {component}",
+      "noSettingChange": "Keine Einstellungen ändern sich.",
+      "blockedHint": "Die Komponente oder die Version, mit der sie gebaut wurde, gibt es nicht mehr. Ersetzen Sie sie im Editor.",
+      "panelTitle": "Komponenten",
+      "panelDescription": "Das Live-Release im Vergleich zu den heutigen Versionen",
+      "flow": {
+        "label": "So laufen Komponenten-Updates ab",
+        "propose": {
+          "title": "Vorgeschlagen",
+          "description": "Neuere Versionen werden für Sie gefunden."
+        },
+        "review": {
+          "title": "In Entwürfen prüfen",
+          "description": "Sie prüfen die Änderungen in Ihren Entwürfen."
+        },
+        "publish": {
+          "title": "Veröffentlichen",
+          "description": "Updates gehen nie direkt live."
+        }
+      },
+      "affectedPages": "Auf diesen Seiten",
+      "newSettings": "Neue Einstellungen mit Standardwert",
+      "decisionSettings": "Von Ihnen geänderte Einstellungen, die auch die neue Version geändert hat",
+      "readyCount": "{count} kompatibel",
+      "reviewCount": "{count} brauchen Prüfung",
+      "blockedCount": "{count} nicht aktualisierbar"
+    },
+    "activity": {
+      "title": "Verlauf",
+      "published": "Release #{number} veröffentlicht",
+      "empty": "Noch nichts veröffentlicht.",
+      "by": "von {name}"
+    },
+    "preview": {
+      "title": "Vorschau von Release #{number}",
+      "description": "Die Seiten genau so, wie sie veröffentlicht wurden. Hier lässt sich nichts bearbeiten.",
+      "back": "Alle Releases",
+      "pagesLabel": "Seiten dieses Releases",
+      "home": "Startseite",
+      "live": "Jetzt live",
+      "crumbReleases": "Releases",
+      "crumbLabel": "Sie sind hier",
+      "older": "Älter",
+      "newer": "Neuer",
+      "olderLabel": "Älteres Release #{number}",
+      "newerLabel": "Neueres Release #{number}",
+      "navLabel": "Releases neben diesem",
+      "fidelity": {
+        "changedTitle": "Dieses Release kann heute anders aussehen",
+        "changed": "Es wurde mit älteren Komponentenversionen gebaut. Die Vorschau zeichnet die Seiten mit den heutigen Komponenten und kann daher von dem abweichen, was Besucher damals sahen.",
+        "unavailableTitle": "Dieses Release lässt sich nicht so zeigen, wie es war",
+        "unavailable": "Einige seiner Komponenten gibt es nicht mehr und erscheinen als Platzhalter. Die Seiten selbst bleiben unverändert gespeichert, und Wiederherstellen bringt genau das Gespeicherte zurück.",
+        "versionChange": "{component} (v{from} → v{to})",
+        "gone": "{component} (v{from}, nicht mehr verfügbar)"
+      },
+      "broken": {
+        "title": "Diese Seite kann nicht angezeigt werden",
+        "description": "Ihr gespeicherter Inhalt hat keine Form mehr, die diese Version lesen kann. Andere Seiten dieses Releases lassen sich möglicherweise noch öffnen."
       }
     }
   }

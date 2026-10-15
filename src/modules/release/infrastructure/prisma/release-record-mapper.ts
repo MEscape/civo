@@ -19,6 +19,7 @@ import { toReleaseId, toWebsiteId } from '../../domain/models/ids';
 import { RELEASE_SNAPSHOT_SCHEMA_VERSION } from '../../domain/models/release-snapshot';
 
 import type { Release, ReleaseStatus, ReleaseSummary } from '../../domain/models/release';
+import type { PageChangeKind, ReleaseChanges } from '../../domain/models/release-changes';
 import type {
   ReleaseComponentDependency,
   ReleaseSnapshot,
@@ -34,6 +35,9 @@ export interface ReleaseSummaryRecord {
   readonly websiteId: string;
   readonly releaseNumber: number;
   readonly status: string;
+  readonly note: string | null;
+  readonly changes: unknown;
+  readonly publishedBy: string | null;
   readonly publishedAt: InstantRecord | null;
   readonly createdAt: InstantRecord;
 }
@@ -128,12 +132,35 @@ export function toStoredDependencies(
   return hasStoredDependencies(snapshot) ? snapshot.dependencies : null;
 }
 
+const isPageChangeKind = (value: unknown): value is PageChangeKind =>
+  value === 'added' || value === 'changed' || value === 'removed';
+
+const isStoredChanges = objectOf<ReleaseChanges>({
+  pageChanges: arrayOf(
+    objectOf<ReleaseChanges['pageChanges'][number]>({
+      path: isString,
+      title: isString,
+      kind: isPageChangeKind,
+    }),
+  ),
+  websiteChanged: (value): value is boolean => typeof value === 'boolean',
+  themeChanged: (value): value is boolean => typeof value === 'boolean',
+});
+
+/** A change summary that does not have the shape this build writes reads as absent, never as a failure. */
+function toReleaseChanges(stored: unknown): ReleaseChanges | null {
+  return isStoredChanges(stored) ? stored : null;
+}
+
 /** Select only what the use cases need (persistence.md): history never loads snapshots. */
 export const RELEASE_SUMMARY_SELECT = [
   'id',
   'websiteId',
   'releaseNumber',
   'status',
+  'note',
+  'changes',
+  'publishedBy',
   'publishedAt',
   'createdAt',
 ] as const satisfies ReadonlyArray<keyof ReleaseSummaryRecord>;
@@ -174,6 +201,9 @@ export function toReleaseSummary(record: ReleaseSummaryRecord): ReleaseSummary {
     websiteId: toWebsiteId(record.websiteId),
     releaseNumber: record.releaseNumber,
     status: toReleaseStatus(record.status),
+    note: record.note,
+    changes: toReleaseChanges(record.changes),
+    publishedBy: record.publishedBy,
     publishedAt: record.publishedAt ? instantToDate(record.publishedAt) : null,
     createdAt: instantToDate(record.createdAt),
   };

@@ -1,6 +1,8 @@
 import { createPersistenceFailures, dateToInstant, db } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError } from '@lib/errors';
 import { logger } from '@lib/logger';
+import { offsetOf, toPage } from '@lib/pagination';
+import type { Page, PageRequest } from '@lib/pagination';
 import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
@@ -97,19 +99,24 @@ export class PrismaMigrationRepository implements MigrationRepository {
 
   listByWebsite(
     websiteId: WebsiteId,
-    limit: number,
-  ): AppResultAsync<readonly MigrationSummary[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        db.orm.public.WebsiteMigration.where({ websiteId })
-          // The plan is read for the history's per-page change summary; `limit` bounds the cost.
-          .select(...MIGRATION_SELECT)
-          // `id` breaks ties so the order is stable between requests.
-          .orderBy([(m) => m.createdAt.desc(), (m) => m.id.desc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('listByWebsite'),
-    ).map((records) => records.map(toMigrationSummary));
+    page: PageRequest,
+  ): AppResultAsync<Page<MigrationSummary>, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      const total = await db.orm.public.WebsiteMigration.where({ websiteId }).aggregate(
+        (aggregate) => ({ total: aggregate.count() }),
+      );
+      const records = await db.orm.public.WebsiteMigration.where({ websiteId })
+        // The plan is read for the history's per-page change summary; the page size bounds the cost.
+        .select(...MIGRATION_SELECT)
+        // `id` breaks ties so the order is stable between requests.
+        .orderBy([(m) => m.createdAt.desc(), (m) => m.id.desc()])
+        .limit(page.pageSize)
+        .offset(offsetOf(page))
+        .all();
+      return { records, total: total.total };
+    }, failures.infraOnly('listByWebsite')).map(({ records, total }) =>
+      toPage(records.map(toMigrationSummary), total, page),
+    );
   }
 
   markApplied(

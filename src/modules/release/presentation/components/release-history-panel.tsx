@@ -1,22 +1,12 @@
 'use client';
 
-import { useId, useState, useTransition } from 'react';
-
 import { EmptyState } from '@components/layout/layout-primitives';
-import { FieldMessage } from '@components/shared/field-message';
-import { Button, buttonVariants } from '@components/ui/button';
-import { AlertTriangle, ExternalLink } from '@components/ui/icons';
-
-import { Link } from '@i18n';
+import { DataPanel } from '@components/shared/data-panel';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@components/ui/table';
 
 import { useTranslations } from '@i18n/client';
 
-import { applyActionError } from '@lib/actions';
-import { cn, noop } from '@lib/utils';
-
-import { publishReleaseAction } from '../actions/publish-release-action';
-import { rollbackReleaseAction } from '../actions/rollback-release-action';
-import { messageKeyForCode } from '../messages/message-keys';
+import { releaseRoutes } from '../routes';
 
 import { ReleaseHistoryItem } from './release-history-item';
 
@@ -26,124 +16,64 @@ export interface ReleaseHistoryPanelProps {
   readonly websiteId: string;
   /** Loaded by the Server Component, so the list renders without a client fetch. */
   readonly history: ReleaseHistoryDto;
-  readonly publicSiteHref?: string;
+  /** The page of the list this is, so a preview can lead back to it. */
+  readonly page: number;
+  /** What the actor may do. Controls they cannot use are not drawn; the server still authorizes. */
+  readonly mayRollback: boolean;
+  /** The names of those who published, by actor id. */
+  readonly authors: Readonly<Record<string, string>> | null;
 }
 
 /**
- * A website's release history with rollback. The list is server state: after
- * a rollback the route is refreshed instead of mirroring "which release is
- * active" in local state.
+ * One page of a website's releases. The list is server state: after a restore
+ * the action invalidates the route instead of this panel mirroring "which
+ * release is active". Publishing is not here: it belongs to the publication
+ * banner and the bar, where the changes it would publish are shown.
  */
 export function ReleaseHistoryPanel({
   websiteId,
   history,
-  publicSiteHref,
+  page,
+  mayRollback,
+  authors,
 }: ReleaseHistoryPanelProps) {
   const t = useTranslations('release');
 
-  const id = useId();
-  const [isPending, startTransition] = useTransition();
-  const [errorCode, setErrorCode] = useState<string | null>(null);
-  const [restoredNumber, setRestoredNumber] = useState<number | null>(null);
-  const [publishedNumber, setPublishedNumber] = useState<number | null>(null);
-
-  function handlePublish() {
-    setErrorCode(null);
-    setRestoredNumber(null);
-    startTransition(async () => {
-      const result = await publishReleaseAction({ websiteId });
-      if (!result.ok) {
-        setErrorCode(applyActionError(result.error, noop));
-        return;
-      }
-      setPublishedNumber(result.data.releaseNumber);
-    });
-  }
-
-  function handleRollback(releaseId: string) {
-    setErrorCode(null);
-    setRestoredNumber(null);
-    setPublishedNumber(null);
-    startTransition(async () => {
-      const result = await rollbackReleaseAction({ websiteId, releaseId });
-      if (!result.ok) {
-        // A history list has no fields, so only the form-level code is used.
-        setErrorCode(applyActionError(result.error, noop));
-        return;
-      }
-      setRestoredNumber(result.data.releaseNumber);
-    });
-  }
-
-  const publishControl = (
-    <div className="flex flex-wrap items-center gap-3">
-      <Button type="button" onClick={handlePublish} disabled={isPending}>
-        {isPending ? t('history.publishing') : t('history.publish')}
-      </Button>
-      {publicSiteHref !== undefined && (
-        <Link
-          href={publicSiteHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: 'outline' }), 'gap-1.5')}
-        >
-          <ExternalLink className="size-4" aria-hidden="true" />
-          <span>{t('history.publicSite')}</span>
-        </Link>
-      )}
-      {publishedNumber !== null && (
-        <p role="status" className="text-sm text-success">
-          {t('history.published', { number: publishedNumber })}
-        </p>
-      )}
-    </div>
-  );
-
   if (history.releases.length === 0) {
-    return (
-      <div className="flex flex-col gap-3" aria-busy={isPending}>
-        {publishControl}
-        <FieldMessage
-          id={`${id}-error`}
-          message={errorCode ? t(messageKeyForCode(errorCode)) : undefined}
-          className="rounded-token border border-danger px-4 py-3"
-        />
-        <EmptyState
-          title={t('history.empty')}
-          icon={<AlertTriangle className="size-8" aria-hidden="true" />}
-          variant="outlined"
-          className="py-12"
-        />
-      </div>
-    );
+    return <EmptyState title={t('history.empty')} variant="outlined" className="py-10" />;
   }
 
   return (
-    <div className="flex flex-col gap-3" aria-busy={isPending}>
-      {publishControl}
-      <FieldMessage
-        id={`${id}-error`}
-        message={errorCode ? t(messageKeyForCode(errorCode)) : undefined}
-        className="rounded-token border border-danger px-4 py-3"
-      />
-      {restoredNumber !== null && (
-        <p role="status" className="text-sm text-success">
-          {t('history.restored', { number: restoredNumber })}
-        </p>
-      )}
-
-      <ul className="flex flex-col gap-2" aria-label={t('history.listLabel')}>
-        {history.releases.map((release) => (
-          <ReleaseHistoryItem
-            key={release.id}
-            release={release}
-            isBusy={isPending}
-            onRollback={handleRollback}
-          />
-        ))}
-      </ul>
-
-      <p className="text-xs text-copy-muted">{t('history.rollbackNote')}</p>
+    <div className="space-y-2">
+      <DataPanel
+        title={t('table.title')}
+        footer={t('table.count', { shown: history.releases.length, total: history.total })}
+      >
+        <Table aria-label={t('history.listLabel')} containerClassName="rounded-none border-0">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>{t('table.release')}</TableHead>
+              <TableHead>{t('table.changes')}</TableHead>
+              <TableHead>
+                <span className="sr-only">{t('history.actions')}</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {history.releases.map((release) => (
+              <ReleaseHistoryItem
+                key={release.id}
+                websiteId={websiteId}
+                release={release}
+                mayRollback={mayRollback}
+                authors={authors}
+                previewHref={releaseRoutes.preview(websiteId, release.id, page)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </DataPanel>
+      {mayRollback && <p className="text-xs text-copy-muted">{t('history.rollbackNote')}</p>}
     </div>
   );
 }

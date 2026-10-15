@@ -1,9 +1,13 @@
 import type { Actor } from '@modules/auth';
 
 import type { ConflictAppError, InfrastructureAppError, ValidationAppError } from '@lib/errors';
+import { okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { pick } from '@lib/utils';
 
+import { describeDraftChanges } from '../../domain/models/draft-changes';
 import { assembleReleaseSnapshot } from '../../domain/models/release-assembly';
+import { normalizeReleaseNote } from '../../domain/models/release-changes';
 import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
 import { toReleaseSummaryView } from '../release-view-mappers';
 
@@ -36,17 +40,31 @@ export class PublishRelease {
         pages
           .listForRelease(website.id)
           .andThen((publishable) =>
-            assembleReleaseSnapshot({
-              website,
-              pages: publishable,
-              resolveComponent: (type) => components.resolve(type),
-            }).asyncAndThen((snapshot) =>
-              releases.publish({
-                websiteId: website.id,
-                snapshot,
-                publishedAt: clock.now(),
-              }),
-            ),
+            // The live release is read only to say what changed; one that cannot be read must
+            // not stop the fresh release that replaces it, so it is compared against as absent.
+            releases
+              .findPublished(website.id)
+              .orElse(() => okAsync(null))
+              .andThen((live) =>
+                assembleReleaseSnapshot({
+                  website,
+                  pages: publishable,
+                  resolveComponent: (type) => components.resolve(type),
+                }).asyncAndThen((snapshot) =>
+                  releases.publish({
+                    websiteId: website.id,
+                    snapshot,
+                    note: normalizeReleaseNote(input.note),
+                    publishedBy: actor.id,
+                    changes: pick(describeDraftChanges(live, website, publishable), [
+                      'pageChanges',
+                      'websiteChanged',
+                      'themeChanged',
+                    ]),
+                    publishedAt: clock.now(),
+                  }),
+                ),
+              ),
           )
           .map((release) => {
             audit.record({

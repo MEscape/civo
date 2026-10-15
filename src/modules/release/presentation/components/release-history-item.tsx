@@ -1,89 +1,136 @@
 'use client';
 
 import { Badge } from '@components/ui/badge';
-import { Button } from '@components/ui/button';
-import { Check, Undo2, AlertTriangle } from '@components/ui/icons';
+import { buttonVariants } from '@components/ui/button';
+import { AlertTriangle, Eye } from '@components/ui/icons';
+import { TableCell, TableRow } from '@components/ui/table';
+
+import { Link } from '@i18n';
 
 import { useTranslations, useAppFormatters } from '@i18n/client';
 
 import { cn } from '@lib/utils';
 
+import { CHANGE_KIND_KEYS } from './change-kinds';
 import { ReleaseStatusBadge } from './release-status-badge';
+import { RestoreReleaseButton } from './restore-release-button';
 
+import type { PageChangeKindView } from '../../application/contracts/release-views';
 import type { ReleaseSummaryDto } from '../dto/release-dto';
 
 export interface ReleaseHistoryItemProps {
+  readonly websiteId: string;
   readonly release: ReleaseSummaryDto;
-  /** True while any rollback is running, so two cannot be started at once. */
-  readonly isBusy: boolean;
-  readonly onRollback: (releaseId: string) => void;
+  /** What the actor may do; a release that cannot be restored by them shows no restore button. */
+  readonly mayRollback: boolean;
+  /** Who published it, by actor id; an id without a name is a person who left. */
+  readonly authors: Readonly<Record<string, string>> | null;
+  /** Where this release's pages can be looked at. */
+  readonly previewHref: string;
+}
+
+const KINDS: readonly PageChangeKindView[] = ['changed', 'added', 'removed'];
+
+function ChangesCell({ changes }: { readonly changes: ReleaseSummaryDto['changes'] }) {
+  const t = useTranslations('release');
+
+  if (changes === null) {
+    return (
+      <TableCell>
+        <span className="text-sm text-copy-muted">{t('table.noDetails')}</span>
+      </TableCell>
+    );
+  }
+  const byKind = KINDS.flatMap((kind) => {
+    const titles = changes.pageChanges
+      .filter((change) => change.kind === kind)
+      .map((change) => change.title);
+    return titles.length === 0 ? [] : [`${t(CHANGE_KIND_KEYS[kind])}: ${titles.join(', ')}`];
+  });
+
+  return (
+    <TableCell className="space-y-0.5">
+      <p className="text-sm text-copy">
+        {changes.pageChangeCount > 0
+          ? t('table.pagesCount', { count: changes.pageChangeCount })
+          : t('table.settingsChanged')}
+      </p>
+      {byKind.length > 0 && <p className="text-xs text-copy-muted">{byKind.join(' · ')}</p>}
+    </TableCell>
+  );
 }
 
 /**
- * One release. Whether it can be restored was decided by the server
- * (`canRollback`); this component only renders that answer.
+ * One release as a table row. Whether it can be restored was decided by the
+ * server (`canRollback`); this component only renders that answer. The live
+ * release is tinted, so it stands out among the rest at a glance.
  */
-export function ReleaseHistoryItem({ release, isBusy, onRollback }: ReleaseHistoryItemProps) {
+export function ReleaseHistoryItem({
+  websiteId,
+  release,
+  mayRollback,
+  authors,
+  previewHref,
+}: ReleaseHistoryItemProps) {
   const t = useTranslations('release');
   const format = useAppFormatters();
   const number = release.releaseNumber;
+  const when = release.publishedAt ?? release.createdAt;
+  const author = release.publishedBy === null ? undefined : authors?.[release.publishedBy];
 
   return (
-    <li
+    <TableRow
       aria-current={release.isActive ? 'true' : undefined}
       className={cn(
-        'flex flex-col gap-2 rounded-token border p-4 sm:flex-row sm:items-center sm:justify-between',
-        release.isActive ? 'border-accent' : 'border-border bg-surface',
+        'align-top',
+        release.isActive && 'bg-success-subtle/40 hover:bg-success-subtle/40',
       )}
     >
-      <div className="flex min-w-0 flex-col gap-1">
+      <TableCell className="space-y-0.5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-copy">
-            {t('history.releaseNumber', { number })}
-          </span>
-          <ReleaseStatusBadge status={release.status} />
-          {release.isActive && <Badge>{t('history.active')}</Badge>}
+          <span className="font-medium">{t('history.releaseNumber', { number })}</span>
+          {release.isActive && <Badge variant="success">{t('history.active')}</Badge>}
+          {release.status !== 'published' && <ReleaseStatusBadge status={release.status} />}
         </div>
+        {release.note !== null && <p className="text-sm text-copy">{release.note}</p>}
+        <p className="text-xs text-copy-muted">{format.dateTime(when)}</p>
+        {release.publishedBy !== null && authors !== null && (
+          <p className="text-xs text-copy-muted">
+            {author === undefined
+              ? t('history.publishedByFormer')
+              : t('history.publishedBy', { name: author })}
+          </p>
+        )}
+        {release.status === 'failed' && (
+          <p className="flex items-center gap-1.5 text-xs text-danger">
+            <AlertTriangle className="size-3.5" aria-hidden="true" />
+            {t('history.buildFailed')}
+          </p>
+        )}
+      </TableCell>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-copy-muted">
-          {release.publishedAt !== null && (
-            <span className="flex items-center gap-1">
-              <Check className="size-3" aria-hidden="true" />
-              {t('history.publishedAt', {
-                date: format.dateTime(release.publishedAt),
-              })}
-            </span>
+      <ChangesCell changes={release.changes} />
+
+      <TableCell className="text-right">
+        <div className="flex flex-wrap items-start justify-end gap-2">
+          <Link
+            href={previewHref}
+            aria-label={t('table.previewLabel', { number })}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Eye className="size-3.5" aria-hidden="true" />
+            {t('table.preview')}
+          </Link>
+          {mayRollback && release.canRollback && (
+            <RestoreReleaseButton
+              websiteId={websiteId}
+              releaseId={release.id}
+              releaseNumber={number}
+              publishedAt={when}
+            />
           )}
-          <span className="flex items-center gap-1">
-            {t('history.createdAt', {
-              date: format.dateTime(release.createdAt),
-            })}
-          </span>
         </div>
-      </div>
-
-      {release.canRollback && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          disabled={isBusy}
-          aria-label={t('history.rollbackLabel', { number })}
-          onClick={() => {
-            onRollback(release.id);
-          }}
-        >
-          <Undo2 className="size-3.5" aria-hidden="true" />
-          <span className="ml-1.5">{t('history.rollback')}</span>
-        </Button>
-      )}
-
-      {release.status === 'failed' && (
-        <p className="flex shrink-0 items-center gap-1.5 text-xs text-danger">
-          <AlertTriangle className="size-3.5" aria-hidden="true" />
-          {t('history.buildFailed')}
-        </p>
-      )}
-    </li>
+      </TableCell>
+    </TableRow>
   );
 }
