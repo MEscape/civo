@@ -7,6 +7,9 @@ export default defineConfig({
     // Needs a database; run by `npm run test:integration` with its own configuration.
     exclude: [...configDefaults.exclude, '**/*.integration.test.ts'],
     setupFiles: ['./vitest.setup.ts'],
+    // Form tests type and click through real components; with every worker busy a single one
+    // can take several times its time alone (1-2 s), so the default 5 s is too tight to be a signal.
+    testTimeout: 15_000,
     // The server environment is validated when `@lib/config` is first imported, so any
     // test that touches module code needs a valid one. These are placeholders, not services:
     // nothing here connects to a database.

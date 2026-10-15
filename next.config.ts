@@ -5,6 +5,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 import { securityHeaders } from './src/lib/security';
 
 const nextConfig: NextConfig = {
+  ...(process.env['DOCKER_BUILD'] === 'true' ? { output: 'standalone' as const } : {}),
   reactCompiler: true,
   // Required by the one application cache (`'use cache'` in data-sources). Lifetimes are
   // declared where they are used, so there are no named cache-life profiles here.

@@ -32,6 +32,9 @@ RUN DATABASE_URL=postgresql://build:build@localhost:5432/build \
     AUTH_ENABLED=true \
     AUTH_SECRET=build-placeholder-not-a-secret-0000000000 \
     AUTH_DATABASE_URL=postgresql://build:build@localhost:5432/build_auth \
+    MAIL_PROVIDER=smtp \
+    MAIL_SMTP_HOST=localhost \
+    MAIL_FROM=build@example.invalid \
     npm run build
 
 # ---- runtime ----

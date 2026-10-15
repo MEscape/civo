@@ -275,22 +275,6 @@ jobs:
             --network civo-ci \
             mailhog/mailhog:latest
 
-      - name: Migrate application database
-        run: |
-          docker run --rm \
-            --network civo-ci \
-            -e DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo \
-            civo:ci \
-            npm run db:migrate:app
-
-      - name: Migrate auth database
-        run: |
-          docker run --rm \
-            --network civo-ci \
-            -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
-            civo:ci \
-            npm run db:migrate:auth
-
       - name: Container boots and answers /api/health
         run: |
           docker run -d \
