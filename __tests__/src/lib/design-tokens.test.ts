@@ -102,7 +102,7 @@ export const RULES: readonly Rule[] = [
   {
     name: 'screen-height utility',
     pattern: /\b(?:min-h|h|max-h)-screen\b/g,
-    fix: 'use dvh (min-h-dvh) or h-app-body; plain vh overflows behind mobile browser toolbars',
+    fix: 'use dvh (min-h-dvh) or h-website-body; plain vh overflows behind mobile browser toolbars',
   },
 ];
 

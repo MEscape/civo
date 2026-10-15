@@ -57,6 +57,11 @@ const authEnvObjectSchema = z.object({
 
   AUTH_TRUSTED_PROXIES: commaSeparatedListSchema,
 
+  /** Platform administrators by (verified) e-mail address: the bootstrap of a deployment. Lower-cased. */
+  AUTH_PLATFORM_ADMIN_EMAILS: commaSeparatedListSchema.transform((entries) =>
+    entries.map((entry) => entry.toLowerCase()),
+  ),
+
   AUTH_DEV_ACTOR_ROLE: z.string().default(DEFAULT_DEV_ACTOR_ROLE),
 });
 

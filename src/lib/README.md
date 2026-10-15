@@ -126,6 +126,13 @@ What every response carries; `next.config.ts` applies it to all routes.
 
 - `securityHeaders({ isProduction })`: CSP without script rules (`object-src`, `base-uri`, `form-action`, `frame-ancestors`), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and HSTS in production. A script-src policy needs a per-request nonce and belongs in `proxy.ts`.
 
+### `@lib/tenancy` (The website a request is about)
+
+A tenant is its website, so the address names the tenant. `proxy.ts` and the auth module share one vocabulary for it.
+
+- `TENANT_HINT_HEADER`: the request header (`x-civo-tenant`) `proxy.ts` sets from the address, overwriting any client value.
+- `tenantHintFromPathname(pathname)`: the website id in `/<locale>/websites/<id>/...`, or `null`. Only a platform administrator is resolved by it.
+
 ### `@lib/pagination` (Paging a list)
 
 How every list that can grow is sliced. The address carries the state (`?page=3&pageSize=25&sort=-createdAt`), so a page can be shared and works without script.
@@ -133,6 +140,7 @@ How every list that can grow is sliced. The address carries the state (`?page=3&
 - `resolvePageRequest({ page, pageSize }, limits?)`: untrusted query text to a `PageRequest`. Never throws; junk falls back to page 1 and the default size, and the size never exceeds `maxPageSize` (default 25 / 100).
 - `offsetOf(request)`, `pageCountOf(total, pageSize)`, `toPage(items, total, request)`, `clampToLastPage(request, total)`: the arithmetic and the `Page<T>` a screen draws from.
 - `resolveSort(raw, allowedFields, fallback)` / `formatSort(spec)`: `field` or `-field` against an allowlist, so a query value never becomes a column name.
+- `loadClampedPage(request, load)`: loads the page asked for; a page past the end answers the last one. Every paged use case wraps its store read in it.
 - `PAGE_SIZE_OPTIONS`: the sizes a user can choose.
 - Pair with `<Pagination>` (`@components/shared/pagination`). Repositories take a `PageRequest` and return the items plus a `total`; filtering, ordering and counting happen in the store, never in memory over an unbounded read.
 

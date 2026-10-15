@@ -1,3 +1,4 @@
+export { loadClampedPage } from './load-clamped-page';
 export {
   DEFAULT_PAGE_LIMITS,
   PAGE_SIZE_OPTIONS,

@@ -3,12 +3,15 @@ import { describe, expect, it } from 'vitest';
 import {
   clampToLastPage,
   formatSort,
+  loadClampedPage,
   offsetOf,
   pageCountOf,
   resolvePageRequest,
   resolveSort,
   toPage,
 } from '@lib/pagination';
+import type { Page, PageRequest } from '@lib/pagination';
+import { okAsync } from '@lib/result';
 
 describe('resolvePageRequest', () => {
   it('reads the page and size from query text', () => {
@@ -79,5 +82,30 @@ describe('resolveSort', () => {
   it('accepts only fields from the allowlist', () => {
     expect(resolveSort('password; drop table', FIELDS, FALLBACK)).toBe(FALLBACK);
     expect(resolveSort(undefined, FIELDS, FALLBACK)).toBe(FALLBACK);
+  });
+});
+
+describe('loadClampedPage', () => {
+  const ITEMS = ['a', 'b', 'c', 'd', 'e'];
+
+  /** A store of five items that also answers a field of its own beside the page. */
+  function read(request: PageRequest) {
+    const start = (request.page - 1) * request.pageSize;
+    const items = ITEMS.slice(start, start + request.pageSize);
+    return okAsync({ ...toPage(items, ITEMS.length, request), live: 'x' } satisfies Page<string> & {
+      live: string;
+    });
+  }
+
+  it('answers the page asked for, with the fields the read added', async () => {
+    const result = await loadClampedPage({ page: 2, pageSize: 2 }, read);
+
+    expect(result._unsafeUnwrap()).toMatchObject({ page: 2, items: ['c', 'd'], live: 'x' });
+  });
+
+  it('answers the last page when the address points past the end', async () => {
+    const result = await loadClampedPage({ page: 9, pageSize: 2 }, read);
+
+    expect(result._unsafeUnwrap()).toMatchObject({ page: 3, items: ['e'], total: 5, live: 'x' });
   });
 });
