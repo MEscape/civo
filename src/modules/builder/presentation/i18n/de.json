@@ -33,7 +33,7 @@
     },
     "toolbar": {
       "breadcrumb": "Navigationspfad",
-      "websites": "Websites",
+      "pages": "Seiten",
       "history": "Verlauf",
       "undo": "Rückgängig",
       "redo": "Wiederholen",
@@ -47,7 +47,6 @@
       "edit": "Bearbeiten",
       "publicSite": "Öffentliche Seite",
       "opensInNewTab": "(öffnet in neuem Tab)",
-      "settings": "Einstellungen",
       "save": "Speichern",
       "saving": "Speichert…"
     },
@@ -154,6 +153,12 @@
         "submit": "Seite anlegen",
         "submitting": "Wird angelegt…"
       }
+    },
+    "leave": {
+      "title": "Ohne Speichern verlassen?",
+      "description": "Ihre letzten Änderungen an dieser Seite sind nicht gespeichert. Wenn Sie jetzt gehen, gehen sie verloren.",
+      "confirm": "Verlassen und Änderungen verwerfen",
+      "stay": "Bleiben und weiter bearbeiten"
     }
   }
 }

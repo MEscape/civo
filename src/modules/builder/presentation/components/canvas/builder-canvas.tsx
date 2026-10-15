@@ -52,7 +52,13 @@ export function BuilderCanvas({ themeStyle, containerRef, dnd }: BuilderCanvasPr
   return (
     <ViewportFrame viewport={viewport}>
       <div className="civo-canvas rounded-token border border-border bg-canvas">
-        <div ref={containerRef} className="civo-canvas-content" {...selection}>
+        <div
+          ref={containerRef}
+          className="civo-canvas-content"
+          // The selection handlers below swallow every click, so links here never leave the editor.
+          data-navigation-guard-ignore=""
+          {...selection}
+        >
           {nodes.length === 0 ? (
             <CanvasEmptyState />
           ) : (

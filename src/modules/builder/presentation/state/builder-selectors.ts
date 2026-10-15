@@ -31,7 +31,7 @@ export const selectSaveErrorCode = (state: BuilderRootState) => state.save.error
 
 export const selectMode = (state: BuilderRootState) => state.ui.mode;
 export const selectViewport = (state: BuilderRootState) => state.ui.viewport;
-export const selectEditorMode = (state: BuilderRootState) => state.ui.editorMode;
+export const selectCanRestructure = (state: BuilderRootState) => state.ui.canRestructure;
 export const selectNoticeCode = (state: BuilderRootState) => state.ui.noticeCode;
 
 export const selectSelectedNode = createSelector(

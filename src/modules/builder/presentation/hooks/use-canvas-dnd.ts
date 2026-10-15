@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { RefObject } from 'react';
 
-import { hasCapability } from '../../application/contracts/editor-model';
 import { createCanvasDragController } from '../dnd/canvas-drag-controller';
 import { useBuilderDispatch, useBuilderSelector, useBuilderStore } from '../state/builder-hooks';
 import { selectMode } from '../state/builder-selectors';
@@ -41,7 +40,7 @@ export function useCanvasDnd(containerRef: RefObject<HTMLElement | null>): Canva
     createCanvasDragController({
       getContainer: () => containerRef.current,
       getChildren: () => store.getState().document.history.present.children,
-      isEnabled: () => hasCapability(store.getState().ui.editorMode, 'editStructure'),
+      isEnabled: () => store.getState().ui.canRestructure,
       catalog,
       labelOf: (type) => textRef.current.componentLabel(type),
       onDrop: (session, target) => {

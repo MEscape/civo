@@ -29,6 +29,7 @@ export async function savePageConfigAction(
 
   if (result.isOk()) {
     revalidatePath(builderRoutes.pages(result.value.websiteId));
+    revalidatePath(builderRoutes.websiteLayout, 'layout');
   }
   return toActionResult(result.map(toSavedRevisionDto));
 }

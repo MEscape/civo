@@ -10,11 +10,10 @@ import {
   propChangeNotPermitted,
   structureChangeNotPermitted,
 } from '../errors/builder-errors';
-import { VISIBILITY_PROP_KEY, hasCapability } from '../models/editor-capabilities';
+import { VISIBILITY_PROP_KEY } from '../models/page-node';
 import { flattenNodes } from '../tree/tree-operations';
 
 import type { ComponentCatalog } from '../models/component-catalog';
-import type { EditorMode } from '../models/editor-capabilities';
 import type { PageConfig } from '../models/page-config';
 import type { PageNode } from '../models/page-node';
 import type { FlatNode } from '../tree/tree-operations';
@@ -77,23 +76,22 @@ function hasSameStructure(before: readonly FlatNode[], after: readonly FlatNode[
 export function checkEditScope({
   previous,
   next,
-  mode,
+  canRestructure,
   catalog,
 }: {
   readonly previous: PageConfig;
   readonly next: PageConfig;
-  readonly mode: EditorMode;
+  readonly canRestructure: boolean;
   readonly catalog: ComponentCatalog;
 }): AppResult<void, ForbiddenAppError> {
   const before = flattenNodes(previous.children);
   const after = flattenNodes(next.children);
 
-  if (!hasCapability(mode, 'editStructure') && !hasSameStructure(before, after)) {
+  if (!canRestructure && !hasSameStructure(before, after)) {
     return err(structureChangeNotPermitted());
   }
 
   const previousById = keyBy(before, (entry) => entry.node.id);
-  const canToggleVisibility = hasCapability(mode, 'toggleVisibility');
 
   for (const { node } of after) {
     const old = previousById.get(node.id);
@@ -101,13 +99,13 @@ export function checkEditScope({
       continue;
     } // new nodes exist only with `editStructure`, checked above
 
-    const allowed = catalog.editablePropKeys(node.type, mode);
+    const allowed = catalog.editablePropKeys(node.type, canRestructure);
     if (allowed === null) {
       continue;
     }
 
     const isForbidden = changedKeys(old.node.props, node.props).some(
-      (key) => !allowed.has(key) && !(canToggleVisibility && key === VISIBILITY_PROP_KEY),
+      (key) => !allowed.has(key) && key !== VISIBILITY_PROP_KEY,
     );
     if (isForbidden) {
       return err(propChangeNotPermitted());

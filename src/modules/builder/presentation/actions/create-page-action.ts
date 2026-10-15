@@ -21,6 +21,7 @@ export async function createPageAction(input: unknown): Promise<ActionResult<Pag
 
   if (result.isOk()) {
     revalidatePath(builderRoutes.pages(result.value.websiteId));
+    revalidatePath(builderRoutes.websiteLayout, 'layout');
   }
   return toActionResult(result.map(toPageSummaryDto));
 }

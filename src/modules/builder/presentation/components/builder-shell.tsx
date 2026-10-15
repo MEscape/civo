@@ -2,17 +2,19 @@
 
 import { useRef } from 'react';
 
+import { ConfirmDialog } from '@components/shared/confirm-dialog';
+
 import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+import { useUnsavedNavigationGuard } from '@hooks/use-unsaved-navigation-guard';
 
 import { useTranslations } from '@i18n/client';
 
 import { cn } from '@lib/utils';
 
-import { hasCapability } from '../../application/contracts/editor-model';
 import { useCanvasDnd } from '../hooks/use-canvas-dnd';
 import { useEditorShortcuts } from '../hooks/use-editor-shortcuts';
 import { useBuilderSelector } from '../state/builder-hooks';
-import { selectEditorMode, selectIsDirty, selectMode } from '../state/builder-selectors';
+import { selectCanRestructure, selectIsDirty, selectMode } from '../state/builder-selectors';
 
 import { BuilderCanvas } from './canvas/builder-canvas';
 import { DragAnnouncer } from './canvas/drag-announcer';
@@ -27,7 +29,6 @@ import type { EditorLinks } from '../navigation/editor-links';
 import type { ThemeStyle } from './canvas/canvas-theme-scope';
 
 export interface BuilderShellProps {
-  readonly website: { readonly name: string };
   readonly pageTitle: string;
   /** CSS custom properties of the website's theme, computed by the route. */
   readonly themeStyle: ThemeStyle;
@@ -37,21 +38,21 @@ export interface BuilderShellProps {
 const PANEL = 'shrink-0 overflow-y-auto bg-surface';
 
 /** Composes the three-column editor. Capability-gated panels are omitted, not hidden. */
-export function BuilderShell({ website, pageTitle, themeStyle, links }: BuilderShellProps) {
+export function BuilderShell({ pageTitle, themeStyle, links }: BuilderShellProps) {
   const t = useTranslations('builder');
   const mode = useBuilderSelector(selectMode);
-  const editorMode = useBuilderSelector(selectEditorMode);
   const isDirty = useBuilderSelector(selectIsDirty);
-  const canEditStructure = hasCapability(editorMode, 'editStructure');
+  const canEditStructure = useBuilderSelector(selectCanRestructure);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dnd = useCanvasDnd(canvasRef);
 
   useEditorShortcuts(canEditStructure);
   useBeforeUnloadGuard(isDirty);
+  const leaveGuard = useUnsavedNavigationGuard(isDirty);
 
   return (
-    <div className="flex h-app-body flex-col">
-      <BuilderToolbar websiteName={website.name} pageTitle={pageTitle} links={links} />
+    <div className="flex h-website-body flex-col">
+      <BuilderToolbar pageTitle={pageTitle} links={links} />
       <EditNotice />
 
       {mode === 'preview' ? (
@@ -85,6 +86,15 @@ export function BuilderShell({ website, pageTitle, themeStyle, links }: BuilderS
 
       <DragOverlayCursor session={dnd.session} isKeyboard={dnd.isKeyboard} />
       <DragAnnouncer dnd={dnd} />
+      <ConfirmDialog
+        open={leaveGuard.isPrompting}
+        title={t('leave.title')}
+        description={t('leave.description')}
+        confirmLabel={t('leave.confirm')}
+        cancelLabel={t('leave.stay')}
+        onConfirm={leaveGuard.confirm}
+        onCancel={leaveGuard.cancel}
+      />
     </div>
   );
 }

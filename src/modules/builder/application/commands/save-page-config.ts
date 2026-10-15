@@ -4,16 +4,14 @@ import type { ConflictAppError, ForbiddenAppError, ValidationAppError } from '@l
 import { ok } from '@lib/result';
 import type { AppResult, AppResultAsync } from '@lib/result';
 
-import { hasCapability } from '../../domain/models/editor-capabilities';
 import { parsePageVersion } from '../../domain/models/page';
 import { parsePageConfig } from '../../domain/models/page-config';
 import { checkComposition, checkEditScope } from '../../domain/rules/page-save-checks';
 import { countPageNodes } from '../../domain/tree/tree-operations';
 import { loadAuthorizedPage } from '../load-authorized-page';
 import { toSavedRevisionView } from '../page-view-mappers';
-import { resolveEditorMode } from '../services/resolve-editor-mode';
+import { mayRestructure } from '../services/may-restructure';
 
-import type { EditorMode } from '../../domain/models/editor-capabilities';
 import type { Page } from '../../domain/models/page';
 import type { PageConfig } from '../../domain/models/page-config';
 import type { SavePageConfigInput, SavedRevisionView } from '../contracts/page-views';
@@ -26,7 +24,7 @@ export type SavePageConfigError = LoadPageError | ConflictAppError;
 interface SaveContext {
   readonly page: Page;
   readonly actor: Actor;
-  readonly mode: EditorMode;
+  readonly canRestructure: boolean;
 }
 
 interface ValidatedSave {
@@ -39,7 +37,7 @@ interface ValidatedSave {
  *
  * What the actor may change is decided HERE, from their permissions, and
  * checked against the stored page: hiding a control in the UI is not
- * authorization. A save is refused when it exceeds the actor's editor mode
+ * authorization. A save is refused when it exceeds what the actor may change
  * (and recorded as a security signal), or when someone saved a newer
  * revision since this editor loaded the page (`expectedVersion`).
  */
@@ -53,7 +51,7 @@ export class SavePageConfig {
       this.validate(input, {
         page,
         actor,
-        mode: resolveEditorMode(actor),
+        canRestructure: mayRestructure(actor),
       }).asyncAndThen(({ config, expectedVersion }) =>
         pages
           .saveConfig({
@@ -85,19 +83,19 @@ export class SavePageConfig {
     return parsePageVersion(input.expectedVersion).andThen((expectedVersion) =>
       parsePageConfig(input.config)
         .andThen((config) => this.checkScope(config, context))
-        .andThen((config) => this.checkStructure(config, context.mode))
+        .andThen((config) => this.checkStructure(config, context.canRestructure))
         .map((config) => ({ config, expectedVersion })),
     );
   }
 
   private checkScope(
     config: PageConfig,
-    { page, actor, mode }: SaveContext,
+    { page, actor, canRestructure }: SaveContext,
   ): AppResult<PageConfig, ForbiddenAppError> {
     return checkEditScope({
       previous: page.config,
       next: config,
-      mode,
+      canRestructure,
       catalog: this.deps.components,
     })
       .map(() => config)
@@ -114,16 +112,16 @@ export class SavePageConfig {
   }
 
   /**
-   * Without `editStructure` the scope check already proved the structure
+   * Without `page.restructure` the scope check already proved the structure
    * identical to the stored page, so re-validating it could only lock a
-   * municipal editor out of a page that still contains a since-removed
+   * restricted editor out of a page that still contains a since-removed
    * component. Only editors who can restructure must produce a clean tree.
    */
   private checkStructure(
     config: PageConfig,
-    mode: EditorMode,
+    canRestructure: boolean,
   ): AppResult<PageConfig, ValidationAppError> {
-    if (!hasCapability(mode, 'editStructure')) {
+    if (!canRestructure) {
       return ok(config);
     }
     return checkComposition(config, this.deps.components).map(() => config);

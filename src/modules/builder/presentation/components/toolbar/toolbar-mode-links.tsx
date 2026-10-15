@@ -1,5 +1,5 @@
 import { Button } from '@components/ui/button';
-import { Eye, Pencil, Settings } from '@components/ui/icons';
+import { Eye, Pencil } from '@components/ui/icons';
 
 import { Link } from '@i18n';
 
@@ -11,13 +11,11 @@ import { selectMode } from '../../state/builder-selectors';
 
 export interface ToolbarModeLinksProps {
   readonly publicSiteHref: string;
-  /** `null` when the session may not manage the theme. */
-  readonly settingsHref: string | null;
 }
 
 const LINK = 'text-sm text-copy-muted hover:underline';
 
-export function ToolbarModeLinks({ publicSiteHref, settingsHref }: ToolbarModeLinksProps) {
+export function ToolbarModeLinks({ publicSiteHref }: ToolbarModeLinksProps) {
   const t = useTranslations('builder');
   const dispatch = useBuilderDispatch();
   const mode = useBuilderSelector(selectMode);
@@ -44,12 +42,6 @@ export function ToolbarModeLinks({ publicSiteHref, settingsHref }: ToolbarModeLi
         {t('toolbar.publicSite')}
         <span className="sr-only"> {t('toolbar.opensInNewTab')}</span>
       </Link>
-      {settingsHref !== null && (
-        <Link href={settingsHref} className={`${LINK} flex items-center gap-1.5`}>
-          <Settings className="h-4 w-4" aria-hidden="true" />
-          {t('toolbar.settings')}
-        </Link>
-      )}
     </>
   );
 }

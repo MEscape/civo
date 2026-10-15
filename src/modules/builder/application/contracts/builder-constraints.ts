@@ -16,12 +16,7 @@ export type {
   PropItemFieldDescriptor,
   PropOptionDescriptor,
 } from '../../domain/models/component-descriptor';
-export {
-  EDITOR_CAPABILITIES,
-  EDITOR_MODES,
-  VISIBILITY_PROP_KEY,
-} from '../../domain/models/editor-capabilities';
-export type { EditorCapability, EditorMode } from '../../domain/models/editor-capabilities';
+export { VISIBILITY_PROP_KEY } from '../../domain/models/page-node';
 export {
   HOME_PAGE_PATH,
   INITIAL_PAGE_VERSION,

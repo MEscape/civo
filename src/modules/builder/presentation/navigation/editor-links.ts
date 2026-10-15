@@ -1,6 +1,6 @@
 /** Destinations in other modules; the route computes them so the builder never imports those modules. */
 export interface EditorLinks {
-  readonly websites: string;
+  /** The page list, one level above the page being edited. */
+  readonly pages: string;
   readonly publicSite: string;
-  readonly settings: string;
 }

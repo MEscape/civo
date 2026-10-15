@@ -170,3 +170,6 @@ export function parseNodeForest(
 ): readonly PageNode[] {
   return new NodeForestParser(bag).parseChildren(raw, path, 0);
 }
+
+/** The prop a visibility toggle writes. Any editor may change it; it is no part of a component's own fields. */
+export const VISIBILITY_PROP_KEY = 'visible';

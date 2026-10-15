@@ -1,9 +1,6 @@
 import { keyBy } from '@lib/utils';
 
-import { isFullAccess } from './editor-capabilities';
-
 import type { ComponentDescriptor } from './component-descriptor';
-import type { EditorMode } from './editor-capabilities';
 
 /** The nesting rules the tree operations need. */
 export interface NestingPolicy {
@@ -19,11 +16,11 @@ export interface ComponentCatalog extends NestingPolicy {
   describe(type: string): ComponentDescriptor | null;
 
   /**
-   * Prop keys a session in `mode` may change on a node of `type`, or `null`
-   * when the mode is unrestricted. A restricted mode fails closed: an
-   * unregistered type yields an empty set.
+   * Prop keys an editor may change on a node of `type`, or `null` when
+   * nothing is restricted (whoever may restructure pages). The restricted
+   * editor fails closed: an unregistered type yields an empty set.
    */
-  editablePropKeys(type: string, mode: EditorMode): ReadonlySet<string> | null;
+  editablePropKeys(type: string, canRestructure: boolean): ReadonlySet<string> | null;
 }
 
 /** Everything the catalog looks up per type, computed once at construction. */
@@ -62,8 +59,8 @@ export function createComponentCatalog(
       }
       return entries.get(parentType)?.childTypes.has(childType) ?? false;
     },
-    editablePropKeys(type, mode) {
-      if (isFullAccess(mode)) {
+    editablePropKeys(type, canRestructure) {
+      if (canRestructure) {
         return null;
       }
       return entries.get(type)?.municipalPropKeys ?? NO_PROP_KEYS;

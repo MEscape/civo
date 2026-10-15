@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
+import { notFound } from 'next/navigation';
+
 import { builderQueries, CreatePageForm, PageList, toPageSummaryDto } from '@modules/builder';
 
 import { AdminContainer, PageHeading, Section } from '@components/layout/layout-primitives';
@@ -15,6 +17,7 @@ import { getTranslations } from '@i18n/server';
 import { buildPrivateMetadata } from '@lib/seo';
 
 import { orFail } from '@/app/_lib/or-fail';
+import { getWebsiteAccess } from '@/app/_lib/website-access';
 
 interface RouteProps {
   readonly params: Promise<{ locale: string; websiteId: string }>;
@@ -30,23 +33,32 @@ async function BuilderPagesContent({ params }: RouteProps) {
   const { locale: rawLocale, websiteId } = await params;
   const locale = requireLocale(rawLocale);
   const t = await getTranslations({ locale, namespace: 'builder' });
-  const pages = await orFail(builderQueries.listPages.execute({ websiteId }));
+  const [pages, access] = await Promise.all([
+    orFail(builderQueries.listPages.execute({ websiteId })),
+    getWebsiteAccess(),
+  ]);
+  // Every page here opens in the editor.
+  if (!access.maySection('builder')) {
+    notFound();
+  }
 
   return (
     <AdminContainer>
-      <Section className="space-y-8">
+      <Section className="space-y-8 py-8">
         <PageHeading title={t('pages.list.title')} description={t('pages.list.description')} />
 
         <PageList websiteId={websiteId} pages={pages.map(toPageSummaryDto)} />
 
-        <div className="space-y-4">
-          <h2 className="font-heading text-lg font-semibold text-copy">
-            {t('pages.list.createTitle')}
-          </h2>
-          <I18nProvider locale={locale} namespaces={['builder']}>
-            <CreatePageForm websiteId={websiteId} />
-          </I18nProvider>
-        </div>
+        {access.may('page.create') && (
+          <div className="space-y-4">
+            <h2 className="font-heading text-lg font-semibold text-copy">
+              {t('pages.list.createTitle')}
+            </h2>
+            <I18nProvider locale={locale} namespaces={['builder']}>
+              <CreatePageForm websiteId={websiteId} />
+            </I18nProvider>
+          </div>
+        )}
       </Section>
     </AdminContainer>
   );

@@ -5,6 +5,12 @@
  * draft never invalidates anything public.
  */
 export const builderRoutes = {
+  /**
+   * The layout every builder page sits under. What the builder saves changes what
+   * that layout shows (whether the editor differs from the live site), so saving
+   * marks it stale.
+   */
+  websiteLayout: '/websites/[websiteId]',
   pages: (websiteId: string) => `/websites/${websiteId}/builder`,
   editor: (websiteId: string, pageId: string) => `/websites/${websiteId}/builder/${pageId}`,
 } as const;

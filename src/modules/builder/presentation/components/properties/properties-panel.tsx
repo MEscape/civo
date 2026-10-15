@@ -1,12 +1,11 @@
 import { useTranslations } from '@i18n/client';
 
 import { VISIBILITY_PROP_KEY } from '../../../application/contracts/builder-constraints';
-import { hasCapability } from '../../../application/contracts/editor-model';
 import { useComponentText } from '../../hooks/use-component-text';
 import { visibleFields } from '../../properties/visible-fields';
 import { useBuilderSelector } from '../../state/builder-hooks';
 import {
-  selectEditorMode,
+  selectCanRestructure,
   selectSelectedAncestors,
   selectSelectedNode,
 } from '../../state/builder-selectors';
@@ -30,7 +29,7 @@ export function PropertiesPanel() {
   const text = useComponentText();
   const node = useBuilderSelector(selectSelectedNode);
   const ancestors = useBuilderSelector(selectSelectedAncestors);
-  const editorMode = useBuilderSelector(selectEditorMode);
+  const canRestructure = useBuilderSelector(selectCanRestructure);
 
   if (node === null) {
     return (
@@ -41,7 +40,7 @@ export function PropertiesPanel() {
   }
 
   const descriptor = catalog.describe(node.type);
-  const fields = descriptor === null ? [] : visibleFields(descriptor, editorMode, catalog);
+  const fields = descriptor === null ? [] : visibleFields(descriptor, canRestructure, catalog);
   const label = text.componentLabel(node.type);
 
   return (
@@ -52,9 +51,7 @@ export function PropertiesPanel() {
       </h2>
       <p className="mb-4 text-sm font-medium text-copy">{label}</p>
 
-      {hasCapability(editorMode, 'toggleVisibility') && (
-        <VisibilityToggle nodeId={node.id} isVisible={node.props[VISIBILITY_PROP_KEY] !== false} />
-      )}
+      <VisibilityToggle nodeId={node.id} isVisible={node.props[VISIBILITY_PROP_KEY] !== false} />
 
       {fields.length > 0 ? (
         <PropertyFieldGroups nodeId={node.id} fields={fields} props={node.props} />

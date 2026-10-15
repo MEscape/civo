@@ -33,7 +33,7 @@
     },
     "toolbar": {
       "breadcrumb": "Breadcrumb",
-      "websites": "Websites",
+      "pages": "Pages",
       "history": "History",
       "undo": "Undo",
       "redo": "Redo",
@@ -47,7 +47,6 @@
       "edit": "Edit",
       "publicSite": "Public site",
       "opensInNewTab": "(opens in a new tab)",
-      "settings": "Settings",
       "save": "Save",
       "saving": "Saving…"
     },
@@ -154,6 +153,12 @@
         "submit": "Create page",
         "submitting": "Creating…"
       }
+    },
+    "leave": {
+      "title": "Leave without saving?",
+      "description": "Your latest changes to this page are not saved. If you leave now, they are lost.",
+      "confirm": "Leave and discard changes",
+      "stay": "Stay and keep editing"
     }
   }
 }

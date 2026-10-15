@@ -1,6 +1,5 @@
-import { hasCapability } from '../../../application/contracts/editor-model';
 import { useBuilderSelector } from '../../state/builder-hooks';
-import { selectEditorMode } from '../../state/builder-selectors';
+import { selectCanRestructure } from '../../state/builder-selectors';
 
 import { CanvasDragHandles } from './canvas-drag-handles';
 import { CanvasNodeActions } from './canvas-node-actions';
@@ -25,7 +24,7 @@ export function CanvasOverlay({
   hoveredNodeId,
   dnd,
 }: CanvasOverlayProps) {
-  const canEditStructure = hasCapability(useBuilderSelector(selectEditorMode), 'editStructure');
+  const canEditStructure = useBuilderSelector(selectCanRestructure);
   const selectedRect = selectedNodeId === null ? undefined : rects.get(selectedNodeId);
   const hoveredRect =
     hoveredNodeId === null || hoveredNodeId === selectedNodeId

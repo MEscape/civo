@@ -34,7 +34,8 @@ function plainShortcut(event: KeyboardEvent, canEditStructure: boolean): Shortcu
  * Editor shortcuts. Thunks read the current state themselves, so this
  * listener subscribes once. Save works everywhere; undo, redo, escape and
  * delete never hijack text editing, and delete only acts when nothing
- * else has focus and the session may change the structure.
+ * else has focus and the session may change the structure. Keys pressed
+ * inside a dialog are the dialog's.
  */
 export function useEditorShortcuts(canEditStructure: boolean): void {
   const dispatch = useBuilderDispatch();
@@ -59,6 +60,10 @@ export function useEditorShortcuts(canEditStructure: boolean): void {
     };
 
     function handleKeyDown(event: KeyboardEvent): void {
+      // A dialog (the leave confirmation) owns the keyboard: nothing behind it may change.
+      if (event.target instanceof Element && event.target.closest('dialog') !== null) {
+        return;
+      }
       const hasModifier = event.metaKey || event.ctrlKey;
       const shortcut =
         (hasModifier ? modifiedShortcut(event.key.toLowerCase(), event.shiftKey) : null) ??

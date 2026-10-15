@@ -28,7 +28,7 @@ export function createBuilderStore(session: EditorSessionDto, extra: BuilderThun
     reducer: { document: documentReducer, save: saveReducer, ui: uiReducer },
     preloadedState: {
       document: createDocumentState(session.page),
-      ui: createUiState(session.editorMode),
+      ui: createUiState(session.canRestructure),
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: { extraArgument: extra } }),
   });

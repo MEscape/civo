@@ -1,6 +1,5 @@
 import type {
   ComponentDescriptor,
-  EditorMode,
   PropFieldDescriptor,
 } from '../../application/contracts/builder-constraints';
 import type { ComponentCatalog } from '../../application/contracts/editor-model';
@@ -12,10 +11,10 @@ import type { ComponentCatalog } from '../../application/contracts/editor-model'
  */
 export function visibleFields(
   descriptor: ComponentDescriptor,
-  mode: EditorMode,
+  canRestructure: boolean,
   catalog: ComponentCatalog,
 ): readonly PropFieldDescriptor[] {
-  const allowed = catalog.editablePropKeys(descriptor.type, mode);
+  const allowed = catalog.editablePropKeys(descriptor.type, canRestructure);
   return allowed === null
     ? descriptor.fields
     : descriptor.fields.filter((field) => allowed.has(field.key));

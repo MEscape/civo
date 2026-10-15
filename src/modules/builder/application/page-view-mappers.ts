@@ -9,7 +9,6 @@ import type {
   SavedRevisionView,
 } from './contracts/page-views';
 import type { ComponentCatalog } from '../domain/models/component-catalog';
-import type { EditorMode } from '../domain/models/editor-capabilities';
 import type { Page, PageSummary } from '../domain/models/page';
 import type { SavedRevision } from '../domain/models/page-revision';
 import type { ReleasePage } from '../domain/models/release-page';
@@ -59,12 +58,12 @@ export function toReleasePageView(page: ReleasePage): ReleasePageView {
 
 export function toEditorSessionView(input: {
   readonly page: Page;
-  readonly editorMode: EditorMode;
+  readonly canRestructure: boolean;
   readonly catalog: ComponentCatalog;
 }): EditorSessionView {
   return {
     page: toPageView(input.page),
-    editorMode: input.editorMode,
+    canRestructure: input.canRestructure,
     components: input.catalog.descriptors,
   };
 }

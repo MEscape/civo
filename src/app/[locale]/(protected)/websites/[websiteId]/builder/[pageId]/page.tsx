@@ -13,10 +13,11 @@ import {
   toDatasetOptionsByType,
   toEditorSessionDto,
 } from '@modules/builder';
+import { builderRoutes } from '@modules/builder/client';
 import { componentPlatformQueries } from '@modules/component-platform';
 import { dataSourceQueries } from '@modules/data-sources';
 import { releaseRoutes } from '@modules/release/client';
-import { themeToCssVariables, websiteQueries, websiteRoutes } from '@modules/website';
+import { themeToCssVariables } from '@modules/website';
 
 import { I18nProvider } from '@components/providers/i18n-provider';
 import { PageSkeleton } from '@components/shared/page-skeleton';
@@ -27,6 +28,7 @@ import { getTranslations } from '@i18n/server';
 
 import { assertNever } from '@lib/utils';
 
+import { loadWebsite } from '@/app/_lib/load-website';
 import { orFail } from '@/app/_lib/or-fail';
 
 interface RouteProps {
@@ -65,7 +67,7 @@ async function BuilderContent({ params }: RouteProps) {
   }
 
   const [websiteView, datasets] = await Promise.all([
-    orFail(websiteQueries.getWebsiteById.execute(websiteId)),
+    orFail(loadWebsite(websiteId)),
     orFail(
       dataSourceQueries.listCompatibleDatasets.execute({
         websiteId,
@@ -103,13 +105,11 @@ async function BuilderContent({ params }: RouteProps) {
         categoryOptions={categoryOptions}
       >
         <BuilderShell
-          website={{ name: websiteView.name }}
           pageTitle={sessionView.page.title}
           themeStyle={themeToCssVariables(websiteView.theme)}
           links={{
-            websites: websiteRoutes.list(),
+            pages: builderRoutes.pages(websiteId),
             publicSite: releaseRoutes.publicSite(websiteView.slug, sessionView.page.path),
-            settings: websiteRoutes.settings(websiteView.id),
           }}
         />
       </BuilderSessionProvider>

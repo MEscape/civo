@@ -1,7 +1,6 @@
 import type { TenantId } from '@modules/auth';
 
 import type { ComponentDescriptor } from '../../domain/models/component-descriptor';
-import type { EditorMode } from '../../domain/models/editor-capabilities';
 import type { PageDraftInput } from '../../domain/models/page';
 import type { PageConfig, PageConfigJson } from '../../domain/models/page-config';
 
@@ -55,12 +54,12 @@ export interface SavedRevisionView {
 }
 
 /**
- * Everything the editor needs to start: the page, the mode this actor is
- * allowed (derived on the server), and the component catalog as data.
+ * Everything the editor needs to start: the page, whether this actor may
+ * restructure pages (derived on the server), and the component catalog as data.
  */
 export interface EditorSessionView {
   readonly page: PageView;
-  readonly editorMode: EditorMode;
+  readonly canRestructure: boolean;
   readonly components: readonly ComponentDescriptor[];
 }
 
