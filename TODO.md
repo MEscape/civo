@@ -23,6 +23,30 @@
 
 - scripts
 
+- website delete and page delete/edit and page
+
+- color palette previews
+
+- confirm dialog everywhere where uload guard?
+
+- ci  only validate docker image no generate and migration but idk how to handle it because of standalone setting
+
+- user page should  not be in  website scope and not be tenant wide only for the platform admin and we need  that tenant is literally the created website!!! tenantid = websiteid? and normal admin also no website creation so  the normal websites route not available!!! thats for all only platform admin!!! is there also any correlation with booking sys?
+
+- navbar is loaded shortly and then got to sign in panel
+
+- Update-Verlauf always one step behind
+
+- release pagination in footer of releases table?
+
+- release "Veröffentlicht von einem ehemaligen Mitglied"  but i am logged in currently when i did this release?!?
+
+- details in component verlauf ui improvement
+
+- component updates conflicts > redirect to the causing elements on builder and highlight?
+
+- audit integration (on dashboard start and own page)
+
 - pre-commit and setup command
 
 - improved agent md files
