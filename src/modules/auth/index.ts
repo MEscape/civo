@@ -7,6 +7,7 @@
 
 export { toTenantId } from './domain/models/ids';
 export type { ActorId, TenantId } from './domain/models/ids';
+export { PERMISSIONS } from './domain/models/permission';
 export type { Permission } from './domain/models/permission';
 export type { ResourceScope } from './domain/models/authorize';
 export type { Actor } from './domain/models/actor';
@@ -14,11 +15,18 @@ export { actorHasPermission } from './domain/models/authorize';
 
 /** Authorization: every protected use case of every module receives this. */
 export type { AuthorizationError, AuthorizationService } from './application/authorization-service';
-export { getAccessControl, getAuthQueries, getHeldPermissions, isAuthEnabled } from './composition';
+export {
+  getAccessControl,
+  getAuthQueries,
+  getCurrentTenantId,
+  getMemberTenantIds,
+  getHeldPermissions,
+  isAuthEnabled,
+} from './composition';
 export type { EmployeeView } from './application/contracts/user-views';
 
 /** Framework entry points: the auth Route Handler and the page guard. */
-export { authRouteHandlers } from './composition';
+export { authRouteHandlers, runAuthStartup } from './composition';
 export { requireSignedIn } from './presentation/guards/require-signed-in';
 
 export { authRoutes } from './presentation/routes';
@@ -41,3 +49,4 @@ export { InvitationLinkMissing } from './presentation/components/invitation-link
 
 export { default as enAuth } from './presentation/i18n/en.json';
 export { default as deAuth } from './presentation/i18n/de.json';
+export { PlatformAdmins } from './presentation/components/platform-admins';

@@ -5,8 +5,11 @@ import type { AppResultAsync } from '@lib/result';
 import { invalidToken, invitationFailed } from '../../domain/errors/auth-errors';
 import { createSignUpDraft } from '../../domain/models/credentials';
 import { isInvitationOpen } from '../../domain/models/invitation';
+import { PLATFORM_ADMIN_ROLE } from '../../domain/models/role';
+import { PLATFORM_TENANT_ID } from '../../domain/models/tenant';
 import { enforceRateLimit } from '../services/enforce-rate-limit';
 
+import type { ActorId } from '../../domain/models/ids';
 import type { Invitation } from '../../domain/models/invitation';
 import type { AuthenticatorError } from '../../domain/ports/authenticator.port';
 import type {
@@ -59,11 +62,30 @@ export class AcceptInvitation {
       );
   }
 
+  /**
+   * What the invitation grants once the account exists: a tenant role in its
+   * tenant, or platform administration. The latter is valid only in the platform
+   * scope, where only the deployment's own start-up creates invitations
+   * (`InviteBootstrapAdmins`); anywhere else it is refused like an unknown link.
+   */
+  private grant(
+    invitation: Invitation,
+    userId: ActorId,
+  ): AppResultAsync<void, AcceptInvitationError> {
+    const { members } = this.deps;
+    if (invitation.role !== PLATFORM_ADMIN_ROLE) {
+      return members.replaceRoles(userId, invitation.tenantId, [invitation.role]);
+    }
+    return invitation.tenantId === PLATFORM_TENANT_ID
+      ? members.setPlatformAdmin(userId, true)
+      : errAsync(invalidToken());
+  }
+
   private join(
     invitation: Invitation,
     draft: Parameters<AuthenticationDependencies['authenticator']['signUp']>[0],
   ): AppResultAsync<undefined, AcceptInvitationError> {
-    const { invitations, members, directory, authenticator, audit, clock } = this.deps;
+    const { invitations, directory, authenticator, audit, clock } = this.deps;
 
     return invitations
       .claim(invitation.id, clock.now())
@@ -79,7 +101,7 @@ export class AcceptInvitation {
               ? errAsync<undefined, AcceptInvitationError>(
                   invitationFailed('account missing after sign-up'),
                 )
-              : members.replaceRoles(user.id, invitation.tenantId, [invitation.role]).map(() => {
+              : this.grant(invitation, user.id).map(() => {
                   audit.record({
                     type: 'invitation.accepted',
                     tenantId: invitation.tenantId,

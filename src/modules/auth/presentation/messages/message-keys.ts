@@ -9,7 +9,7 @@ import {
   CREDENTIAL_LIMITS,
 } from '../../application/contracts/auth-constraints';
 
-import type { AuthCode, Role } from '../../application/contracts/auth-constraints';
+import type { AuthCode, InvitationRole } from '../../application/contracts/auth-constraints';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['auth']>;
 
@@ -59,9 +59,11 @@ export const MESSAGE_KEY_BY_CODE = {
 export const ROLE_MESSAGE_KEYS = {
   admin: fieldPath('users', 'roles', 'admin'),
   editor: fieldPath('users', 'roles', 'editor'),
+  contributor: fieldPath('users', 'roles', 'contributor'),
   viewer: fieldPath('users', 'roles', 'viewer'),
   employee: fieldPath('users', 'roles', 'employee'),
-} as const satisfies Record<Role, ValidKeys>;
+  platform_admin: fieldPath('users', 'roles', 'platformAdmin'),
+} as const satisfies Record<InvitationRole, ValidKeys>;
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 

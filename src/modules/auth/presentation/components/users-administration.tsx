@@ -106,7 +106,7 @@ export async function UsersAdministration({
               {t('users.invite.title')}
             </h2>
             <p className="text-sm text-copy-muted">{t('users.invite.description')}</p>
-            <InviteUserForm />
+            <InviteUserForm initialRole={params.invite} />
           </section>
         )}
 

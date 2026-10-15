@@ -5,17 +5,18 @@ import { fromThrowableAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { AUTH_ERROR_CODES } from '../../domain/errors/auth-errors';
-import { toActorId } from '../../domain/models/ids';
-import { ROLES, isRole } from '../../domain/models/role';
+import { toActorId, toTenantId } from '../../domain/models/ids';
+import { PLATFORM_ADMIN_ROLE, ROLES, isRole } from '../../domain/models/role';
+import { PLATFORM_TENANT_ID } from '../../domain/models/tenant';
 import { MAX_TENANT_MEMBERS } from '../../domain/ports/membership.repository';
 
 import { MAX_MEMBERSHIP_ROWS, MEMBERSHIP_SELECT, toRoles } from './membership-record-mapper';
 
 import type { ActorId, TenantId } from '../../domain/models/ids';
-import type { Role } from '../../domain/models/role';
+import type { TenantRole } from '../../domain/models/role';
 import type { MemberRoster, MembershipRepository } from '../../domain/ports/membership.repository';
 
-const ADMINISTRATOR: Role = 'admin';
+const ADMINISTRATOR: TenantRole = 'admin';
 
 const membershipLogger = logger.withContext({ module: 'auth.membership' });
 
@@ -44,7 +45,7 @@ async function lockTenantRoster(tx: Transaction, tenantId: TenantId): Promise<vo
 async function writeRoles(
   source: Pick<Transaction, 'orm'>,
   { actorId, tenantId }: { readonly actorId: ActorId; readonly tenantId: TenantId },
-  roles: readonly Role[],
+  roles: readonly TenantRole[],
 ): Promise<void> {
   for (const role of roles) {
     await source.orm.public.Membership.select('role').upsert({
@@ -81,11 +82,86 @@ async function writeRoles(
  * `actorId` has no foreign key to Better Auth's user table: the two live in
  * different databases/roles by design. See migrations/app/0001_membership.sql.
  */
+/** More platform administrators than this is a data error, not a case to serve. */
+const MAX_PLATFORM_ADMINS = 100;
+
+/** More tenants than this for one person is a data error, not a case to serve. */
+const MAX_TENANTS_PER_ACTOR = 50;
+
 export class PrismaMembershipRepository implements MembershipRepository {
+  isPlatformAdmin(actorId: ActorId): AppResultAsync<boolean, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Membership.where({
+          actorId,
+          tenantId: PLATFORM_TENANT_ID,
+          role: PLATFORM_ADMIN_ROLE,
+        })
+          .select('role')
+          .first(),
+      failures.infraOnly('isPlatformAdmin'),
+    ).map((record) => record !== null);
+  }
+
+  listPlatformAdmins(): AppResultAsync<readonly ActorId[], InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Membership.where({
+          tenantId: PLATFORM_TENANT_ID,
+          role: PLATFORM_ADMIN_ROLE,
+        })
+          .select('actorId')
+          .orderBy([
+            (membership) => membership.createdAt.asc(),
+            (membership) => membership.id.asc(),
+          ])
+          .limit(MAX_PLATFORM_ADMINS)
+          .all(),
+      failures.infraOnly('listPlatformAdmins'),
+    ).map((records) => records.map((record) => toActorId(record.actorId)));
+  }
+
+  setPlatformAdmin(
+    actorId: ActorId,
+    isAdministrator: boolean,
+  ): AppResultAsync<void, InfrastructureAppError> {
+    const scope = { actorId, tenantId: PLATFORM_TENANT_ID, role: PLATFORM_ADMIN_ROLE };
+    return fromThrowableAsync(async () => {
+      if (isAdministrator) {
+        await db.orm.public.Membership.select('role').upsert({
+          create: scope,
+          update: {},
+          conflictOn: scope,
+        });
+      } else {
+        await db.orm.public.Membership.where(scope).deleteAndCount();
+      }
+    }, failures.infraOnly('setPlatformAdmin'));
+  }
+
+  findTenantsOf(actorId: ActorId): AppResultAsync<readonly TenantId[], InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Membership.where({ actorId })
+          .select('tenantId')
+          .orderBy([
+            (membership) => membership.createdAt.asc(),
+            (membership) => membership.id.asc(),
+          ])
+          .limit(MAX_TENANTS_PER_ACTOR * ROLES.length)
+          .all(),
+      failures.infraOnly('findTenantsOf'),
+    ).map((records) => {
+      const tenants = new Set<string>(records.map((record) => record.tenantId));
+      tenants.delete(PLATFORM_TENANT_ID);
+      return [...tenants].map(toTenantId);
+    });
+  }
+
   findRoles(
     actorId: ActorId,
     tenantId: TenantId,
-  ): AppResultAsync<readonly Role[], InfrastructureAppError> {
+  ): AppResultAsync<readonly TenantRole[], InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
         db.orm.public.Membership.where({ actorId, tenantId })
@@ -108,7 +184,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
 
   listMembers(
     tenantId: TenantId,
-    filter: { readonly role: Role | null },
+    filter: { readonly role: TenantRole | null },
   ): AppResultAsync<MemberRoster, InfrastructureAppError> {
     // One row per (actor, role); a tenant of MAX_TENANT_MEMBERS people holds at most that times the number of roles.
     const rowLimit = MAX_TENANT_MEMBERS * ROLES.length + 1;
@@ -124,7 +200,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
           .all(),
       failures.infraOnly('listMembers'),
     ).map((records): MemberRoster => {
-      const byActor = new Map<ActorId, Role[]>();
+      const byActor = new Map<ActorId, TenantRole[]>();
       for (const record of records) {
         if (!isRole(record.role)) {
           continue;
@@ -145,7 +221,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
   replaceRoles(
     actorId: ActorId,
     tenantId: TenantId,
-    roles: readonly Role[],
+    roles: readonly TenantRole[],
   ): AppResultAsync<void, InfrastructureAppError> {
     return fromThrowableAsync(
       () => writeRoles(db, { actorId, tenantId }, roles),
@@ -156,7 +232,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
   replaceRolesKeepingAdministrator(
     actorId: ActorId,
     tenantId: TenantId,
-    roles: readonly Role[],
+    roles: readonly TenantRole[],
   ): AppResultAsync<boolean, InfrastructureAppError> {
     return fromThrowableAsync(
       () =>

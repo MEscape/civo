@@ -12,6 +12,7 @@ export {
   EMAIL_PATTERN,
 } from '../../domain/models/credentials';
 export { ROLES } from '../../domain/models/role';
-export type { Role } from '../../domain/models/role';
+export type { Role, TenantRole } from '../../domain/models/role';
+export type { InvitationRole } from '../../domain/models/invitation';
 export { USER_SORT_FIELDS } from '../../domain/ports/user-directory.port';
 export type { UserSortField } from '../../domain/ports/user-directory.port';

@@ -17,6 +17,8 @@ const LEVEL_BY_EVENT = {
   'authentication.password_reset_completed': 'info',
   'membership.roles_changed': 'info',
   'membership.removed': 'info',
+  'platform_admin.granted': 'warn',
+  'platform_admin.revoked': 'warn',
   'invitation.created': 'info',
   'invitation.accepted': 'info',
   'invitation.revoked': 'info',

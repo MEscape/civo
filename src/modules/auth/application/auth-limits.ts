@@ -23,5 +23,11 @@ export const AUTH_RATE_LIMITS = {
   { readonly limit: number; readonly windowSeconds: number }
 >;
 
+/** The open platform invitations looked at when deciding whether an administrator address was already mailed: one per configured address, so far fewer. */
+export const MAX_BOOTSTRAP_INVITATIONS_SCANNED = 100;
+
 /** Most employees one assignment list offers; a tenant with more narrows the role first. */
-export const MAX_EMPLOYEES_LISTED = 100;
+export const MAX_PLATFORM_ADMINS_LISTED = 100;
+
+/** The most names one call resolves: a page of a history, not a roster. */
+export const MAX_RESOLVED_NAMES = 50;

@@ -6,7 +6,7 @@ import type { AppResultAsync } from '@lib/result';
 
 import { actorHasPermission } from '../../domain/models/authorize';
 
-import type { Role } from '../../domain/models/role';
+import type { TenantRole } from '../../domain/models/role';
 import type { UserSortField } from '../../domain/ports/user-directory.port';
 import type { UserAdministrationDependencies } from '../auth-dependencies';
 import type { AuthorizationError } from '../authorization-service';
@@ -14,7 +14,7 @@ import type { UserView } from '../contracts/user-views';
 
 export interface ListUsersOptions {
   readonly text: string | null;
-  readonly role: Role | null;
+  readonly role: TenantRole | null;
   readonly sort: SortSpec<UserSortField>;
   readonly page: PageRequest;
 }

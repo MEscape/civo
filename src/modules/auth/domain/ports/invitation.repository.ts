@@ -3,13 +3,12 @@ import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import type { ActorId, InvitationId, TenantId } from '../models/ids';
-import type { Invitation } from '../models/invitation';
-import type { Role } from '../models/role';
+import type { Invitation, InvitationRole } from '../models/invitation';
 
 export interface NewInvitation {
   readonly tenantId: TenantId;
   readonly email: string;
-  readonly role: Role;
+  readonly role: InvitationRole;
   readonly invitedBy: ActorId;
   readonly expiresAt: Date;
   /** SHA-256 of the emailed token. The token itself is never stored. */

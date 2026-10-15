@@ -1,6 +1,6 @@
 import { ROLES, isRole } from '../../domain/models/role';
 
-import type { Role } from '../../domain/models/role';
+import type { TenantRole } from '../../domain/models/role';
 
 /**
  * Persistence shape.
@@ -30,6 +30,6 @@ export const MAX_MEMBERSHIP_ROWS = ROLES.length;
  * never granted. Discarding can only remove access, so bad data cannot
  * escalate privilege.
  */
-export function toRoles(records: readonly MembershipRecord[]): readonly Role[] {
+export function toRoles(records: readonly MembershipRecord[]): readonly TenantRole[] {
   return records.map((record) => record.role).filter(isRole);
 }

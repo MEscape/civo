@@ -170,11 +170,8 @@ function world(options: { readonly actorRoles?: readonly Role[] } = {}) {
 }
 
 describe('the employee role', () => {
-  it('may read its own bookings and its own hours, and nothing else', () => {
-    expect(permissionsForRole('employee')).toEqual([
-      'booking.read.own',
-      'booking.availability.own',
-    ]);
+  it('may read its own bookings and set up its own calendar, and nothing else', () => {
+    expect(permissionsForRole('employee')).toEqual(['booking.read.own', 'booking.profile.own']);
   });
 
   it('may not configure, manage users or read the website', () => {

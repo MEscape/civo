@@ -22,6 +22,16 @@ export interface AuthenticationDependencies {
   readonly audit: SecurityAuditLog;
 }
 
+/** What mailing the deployment's platform administrators at start needs: no actor, only stores and the mailer. */
+export interface BootstrapDependencies {
+  readonly directory: UserDirectory;
+  readonly invitations: InvitationRepository;
+  readonly tokens: TokenGenerator;
+  readonly mailer: AuthMailer;
+  readonly audit: SecurityAuditLog;
+  readonly clock: Clock;
+}
+
 export interface CurrentActorDependencies {
   readonly currentActor: CurrentActorProvider;
 }

@@ -1,12 +1,12 @@
 import { logger } from '@lib/logger';
-import { okAsync } from '@lib/result';
+import { ResultAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 import { invariant, isValidUrl } from '@lib/utils';
 
 import { toActorId } from '../../domain/models/ids';
+import { PLATFORM_TENANT_ID, parseTenantHint } from '../../domain/models/tenant';
 
 import type { Actor } from '../../domain/models/actor';
-import type { TenantId } from '../../domain/models/ids';
 import type { Role } from '../../domain/models/role';
 import type {
   CurrentActorError,
@@ -44,15 +44,18 @@ function isLoopbackUrl(appUrl: string): boolean {
  * denied `website.delete`. That keeps disabled mode testable and prevents
  * it from becoming a bypass.
  *
- * It is never constructed from a request, header or cookie: the role and
- * tenant are fixed at construction by the composition root.
+ * Its role is fixed at construction by the composition root. Its tenant is
+ * the website the address names (a tenant is its website), so one dev
+ * session can open any website as any role; on a screen with no website it
+ * stands in the platform scope. This is loopback-only, like the actor itself.
  */
 export class DevCurrentActorProvider implements CurrentActorProvider {
-  private readonly actor: Actor;
+  private readonly role: Role;
+  private readonly getTenantHint: () => Promise<string | null>;
 
   constructor(options: {
     readonly role: Role;
-    readonly tenantId: TenantId;
+    readonly getTenantHint: () => Promise<string | null>;
     readonly nodeEnv: string;
     readonly appUrl: string;
   }) {
@@ -66,16 +69,22 @@ export class DevCurrentActorProvider implements CurrentActorProvider {
       isLoopbackUrl(options.appUrl),
       'DevCurrentActorProvider may only run when the app URL is a loopback address.',
     );
-    this.actor = {
-      id: toActorId(DEV_ACTOR_ID),
-      tenantId: options.tenantId,
-      roles: [options.role],
-    };
+    this.role = options.role;
+    this.getTenantHint = options.getTenantHint;
     // Loud on purpose: every request is now this actor.
     devLogger.warn('auth.disabled_dev_actor_active', { role: options.role });
   }
 
   getCurrentActor(): AppResultAsync<Actor, CurrentActorError> {
-    return okAsync(this.actor);
+    return ResultAsync.fromSafePromise(
+      this.getTenantHint().then(
+        (raw) => parseTenantHint(raw),
+        () => null,
+      ),
+    ).map((hint) => ({
+      id: toActorId(DEV_ACTOR_ID),
+      tenantId: hint ?? PLATFORM_TENANT_ID,
+      roles: [this.role],
+    }));
   }
 }

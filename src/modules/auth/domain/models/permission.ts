@@ -8,6 +8,8 @@
  */
 export const PERMISSIONS = [
   'website.create',
+  'website.list.all',
+  'platform.admin.manage',
   'website.read',
   'website.update',
   'website.delete',
@@ -33,8 +35,7 @@ export const PERMISSIONS = [
   'booking.configure',
   'booking.manage',
   'booking.read.own',
-  'booking.availability.own',
-  'employee.read',
+  'booking.profile.own',
   'user.read',
   'user.manage',
 ] as const;

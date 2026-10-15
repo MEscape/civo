@@ -48,6 +48,16 @@ export type SecurityEvent =
       readonly subjectId: ActorId;
     }
   | {
+      readonly type: 'platform_admin.granted';
+      readonly actorId: ActorId;
+      readonly subjectId: ActorId;
+    }
+  | {
+      readonly type: 'platform_admin.revoked';
+      readonly actorId: ActorId;
+      readonly subjectId: ActorId;
+    }
+  | {
       readonly type: 'membership.removed';
       readonly actorId: ActorId;
       readonly tenantId: TenantId;

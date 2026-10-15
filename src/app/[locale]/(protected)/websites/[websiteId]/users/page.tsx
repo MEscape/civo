@@ -39,7 +39,7 @@ async function UsersContent({ params, searchParams }: RouteProps) {
 
   return (
     <AdminContainer>
-      <Section className="space-y-8">
+      <Section className="space-y-8 py-8">
         <PageHeading title={t('users.title')} description={t('users.description')} />
         <UsersAdministration
           locale={locale}

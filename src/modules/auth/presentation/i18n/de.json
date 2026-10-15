@@ -128,8 +128,10 @@
       "roles": {
         "admin": "Administrator",
         "editor": "Redakteur",
+        "contributor": "Autor",
         "viewer": "Leser",
-        "employee": "Mitarbeiter"
+        "employee": "Mitarbeiter",
+        "platformAdmin": "Plattform-Administration"
       },
       "invite": {
         "title": "Jemanden einladen",
@@ -180,6 +182,16 @@
         "expires": "läuft ab am {date}",
         "revoke": "Einladung für {email} zurückziehen"
       }
+    },
+    "platformAdmins": {
+      "title": "Plattform-Administratoren",
+      "description": "Wer Websites anlegen und in jeder Website arbeiten darf. Die Person braucht zuerst ein Konto mit bestätigter Adresse.",
+      "none": "Noch niemand per Mitgliedschaft. In der Konfiguration genannte Administratoren werden hier nicht aufgeführt.",
+      "email": "E-Mail-Adresse",
+      "emailHint": "Eines bestehenden Kontos.",
+      "add": "Zum Plattform-Administrator machen",
+      "remove": "Entfernen",
+      "failed": "Das hat nicht geklappt. Prüfen Sie die Adresse: Sie muss zu einem bestehenden Konto mit bestätigter Adresse gehören."
     }
   }
 }

@@ -19,6 +19,8 @@ export const changeUserRolesSchema = z.object({
   roles: z.array(roleSchema).min(1, { message: CODES.rolesRequired }).max(ROLES.length),
 });
 
+export const grantPlatformAdminSchema = z.object({ email: emailSchema });
+
 export const removeUserSchema = z.object({ userId: idSchema });
 
 export const revokeInvitationSchema = z.object({ invitationId: idSchema });
@@ -33,5 +35,7 @@ export const userListParamsSchema = z.object({
   pageSize: z.string().optional().catch(undefined),
   q: z.string().trim().max(CREDENTIAL_LIMITS.searchMax).optional().catch(undefined),
   role: roleSchema.optional().catch(undefined),
+  /** The role the invitation form starts with, for a link that sends people there to add somebody (an employee, from the booking team). */
+  invite: roleSchema.optional().catch(undefined),
   sort: z.string().optional().catch(undefined),
 });

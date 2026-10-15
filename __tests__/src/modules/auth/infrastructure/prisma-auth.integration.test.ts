@@ -114,5 +114,47 @@ describe.skipIf(process.env['BOOKING_TEST_DATABASE_URL'] === undefined)(
 
       expect(claim._unsafeUnwrap()).toBe(false);
     });
+    it('finds the tenants of a person, never the platform scope, and knows a platform administrator', async () => {
+      const person = toActorId(`person-${suffix}`);
+      const platformAdmin = toActorId(`platform-${suffix}`);
+      const otherTenant = toTenantId(`it-auth-other-${suffix}`);
+      const platform = toTenantId('platform');
+      try {
+        await memberships.replaceRoles(person, tenantId, ['viewer']);
+        await memberships.replaceRoles(person, otherTenant, ['editor']);
+        await db.orm.public.Membership.create({
+          actorId: platformAdmin,
+          tenantId: platform,
+          role: 'platform_admin',
+        });
+        // A platform role written inside a tenant is no platform role there.
+        await db.orm.public.Membership.create({
+          actorId: person,
+          tenantId,
+          role: 'platform_admin',
+        });
+
+        expect((await memberships.findTenantsOf(person))._unsafeUnwrap()).toEqual([
+          tenantId,
+          otherTenant,
+        ]);
+        expect((await memberships.findRoles(person, tenantId))._unsafeUnwrap()).toEqual(['viewer']);
+        expect((await memberships.isPlatformAdmin(platformAdmin))._unsafeUnwrap()).toBe(true);
+        expect((await memberships.isPlatformAdmin(person))._unsafeUnwrap()).toBe(false);
+        // Platform administrators can be listed, added and removed; adding twice changes nothing.
+        const another = toActorId(`another-${suffix}`);
+        await memberships.setPlatformAdmin(another, true);
+        await memberships.setPlatformAdmin(another, true);
+        expect((await memberships.listPlatformAdmins())._unsafeUnwrap()).toContain(another);
+        await memberships.setPlatformAdmin(another, false);
+        expect((await memberships.listPlatformAdmins())._unsafeUnwrap()).not.toContain(another);
+        expect((await memberships.listPlatformAdmins())._unsafeUnwrap()).toContain(platformAdmin);
+        // Belonging to the platform scope is not belonging to a tenant.
+        expect((await memberships.findTenantsOf(platformAdmin))._unsafeUnwrap()).toEqual([]);
+      } finally {
+        await db.orm.public.Membership.where({ actorId: platformAdmin }).deleteAndCount();
+        await db.orm.public.Membership.where({ actorId: person }).deleteAndCount();
+      }
+    });
   },
 );

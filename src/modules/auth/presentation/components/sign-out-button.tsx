@@ -34,6 +34,8 @@ export function SignOutButton() {
       variant="outline"
       disabled={isPending}
       aria-busy={isPending}
+      // Ends the visit, so a page with unsaved work asks first (`useUnsavedNavigationGuard`).
+      data-navigation-guard-leaves=""
       onClick={handleClick}
     >
       {isPending ? t('signOut.pending') : t('signOut.label')}

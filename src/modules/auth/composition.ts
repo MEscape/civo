@@ -4,32 +4,40 @@ import { cache } from 'react';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
 
+import type { Locale } from '@i18n';
+
 import { systemClock } from '@lib/clock';
 import { APP_IDENTITY, publicEnv } from '@lib/config';
 import { serverEnv } from '@lib/config/server';
 import type { ServerEnv } from '@lib/config/server';
+import { logger } from '@lib/logger';
 import { getMailTransport } from '@lib/mail/server';
 import { ResultAsync } from '@lib/result';
 import { toLocalizedPath } from '@lib/seo';
+import { TENANT_HINT_HEADER } from '@lib/tenancy';
 import { invariant, isDefined, once } from '@lib/utils';
 
 import { createAuthorizationService } from './application/authorization-service';
 import { AcceptInvitation } from './application/commands/accept-invitation';
 import { ChangeUserRoles } from './application/commands/change-user-roles';
+import { GrantPlatformAdmin } from './application/commands/grant-platform-admin';
+import { InviteBootstrapAdmins } from './application/commands/invite-bootstrap-admins';
 import { InviteUser } from './application/commands/invite-user';
 import { RemoveUser } from './application/commands/remove-user';
 import { RequestPasswordReset } from './application/commands/request-password-reset';
 import { ResetPassword } from './application/commands/reset-password';
 import { RevokeInvitation } from './application/commands/revoke-invitation';
+import { RevokePlatformAdmin } from './application/commands/revoke-platform-admin';
 import { SignIn } from './application/commands/sign-in';
 import { SignOut } from './application/commands/sign-out';
 import { GetCurrentActor } from './application/queries/get-current-actor';
-import { ListEmployees } from './application/queries/list-employees';
 import { ListInvitations } from './application/queries/list-invitations';
+import { ListPlatformAdmins } from './application/queries/list-platform-admins';
 import { ListUsers } from './application/queries/list-users';
+import { ResolveMemberNames } from './application/queries/resolve-member-names';
 import { actorHasPermission } from './domain/models/authorize';
-import { toTenantId } from './domain/models/ids';
-import { isRole } from './domain/models/role';
+import { PLATFORM_ADMIN_ROLE, isAnyRole } from './domain/models/role';
+import { PLATFORM_TENANT_ID, UNASSIGNED_TENANT_ID } from './domain/models/tenant';
 import { authenticationApiFrom } from './infrastructure/better-auth/better-auth-authentication-api';
 import { BetterAuthAuthenticator } from './infrastructure/better-auth/better-auth-authenticator';
 import { BetterAuthCurrentActorProvider } from './infrastructure/better-auth/better-auth-current-actor-provider';
@@ -53,6 +61,7 @@ import type {
   UserAdministrationDependencies,
 } from './application/auth-dependencies';
 import type { AuthorizationService } from './application/authorization-service';
+import type { TenantId } from './domain/models/ids';
 import type { Permission } from './domain/models/permission';
 import type { Role } from './domain/models/role';
 import type { AuthMailer } from './domain/ports/auth-mailer.port';
@@ -75,12 +84,12 @@ import type { AuthSettings, BetterAuthInstance } from './infrastructure/better-a
 const MILLISECONDS_PER_SECOND = 1000;
 
 /**
- * The single tenant every actor belongs to until real multi-tenancy ships.
- * It must match the `tenantId` of the membership rows (see
- * migrations/app/0001_membership.sql). Adopting real tenants later changes
- * where this value comes from, not any call site.
+ * The website a request is about, as `proxy.ts` set it from the address. Only a
+ * platform administrator (and the loopback-only dev actor) is resolved by it.
  */
-const DEFAULT_TENANT_ID = toTenantId('default');
+async function readTenantHint(): Promise<string | null> {
+  return (await headers()).get(TENANT_HINT_HEADER);
+}
 
 function requireAuthCredentials(env: ServerEnv): {
   readonly secret: string;
@@ -112,7 +121,7 @@ function toAuthSettings(env: ServerEnv): AuthSettings {
 
 // Env input, so this is an explicit error rather than an invariant.
 function resolveDevActorRole(raw: string): Role {
-  if (isRole(raw)) {
+  if (isAnyRole(raw)) {
     return raw;
   }
   throw new Error(`AUTH_DEV_ACTOR_ROLE "${raw}" is not a known role.`);
@@ -195,7 +204,7 @@ function buildCurrentActorProvider(): CurrentActorProvider {
     return requestScoped(
       new DevCurrentActorProvider({
         role: resolveDevActorRole(serverEnv.AUTH_DEV_ACTOR_ROLE),
-        tenantId: DEFAULT_TENANT_ID,
+        getTenantHint: readTenantHint,
         nodeEnv: serverEnv.NODE_ENV,
         appUrl: publicEnv.NEXT_PUBLIC_APP_URL,
       }),
@@ -207,7 +216,8 @@ function buildCurrentActorProvider(): CurrentActorProvider {
     getHeaders: () => headers(),
     sessionMaxLifetimeMs: serverEnv.AUTH_SESSION_MAX_LIFETIME_SECONDS * MILLISECONDS_PER_SECOND,
     clock: systemClock,
-    tenantId: DEFAULT_TENANT_ID,
+    platformAdminEmails: new Set(serverEnv.AUTH_PLATFORM_ADMIN_EMAILS),
+    getTenantHint: readTenantHint,
   });
 }
 
@@ -240,6 +250,39 @@ export async function getHeldPermissions(
 }
 
 /**
+ * The tenant the signed-in actor is working in (a tenant is its website), or
+ * `null` when nobody is signed in or the actor stands in no tenant: a platform
+ * administrator on a screen with no website open, or someone with no
+ * membership. For screens that route by tenant; like `getHeldPermissions` it
+ * decides nothing.
+ */
+export async function getCurrentTenantId(): Promise<string | null> {
+  const actor = await getCurrentActorProvider().getCurrentActor();
+  if (actor.isErr()) {
+    return null;
+  }
+  const { tenantId } = actor.value;
+  return tenantId === PLATFORM_TENANT_ID || tenantId === UNASSIGNED_TENANT_ID ? null : tenantId;
+}
+
+/**
+ * Every tenant the signed-in person holds a role in (never the platform scope),
+ * oldest first, taken from their memberships alone: nothing in the request
+ * adds to it. Empty when nobody is signed in, and for a platform administrator,
+ * who belongs to no tenant in particular and sees them all. For screens that
+ * let someone with several tenants choose one; like `getHeldPermissions` it
+ * decides nothing.
+ */
+export async function getMemberTenantIds(): Promise<readonly TenantId[]> {
+  const actor = await getCurrentActorProvider().getCurrentActor();
+  if (actor.isErr() || actor.value.roles.includes(PLATFORM_ADMIN_ROLE)) {
+    return [];
+  }
+  const tenants = await getMemberships().findTenantsOf(actor.value.id);
+  return tenants.isOk() ? tenants.value : [];
+}
+
+/**
  * Everything user administration is built from. The user directory opens the
  * auth pool only when it is first asked, so building this needs no auth
  * configuration (the screens answer 404 while AUTH_ENABLED=false).
@@ -262,8 +305,9 @@ export const getAuthQueries = once(
         currentActor: getCurrentActorProvider(),
       }),
       listUsers: new ListUsers(getAdministrationDependencies()),
+      resolveMemberNames: new ResolveMemberNames(getAdministrationDependencies()),
+      listPlatformAdmins: new ListPlatformAdmins(getAdministrationDependencies()),
       listInvitations: new ListInvitations(getAdministrationDependencies()),
-      listEmployees: new ListEmployees(getAdministrationDependencies()),
     }) as const,
 );
 
@@ -300,6 +344,8 @@ export const getAuthCommands = once(() => {
     inviteUser: new InviteUser(administration),
     changeUserRoles: new ChangeUserRoles(administration),
     removeUser: new RemoveUser(administration),
+    grantPlatformAdmin: new GrantPlatformAdmin(administration),
+    revokePlatformAdmin: new RevokePlatformAdmin(administration),
     revokeInvitation: new RevokeInvitation(administration),
     acceptInvitation: new AcceptInvitation({
       ...dependencies,
@@ -317,3 +363,37 @@ export const authRouteHandlers = createAuthRouteHandlers({
   isEnabled: serverEnv.AUTH_ENABLED,
   getAuth,
 });
+
+/**
+ * Work the server does once when it starts. With sign-up closed, the
+ * platform administrators named in `AUTH_PLATFORM_ADMIN_EMAILS` have no way
+ * to open an account, so each of them that has none is mailed a link to
+ * create one (`InviteBootstrapAdmins`). Needs authentication and a mail
+ * provider; without either it says so in the log and does nothing. A failure
+ * is logged, never thrown: the application must start with or without it.
+ */
+/** The language of the first mail, before anyone has chosen one: the platform's default locale. */
+const BOOTSTRAP_MAIL_LOCALE: Locale = 'en';
+
+export async function runAuthStartup(): Promise<void> {
+  const emails = serverEnv.AUTH_PLATFORM_ADMIN_EMAILS;
+  if (!serverEnv.AUTH_ENABLED || emails.length === 0) {
+    return;
+  }
+  if (serverEnv.MAIL_PROVIDER === 'none') {
+    logger.warn('auth.bootstrap_skipped', { reason: 'MAIL_PROVIDER is none' });
+    return;
+  }
+  try {
+    const outcome = await new InviteBootstrapAdmins(getAdministrationDependencies()).execute({
+      emails,
+      locale: BOOTSTRAP_MAIL_LOCALE,
+    });
+    if (outcome.isOk()) {
+      const { invited, skipped, failed } = outcome.value;
+      logger.info('auth.bootstrap_platform_admins', { invited, skipped, failed });
+    }
+  } catch (error) {
+    logger.error('auth.bootstrap_failed', { error });
+  }
+}

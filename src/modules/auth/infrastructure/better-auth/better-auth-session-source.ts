@@ -2,7 +2,7 @@ import type { BetterAuthInstance } from './create-auth';
 
 /** The only two facts about a session that this module uses. */
 export interface SessionSnapshot {
-  readonly user: { readonly id: string };
+  readonly user: { readonly id: string; readonly email: string; readonly emailVerified: boolean };
   readonly session: { readonly createdAt: Date };
 }
 
@@ -25,7 +25,11 @@ export function sessionSourceFrom(instance: BetterAuthInstance): SessionSource {
         return null;
       }
       return {
-        user: { id: result.user.id },
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          emailVerified: result.user.emailVerified,
+        },
         session: { createdAt: result.session.createdAt },
       };
     },

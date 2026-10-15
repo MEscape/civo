@@ -128,8 +128,10 @@
       "roles": {
         "admin": "Administrator",
         "editor": "Editor",
+        "contributor": "Contributor",
         "viewer": "Viewer",
-        "employee": "Employee"
+        "employee": "Employee",
+        "platformAdmin": "Platform administrator"
       },
       "invite": {
         "title": "Invite someone",
@@ -180,6 +182,16 @@
         "expires": "expires {date}",
         "revoke": "Withdraw invitation for {email}"
       }
+    },
+    "platformAdmins": {
+      "title": "Platform administrators",
+      "description": "Who may create websites and work in every website. A person needs an account with a verified address first.",
+      "none": "Nobody yet by membership. Administrators named in the deployment's configuration are not listed.",
+      "email": "Email address",
+      "emailHint": "Of an existing account.",
+      "add": "Make platform administrator",
+      "remove": "Remove",
+      "failed": "That did not work. Check the address: it must belong to an existing account with a verified address."
     }
   }
 }

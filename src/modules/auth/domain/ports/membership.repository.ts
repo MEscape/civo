@@ -2,7 +2,7 @@ import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
 import type { ActorId, TenantId } from '../models/ids';
-import type { Role } from '../models/role';
+import type { TenantRole } from '../models/role';
 
 /**
  * The application's own record of who holds which roles in which tenant.
@@ -18,7 +18,26 @@ export interface MembershipRepository {
   findRoles(
     actorId: ActorId,
     tenantId: TenantId,
-  ): AppResultAsync<readonly Role[], InfrastructureAppError>;
+  ): AppResultAsync<readonly TenantRole[], InfrastructureAppError>;
+
+  /**
+   * Whether the person is a platform administrator by membership: a row in
+   * the reserved platform scope. (The deployment's bootstrap list of
+   * addresses is a second way, decided by the actor provider.)
+   */
+  isPlatformAdmin(actorId: ActorId): AppResultAsync<boolean, InfrastructureAppError>;
+
+  /** Everyone who is a platform administrator by membership, oldest first. Bounded. */
+  listPlatformAdmins(): AppResultAsync<readonly ActorId[], InfrastructureAppError>;
+
+  /** Makes the person a platform administrator, or not. Idempotent. */
+  setPlatformAdmin(
+    actorId: ActorId,
+    isAdministrator: boolean,
+  ): AppResultAsync<void, InfrastructureAppError>;
+
+  /** The tenants the person holds a role in, oldest membership first. Bounded; the platform scope is not one. */
+  findTenantsOf(actorId: ActorId): AppResultAsync<readonly TenantId[], InfrastructureAppError>;
 
   /**
    * Every member of the tenant with their roles, optionally only those
@@ -27,7 +46,7 @@ export interface MembershipRepository {
    */
   listMembers(
     tenantId: TenantId,
-    filter: { readonly role: Role | null },
+    filter: { readonly role: TenantRole | null },
   ): AppResultAsync<MemberRoster, InfrastructureAppError>;
 
   /**
@@ -38,7 +57,7 @@ export interface MembershipRepository {
   replaceRoles(
     actorId: ActorId,
     tenantId: TenantId,
-    roles: readonly Role[],
+    roles: readonly TenantRole[],
   ): AppResultAsync<void, InfrastructureAppError>;
 
   /**
@@ -51,7 +70,7 @@ export interface MembershipRepository {
   replaceRolesKeepingAdministrator(
     actorId: ActorId,
     tenantId: TenantId,
-    roles: readonly Role[],
+    roles: readonly TenantRole[],
   ): AppResultAsync<boolean, InfrastructureAppError>;
 
   /** Removing a member is `replaceRolesKeepingAdministrator` with no roles; `false` has the same meaning. */
@@ -63,7 +82,7 @@ export interface MembershipRepository {
 
 /** The members of a tenant: actor id to roles, in a stable order. */
 export interface MemberRoster {
-  readonly members: ReadonlyMap<ActorId, readonly Role[]>;
+  readonly members: ReadonlyMap<ActorId, readonly TenantRole[]>;
   readonly isTruncated: boolean;
 }
 

@@ -24,8 +24,13 @@ import type { z } from 'zod';
 
 type InviteValues = z.infer<typeof inviteUserSchema>;
 
+export interface InviteUserFormProps {
+  /** The role the form starts with; a viewer unless a link says otherwise. */
+  readonly initialRole?: InviteValues['role'] | undefined;
+}
+
 /** Invites a person by email with one role; an existing account gets the role at once. */
-export function InviteUserForm() {
+export function InviteUserForm({ initialRole = 'viewer' }: InviteUserFormProps) {
   const t = useTranslations('auth');
   const errorText = (code: string | undefined) =>
     code === undefined ? undefined : t(messageKeyForCode(code), MESSAGE_PARAMS);
@@ -37,7 +42,7 @@ export function InviteUserForm() {
 
   const form = useForm<InviteValues>({
     resolver: zodResolver(inviteUserSchema),
-    defaultValues: { email: '', role: 'viewer' },
+    defaultValues: { email: '', role: initialRole },
   });
   const { errors } = form.formState;
 

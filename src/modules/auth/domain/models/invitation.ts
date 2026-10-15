@@ -8,7 +8,7 @@ import { CREDENTIAL_LIMITS, EMAIL_PATTERN, normalizeEmail } from './credentials'
 import { isRole } from './role';
 
 import type { ActorId, InvitationId, TenantId } from './ids';
-import type { Role } from './role';
+import type { PlatformRole, TenantRole } from './role';
 
 const MS_PER_DAY = 86_400_000;
 const INVITATION_LIFETIME_DAYS = 7;
@@ -16,12 +16,20 @@ const INVITATION_LIFETIME_DAYS = 7;
 /** How long an emailed invitation link works: long enough for a busy week, short enough to expire unused. */
 export const INVITATION_LIFETIME_MS = INVITATION_LIFETIME_DAYS * MS_PER_DAY;
 
+/**
+ * What an invitation offers: a role in a tenant, or (only in the platform
+ * scope, and only from the deployment's own administrator list) the platform
+ * administrator role. No request can ask for the latter: `createInvitationOffer`
+ * knows tenant roles alone.
+ */
+export type InvitationRole = TenantRole | PlatformRole;
+
 /** A pending or used offer to join a tenant with one role. The token is never stored, only its hash. */
 export interface Invitation {
   readonly id: InvitationId;
   readonly tenantId: TenantId;
   readonly email: string;
-  readonly role: Role;
+  readonly role: InvitationRole;
   readonly invitedBy: ActorId;
   readonly expiresAt: Date;
   readonly acceptedAt: Date | null;
@@ -35,7 +43,7 @@ export interface InvitationInput {
 
 export interface InvitationOffer {
   readonly email: string;
-  readonly role: Role;
+  readonly role: TenantRole;
 }
 
 function checkOffer(email: string, role: string, bag: FieldErrorBag): void {

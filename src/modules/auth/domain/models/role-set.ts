@@ -6,7 +6,7 @@ import { AUTH_VALIDATION_CODES, createAuthErrorBag } from '../errors/auth-errors
 
 import { ROLES, isRole } from './role';
 
-import type { Role } from './role';
+import type { TenantRole } from './role';
 
 /**
  * A non-empty set of known roles, without duplicates, in the canonical
@@ -15,7 +15,7 @@ import type { Role } from './role';
  */
 export function createRoleSet(
   raw: readonly string[],
-): AppResult<readonly Role[], ValidationAppError> {
+): AppResult<readonly TenantRole[], ValidationAppError> {
   const bag = createAuthErrorBag();
   if (raw.length === 0) {
     bag.add('roles', AUTH_VALIDATION_CODES.rolesRequired);

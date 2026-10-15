@@ -9,7 +9,7 @@ import { PAGE_SIZE_OPTIONS } from '@lib/pagination';
 import { ROLES } from '../../application/contracts/auth-constraints';
 import { ROLE_MESSAGE_KEYS } from '../messages/message-keys';
 
-import type { Role } from '../../application/contracts/auth-constraints';
+import type { TenantRole } from '../../application/contracts/auth-constraints';
 
 /** The value of the "any role" choice: a select item cannot be empty. */
 export const ANY_ROLE = 'any';
@@ -17,7 +17,7 @@ export const ANY_ROLE = 'any';
 export interface UsersFiltersProps {
   readonly pathname: string;
   readonly text: string | null;
-  readonly role: Role | null;
+  readonly role: TenantRole | null;
   readonly pageSize: number;
   /** Kept across a new search, so filtering does not reset the sort. */
   readonly sort: string;

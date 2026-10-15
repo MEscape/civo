@@ -8,7 +8,7 @@ import type { AppResultAsync } from '@lib/result';
 
 import { AUTH_ERROR_CODES, invitationFailed } from '../../domain/errors/auth-errors';
 import { toActorId, toInvitationId, toTenantId } from '../../domain/models/ids';
-import { isRole } from '../../domain/models/role';
+import { isAnyRole } from '../../domain/models/role';
 
 import type { InvitationId, TenantId } from '../../domain/models/ids';
 import type { Invitation } from '../../domain/models/invitation';
@@ -44,7 +44,7 @@ interface InvitationRecord {
 
 /** A stored role this code no longer knows makes the invitation unusable, never a broader one. */
 function toInvitation(record: InvitationRecord): Invitation | null {
-  if (!isRole(record.role)) {
+  if (!isAnyRole(record.role)) {
     return null;
   }
   return {

@@ -1,5 +1,9 @@
-/** Where a successful sign-in lands when no safe `returnTo` was given. */
-export const DEFAULT_RETURN_PATH = '/';
+/**
+ * Where a successful sign-in lands when no safe `returnTo` was given: the
+ * websites page, which sends a member to their own website and shows a platform
+ * administrator all of them.
+ */
+export const DEFAULT_RETURN_PATH = '/websites';
 
 /** Revalidating the root layout refreshes everything that depends on who is signed in. */
 export const ROOT_LAYOUT_PATH = '/';
