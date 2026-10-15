@@ -254,6 +254,8 @@ Allowed direction:
 - Authenticate every protected operation.
 - Authorize every protected use case.
 - Never rely on UI visibility for authorization.
+- A tenant is its website. An actor's tenant comes from their memberships (the platform administrator's from the address, set by `proxy.ts`), never from a value the client controls; only the platform administrator is not tenant-scoped.
+- Screens draw only what the actor can use, and learn it from the one per-request access object (`getWebsiteAccess()`), never from a role name or a permission list of their own. Code asks for permissions, never for roles; the role table is the only place that maps one to the other.
 - Server Actions must enforce authorization independently.
 - Never expose secrets to Client Components.
 - Never log credentials, tokens, session secrets, or sensitive personal data.

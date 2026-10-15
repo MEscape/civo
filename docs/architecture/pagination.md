@@ -8,16 +8,17 @@ Every list-returning query is bounded ([`performance.md`](../rules/performance.m
 
 ## Audit of the lists
 
-| List                              | Where                             | Bound today                                    | Paginated                                                                      |
-| --------------------------------- | --------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| Members of a tenant               | `auth` `ListUsers`                | roster cap `MAX_TENANT_MEMBERS`, then SQL page | **yes** (search, role filter, sort, page size)                                 |
-| Open invitations                  | `auth` `ListInvitations`          | page                                           | **yes** (first page shown)                                                     |
-| Websites of a tenant              | `website` `ListWebsites`          | `WEBSITE_PAGE_LIMITS`                          | **yes** (page and size in the address)                                         |
-| Bookings in the calendar          | `booking` `GetOperationsCalendar` | date range + `MAX_CALENDAR_BOOKINGS_PER_QUERY` | no: the range is the page, as a calendar shows a period, not a list            |
-| Services, resources, locations    | `booking` setup queries           | `MAX_*_PER_WEBSITE`                            | no: configuration, edited as a whole                                           |
-| Data sources, datasets            | `data-sources` list queries       | `MAX_SOURCES_PER_WEBSITE`, `MAX_DATASETS_*`    | no: configuration lists                                                        |
-| Records read from an external API | `data-sources` connector          | the caller's window and `maxPages`             | **API pagination**, a different thing: see below                               |
-| Releases, migrations              | `release` list queries            | list limits                                    | not yet: history grows; paginate with `Page<T>` when a website publishes often |
+| List                              | Where                             | Bound today                                    | Paginated                                                                         |
+| --------------------------------- | --------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| Members of a tenant               | `auth` `ListUsers`                | roster cap `MAX_TENANT_MEMBERS`, then SQL page | **yes** (search, role filter, sort, page size)                                    |
+| Open invitations                  | `auth` `ListInvitations`          | page                                           | **yes** (first page shown)                                                        |
+| Websites of a tenant              | `website` `ListWebsites`          | `WEBSITE_PAGE_LIMITS`                          | **yes** (page and size in the address)                                            |
+| Bookings in the calendar          | `booking` `GetOperationsCalendar` | date range + `MAX_CALENDAR_BOOKINGS_PER_QUERY` | no: the range is the page, as a calendar shows a period, not a list               |
+| Services, resources, locations    | `booking` setup queries           | `MAX_*_PER_WEBSITE`                            | no: configuration, edited as a whole                                              |
+| Data sources, datasets            | `data-sources` list queries       | `MAX_SOURCES_PER_WEBSITE`, `MAX_DATASETS_*`    | no: configuration lists                                                           |
+| Records read from an external API | `data-sources` connector          | the caller's window and `maxPages`             | **API pagination**, a different thing: see below                                  |
+| Release history                   | `release` `ListReleases`          | page size, then SQL page                       | **yes** (page and size in the address, on the releases tab of the release screen) |
+| Migration history                 | `release` `ListMigrations`        | page size, then SQL page                       | **yes** (page and size in the address, on the component updates tab)              |
 
 ## API pagination follows the window the screen shows
 
