@@ -1,22 +1,32 @@
 import { useTranslations } from '@i18n/client';
 
 import { SERVICE_LIMITS } from '../../../application/contracts/booking-constraints';
-import { FormSection } from '../shared/form-section';
+import { exampleStartTimes, slotIntervalChoices } from '../../drafts/start-times';
+import { CollapsibleFormSection } from '../shared/collapsible-form-section';
 import { NumberField } from '../shared/number-field';
+import { OptionSelectField } from '../shared/option-select-field';
 
 import type { ServiceDraft } from '../../drafts/service-draft';
+
+const TIMING_FIELDS = [
+  'preparationMinutes',
+  'cleanupMinutes',
+  'slotIntervalMinutes',
+  'noticeMinutes',
+  'horizonDays',
+] as const;
 
 export interface ServiceTimingSectionProps {
   readonly idPrefix: string;
   readonly draft: Pick<
     ServiceDraft,
-    'duration' | 'preparation' | 'cleanup' | 'slotInterval' | 'notice' | 'horizon'
+    'preparation' | 'cleanup' | 'slotInterval' | 'notice' | 'horizon'
   >;
   readonly errorText: (field: string) => string | undefined;
   readonly onChange: (patch: Partial<ServiceDraft>) => void;
 }
 
-/** How long an appointment lasts, the buffers around it, and how far ahead it can be booked. */
+/** The buffers around an appointment, the spacing of start times, and how far ahead it can be booked. */
 export function ServiceTimingSection({
   idPrefix,
   draft,
@@ -24,24 +34,19 @@ export function ServiceTimingSection({
   onChange,
 }: ServiceTimingSectionProps) {
   const t = useTranslations('booking');
+  const examples = exampleStartTimes(draft.slotInterval);
 
   return (
-    <FormSection
+    <CollapsibleFormSection
       title={t('services.sections.timing')}
+      hasProblem={TIMING_FIELDS.some((field) => errorText(field) !== undefined)}
       description={t('services.sections.timingHint')}
+      summary={t('services.glance.timing', {
+        interval: draft.slotInterval ?? 0,
+        horizon: draft.horizon ?? 0,
+      })}
     >
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <NumberField
-          id={`${idPrefix}-duration`}
-          label={t('services.duration')}
-          value={draft.duration}
-          min={SERVICE_LIMITS.durationMin}
-          max={SERVICE_LIMITS.durationMax}
-          error={errorText('durationMinutes')}
-          onChange={(duration) => {
-            onChange({ duration });
-          }}
-        />
         <NumberField
           id={`${idPrefix}-preparation`}
           label={t('services.preparation')}
@@ -66,18 +71,29 @@ export function ServiceTimingSection({
             onChange({ cleanup });
           }}
         />
-        <NumberField
-          id={`${idPrefix}-interval`}
-          label={t('services.slotInterval')}
-          hint={t('services.slotIntervalHint')}
-          value={draft.slotInterval}
-          min={SERVICE_LIMITS.slotIntervalMin}
-          max={SERVICE_LIMITS.slotIntervalMax}
-          error={errorText('slotIntervalMinutes')}
-          onChange={(slotInterval) => {
-            onChange({ slotInterval });
-          }}
-        />
+        <div className="col-span-2 sm:col-span-3">
+          <OptionSelectField
+            id={`${idPrefix}-interval`}
+            label={t('services.slotInterval')}
+            hint={[
+              t('services.slotIntervalHint'),
+              examples.length > 0
+                ? t('services.slotIntervalExample', { times: examples.join(', ') })
+                : '',
+            ]
+              .join(' ')
+              .trim()}
+            value={String(draft.slotInterval ?? '')}
+            error={errorText('slotIntervalMinutes')}
+            options={slotIntervalChoices(draft.slotInterval).map((minutes) => ({
+              value: String(minutes),
+              label: t('services.slotIntervalOption', { minutes }),
+            }))}
+            onValueChange={(slotInterval) => {
+              onChange({ slotInterval: Number(slotInterval) });
+            }}
+          />
+        </div>
         <NumberField
           id={`${idPrefix}-notice`}
           label={t('services.notice')}
@@ -102,6 +118,6 @@ export function ServiceTimingSection({
           }}
         />
       </div>
-    </FormSection>
+    </CollapsibleFormSection>
   );
 }

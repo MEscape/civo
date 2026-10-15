@@ -1,4 +1,4 @@
-import type { TenantId } from '@modules/auth';
+import type { ActorId, TenantId } from '@modules/auth';
 
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
@@ -17,6 +17,12 @@ import type { TimeInterval } from '../time/time-interval';
 /** A booking about to be stored: everything but what the store assigns. */
 export type NewBooking = Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>;
 
+/** What a booking can be about, for asking whether anything still refers to it. */
+export type BookingSubject =
+  | { readonly kind: 'location'; readonly id: BookingLocationId }
+  | { readonly kind: 'service'; readonly id: BookableServiceId }
+  | { readonly kind: 'resource'; readonly id: BookableResourceId };
+
 /** A website and the tenant that owns it: every booking query is scoped to both. */
 export interface WebsiteScope {
   readonly websiteId: WebsiteId;
@@ -28,6 +34,14 @@ export interface CalendarQuery {
   readonly span: TimeInterval;
   readonly filter: BookingFilter;
   readonly limit: number;
+  /**
+   * Only bookings that occupy a resource assigned to this person. Set for an
+   * actor who may read their own bookings only. The store applies it in the
+   * same statement as everything else, so what is not theirs never leaves
+   * the database, is never counted against `limit`, and cannot be widened by
+   * `filter`. Not set: every booking of the website.
+   */
+  readonly assignedTo?: ActorId | undefined;
 }
 
 /** The optional narrowing of the operations calendar. */
@@ -97,6 +111,27 @@ export interface BookingRepository {
     expected: Pick<Booking, 'status' | 'updatedAt'>,
     now: Date,
   ): AppResultAsync<Booking, ConflictAppError | NotFoundAppError | InfrastructureAppError>;
+
+  /**
+   * Whether any booking, of any status and date, refers to the subject. Such
+   * a subject can be switched off but never removed: the booking keeps its
+   * history. The caller has loaded the subject within its tenant.
+   */
+  isReferenced(
+    subject: BookingSubject,
+    tenantId: TenantId,
+  ): AppResultAsync<boolean, InfrastructureAppError>;
+
+  /**
+   * Whether a booking that still stands (confirmed, or held and not expired)
+   * and has not ended refers to the subject: what makes moving a person or
+   * taking a service from them something that would strand a visitor.
+   */
+  hasUpcoming(
+    subject: BookingSubject,
+    tenantId: TenantId,
+    now: Date,
+  ): AppResultAsync<boolean, InfrastructureAppError>;
 
   /** Bookings of this e-mail address that still stand or are being held. */
   countLiveByEmail(

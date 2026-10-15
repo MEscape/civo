@@ -18,6 +18,14 @@ export interface YearMonth {
   readonly month: number;
 }
 
+/** The ISO weekday (Monday 1 to Sunday 7) of a `YYYY-MM-DD` day; `null` when the text is not a day. */
+export function weekdayOfDate(localDate: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(localDate);
+  const date =
+    match === null ? null : createLocalDate(Number(match[1]), Number(match[2]), Number(match[3]));
+  return date === null ? null : weekdayOf(date);
+}
+
 /** `2026-10-12` -> `{ year: 2026, month: 10 }`; `null` when the text is not a date. */
 export function yearMonthOf(localDate: string): YearMonth | null {
   const match = /^(\d{4})-(\d{2})-\d{2}$/.exec(localDate);

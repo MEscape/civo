@@ -19,6 +19,7 @@ import {
   toBookingLocationId,
   toWebsiteId,
 } from '@modules/booking/domain/models/ids';
+import { serviceSkillOf } from '@modules/booking/domain/models/service-skill';
 import { buildSchedulingIndex } from '@modules/booking/domain/scheduling/scheduling-index';
 import type {
   LocalDateRange,
@@ -103,6 +104,7 @@ export function makeLocation(overrides: Partial<BookingLocation> = {}): BookingL
     address: 'Main street 1',
     timeZone: BERLIN,
     openingHours: weekdays('08:00', '18:00'),
+    staffHours: null,
     isActive: true,
     createdAt: NOW,
     updatedAt: NOW,
@@ -114,6 +116,9 @@ export function makeResource(
   id: string,
   overrides: Partial<BookableResource> = {},
 ): BookableResource {
+  const type = overrides.type ?? 'employee';
+  // An employee serves the services they offer: the default one, unless a test says otherwise.
+  const offered = type === 'employee' ? [serviceSkillOf(SERVICE_ID)] : [];
   return {
     id: toBookableResourceId(id),
     tenantId: TENANT,
@@ -121,15 +126,15 @@ export function makeResource(
     locationId: null,
     name: id,
     type: 'employee',
-    skills: [],
     capacity: null,
     availability: null,
     isActive: true,
     assignedActorId: null,
-    employeeMayEditHours: false,
+    managerChange: null,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
+    skills: [...new Set([...offered, ...(overrides.skills ?? [])])],
   };
 }
 

@@ -1,10 +1,9 @@
 import type { InfrastructureAppError, NotFoundAppError, ValidationAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
-import { createBookableServiceDraft } from '../../domain/models/bookable-service';
 import { toServiceView } from '../booking-view-mappers';
 import { loadAuthorizedService } from '../load-authorized-service';
-import { checkServiceReference } from '../services/reference-checks';
+import { replaceService } from '../services/replace-service';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { UpdateBookableServiceInput } from '../contracts/booking-inputs';
@@ -25,29 +24,19 @@ export class UpdateBookableService {
     ServiceView,
     LoadServiceError | ValidationAppError | NotFoundAppError | InfrastructureAppError
   > {
-    const { services, audit } = this.deps;
+    const { audit } = this.deps;
 
-    return loadAuthorizedService(this.deps, input.id, 'booking.configure').andThen(
-      ({ actor, service }) =>
-        createBookableServiceDraft({ ...input, websiteId: service.websiteId })
-          .asyncAndThen((draft) =>
-            checkServiceReference(
-              this.deps,
-              { tenantId: actor.tenantId, websiteId: service.websiteId },
-              draft,
-            ),
-          )
-          .andThen((draft) => services.update(service.id, actor.tenantId, draft))
-          .map((updated) => {
-            audit.record({
-              type: 'booking.service_updated',
-              actorId: actor.id,
-              tenantId: actor.tenantId,
-              websiteId: updated.websiteId,
-              serviceId: updated.id,
-            });
-            return toServiceView(updated);
-          }),
+    return loadAuthorizedService(this.deps, input.id, 'booking.configure').andThen((loaded) =>
+      replaceService(this.deps, loaded, input).map((updated) => {
+        audit.record({
+          type: 'booking.service_updated',
+          actorId: loaded.actor.id,
+          tenantId: loaded.actor.tenantId,
+          websiteId: updated.websiteId,
+          serviceId: updated.id,
+        });
+        return toServiceView(updated);
+      }),
     );
   }
 }

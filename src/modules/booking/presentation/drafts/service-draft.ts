@@ -9,13 +9,13 @@ import {
 import { EMPTY_PLAN, planFormOf } from './availability-plan-form';
 
 import type { InformationField } from '../../application/contracts/booking-constraints';
-import type { LocationDto, ServiceDto } from '../dto/setup-dto';
+import type { ServiceDto } from '../dto/setup-dto';
 import type { AvailabilityPlanForm } from '../schemas/availability-plan-schema';
 
-/** What the service form edits, in the shapes its inputs hold (text for lists, flags per field). */
+/** What the service form edits, in the shapes its inputs hold (text for documents, flags per field). */
 export interface RequirementDraft {
   readonly resourceType: string;
-  readonly skills: string;
+  readonly skills: readonly string[];
   readonly count: number;
   readonly resourceIds: readonly string[];
 }
@@ -69,7 +69,7 @@ const DEFAULT_POLICY: PolicyDraft = {
 
 export const DEFAULT_REQUIREMENT: RequirementDraft = {
   resourceType: RESOURCE_TYPES[0],
-  skills: '',
+  skills: [],
   count: 1,
   resourceIds: [],
 };
@@ -83,8 +83,8 @@ const DEFAULT_INFORMATION: InformationDraft = {
   notes: { enabled: false, isRequired: false },
 };
 
-/** A service nobody has configured yet: the usual half-hour appointment at the first location. */
-function newServiceDraft(locations: readonly LocationDto[]): ServiceDraft {
+/** A service nobody has configured yet: the usual half-hour appointment at the location it is made in. */
+function newServiceDraft(locationId: string): ServiceDraft {
   return {
     name: '',
     description: '',
@@ -99,7 +99,7 @@ function newServiceDraft(locations: readonly LocationDto[]): ServiceDraft {
     horizon: DEFAULT_HORIZON,
     perBooking: 1,
     perSession: 1,
-    locationIds: locations.slice(0, 1).map((location) => location.id),
+    locationIds: [locationId],
     requirements: [DEFAULT_REQUIREMENT],
     information: DEFAULT_INFORMATION,
     documents: '',
@@ -138,7 +138,7 @@ function savedServiceDraft(service: ServiceDto): ServiceDraft {
     locationIds: service.locationIds,
     requirements: service.requirements.map((requirement) => ({
       resourceType: requirement.resourceType,
-      skills: requirement.skills.join(', '),
+      skills: requirement.skills,
       count: requirement.count,
       resourceIds: requirement.resourceIds ?? [],
     })),
@@ -152,11 +152,15 @@ function savedServiceDraft(service: ServiceDto): ServiceDraft {
 }
 
 /** The form's starting values: the saved service, or a sensible new one. */
-export function draftOf(
-  service: ServiceDto | undefined,
-  locations: readonly LocationDto[],
-): ServiceDraft {
-  return service === undefined ? newServiceDraft(locations) : savedServiceDraft(service);
+export function draftOf(service: ServiceDto | undefined, locationId: string): ServiceDraft {
+  if (service === undefined) {
+    return newServiceDraft(locationId);
+  }
+  const saved = savedServiceDraft(service);
+  // A service being added here from another location is edited as offered here too.
+  return saved.locationIds.includes(locationId)
+    ? saved
+    : { ...saved, locationIds: [...saved.locationIds, locationId] };
 }
 
 /** Splits free text into trimmed, non-empty items. */
@@ -170,6 +174,27 @@ function parseList(text: string, separator: RegExp): string[] {
 /** An empty number input is sent as 0, which the schema then rejects with the field's own message. */
 function orZero(value: number | null): number {
   return value ?? 0;
+}
+
+/** What the feasibility preview needs of the draft: where, which resources, how large a group. */
+export function feasibilityQueryOf(
+  websiteId: string,
+  serviceId: string | undefined,
+  draft: ServiceDraft,
+) {
+  return {
+    websiteId,
+    ...(serviceId === undefined ? {} : { serviceId }),
+    locationIds: draft.locationIds,
+    requirements: draft.requirements.map((requirement) => ({
+      resourceType: requirement.resourceType,
+      skills: requirement.skills,
+      count: requirement.count,
+      resourceIds: requirement.resourceIds.length === 0 ? null : requirement.resourceIds,
+    })),
+    participantsPerBooking: orZero(draft.perBooking),
+    participantsPerSession: orZero(draft.perSession),
+  };
 }
 
 /** What is sent to the server action; the schema and the server validate it again. */
@@ -192,7 +217,7 @@ export function toServiceInput(
     locationIds: draft.locationIds,
     requirements: draft.requirements.map((requirement) => ({
       resourceType: requirement.resourceType,
-      skills: parseList(requirement.skills.toLowerCase(), /,/),
+      skills: requirement.skills,
       count: requirement.count,
       resourceIds: requirement.resourceIds.length === 0 ? null : requirement.resourceIds,
     })),

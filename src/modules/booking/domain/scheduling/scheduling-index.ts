@@ -1,12 +1,12 @@
 import { MS_PER_MINUTE } from '@lib/utils';
 
-import { servesLocation } from '../models/bookable-resource';
 import { isBlocking } from '../models/booking';
 import { addDays, toEpochDay } from '../time/local-date';
 import { intersectIntervals } from '../time/time-interval';
 import { localDateOf } from '../time/time-zone';
 
 import { windowsForRange } from './availability-windows';
+import { isEligibleResource } from './resource-eligibility';
 
 import type { LocalDateRange, SchedulingInput } from './scheduling-types';
 import type { BookableResource, ResourceKind } from '../models/bookable-resource';
@@ -66,20 +66,6 @@ export interface SchedulingIndex {
   /** The last local day a booking may start on. */
   readonly latestDate: LocalDate;
   readonly stepMs: number;
-}
-
-function isEligible(
-  resource: BookableResource,
-  requirement: ResourceRequirement,
-  input: SchedulingInput,
-): boolean {
-  return (
-    resource.isActive &&
-    resource.type === requirement.resourceType &&
-    requirement.skills.every((skill) => resource.skills.includes(skill)) &&
-    servesLocation(resource, input.location.id) &&
-    (requirement.resourceIds === null || requirement.resourceIds.includes(resource.id))
-  );
 }
 
 function busySpansOf(
@@ -184,7 +170,12 @@ export function buildSchedulingIndex(
   }
 
   const pools = service.requirements.map((requirement) =>
-    [...timelines.values()].filter((timeline) => isEligible(timeline.resource, requirement, input)),
+    [...timelines.values()].filter((timeline) =>
+      isEligibleResource(timeline.resource, requirement, {
+        serviceId: input.service.id,
+        locationId: input.location.id,
+      }),
+    ),
   );
 
   return {

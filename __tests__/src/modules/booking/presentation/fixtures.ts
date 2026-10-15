@@ -7,7 +7,6 @@ import type {
   PublicServiceDto,
 } from '@modules/booking/presentation/dto/catalog-dto';
 import type {
-  BookingSetupDto,
   LocationDto,
   ResourceDto,
   ServiceDto,
@@ -135,6 +134,7 @@ export function locationDto(overrides: Partial<LocationDto> = {}): LocationDto {
     address: 'Marktplatz 1',
     timeZone: 'Europe/Berlin',
     openingHours: OPENING_HOURS,
+    staffHours: null,
     isActive: true,
     ...overrides,
   };
@@ -152,7 +152,7 @@ export function resourceDto(overrides: Partial<ResourceDto> = {}): ResourceDto {
     availability: null,
     isActive: true,
     assignedActorId: null,
-    employeeMayEditHours: false,
+    managerChange: null,
     ...overrides,
   };
 }
@@ -191,7 +191,14 @@ export function serviceDto(overrides: Partial<ServiceDto> = {}): ServiceDto {
   };
 }
 
-export function setupDto(overrides: Partial<BookingSetupDto> = {}): BookingSetupDto {
+/** What a test starts a booking screen from: the three lists, as full entries. */
+export interface SetupFixture {
+  readonly locations: readonly LocationDto[];
+  readonly resources: readonly ResourceDto[];
+  readonly services: readonly ServiceDto[];
+}
+
+export function setupDto(overrides: Partial<SetupFixture> = {}): SetupFixture {
   return {
     locations: [locationDto()],
     resources: [resourceDto()],

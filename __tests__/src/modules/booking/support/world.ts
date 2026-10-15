@@ -7,6 +7,7 @@ import type { BookableResource } from '@modules/booking/domain/models/bookable-r
 import type { BookableService } from '@modules/booking/domain/models/bookable-service';
 import type { BookingLocation } from '@modules/booking/domain/models/booking-location';
 import { toWebsiteId } from '@modules/booking/domain/models/ids';
+import type { AddressSearch } from '@modules/booking/domain/ports/address-search.port';
 
 import {
   InMemoryBookingRepository,
@@ -20,6 +21,7 @@ import {
   RecordingNotifier,
   SequentialReferences,
   authorizationFor,
+  FakeRequestLimiter,
 } from './fakes';
 import { NOW, TENANT, WEBSITE, makeLocation, makeResource, makeService } from './fixtures';
 
@@ -30,6 +32,7 @@ interface WorldOptions {
   readonly location?: BookingLocation;
   readonly resources?: readonly BookableResource[];
   readonly actor?: Actor | null;
+  readonly addresses?: AddressSearch | null;
 }
 
 /**
@@ -44,7 +47,7 @@ export function createWorld(options: WorldOptions = {}) {
   const locations = new InMemoryLocationRepository();
   const resources = new InMemoryResourceRepository();
   const services = new InMemoryServiceRepository();
-  const bookings = new InMemoryBookingRepository();
+  const bookings = new InMemoryBookingRepository(resources);
 
   locations.seed(options.location ?? makeLocation());
   for (const resource of options.resources ?? [makeResource('emp-1')]) {
@@ -88,6 +91,8 @@ export function createWorld(options: WorldOptions = {}) {
     services,
     bookings,
     audit,
+    addresses: options.addresses ?? null,
+    limiter: new FakeRequestLimiter(),
     notifier,
     clock,
   };

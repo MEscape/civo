@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cancelBookingAsStaffAction } from '@modules/booking/presentation/actions/cancel-booking-as-staff-action';
@@ -6,11 +6,14 @@ import { completeBookingAction } from '@modules/booking/presentation/actions/com
 import { getOperationsCalendarAction } from '@modules/booking/presentation/actions/get-operations-calendar-action';
 import { markBookingNoShowAction } from '@modules/booking/presentation/actions/mark-booking-no-show-action';
 import { saveServiceAction } from '@modules/booking/presentation/actions/save-service-action';
-import { BookingAdmin } from '@modules/booking/presentation/components/admin/booking-admin.client';
 import type { CalendarAdapterProps } from '@modules/booking/presentation/components/admin/calendar-adapter.client';
+import { OperationsCalendar } from '@modules/booking/presentation/components/admin/operations-calendar.client';
 
 import { calendarBooking, locationDto, resourceDto, serviceDto, setupDto } from './fixtures';
 import { failure, renderBooking, setup } from './ui-support';
+import { ServicesAtLocation } from './workspace-support';
+
+import type { SetupFixture } from './fixtures';
 
 const refresh = vi.hoisted(() => vi.fn());
 vi.mock('@i18n', async (importOriginal) => ({
@@ -97,24 +100,47 @@ function calendarOf(...bookings: Array<ReturnType<typeof calendarBooking>>) {
   };
 }
 
-/** Radix tabs open on mouse-down, not on click. */
-async function openTab(name: string) {
-  fireEvent.mouseDown(screen.getByRole('tab', { name }), { button: 0 });
-  await act(async () => {
-    await Promise.resolve();
-  });
+interface AdminOptions {
+  readonly setup?: SetupFixture;
+  readonly canConfigure?: boolean;
+  readonly canManage?: boolean;
+  /** Which part of the booking screen: the address says so in the app (`?tab=`). */
+  readonly part?: 'calendar' | 'services';
 }
 
-function renderAdmin(overrides: Partial<Parameters<typeof BookingAdmin>[0]> = {}) {
+function renderAdmin({
+  setup: fixture = setupDto(),
+  canConfigure = true,
+  canManage = true,
+  part = 'calendar',
+}: AdminOptions = {}) {
+  const options = {
+    locations: fixture.locations.map(({ id, name, timeZone }) => ({ id, name, timeZone })),
+    resources: fixture.resources.map(({ id, name, type, locationId, skills }) => ({
+      id,
+      name,
+      type,
+      locationId,
+      skills,
+    })),
+    services: fixture.services.map(({ id, name, horizonDays }) => ({ id, name, horizonDays })),
+    skills: [...new Set(fixture.resources.flatMap((resource) => resource.skills))],
+    categories: [
+      ...new Set(
+        fixture.services.flatMap((service) => (service.category ? [service.category] : [])),
+      ),
+    ],
+  };
   return renderBooking(
-    <BookingAdmin
-      websiteId="site-1"
-      setup={setupDto()}
-      canConfigure
-      canManage
-      employees={[]}
-      {...overrides}
-    />,
+    part === 'calendar' ? (
+      <OperationsCalendar websiteId="site-1" options={options} canManage={canManage} />
+    ) : (
+      <ServicesAtLocation
+        services={fixture.services}
+        options={options}
+        canConfigure={canConfigure}
+      />
+    ),
   );
 }
 
@@ -229,28 +255,22 @@ describe('the operations calendar', () => {
 
   it('says what to do when there is no location yet', async () => {
     renderAdmin({ setup: setupDto({ locations: [] }) });
-    expect(
-      screen.getByText('Add a location in the Locations tab to see the calendar.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Add a location under Setup to see the calendar.')).toBeInTheDocument();
     expect(loadCalendar).not.toHaveBeenCalled();
   });
 });
 
 describe('the administration lists', () => {
   it('lists services with their length and number of locations', () => {
-    renderAdmin();
-    // `Services` is a tab; the list is in the panel that tab opens.
-    expect(screen.getByRole('tab', { name: 'Calendar' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Services' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Resources' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Locations' })).toBeInTheDocument();
+    renderAdmin({ part: 'services' });
+
+    expect(screen.getByRole('button', { name: /Edit Passport/ })).toBeInTheDocument();
   });
 });
 
 describe('the service form', () => {
   async function openNewService(user: ReturnType<typeof setup>) {
-    renderAdmin({ setup: setupDto({ services: [] }) });
-    await openTab('Services');
+    renderAdmin({ setup: setupDto({ services: [] }), part: 'services' });
     await user.click(await screen.findByRole('button', { name: 'New service' }));
   }
 
@@ -306,8 +326,7 @@ describe('the service form', () => {
 
   it('opens an existing service for editing and keeps its id', async () => {
     const user = setup();
-    renderAdmin();
-    await openTab('Services');
+    renderAdmin({ part: 'services' });
     await user.click(await screen.findByRole('button', { name: /Edit Passport/ }));
     expect(screen.getByLabelText('Name')).toHaveValue('Passport');
     await user.click(screen.getByRole('button', { name: 'Save' }));
@@ -320,24 +339,22 @@ describe('the service form', () => {
 
 describe('who may configure', () => {
   it('hides the buttons that change things from a person who may only manage bookings', async () => {
-    renderAdmin({ canConfigure: false });
-    await openTab('Services');
+    renderAdmin({ canConfigure: false, part: 'services' });
     expect(await screen.findByText('Passport')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'New service' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Edit/ })).not.toBeInTheDocument();
     expect(screen.getByText('You can view this but not change it.')).toBeInTheDocument();
   });
 
-  it('flags inactive entries and services without a location', async () => {
+  it('flags services that are switched off', async () => {
     renderAdmin({
       setup: setupDto({
-        services: [serviceDto({ isActive: false, locationIds: [] })],
+        services: [serviceDto({ isActive: false })],
         resources: [resourceDto({ isActive: false })],
         locations: [locationDto({ isActive: false })],
       }),
+      part: 'services',
     });
-    await openTab('Services');
     expect(await screen.findByText('Inactive')).toBeInTheDocument();
-    expect(screen.getByText('No location')).toBeInTheDocument();
   });
 });

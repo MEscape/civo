@@ -20,12 +20,12 @@ import { BookingFacts } from './booking-facts';
 
 import type { SlotDto } from '../../dto/availability-dto';
 import type { CalendarBookingDto } from '../../dto/calendar-dto';
-import type { BookingSetupDto } from '../../dto/setup-dto';
+import type { BookingOptionsDto } from '../../dto/setup-dto';
 
 export interface BookingDetailsPanelProps {
   readonly websiteId: string;
   readonly booking: CalendarBookingDto;
-  readonly setup: BookingSetupDto;
+  readonly options: BookingOptionsDto;
   readonly canManage: boolean;
   readonly timeZone: string;
   readonly onChanged: () => void;
@@ -44,7 +44,7 @@ const FALLBACK_HORIZON_DAYS = 365;
 export function BookingDetailsPanel({
   websiteId,
   booking,
-  setup,
+  options,
   canManage,
   timeZone,
   onChanged,
@@ -57,9 +57,9 @@ export function BookingDetailsPanel({
   const [slot, setSlot] = useState<SlotDto | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const service = setup.services.find((candidate) => candidate.id === booking.serviceId);
+  const service = options.services.find((candidate) => candidate.id === booking.serviceId);
   const resourceNames = booking.resourceIds
-    .map((resourceId) => setup.resources.find((resource) => resource.id === resourceId)?.name)
+    .map((resourceId) => options.resources.find((resource) => resource.id === resourceId)?.name)
     .filter((name) => name !== undefined);
   const isOpen = booking.status === 'confirmed' || booking.status === 'held';
 

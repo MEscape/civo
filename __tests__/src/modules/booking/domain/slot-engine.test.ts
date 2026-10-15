@@ -25,6 +25,31 @@ function slotsOf(options: Parameters<typeof indexFor>[0], participants = 1) {
   return times(findAvailableSlots(indexFor(options), participants));
 }
 
+describe('an employee serves what they offer', () => {
+  const location = makeLocation({ openingHours: weekdays('09:00', '10:00') });
+
+  it('is bookable for a service they offer', () => {
+    expect(slotsOf({ location, resources: [makeResource('anna')] })).toEqual(['09:00', '09:30']);
+  });
+
+  it('is not bookable for a service they do not offer', () => {
+    const other = makeResource('ben', { skills: [] });
+    const withoutTag = { ...other, skills: [] };
+
+    expect(slotsOf({ location, resources: [withoutTag] })).toEqual([]);
+  });
+
+  it('leaves a room to anyone: only an employee has to offer the service', () => {
+    const service = makeService({
+      requirements: [{ resourceType: 'room', skills: [], count: 1, resourceIds: null }],
+    });
+
+    expect(
+      slotsOf({ location, service, resources: [makeResource('hall', { type: 'room' })] }),
+    ).toEqual(['09:00', '09:30']);
+  });
+});
+
 describe('opening hours and slot grid', () => {
   it('offers every grid point whose appointment fits inside the opening hours', () => {
     const slots = slotsOf({ location: makeLocation({ openingHours: weekdays('09:00', '11:00') }) });

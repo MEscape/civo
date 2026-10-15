@@ -21,6 +21,7 @@ export interface LocationRecord {
   readonly address: string | null;
   readonly timeZone: string;
   readonly openingHours: unknown;
+  readonly staffHours: unknown;
   readonly isActive: boolean;
   readonly createdAt: InstantRecord;
   readonly updatedAt: InstantRecord;
@@ -35,6 +36,7 @@ export const LOCATION_SELECT = [
   'address',
   'timeZone',
   'openingHours',
+  'staffHours',
   'isActive',
   'createdAt',
   'updatedAt',
@@ -58,6 +60,7 @@ export function toLocation(
     address: record.address,
     timeZone: record.timeZone,
     openingHours: stored.openingHours,
+    staffHours: stored.staffHours,
     isActive: record.isActive,
   });
   if (draft.isErr()) {

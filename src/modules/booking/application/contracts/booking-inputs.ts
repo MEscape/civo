@@ -24,6 +24,50 @@ export type CreateBookableServiceInput = Omit<BookableServiceInput, 'websiteId'>
 };
 export type UpdateBookableServiceInput = CreateBookableServiceInput & { readonly id: string };
 
+/** What the service form asks before saving: could the resources that exist serve this? */
+export interface PreviewServiceFeasibilityInput {
+  readonly websiteId: string;
+  /** The service being edited; absent for a new one. */
+  readonly serviceId?: string | undefined;
+  readonly locationIds: readonly string[];
+  readonly requirements: BookableServiceInput['requirements'];
+  readonly participantsPerBooking: number;
+  readonly participantsPerSession: number;
+}
+
+/** Working hours for employees: one, or many at once for "the same for everyone". */
+export interface SetTeamHoursInput {
+  readonly resourceIds: readonly string[];
+  /** The week to set; `null` returns them to the opening hours of their location. */
+  readonly availability: AvailabilityPlanInput | null;
+}
+
+/** The hours employees may work at a location, set by a manager. */
+export interface SetStaffHoursInput {
+  readonly locationId: string;
+  /** `null`: whenever the location is open. */
+  readonly staffHours: AvailabilityPlanInput | null;
+}
+
+/** The services an employee offers, set by a manager. */
+export interface SetTeamMemberServicesInput {
+  readonly resourceId: string;
+  readonly offeredServiceIds: readonly string[];
+}
+
+/** Whether a service is offered at one location; the rest of the service is left as it is. */
+export interface OfferServiceAtLocationInput {
+  readonly serviceId: string;
+  readonly locationId: string;
+  readonly isOffered: boolean;
+}
+
+export interface SearchAddressesInput {
+  readonly query: string;
+  /** Two-letter language of the suggestions, from the request's locale. */
+  readonly language: string;
+}
+
 export interface GetBookingCatalogInput {
   readonly websiteId: string;
   /** Narrows the catalog to services of one category key. */
@@ -108,7 +152,12 @@ export interface ReleaseExpiredHoldsInput {
 }
 
 /** An employee's new working hours for a calendar assigned to them. */
-export interface UpdateOwnAvailabilityInput {
-  readonly resourceId: string;
-  readonly availability: AvailabilityPlanInput;
+/** An employee's own place in the booking system: hours, where they work, which services they offer. */
+export interface SaveOwnProfileInput {
+  readonly websiteId: string;
+  readonly name: string;
+  /** The one location the employee works at. */
+  readonly locationId: string;
+  readonly offeredServiceIds: readonly string[];
+  readonly availability: AvailabilityPlanInput | null;
 }

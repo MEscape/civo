@@ -1,26 +1,31 @@
-import { CheckboxField } from '@components/shared/checkbox-field';
-import { TextField } from '@components/shared/text-field';
+import { ComboboxField } from '@components/shared/combobox-field';
 import { Button } from '@components/ui/button';
 
 import { useTranslations } from '@i18n/client';
 
 import { RESOURCE_TYPES, SERVICE_LIMITS } from '../../../application/contracts/booking-constraints';
 import { DEFAULT_REQUIREMENT } from '../../drafts/service-draft';
+import { skillChoices } from '../../drafts/skill-key';
 import { RESOURCE_TYPE_MESSAGE_KEYS } from '../../messages/message-keys';
 import { FormSection } from '../shared/form-section';
 import { NumberField } from '../shared/number-field';
 import { OptionSelectField } from '../shared/option-select-field';
 
 import type { RequirementDraft } from '../../drafts/service-draft';
-import type { ResourceDto } from '../../dto/setup-dto';
+import type { ResourceOption } from '../../dto/setup-dto';
 
 interface RequirementRowProps {
   readonly idPrefix: string;
   readonly requirement: RequirementDraft;
-  readonly resources: readonly ResourceDto[];
+  readonly resources: readonly ResourceOption[];
   readonly isRemovable: boolean;
   readonly onChange: (patch: Partial<RequirementDraft>) => void;
   readonly onRemove: () => void;
+}
+
+/** The capabilities resources of one type already have: the only ones a requirement can ask for. */
+function skillsOfType(resources: readonly ResourceOption[]): readonly string[] {
+  return [...new Set(resources.flatMap((resource) => resource.skills))].sort();
 }
 
 function RequirementRow({
@@ -36,31 +41,29 @@ function RequirementRow({
 
   return (
     <div className="space-y-3 rounded-token border border-border p-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <OptionSelectField
           id={`${idPrefix}-type`}
           label={t('services.requirementType')}
           value={requirement.resourceType}
-          options={RESOURCE_TYPES.map((kind) => ({
+          options={RESOURCE_TYPES.filter(
+            (kind) =>
+              kind === 'employee' ||
+              kind === requirement.resourceType ||
+              resources.some((resource) => resource.type === kind),
+          ).map((kind) => ({
             value: kind,
             label: t(RESOURCE_TYPE_MESSAGE_KEYS[kind]),
           }))}
           onValueChange={(resourceType) => {
-            onChange({ resourceType, resourceIds: [] });
-          }}
-        />
-        <TextField
-          id={`${idPrefix}-skills`}
-          label={t('services.requirementSkills')}
-          hint={t('services.requirementSkillsHint')}
-          value={requirement.skills}
-          onChange={(event) => {
-            onChange({ skills: event.target.value });
+            // Capabilities and the pool belong to the type: neither carries over to another.
+            onChange({ resourceType, resourceIds: [], skills: [] });
           }}
         />
         <NumberField
           id={`${idPrefix}-count`}
           label={t('services.requirementCount')}
+          hint={t('services.requirementCountHint')}
           value={requirement.count}
           min={1}
           max={SERVICE_LIMITS.requirementCountMax}
@@ -68,30 +71,33 @@ function RequirementRow({
             onChange({ count: count ?? 1 });
           }}
         />
+        <ComboboxField
+          selectionMode="multiple"
+          id={`${idPrefix}-skills`}
+          label={t('services.requirementSkills')}
+          hint={t('services.requirementSkillsHint')}
+          options={skillChoices(skillsOfType(candidates), requirement.skills)}
+          values={requirement.skills}
+          emptyText={t('services.requirementSkillsEmpty')}
+          removeText={(label) => t('form.removeValue', { label })}
+          onValuesChange={(skills) => {
+            onChange({ skills });
+          }}
+        />
+        <ComboboxField
+          selectionMode="multiple"
+          id={`${idPrefix}-pool`}
+          label={t('services.requirementPool')}
+          hint={t('services.requirementPoolHint')}
+          options={candidates.map((resource) => ({ value: resource.id, label: resource.name }))}
+          values={requirement.resourceIds}
+          emptyText={t('services.requirementPoolEmpty')}
+          removeText={(label) => t('form.removeValue', { label })}
+          onValuesChange={(resourceIds) => {
+            onChange({ resourceIds });
+          }}
+        />
       </div>
-      {candidates.length > 0 && (
-        <fieldset className="space-y-1">
-          <legend className="text-xs font-medium text-copy-muted">
-            {t('services.requirementPool')}
-          </legend>
-          <p className="text-xs text-copy-muted">{t('services.requirementPoolHint')}</p>
-          {candidates.map((resource) => (
-            <CheckboxField
-              key={resource.id}
-              id={`${idPrefix}-res-${resource.id}`}
-              label={resource.name}
-              checked={requirement.resourceIds.includes(resource.id)}
-              onChange={(event) => {
-                onChange({
-                  resourceIds: event.target.checked
-                    ? [...requirement.resourceIds, resource.id]
-                    : requirement.resourceIds.filter((value) => value !== resource.id),
-                });
-              }}
-            />
-          ))}
-        </fieldset>
-      )}
       {isRemovable && (
         <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
           {t('services.removeRequirement')}
@@ -104,7 +110,8 @@ function RequirementRow({
 export interface RequirementsSectionProps {
   readonly idPrefix: string;
   readonly requirements: readonly RequirementDraft[];
-  readonly resources: readonly ResourceDto[];
+  /** The resources that can serve the place the service is made at; others are not offered. */
+  readonly resources: readonly ResourceOption[];
   readonly onChange: (next: readonly RequirementDraft[]) => void;
 }
 
@@ -122,6 +129,9 @@ export function RequirementsSection({
       title={t('services.sections.resources')}
       description={t('services.sections.resourcesHint')}
     >
+      {resources.every((resource) => resource.type === 'employee') && (
+        <p className="text-sm text-copy-muted">{t('services.requirementsNoEquipment')}</p>
+      )}
       {requirements.map((requirement, index) => (
         <RequirementRow
           // Rows have no identity of their own: they are edited and removed by position.

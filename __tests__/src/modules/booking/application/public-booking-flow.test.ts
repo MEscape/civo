@@ -11,9 +11,11 @@ import { GetBookingCatalog } from '@modules/booking/application/queries/get-book
 import { GetPublicBooking } from '@modules/booking/application/queries/get-public-booking';
 import { SuggestAlternativeSlots } from '@modules/booking/application/queries/suggest-alternative-slots';
 import { BOOKING_ERROR_CODES as CODES } from '@modules/booking/domain/errors/booking-errors';
+import { toBookingLocationId } from '@modules/booking/domain/models/ids';
 
 import {
   makeBooking,
+  makeLocation,
   makeResource,
   makeService,
   at,
@@ -58,6 +60,33 @@ describe('catalog', () => {
     )._unsafeUnwrap();
 
     expect(catalog.services).toEqual([]);
+  });
+
+  it('does not show a service where nobody can serve it, and says nothing of why', async () => {
+    const noEmployees = createWorld({ resources: [] });
+    const nobodyOffers = createWorld({ resources: [{ ...makeResource('emp-1'), skills: [] }] });
+
+    for (const world of [noEmployees, nobodyOffers]) {
+      const catalog = (
+        await new GetBookingCatalog(world.flow).execute({ websiteId: WEBSITE })
+      )._unsafeUnwrap();
+      expect(catalog.services).toEqual([]);
+    }
+  });
+
+  it('shows a service only at the locations where an employee offers it', async () => {
+    const annex = toBookingLocationId('location-2');
+    const world = createWorld({
+      service: makeService({ locationIds: [LOCATION_ID, annex] }),
+      resources: [makeResource('emp-1', { locationId: LOCATION_ID })],
+    });
+    world.locations.seed(makeLocation({ id: annex, name: 'Annex' }));
+
+    const catalog = (
+      await new GetBookingCatalog(world.flow).execute({ websiteId: WEBSITE })
+    )._unsafeUnwrap();
+
+    expect(catalog.services[0]?.locations.map((location) => location.name)).toEqual(['Town hall']);
   });
 
   it('narrows to the services the component is configured with', async () => {

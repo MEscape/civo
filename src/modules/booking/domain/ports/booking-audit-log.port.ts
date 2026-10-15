@@ -31,6 +31,11 @@ export type BookingEvent =
       readonly serviceId: BookableServiceId;
     })
   | (Scope & {
+      readonly type: 'booking.service_deleted';
+      readonly actorId: ActorId;
+      readonly serviceId: BookableServiceId;
+    })
+  | (Scope & {
       readonly type: 'booking.location_created';
       readonly actorId: ActorId;
       readonly locationId: BookingLocationId;
@@ -41,12 +46,27 @@ export type BookingEvent =
       readonly locationId: BookingLocationId;
     })
   | (Scope & {
+      readonly type: 'booking.location_deleted';
+      readonly actorId: ActorId;
+      readonly locationId: BookingLocationId;
+    })
+  | (Scope & {
       readonly type: 'booking.resource_created';
       readonly actorId: ActorId;
       readonly resourceId: BookableResourceId;
     })
   | (Scope & {
       readonly type: 'booking.resource_updated';
+      readonly actorId: ActorId;
+      readonly resourceId: BookableResourceId;
+    })
+  | (Scope & {
+      readonly type: 'booking.resource_deleted';
+      readonly actorId: ActorId;
+      readonly resourceId: BookableResourceId;
+    })
+  | (Scope & {
+      readonly type: 'booking.manager_change_acknowledged';
       readonly actorId: ActorId;
       readonly resourceId: BookableResourceId;
     })

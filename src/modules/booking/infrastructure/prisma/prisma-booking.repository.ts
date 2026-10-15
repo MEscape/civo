@@ -32,6 +32,7 @@ import type { BookingReference } from '../../domain/models/booking-reference';
 import type { BookingId, WebsiteId } from '../../domain/models/ids';
 import type {
   BookingRepository,
+  BookingSubject,
   CalendarQuery,
   NewBooking,
   WebsiteScope,
@@ -313,7 +314,7 @@ export class PrismaBookingRepository implements BookingRepository {
 
   listInRange(
     { websiteId, tenantId }: WebsiteScope,
-    { span, filter, limit }: CalendarQuery,
+    { span, filter, limit, assignedTo }: CalendarQuery,
   ): AppResultAsync<readonly Booking[], InfrastructureAppError> {
     return fromThrowableAsync(async () => {
       let query = bookingsWithHolds(tenantId)
@@ -330,6 +331,13 @@ export class PrismaBookingRepository implements BookingRepository {
       const { resourceId } = filter;
       if (resourceId !== undefined) {
         query = query.where((booking) => booking.holds.some({ resourceId }));
+      }
+      if (assignedTo !== undefined) {
+        query = query.where((booking) =>
+          booking.holds.some((hold) =>
+            hold.resource.some({ tenantId, assignedActorId: assignedTo }),
+          ),
+        );
       }
       return query
         .orderBy([(booking) => booking.start.asc(), (booking) => booking.id.asc()])
@@ -423,6 +431,65 @@ export class PrismaBookingRepository implements BookingRepository {
     ).andThen((outcome) =>
       outcome.kind === 'stale' ? this.explainStale(next) : this.settle(outcome),
     );
+  }
+
+  isReferenced(
+    subject: BookingSubject,
+    tenantId: TenantId,
+  ): AppResultAsync<boolean, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      if (subject.kind === 'resource') {
+        // The hold rows carry no tenant of their own; the caller loaded the resource within its tenant.
+        const hold = await db.orm.public.BookingResource.where({ resourceId: subject.id })
+          .select('bookingId')
+          .first();
+        return hold !== null;
+      }
+      const own =
+        subject.kind === 'location'
+          ? bookingsOf(tenantId).where({ locationId: subject.id })
+          : bookingsOf(tenantId).where({ serviceId: subject.id });
+      return (await own.select('id').first()) !== null;
+    }, failures.infraOnly('isReferenced'));
+  }
+
+  hasUpcoming(
+    subject: BookingSubject,
+    tenantId: TenantId,
+    now: Date,
+  ): AppResultAsync<boolean, InfrastructureAppError> {
+    const stamp = dateToInstant(now);
+    return fromThrowableAsync(async () => {
+      if (subject.kind === 'resource') {
+        // A hold row is active while its booking stands, and repeats the booking's occupied span.
+        const hold = await db.orm.public.BookingResource.where({
+          resourceId: subject.id,
+          isActive: true,
+        })
+          .where((row) => row.occupiedEnd.gt(stamp))
+          .select('bookingId')
+          .first();
+        return hold !== null;
+      }
+      const own =
+        subject.kind === 'location'
+          ? bookingsOf(tenantId).where({ locationId: subject.id })
+          : bookingsOf(tenantId).where({ serviceId: subject.id });
+      const confirmed = await own
+        .where({ status: 'CONFIRMED' })
+        .where((booking) => booking.end.gt(stamp))
+        .select('id')
+        .first();
+      if (confirmed !== null) {
+        return true;
+      }
+      const held = await own
+        .where({ status: 'HELD' })
+        .where((booking) => booking.holdExpiresAt.gt(stamp))
+        .select('id')
+        .first();
+      return held !== null;
+    }, failures.infraOnly('hasUpcoming'));
   }
 
   countLiveByEmail(

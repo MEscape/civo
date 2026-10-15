@@ -16,8 +16,10 @@ import type {
   AvailabilityExceptionInput,
   AvailabilityPlanInput,
   DayScheduleInput,
+  ExceptionHolidayInput,
   TimeRangeInput,
 } from './availability-plan';
+import type { ManagerChangeInput } from './bookable-resource';
 import type { ChangeActor, ChangePolicyInput, ResourceRequirementInput } from './bookable-service';
 import type { BookingCustomer } from './booking-customer';
 
@@ -38,12 +40,15 @@ const isDaySchedule = objectOf<DayScheduleInput>({
   breaks: arrayOf(isTimeRange),
 });
 
+const isExceptionHoliday = objectOf<ExceptionHolidayInput>({ key: isString, region: isString });
+
 const isException = objectOf<AvailabilityExceptionInput>({
   kind: isString,
   from: isString,
   to: isString,
   day: optional(isDaySchedule),
   label: optional(nullable(isString)),
+  holiday: optional(nullable(isExceptionHoliday)),
 });
 
 const isAvailabilityPlan = objectOf<AvailabilityPlanInput>({
@@ -75,11 +80,13 @@ const isInformation = objectOf<StoredInformation>({ field: isString, isRequired:
 
 export interface StoredLocation {
   readonly openingHours: AvailabilityPlanInput;
+  readonly staffHours: AvailabilityPlanInput | null;
 }
 
 export interface StoredResource {
   readonly skills: string[];
   readonly availability: AvailabilityPlanInput | null;
+  readonly managerChange: ManagerChangeInput | null;
 }
 
 export interface StoredService {
@@ -108,11 +115,15 @@ const isCustomer = objectOf<BookingCustomer>({
 
 const isStoredLocation: Guard<StoredLocation> = objectOf<StoredLocation>({
   openingHours: isAvailabilityPlan,
+  staffHours: nullable(isAvailabilityPlan),
 });
+
+const isManagerChange = objectOf<ManagerChangeInput>({ at: isString, kinds: isStringList });
 
 const isStoredResource: Guard<StoredResource> = objectOf<StoredResource>({
   skills: isStringList,
   availability: nullable(isAvailabilityPlan),
+  managerChange: nullable(isManagerChange),
 });
 
 const isStoredService: Guard<StoredService> = objectOf<StoredService>({

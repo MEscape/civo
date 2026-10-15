@@ -1,8 +1,9 @@
-import type { TenantId } from '@modules/auth';
+import type { ActorId, TenantId } from '@modules/auth';
 
 import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
+import type { WebsiteScope } from './booking.repository';
 import type { BookableResource, BookableResourceDraft } from '../models/bookable-resource';
 import type { BookableResourceId, WebsiteId } from '../models/ids';
 
@@ -20,11 +21,28 @@ export interface BookableResourceRepository {
     limit: number,
   ): AppResultAsync<readonly BookableResource[], InfrastructureAppError>;
 
+  /**
+   * The resources assigned to this person, selected in the store: what an
+   * employee reads of the configuration never includes a colleague's
+   * calendar. Bounded: never more than `limit` items.
+   */
+  listAssignedTo(
+    scope: WebsiteScope,
+    actorId: ActorId,
+    limit: number,
+  ): AppResultAsync<readonly BookableResource[], InfrastructureAppError>;
+
   /** Fails with "not found" when the website does not exist in this tenant. */
   create(input: {
     readonly tenantId: TenantId;
     readonly draft: BookableResourceDraft;
   }): AppResultAsync<BookableResource, NotFoundAppError | InfrastructureAppError>;
+
+  /** Idempotent. The caller has checked that no booking refers to the resource. */
+  deleteById(
+    id: BookableResourceId,
+    tenantId: TenantId,
+  ): AppResultAsync<void, InfrastructureAppError>;
 
   update(
     id: BookableResourceId,

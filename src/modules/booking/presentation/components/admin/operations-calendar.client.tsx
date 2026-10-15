@@ -17,12 +17,12 @@ import { CalendarView } from './calendar-view.client';
 import type { BookingStatus } from '../../../application/contracts/booking-constraints';
 import type { CalendarAdapterEvent, CalendarTone } from '../../calendar/calendar-model';
 import type { CalendarBookingDto } from '../../dto/calendar-dto';
-import type { BookingSetupDto } from '../../dto/setup-dto';
+import type { BookingOptionsDto } from '../../dto/setup-dto';
 import type { CalendarFilters as Filters } from '../../hooks/use-operations-calendar';
 
 export interface OperationsCalendarProps {
   readonly websiteId: string;
-  readonly setup: BookingSetupDto;
+  readonly options: BookingOptionsDto;
   /** Whether the signed-in person may change bookings (`booking.manage`), not just read them. */
   readonly canManage: boolean;
 }
@@ -63,7 +63,7 @@ function toEvent(booking: CalendarBookingDto): CalendarAdapterEvent {
  * is reached only through the adapter; this component works with plain
  * events, so it neither knows nor cares which library draws them.
  */
-export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCalendarProps) {
+export function OperationsCalendar({ websiteId, options, canManage }: OperationsCalendarProps) {
   const t = useTranslations('booking');
   const locale = useLocale();
   const [filters, setFilters] = useState(NO_FILTERS);
@@ -91,7 +91,7 @@ export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCa
 
   return (
     <div className="space-y-4">
-      <CalendarFilters setup={setup} filters={filters} onChange={setFilters} />
+      <CalendarFilters options={options} filters={filters} onChange={setFilters} />
 
       {outcome?.kind === 'failed' && (
         <div className="space-y-2">
@@ -102,7 +102,7 @@ export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCa
         </div>
       )}
 
-      {setup.locations.length === 0 ? (
+      {options.locations.length === 0 ? (
         <p
           role="status"
           className="rounded-token border border-border bg-canvas p-4 text-sm text-copy"
@@ -134,7 +134,7 @@ export function OperationsCalendar({ websiteId, setup, canManage }: OperationsCa
         <BookingDetailsPanel
           websiteId={websiteId}
           booking={selected}
-          setup={setup}
+          options={options}
           canManage={canManage}
           timeZone={shown?.timeZone ?? 'UTC'}
           onChanged={refresh}

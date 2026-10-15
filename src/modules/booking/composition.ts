@@ -2,7 +2,9 @@ import 'server-only';
 import { getAccessControl } from '@modules/auth';
 
 import { systemClock } from '@lib/clock';
+import { publicEnv } from '@lib/config';
 
+import { AcknowledgeManagerChange } from './application/commands/acknowledge-manager-change';
 import { CancelBookingAsStaff } from './application/commands/cancel-booking-as-staff';
 import { CancelOwnBooking } from './application/commands/cancel-own-booking';
 import { CompleteBooking } from './application/commands/complete-booking';
@@ -10,25 +12,39 @@ import { ConfirmBooking } from './application/commands/confirm-booking';
 import { CreateBookableResource } from './application/commands/create-bookable-resource';
 import { CreateBookableService } from './application/commands/create-bookable-service';
 import { CreateBookingLocation } from './application/commands/create-booking-location';
+import { DeleteBookableResource } from './application/commands/delete-bookable-resource';
+import { DeleteBookableService } from './application/commands/delete-bookable-service';
+import { DeleteBookingLocation } from './application/commands/delete-booking-location';
 import { HoldSlot } from './application/commands/hold-slot';
 import { MarkBookingNoShow } from './application/commands/mark-booking-no-show';
+import { OfferServiceAtLocation } from './application/commands/offer-service-at-location';
 import { ReleaseExpiredHolds } from './application/commands/release-expired-holds';
 import { ReleaseHold } from './application/commands/release-hold';
 import { RescheduleBookingAsStaff } from './application/commands/reschedule-booking-as-staff';
 import { RescheduleOwnBooking } from './application/commands/reschedule-own-booking';
+import { SaveOwnProfile } from './application/commands/save-own-profile';
+import { SetStaffHours } from './application/commands/set-staff-hours';
+import { SetTeamHours } from './application/commands/set-team-hours';
+import { SetTeamMemberServices } from './application/commands/set-team-member-services';
 import { UpdateBookableResource } from './application/commands/update-bookable-resource';
 import { UpdateBookableService } from './application/commands/update-bookable-service';
 import { UpdateBookingLocation } from './application/commands/update-booking-location';
-import { UpdateOwnAvailability } from './application/commands/update-own-availability';
 import { GetAvailableSlots } from './application/queries/get-available-slots';
 import { GetBookingAccess } from './application/queries/get-booking-access';
 import { GetBookingCatalog } from './application/queries/get-booking-catalog';
-import { GetBookingSetup } from './application/queries/get-booking-setup';
+import { GetBookingOptions } from './application/queries/get-booking-options';
+import { GetBookingSummary } from './application/queries/get-booking-summary';
+import { GetLocationWorkspace } from './application/queries/get-location-workspace';
 import { GetOperationsCalendar } from './application/queries/get-operations-calendar';
-import { GetOwnResources } from './application/queries/get-own-resources';
+import { GetOwnProfile } from './application/queries/get-own-profile';
 import { GetPublicBooking } from './application/queries/get-public-booking';
+import { GetSetupOverview } from './application/queries/get-setup-overview';
+import { GetTeam } from './application/queries/get-team';
+import { PreviewServiceFeasibility } from './application/queries/preview-service-feasibility';
+import { SearchAddresses } from './application/queries/search-addresses';
 import { SpendRequestBudget } from './application/queries/spend-request-budget';
 import { SuggestAlternativeSlots } from './application/queries/suggest-alternative-slots';
+import { MapboxAddressSearch } from './infrastructure/geocoding/mapbox-address-search';
 import { RandomBookingReferenceGenerator } from './infrastructure/identity/random-booking-reference-generator';
 import { MemoryRequestLimiter } from './infrastructure/limiting/memory-request-limiter';
 import { loggerBookingAuditLog } from './infrastructure/logging/logger-booking-audit-log';
@@ -65,6 +81,10 @@ const resources = new PrismaBookableResourceRepository(systemClock);
 const services = new PrismaBookableServiceRepository(systemClock);
 const bookings = new PrismaBookingRepository();
 const notifier = createBookingNotifier(new PrismaWebsiteBrandRepository());
+const limiter = new MemoryRequestLimiter();
+// The map's public token also serves address suggestions; without it the address field is plain text.
+const geocodingToken = publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+const addresses = geocodingToken === undefined ? null : new MapboxAddressSearch(geocodingToken);
 
 const adminDependencies: BookingDependencies = {
   authorization: getAccessControl(),
@@ -73,6 +93,8 @@ const adminDependencies: BookingDependencies = {
   services,
   bookings,
   audit: loggerBookingAuditLog,
+  addresses,
+  limiter,
   notifier,
   clock: systemClock,
 };
@@ -115,9 +137,17 @@ export const bookingAdminCommands = {
   updateBookingLocation: new UpdateBookingLocation(adminDependencies),
   createBookableResource: new CreateBookableResource(adminDependencies),
   updateBookableResource: new UpdateBookableResource(adminDependencies),
-  updateOwnAvailability: new UpdateOwnAvailability(adminDependencies),
+  saveOwnProfile: new SaveOwnProfile(adminDependencies),
   createBookableService: new CreateBookableService(adminDependencies),
   updateBookableService: new UpdateBookableService(adminDependencies),
+  offerServiceAtLocation: new OfferServiceAtLocation(adminDependencies),
+  deleteBookingLocation: new DeleteBookingLocation(adminDependencies),
+  deleteBookableService: new DeleteBookableService(adminDependencies),
+  deleteBookableResource: new DeleteBookableResource(adminDependencies),
+  setStaffHours: new SetStaffHours(adminDependencies),
+  setTeamHours: new SetTeamHours(adminDependencies),
+  setTeamMemberServices: new SetTeamMemberServices(adminDependencies),
+  acknowledgeManagerChange: new AcknowledgeManagerChange(adminDependencies),
   cancelBookingAsStaff: new CancelBookingAsStaff(adminDependencies),
   rescheduleBookingAsStaff: new RescheduleBookingAsStaff(adminDependencies),
   completeBooking: new CompleteBooking(adminDependencies),
@@ -127,14 +157,25 @@ export const bookingAdminCommands = {
 
 export const bookingAdminQueries = {
   getBookingAccess: new GetBookingAccess(adminDependencies),
-  getBookingSetup: new GetBookingSetup(adminDependencies),
+  getBookingOptions: new GetBookingOptions(adminDependencies),
   getOperationsCalendar: new GetOperationsCalendar(adminDependencies),
-  getOwnResources: new GetOwnResources(adminDependencies),
+  getBookingSummary: new GetBookingSummary(adminDependencies),
+  getSetupOverview: new GetSetupOverview(adminDependencies),
+  getTeam: new GetTeam(adminDependencies),
+  getLocationWorkspace: new GetLocationWorkspace(adminDependencies),
+  getOwnProfile: new GetOwnProfile(adminDependencies),
+  previewServiceFeasibility: new PreviewServiceFeasibility(adminDependencies),
+  searchAddresses: new SearchAddresses(adminDependencies),
+} as const;
+
+/** What other screens may ask of the bookings: a summary, with the same access rule as the calendar. */
+export const bookingQueries = {
+  getBookingSummary: bookingAdminQueries.getBookingSummary,
 } as const;
 
 /** One limiter for this server process, shared by every public action (see `MemoryRequestLimiter`). */
 const requestBudgetDependencies: RequestBudgetDependencies = {
-  limiter: new MemoryRequestLimiter(),
+  limiter,
   clock: systemClock,
 };
 

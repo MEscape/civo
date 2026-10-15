@@ -1,4 +1,4 @@
-import type { Actor, AuthorizationService, TenantId } from '@modules/auth';
+import type { Actor, ActorId, AuthorizationService, TenantId } from '@modules/auth';
 import { toTenantId, actorHasPermission } from '@modules/auth';
 import { toActorId } from '@modules/auth/domain/models/ids';
 import {
@@ -31,10 +31,15 @@ import type {
 import type { BookingReferenceGenerator } from '@modules/booking/domain/ports/booking-reference-generator.port';
 import type {
   BookingRepository,
+  BookingSubject,
   CalendarQuery,
   NewBooking,
   WebsiteScope,
 } from '@modules/booking/domain/ports/booking.repository';
+import type {
+  LimitedAction,
+  RequestLimiter,
+} from '@modules/booking/domain/ports/request-limiter.port';
 import type { WebsiteDirectoryRepository } from '@modules/booking/domain/ports/website-directory.repository';
 import type { TimeInterval } from '@modules/booking/domain/time/time-interval';
 
@@ -43,6 +48,20 @@ import { forbiddenError } from '@lib/errors';
 import type { NotFoundAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 import { errAsync, okAsync } from '@lib/result';
+
+/** A limiter that allows `budget` requests per key and action, then refuses: the test sets how many. */
+export class FakeRequestLimiter implements RequestLimiter {
+  private readonly spent = new Map<string, number>();
+
+  constructor(private readonly budget = Number.POSITIVE_INFINITY) {}
+
+  allow(key: string, action: LimitedAction): boolean {
+    const slot = `${action}:${key}`;
+    const used = this.spent.get(slot) ?? 0;
+    this.spent.set(slot, used + 1);
+    return used < this.budget;
+  }
+}
 
 /** A clock the test moves by hand. */
 export class ManualClock implements Clock {
@@ -134,6 +153,14 @@ class InMemoryConfigRepository<T extends { id: string; tenantId: TenantId; websi
     return okAsync(row?.tenantId === tenantId ? row : null);
   }
 
+  /** Idempotent, and another tenant's row is left alone, as in the real repositories. */
+  deleteById(id: string, tenantId: TenantId): AppResultAsync<void, never> {
+    if (this.rows.get(id)?.tenantId === tenantId) {
+      this.rows.delete(id);
+    }
+    return okAsync(undefined);
+  }
+
   listByWebsite(
     websiteId: WebsiteId,
     tenantId: TenantId,
@@ -174,6 +201,29 @@ export class InMemoryResourceRepository
   extends InMemoryConfigRepository<BookableResource>
   implements BookableResourceRepository
 {
+  listAssignedTo(
+    { websiteId, tenantId }: WebsiteScope,
+    actorId: ActorId,
+    limit: number,
+  ): AppResultAsync<readonly BookableResource[], never> {
+    return okAsync(
+      [...this.rows.values()]
+        .filter(
+          (row) =>
+            row.websiteId === websiteId &&
+            row.tenantId === tenantId &&
+            row.assignedActorId === actorId,
+        )
+        .slice(0, limit),
+    );
+  }
+
+  /** Who a resource is assigned to: what the real store joins on when it narrows bookings. */
+  assignedActorOf(id: string, tenantId: TenantId): string | null {
+    const row = this.rows.get(id);
+    return row?.tenantId === tenantId ? row.assignedActorId : null;
+  }
+
   create({
     tenantId,
     draft,
@@ -216,6 +266,17 @@ export class InMemoryServiceRepository
   }
 }
 
+function refersTo(booking: Booking, subject: BookingSubject): boolean {
+  switch (subject.kind) {
+    case 'location':
+      return booking.locationId === subject.id;
+    case 'service':
+      return booking.serviceId === subject.id;
+    case 'resource':
+      return booking.resourceIds.includes(subject.id);
+  }
+}
+
 function overlaps(a: TimeInterval, b: TimeInterval): boolean {
   return a.start < b.end && b.start < a.end;
 }
@@ -234,6 +295,11 @@ function spanOf(booking: Pick<Booking, 'occupiedStart' | 'occupiedEnd'>): TimeIn
 export class InMemoryBookingRepository implements BookingRepository {
   private readonly rows = new Map<string, Booking>();
   private counter = 0;
+
+  /** Every calendar query that reached the store, so a test can see what was asked of it. */
+  readonly calendarQueries: CalendarQuery[] = [];
+
+  constructor(private readonly resources: InMemoryResourceRepository) {}
 
   seed(booking: Booking): void {
     this.rows.set(booking.id, booking);
@@ -286,8 +352,15 @@ export class InMemoryBookingRepository implements BookingRepository {
 
   listInRange(
     { websiteId, tenantId }: WebsiteScope,
-    { span, filter, limit }: CalendarQuery,
+    query: CalendarQuery,
   ): AppResultAsync<readonly Booking[], never> {
+    const { span, filter, limit, assignedTo } = query;
+    this.calendarQueries.push(query);
+    const isAssignedToCaller = (booking: Booking) =>
+      assignedTo === undefined ||
+      booking.resourceIds.some(
+        (resourceId) => this.resources.assignedActorOf(resourceId, tenantId) === assignedTo,
+      );
     return okAsync(
       [...this.rows.values()]
         .filter(
@@ -299,7 +372,8 @@ export class InMemoryBookingRepository implements BookingRepository {
             booking.start.getTime() < span.end &&
             (filter.locationId === undefined || booking.locationId === filter.locationId) &&
             (filter.serviceId === undefined || booking.serviceId === filter.serviceId) &&
-            (filter.resourceId === undefined || booking.resourceIds.includes(filter.resourceId)),
+            (filter.resourceId === undefined || booking.resourceIds.includes(filter.resourceId)) &&
+            isAssignedToCaller(booking),
         )
         .sort((a, b) => a.start.getTime() - b.start.getTime())
         .slice(0, limit),
@@ -351,6 +425,30 @@ export class InMemoryBookingRepository implements BookingRepository {
           isBlocking(booking, now) &&
           booking.end.getTime() > now.getTime(),
       ).length,
+    );
+  }
+
+  isReferenced(subject: BookingSubject, tenantId: TenantId): AppResultAsync<boolean, never> {
+    return okAsync(
+      [...this.rows.values()].some(
+        (booking) => booking.tenantId === tenantId && refersTo(booking, subject),
+      ),
+    );
+  }
+
+  hasUpcoming(
+    subject: BookingSubject,
+    tenantId: TenantId,
+    now: Date,
+  ): AppResultAsync<boolean, never> {
+    return okAsync(
+      [...this.rows.values()].some(
+        (booking) =>
+          booking.tenantId === tenantId &&
+          refersTo(booking, subject) &&
+          isBlocking(booking, now) &&
+          booking.end.getTime() > now.getTime(),
+      ),
     );
   }
 

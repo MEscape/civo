@@ -39,3 +39,25 @@ export interface OperationsCalendarView {
   readonly bookings: readonly CalendarBookingView[];
   readonly resources: readonly CalendarResourceView[];
 }
+
+/** One of the next appointments on the website overview. */
+export interface UpcomingBookingView {
+  readonly id: string;
+  readonly start: Date;
+  readonly end: Date;
+  readonly serviceName: string;
+  readonly customerName: string | null;
+}
+
+/** What the website overview shows of the bookings. */
+export interface BookingSummaryView {
+  /** `false` until a location exists: there is no calendar to count in. */
+  readonly hasLocation: boolean;
+  /** Appointments today in the first location's calendar. */
+  readonly today: number;
+  /** Appointments still to come within the next `days` days, today included. */
+  readonly upcoming: number;
+  readonly days: number;
+  /** The next few, soonest first. */
+  readonly next: readonly UpcomingBookingView[];
+}

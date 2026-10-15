@@ -26,6 +26,12 @@ export interface BookableServiceRepository {
     readonly draft: BookableServiceDraft;
   }): AppResultAsync<BookableService, NotFoundAppError | InfrastructureAppError>;
 
+  /** Idempotent. The caller has checked that no booking refers to the service. */
+  deleteById(
+    id: BookableServiceId,
+    tenantId: TenantId,
+  ): AppResultAsync<void, InfrastructureAppError>;
+
   update(
     id: BookableServiceId,
     tenantId: TenantId,

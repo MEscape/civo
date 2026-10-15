@@ -14,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { toTenantId } from '@modules/auth';
 import type { TenantId } from '@modules/auth';
+import { toActorId } from '@modules/auth/domain/models/ids';
 import { BOOKING_ERROR_CODES } from '@modules/booking/domain/errors/booking-errors';
 import { createBookableResourceDraft } from '@modules/booking/domain/models/bookable-resource';
 import { createBookableServiceDraft } from '@modules/booking/domain/models/bookable-service';
@@ -68,7 +69,9 @@ describe.skipIf(process.env['BOOKING_TEST_DATABASE_URL'] === undefined)(
     let counter = 0;
 
     beforeAll(async () => {
+      // A tenant is its website: the table refuses any other pairing of the two ids.
       const website = await db.orm.public.Website.create({
+        id: tenantId,
         tenantId,
         name: 'Integration',
         slug: `it-${suffix}`,
@@ -433,6 +436,219 @@ describe.skipIf(process.env['BOOKING_TEST_DATABASE_URL'] === undefined)(
       expect(
         (await bookings.countLiveHolds({ websiteId, tenantId }, tomorrow))._unsafeUnwrap(),
       ).toBe(0);
+    });
+    it('narrows the calendar to the bookings on the resources assigned to a person, in the query itself', async () => {
+      const websiteId = toWebsiteId(websiteRecordId);
+      const scope = { websiteId, tenantId };
+      const [anna, ben] = [toActorId(`anna-${suffix}`), toActorId(`ben-${suffix}`)];
+
+      const employeeOf = async (name: string, actor: string) =>
+        (
+          await resources.create({
+            tenantId,
+            draft: createBookableResourceDraft({
+              websiteId,
+              locationId: toBookingLocationId(locationId),
+              name,
+              type: 'employee',
+              skills: [],
+              capacity: null,
+              availability: null,
+              isActive: true,
+              assignedActorId: actor,
+            })._unsafeUnwrap(),
+          })
+        )._unsafeUnwrap();
+      const annaResource = await employeeOf('Anna', anna);
+      const benResource = await employeeOf('Ben', ben);
+
+      // Ben's booking comes first, so a limit that is not applied to Anna's own would cut hers off.
+      const benFirst = (
+        await create({ resources: [benResource.id], startMinutes: 5000, status: 'confirmed' })
+      )._unsafeUnwrap();
+      const annaSecond = (
+        await create({ resources: [annaResource.id], startMinutes: 5060, status: 'confirmed' })
+      )._unsafeUnwrap();
+      const shared = (
+        await create({
+          resources: [annaResource.id, benResource.id],
+          startMinutes: 5120,
+          status: 'confirmed',
+        })
+      )._unsafeUnwrap();
+
+      const span = { start: BASE + 4990 * MINUTE, end: BASE + 5200 * MINUTE };
+      const idsOf = async (query: Parameters<typeof bookings.listInRange>[1]) =>
+        (await bookings.listInRange(scope, query))._unsafeUnwrap().map((booking) => booking.id);
+
+      // Nobody narrowed: the whole calendar.
+      expect(await idsOf({ span, filter: {}, limit: 10 })).toEqual([
+        benFirst.id,
+        annaSecond.id,
+        shared.id,
+      ]);
+      // Anna: her own and the shared one, never Ben's alone.
+      expect(await idsOf({ span, filter: {}, limit: 10, assignedTo: anna })).toEqual([
+        annaSecond.id,
+        shared.id,
+      ]);
+      expect(await idsOf({ span, filter: {}, limit: 10, assignedTo: ben })).toEqual([
+        benFirst.id,
+        shared.id,
+      ]);
+      // The limit counts only what is hers: Ben's earlier booking does not use it up.
+      expect(await idsOf({ span, filter: {}, limit: 1, assignedTo: anna })).toEqual([
+        annaSecond.id,
+      ]);
+      // A filter naming Ben's resource cannot widen Anna's view beyond what also occupies hers.
+      expect(
+        await idsOf({
+          span,
+          filter: { resourceId: toBookableResourceId(benResource.id) },
+          limit: 10,
+          assignedTo: anna,
+        }),
+      ).toEqual([shared.id]);
+      // Someone with nothing assigned sees nothing, and another tenant's staff member nothing either.
+      expect(
+        await idsOf({ span, filter: {}, limit: 10, assignedTo: toActorId(`carla-${suffix}`) }),
+      ).toEqual([]);
+      expect(
+        (
+          await bookings.listInRange(
+            { websiteId, tenantId: otherTenantId },
+            { span, filter: {}, limit: 10, assignedTo: anna },
+          )
+        )._unsafeUnwrap(),
+      ).toEqual([]);
+
+      // The resource list is narrowed in the store the same way.
+      const mine = (await resources.listAssignedTo(scope, anna, 10))._unsafeUnwrap();
+      expect(mine.map((resource) => resource.id)).toEqual([annaResource.id]);
+      expect(
+        (
+          await resources.listAssignedTo({ websiteId, tenantId: otherTenantId }, anna, 10)
+        )._unsafeUnwrap(),
+      ).toEqual([]);
+    });
+
+    it('keeps the hours employees may work and a manager change, and reads them back', async () => {
+      const websiteId = toWebsiteId(websiteRecordId);
+      const day = { intervals: [{ start: '08:00', end: '18:00' }], breaks: [] };
+      const mornings = {
+        intervals: [{ start: '08:00', end: '12:00' }],
+        breaks: [],
+      };
+      const place = (
+        await locations.create({
+          tenantId,
+          draft: createBookingLocationDraft({
+            websiteId,
+            name: 'Annex',
+            address: null,
+            timeZone: 'UTC',
+            openingHours: { weekly: Array.from({ length: 7 }, () => day), exceptions: [] },
+            staffHours: { weekly: Array.from({ length: 7 }, () => mornings), exceptions: [] },
+            isActive: true,
+          })._unsafeUnwrap(),
+        })
+      )._unsafeUnwrap();
+      const changedAt = new Date(Date.UTC(2027, 5, 2, 9, 30));
+      const person = (
+        await resources.create({
+          tenantId,
+          draft: createBookableResourceDraft({
+            websiteId,
+            locationId: place.id,
+            name: 'Dora',
+            type: 'employee',
+            skills: [],
+            capacity: null,
+            availability: null,
+            isActive: true,
+            assignedActorId: toActorId(`dora-${suffix}`),
+            managerChange: { at: changedAt, kinds: ['hours', 'services'] },
+          })._unsafeUnwrap(),
+        })
+      )._unsafeUnwrap();
+
+      const location = (await locations.findById(place.id, tenantId))._unsafeUnwrap();
+      const employee = (await resources.findById(person.id, tenantId))._unsafeUnwrap();
+
+      expect(location?.staffHours?.weekly[1]?.intervals).toEqual([
+        { startMinute: 480, endMinute: 720 },
+      ]);
+      expect(employee?.managerChange).toEqual({ at: changedAt, kinds: ['hours', 'services'] });
+
+      const cleared = (
+        await resources.update(person.id, tenantId, {
+          ...createBookableResourceDraft({
+            websiteId,
+            locationId: place.id,
+            name: 'Dora',
+            type: 'employee',
+            skills: [],
+            capacity: null,
+            availability: null,
+            isActive: true,
+            assignedActorId: toActorId(`dora-${suffix}`),
+          })._unsafeUnwrap(),
+        })
+      )._unsafeUnwrap();
+      expect(cleared.managerChange).toBeNull();
+    });
+
+    it('knows what bookings refer to, and removes what nothing refers to', async () => {
+      const websiteId = toWebsiteId(websiteRecordId);
+      const booked = await create({
+        resources: [deskAt(0)],
+        startMinutes: 7000,
+        status: 'confirmed',
+      });
+      booked._unsafeUnwrap();
+      const subjects = [
+        { kind: 'service', id: toBookableServiceId(serviceId) },
+        { kind: 'location', id: toBookingLocationId(locationId) },
+        { kind: 'resource', id: toBookableResourceId(deskAt(0)) },
+      ] as const;
+      const afterBooking = new Date(BASE + 8000 * MINUTE);
+
+      for (const subject of subjects) {
+        expect((await bookings.isReferenced(subject, tenantId))._unsafeUnwrap()).toBe(true);
+        expect((await bookings.hasUpcoming(subject, tenantId, NOW))._unsafeUnwrap()).toBe(true);
+        expect((await bookings.hasUpcoming(subject, tenantId, afterBooking))._unsafeUnwrap()).toBe(
+          false,
+        );
+        // Another tenant's actor cannot see them referred to.
+        if (subject.kind !== 'resource') {
+          expect((await bookings.isReferenced(subject, otherTenantId))._unsafeUnwrap()).toBe(false);
+        }
+      }
+
+      const closedWeek = Array.from({ length: 7 }, () => ({ intervals: [], breaks: [] }));
+      const spare = (
+        await locations.create({
+          tenantId,
+          draft: createBookingLocationDraft({
+            websiteId,
+            name: 'Never booked',
+            address: null,
+            timeZone: 'UTC',
+            openingHours: { weekly: closedWeek, exceptions: [] },
+            isActive: true,
+          })._unsafeUnwrap(),
+        })
+      )._unsafeUnwrap();
+
+      expect(
+        (await bookings.isReferenced({ kind: 'location', id: spare.id }, tenantId))._unsafeUnwrap(),
+      ).toBe(false);
+      // A stranger's tenant removes nothing; the owner's removes it, and removing twice is fine.
+      (await locations.deleteById(spare.id, otherTenantId))._unsafeUnwrap();
+      expect((await locations.findById(spare.id, tenantId))._unsafeUnwrap()).not.toBeNull();
+      (await locations.deleteById(spare.id, tenantId))._unsafeUnwrap();
+      expect((await locations.findById(spare.id, tenantId))._unsafeUnwrap()).toBeNull();
+      expect((await locations.deleteById(spare.id, tenantId)).isOk()).toBe(true);
     });
   },
 );

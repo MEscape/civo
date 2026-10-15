@@ -243,7 +243,10 @@ function parseTiming(input: BookableServiceInput, bag: FieldErrorBag): void {
   }
 }
 
-function parseCapacity(input: BookableServiceInput, bag: FieldErrorBag): void {
+function parseCapacity(
+  input: Pick<BookableServiceInput, 'participantsPerBooking' | 'participantsPerSession'>,
+  bag: FieldErrorBag,
+): void {
   if (!isIntegerBetween(input.participantsPerBooking, 1, SERVICE_LIMITS.participantsMax)) {
     bag.add('participantsPerBooking', CODES.capacityInvalid);
   }
@@ -384,6 +387,46 @@ function parseDocuments(documents: readonly string[], bag: FieldErrorBag): reado
     bag.add('requiredDocuments', CODES.textTooLong);
   }
   return texts;
+}
+
+/** What a service needs in order to be offered at all: where, which resources, for how large a group. */
+export interface ServiceNeedsInput {
+  readonly locationIds: readonly string[];
+  readonly requirements: readonly ResourceRequirementInput[];
+  readonly participantsPerBooking: number;
+  readonly participantsPerSession: number;
+}
+
+export interface ServiceNeeds {
+  readonly locationIds: readonly BookingLocationId[];
+  readonly requirements: readonly ResourceRequirement[];
+  readonly capacity: ServiceCapacity;
+}
+
+/**
+ * Checks only the parts of a service that decide whether resources can serve
+ * it, so a form can ask "could this work?" before the rest (name, texts,
+ * policies) is filled in. The same parsing runs when the whole service is
+ * saved.
+ */
+export function createServiceNeeds(
+  input: ServiceNeedsInput,
+): AppResult<ServiceNeeds, ValidationAppError> {
+  const bag = createBookingErrorBag();
+  parseCapacity(input, bag);
+  const locationIds = parseLocations(input.locationIds, bag);
+  const requirements = parseRequirements(input.requirements, bag);
+  if (bag.hasErrors) {
+    return err(bag.toError());
+  }
+  return ok({
+    locationIds,
+    requirements,
+    capacity: {
+      participantsPerBooking: input.participantsPerBooking,
+      participantsPerSession: input.participantsPerSession,
+    },
+  });
 }
 
 const CATEGORY_PATTERN = SKILL_KEY_PATTERN;

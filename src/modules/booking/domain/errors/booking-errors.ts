@@ -51,6 +51,13 @@ export const BOOKING_ERROR_CODES = {
   rateLimited: 'booking.rate_limited',
   configurationInvalid: 'booking.configuration_invalid',
   validationFailed: 'booking.validation_failed',
+  /** Bookings, past or future, still refer to it: it can be switched off but not removed. */
+  hasBookings: 'booking.has_bookings',
+  /** A live booking still holds this person's calendar: it cannot be moved or have its services taken away. */
+  hasUpcomingBookings: 'booking.has_upcoming_bookings',
+  locationNotEmpty: 'booking.location_not_empty',
+  serviceOnlyHere: 'booking.service_only_here',
+  resourceInUse: 'booking.resource_in_use',
   persistenceFailed: 'booking.persistence_failed',
 } as const;
 
@@ -63,6 +70,7 @@ export const BOOKING_VALIDATION_CODES = {
   categoryInvalid: 'booking.validation.category_invalid',
   timeZoneInvalid: 'booking.validation.time_zone_invalid',
   dateInvalid: 'booking.validation.date_invalid',
+  holidayInvalid: 'booking.validation.holiday_invalid',
   dateRangeInvalid: 'booking.validation.date_range_invalid',
   dateRangeTooLong: 'booking.validation.date_range_too_long',
   timeRangeInvalid: 'booking.validation.time_range_invalid',
@@ -79,6 +87,7 @@ export const BOOKING_VALIDATION_CODES = {
   skillInvalid: 'booking.validation.skill_invalid',
   resourceTypeUnknown: 'booking.validation.resource_type_unknown',
   assignmentInvalid: 'booking.validation.assignment_invalid',
+  employeeSelfManaged: 'booking.validation.employee_self_managed',
   requirementsRequired: 'booking.validation.requirements_required',
   requirementCountInvalid: 'booking.validation.requirement_count_invalid',
   locationsRequired: 'booking.validation.locations_required',
@@ -89,6 +98,13 @@ export const BOOKING_VALIDATION_CODES = {
   changePolicyInvalid: 'booking.validation.change_policy_invalid',
   actorUnknown: 'booking.validation.actor_unknown',
   statusUnknown: 'booking.validation.status_unknown',
+  serviceNotBookable: 'booking.validation.service_not_bookable',
+  /** A service's, resource's or employee's hours reach beyond the opening hours of its location. */
+  hoursOutsideLocation: 'booking.validation.hours_outside_location',
+  /** New opening hours would leave something at the location open when the location is closed. */
+  hoursUsedByOthers: 'booking.validation.hours_used_by_others',
+  /** An employee's hours reach beyond the hours employees may work at their location. */
+  hoursOutsideStaffHours: 'booking.validation.hours_outside_staff_hours',
 } as const;
 
 export type BookingErrorCode = (typeof BOOKING_ERROR_CODES)[keyof typeof BOOKING_ERROR_CODES];
@@ -117,6 +133,29 @@ export function bookingNotFound(): NotFoundAppError {
 
 export function websiteNotFoundForBooking(): NotFoundAppError {
   return notFoundError(CODES.websiteNotFound, 'The website was not found.');
+}
+
+export function hasBookings(): ConflictAppError {
+  return conflictError(CODES.hasBookings, 'Bookings still refer to it.');
+}
+
+export function hasUpcomingBookings(): ConflictAppError {
+  return conflictError(CODES.hasUpcomingBookings, 'Upcoming bookings still hold this calendar.');
+}
+
+export function locationNotEmpty(): ConflictAppError {
+  return conflictError(
+    CODES.locationNotEmpty,
+    'Rooms, equipment or employees are still placed here.',
+  );
+}
+
+export function serviceOnlyHere(): ConflictAppError {
+  return conflictError(CODES.serviceOnlyHere, 'A service is offered nowhere else.');
+}
+
+export function resourceInUse(): ConflictAppError {
+  return conflictError(CODES.resourceInUse, 'A service names this resource.');
 }
 
 export function serviceInactive(): ConflictAppError {

@@ -22,6 +22,8 @@ export const locationConfigSchema = z.object({
   address: z.string().max(LOCATION_LIMITS.addressMax, CODES.textTooLong).nullable(),
   timeZone: z.string().max(TIME_ZONE_MAX, CODES.timeZoneInvalid),
   openingHours: availabilityPlanSchema,
+  /** When employees may work here, narrower than the opening hours; `null` for whenever it is open. */
+  staffHours: availabilityPlanSchema.nullable(),
   isActive: z.boolean(),
 });
 

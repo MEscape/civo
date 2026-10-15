@@ -7,7 +7,10 @@ import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
 
 import { persistenceFailed } from '../../domain/errors/booking-errors';
-import { createBookableResourceDraft } from '../../domain/models/bookable-resource';
+import {
+  createBookableResourceDraft,
+  managerChangeOf,
+} from '../../domain/models/bookable-resource';
 import { toBookableResourceId, toWebsiteId } from '../../domain/models/ids';
 import { readStoredResource } from '../../domain/models/stored-shapes';
 
@@ -25,7 +28,7 @@ export interface ResourceRecord {
   readonly availability: unknown;
   readonly isActive: boolean;
   readonly assignedActorId: string | null;
-  readonly employeeMayEditHours: boolean;
+  readonly managerChange: unknown;
   readonly createdAt: InstantRecord;
   readonly updatedAt: InstantRecord;
 }
@@ -42,7 +45,7 @@ export const RESOURCE_SELECT = [
   'availability',
   'isActive',
   'assignedActorId',
-  'employeeMayEditHours',
+  'managerChange',
   'createdAt',
   'updatedAt',
 ] as const satisfies ReadonlyArray<keyof ResourceRecord>;
@@ -64,7 +67,7 @@ export function toResource(
     availability: stored.availability,
     isActive: record.isActive,
     assignedActorId: record.assignedActorId,
-    employeeMayEditHours: record.employeeMayEditHours,
+    managerChange: stored.managerChange === null ? null : managerChangeOf(stored.managerChange),
   });
   if (draft.isErr()) {
     return err(persistenceFailed(draft.error));

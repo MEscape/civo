@@ -18,6 +18,8 @@ import type {
   BookingCode,
   BookingStatus,
   ChangeActor,
+  GermanRegion,
+  HolidayKey,
   InformationField,
   ResourceKind,
   Weekday,
@@ -56,6 +58,11 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
   [ERRORS.configurationInvalid]: fieldPath('errors', 'configurationInvalid'),
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
+  [ERRORS.hasBookings]: fieldPath('errors', 'hasBookings'),
+  [ERRORS.hasUpcomingBookings]: fieldPath('errors', 'hasUpcomingBookings'),
+  [ERRORS.locationNotEmpty]: fieldPath('errors', 'locationNotEmpty'),
+  [ERRORS.serviceOnlyHere]: fieldPath('errors', 'serviceOnlyHere'),
+  [ERRORS.resourceInUse]: fieldPath('errors', 'resourceInUse'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
   [VALIDATION.idInvalid]: fieldPath('validation', 'idInvalid'),
   [VALIDATION.referenceInvalid]: fieldPath('validation', 'referenceInvalid'),
@@ -64,6 +71,10 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.categoryInvalid]: fieldPath('validation', 'categoryInvalid'),
   [VALIDATION.timeZoneInvalid]: fieldPath('validation', 'timeZoneInvalid'),
   [VALIDATION.dateInvalid]: fieldPath('validation', 'dateInvalid'),
+  [VALIDATION.hoursOutsideLocation]: fieldPath('validation', 'hoursOutsideLocation'),
+  [VALIDATION.hoursOutsideStaffHours]: fieldPath('validation', 'hoursOutsideStaffHours'),
+  [VALIDATION.hoursUsedByOthers]: fieldPath('validation', 'hoursUsedByOthers'),
+  [VALIDATION.holidayInvalid]: fieldPath('validation', 'holidayInvalid'),
   [VALIDATION.dateRangeInvalid]: fieldPath('validation', 'dateRangeInvalid'),
   [VALIDATION.dateRangeTooLong]: fieldPath('validation', 'dateRangeTooLong'),
   [VALIDATION.timeRangeInvalid]: fieldPath('validation', 'timeRangeInvalid'),
@@ -80,6 +91,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.skillInvalid]: fieldPath('validation', 'skillInvalid'),
   [VALIDATION.resourceTypeUnknown]: fieldPath('validation', 'resourceTypeUnknown'),
   [VALIDATION.assignmentInvalid]: fieldPath('validation', 'assignmentInvalid'),
+  [VALIDATION.employeeSelfManaged]: fieldPath('validation', 'employeeSelfManaged'),
   [VALIDATION.requirementsRequired]: fieldPath('validation', 'requirementsRequired'),
   [VALIDATION.requirementCountInvalid]: fieldPath('validation', 'requirementCountInvalid'),
   [VALIDATION.locationsRequired]: fieldPath('validation', 'locationsRequired'),
@@ -90,6 +102,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.changePolicyInvalid]: fieldPath('validation', 'changePolicyInvalid'),
   [VALIDATION.actorUnknown]: fieldPath('validation', 'actorUnknown'),
   [VALIDATION.statusUnknown]: fieldPath('validation', 'statusUnknown'),
+  [VALIDATION.serviceNotBookable]: fieldPath('validation', 'serviceNotBookable'),
 } as const satisfies Record<BookingCode, ValidKeys>;
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
@@ -156,6 +169,48 @@ export const STATUS_MESSAGE_KEYS = {
   expired: fieldPath('status', 'expired'),
 } as const satisfies Record<BookingStatus, ValidKeys>;
 
+export const HOLIDAY_MESSAGE_KEYS = {
+  newYear: fieldPath('holidays', 'names', 'newYear'),
+  epiphany: fieldPath('holidays', 'names', 'epiphany'),
+  womensDay: fieldPath('holidays', 'names', 'womensDay'),
+  goodFriday: fieldPath('holidays', 'names', 'goodFriday'),
+  easterSunday: fieldPath('holidays', 'names', 'easterSunday'),
+  easterMonday: fieldPath('holidays', 'names', 'easterMonday'),
+  labourDay: fieldPath('holidays', 'names', 'labourDay'),
+  ascension: fieldPath('holidays', 'names', 'ascension'),
+  whitSunday: fieldPath('holidays', 'names', 'whitSunday'),
+  whitMonday: fieldPath('holidays', 'names', 'whitMonday'),
+  corpusChristi: fieldPath('holidays', 'names', 'corpusChristi'),
+  assumption: fieldPath('holidays', 'names', 'assumption'),
+  germanUnity: fieldPath('holidays', 'names', 'germanUnity'),
+  childrensDay: fieldPath('holidays', 'names', 'childrensDay'),
+  reformationDay: fieldPath('holidays', 'names', 'reformationDay'),
+  allSaints: fieldPath('holidays', 'names', 'allSaints'),
+  repentanceDay: fieldPath('holidays', 'names', 'repentanceDay'),
+  christmasDay: fieldPath('holidays', 'names', 'christmasDay'),
+  boxingDay: fieldPath('holidays', 'names', 'boxingDay'),
+} as const satisfies Record<HolidayKey, ValidKeys>;
+
+export const GERMAN_REGION_MESSAGE_KEYS = {
+  DE: fieldPath('holidays', 'regions', 'DE'),
+  BW: fieldPath('holidays', 'regions', 'BW'),
+  BY: fieldPath('holidays', 'regions', 'BY'),
+  BE: fieldPath('holidays', 'regions', 'BE'),
+  BB: fieldPath('holidays', 'regions', 'BB'),
+  HB: fieldPath('holidays', 'regions', 'HB'),
+  HH: fieldPath('holidays', 'regions', 'HH'),
+  HE: fieldPath('holidays', 'regions', 'HE'),
+  MV: fieldPath('holidays', 'regions', 'MV'),
+  NI: fieldPath('holidays', 'regions', 'NI'),
+  NW: fieldPath('holidays', 'regions', 'NW'),
+  RP: fieldPath('holidays', 'regions', 'RP'),
+  SL: fieldPath('holidays', 'regions', 'SL'),
+  SN: fieldPath('holidays', 'regions', 'SN'),
+  ST: fieldPath('holidays', 'regions', 'ST'),
+  SH: fieldPath('holidays', 'regions', 'SH'),
+  TH: fieldPath('holidays', 'regions', 'TH'),
+} as const satisfies Record<GermanRegion, ValidKeys>;
+
 export const RESOURCE_TYPE_MESSAGE_KEYS = {
   employee: fieldPath('resourceTypes', 'employee'),
   room: fieldPath('resourceTypes', 'room'),
@@ -194,6 +249,16 @@ export const EXCEPTION_KIND_MESSAGE_KEYS = {
   override: fieldPath('exceptionKinds', 'override'),
   additional: fieldPath('exceptionKinds', 'additional'),
 } as const satisfies Record<(typeof EXCEPTION_KINDS)[number], ValidKeys>;
+
+/** The parts of an exception a problem can be at, as the names the form shows for them. */
+export const EXCEPTION_FIELD_MESSAGE_KEYS = {
+  kind: fieldPath('form', 'paths', 'exceptionFields', 'kind'),
+  from: fieldPath('form', 'paths', 'exceptionFields', 'from'),
+  to: fieldPath('form', 'paths', 'exceptionFields', 'to'),
+  label: fieldPath('form', 'paths', 'exceptionFields', 'label'),
+  day: fieldPath('form', 'paths', 'exceptionFields', 'day'),
+  holiday: fieldPath('form', 'paths', 'exceptionFields', 'holiday'),
+} as const satisfies Record<string, ValidKeys>;
 
 export const CHANGE_ACTOR_MESSAGE_KEYS = {
   customer: fieldPath('actors', 'customer'),

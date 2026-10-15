@@ -8,7 +8,9 @@ import {
   SERVICE_LIMITS,
 } from '../../../application/contracts/booking-constraints';
 import { INFORMATION_FIELD_MESSAGE_KEYS } from '../../messages/message-keys';
-import { FormSection } from '../shared/form-section';
+import { CollapsibleFormSection } from '../shared/collapsible-form-section';
+
+import { VisitorFormPreview } from './visitor-form-preview';
 
 import type { InformationDraft } from '../../drafts/service-draft';
 
@@ -35,10 +37,14 @@ export function InformationSection({
   const t = useTranslations('booking');
 
   return (
-    <FormSection
+    <CollapsibleFormSection
       title={t('services.sections.information')}
       description={t('services.sections.informationHint')}
+      summary={t('services.glance.information', {
+        count: INFORMATION_FIELDS.filter((field) => information[field].enabled).length,
+      })}
     >
+      <h4 className="text-sm font-medium text-copy">{t('services.infoAsk')}</h4>
       <ul className="space-y-2">
         {INFORMATION_FIELDS.map((field) => {
           const current = information[field];
@@ -103,6 +109,11 @@ export function InformationSection({
         />
         <p className="text-xs text-copy-muted">{t('services.instructionsHint')}</p>
       </div>
-    </FormSection>
+      <VisitorFormPreview
+        information={information}
+        documents={documents}
+        instructions={instructions}
+      />
+    </CollapsibleFormSection>
   );
 }

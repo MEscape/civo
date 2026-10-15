@@ -3,6 +3,7 @@ import { ok, err } from '@lib/result';
 import type { AppResult } from '@lib/result';
 
 import { BOOKING_VALIDATION_CODES as CODES, createBookingErrorBag } from '../errors/booking-errors';
+import { GERMAN_REGIONS, HOLIDAY_KEYS } from '../holidays/german-holidays';
 import {
   WEEKDAYS,
   compareLocalDates,
@@ -12,6 +13,7 @@ import {
 } from '../time/local-date';
 import { MINUTES_PER_DAY, formatTimeOfDay, parseTimeOfDay } from '../time/time-of-day';
 
+import type { GermanRegion, HolidayKey } from '../holidays/german-holidays';
 import type { LocalDate, Weekday } from '../time/local-date';
 
 export const AVAILABILITY_LIMITS = {
@@ -50,6 +52,17 @@ export type WeeklySchedule = Readonly<Record<Weekday, DaySchedule>>;
 export const EXCEPTION_KINDS = ['closed', 'override', 'additional'] as const;
 export type ExceptionKind = (typeof EXCEPTION_KINDS)[number];
 
+/**
+ * Where a closure came from when it was not typed in: a public holiday of a
+ * state. Its name is not stored but derived from the key in the language of
+ * whoever looks at it, and the region is what lets the holidays of one state
+ * be replaced by another's as a group.
+ */
+export interface ExceptionHoliday {
+  readonly key: HolidayKey;
+  readonly region: GermanRegion;
+}
+
 export interface AvailabilityException {
   readonly kind: ExceptionKind;
   /** First day covered. */
@@ -59,6 +72,8 @@ export interface AvailabilityException {
   /** Empty for `closed`. */
   readonly day: DaySchedule;
   readonly label: string | null;
+  /** `null` for an exception somebody entered by hand. */
+  readonly holiday: ExceptionHoliday | null;
 }
 
 /**
@@ -75,7 +90,7 @@ export interface AvailabilityPlan {
 export const NO_HOURS: DaySchedule = { intervals: [], breaks: [] };
 
 /** The seven days from a Monday-first list; a missing entry is a day without hours. */
-function toWeekly(days: readonly DaySchedule[]): WeeklySchedule {
+export function toWeekly(days: readonly DaySchedule[]): WeeklySchedule {
   const [monday, tuesday, wednesday, thursday, friday, saturday, sunday] = WEEKDAYS;
   const [first, second, third, fourth, fifth, sixth, seventh] = days;
   return {
@@ -101,6 +116,11 @@ export interface DayScheduleInput {
   readonly breaks: readonly TimeRangeInput[];
 }
 
+export interface ExceptionHolidayInput {
+  readonly key: string;
+  readonly region: string;
+}
+
 export interface AvailabilityExceptionInput {
   readonly kind: string;
   /** `YYYY-MM-DD`. */
@@ -109,6 +129,7 @@ export interface AvailabilityExceptionInput {
   readonly to: string;
   readonly day?: DayScheduleInput | undefined;
   readonly label?: string | null | undefined;
+  readonly holiday?: ExceptionHolidayInput | null | undefined;
 }
 
 const NO_HOURS_INPUT: DayScheduleInput = { intervals: [], breaks: [] };
@@ -214,6 +235,26 @@ function parseExceptionFields(
     : null;
 }
 
+function parseHoliday(
+  input: ExceptionHolidayInput | null | undefined,
+  path: string,
+  bag: FieldErrorBag,
+): { readonly isValid: boolean; readonly holiday: ExceptionHoliday | null } {
+  if (input === null || input === undefined) {
+    return { isValid: true, holiday: null };
+  }
+  const key = HOLIDAY_KEYS.find((candidate) => candidate === input.key);
+  const region = GERMAN_REGIONS.find((candidate) => candidate === input.region);
+  const isValid = bag.expect(
+    key !== undefined && region !== undefined,
+    `${path}.holiday`,
+    CODES.holidayInvalid,
+  );
+  return key !== undefined && region !== undefined
+    ? { isValid, holiday: { key, region } }
+    : { isValid, holiday: null };
+}
+
 function parseException(
   input: AvailabilityExceptionInput,
   path: string,
@@ -234,6 +275,8 @@ function parseException(
     CODES.textTooLong,
   );
 
+  const origin = parseHoliday(input.holiday, path, bag);
+
   const day =
     kind === 'closed' ? NO_HOURS : parseDay(input.day ?? NO_HOURS_INPUT, `${path}.day`, bag);
   const hasHours = bag.expect(
@@ -242,8 +285,8 @@ function parseException(
     CODES.timeRangeInvalid,
   );
 
-  return isRangeValid && isLabelValid && hasHours
-    ? { kind, from, to, day, label: label === '' ? null : label }
+  return isRangeValid && isLabelValid && hasHours && origin.isValid
+    ? { kind, from, to, day, label: label === '' ? null : label, holiday: origin.holiday }
     : null;
 }
 
@@ -299,6 +342,7 @@ export function toAvailabilityPlanInput(plan: AvailabilityPlan): AvailabilityPla
       to: formatLocalDate(exception.to),
       day: toDayInput(exception.day),
       label: exception.label,
+      holiday: exception.holiday,
     })),
   };
 }

@@ -3,6 +3,8 @@ import { z } from 'zod';
 import {
   AVAILABILITY_LIMITS,
   BOOKING_VALIDATION_CODES as CODES,
+  GERMAN_REGIONS,
+  HOLIDAY_KEYS,
   WEEKDAYS,
 } from '../../application/contracts/booking-constraints';
 
@@ -20,6 +22,11 @@ const dayScheduleSchema = z.object({
   breaks: z.array(timeRangeSchema).max(AVAILABILITY_LIMITS.maxBreaksPerDay, CODES.tooMany),
 });
 
+const exceptionHolidaySchema = z.object({
+  key: z.enum(HOLIDAY_KEYS, CODES.holidayInvalid),
+  region: z.enum(GERMAN_REGIONS, CODES.holidayInvalid),
+});
+
 const exceptionSchema = z.object({
   kind: z.string().max(KIND_MAX, CODES.exceptionKindUnknown),
   from: z.string().max(DATE_TEXT_MAX, CODES.dateInvalid),
@@ -30,6 +37,7 @@ const exceptionSchema = z.object({
     .max(AVAILABILITY_LIMITS.maxLabelLength, CODES.textTooLong)
     .nullable()
     .optional(),
+  holiday: exceptionHolidaySchema.nullable().optional(),
 });
 
 /** When something can be booked: seven weekdays (Monday first) with breaks, plus dated exceptions. */

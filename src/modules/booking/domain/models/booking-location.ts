@@ -1,6 +1,6 @@
 import type { TenantId } from '@modules/auth';
 
-import type { ValidationAppError } from '@lib/errors';
+import type { FieldErrorBag, ValidationAppError } from '@lib/errors';
 import { ok, err } from '@lib/result';
 import type { AppResult } from '@lib/result';
 
@@ -9,6 +9,7 @@ import {
   addFieldErrors,
   createBookingErrorBag,
 } from '../errors/booking-errors';
+import { clipToFrame } from '../scheduling/hours-containment';
 import { parseTimeZone } from '../time/time-zone';
 
 import { createAvailabilityPlan } from './availability-plan';
@@ -38,6 +39,12 @@ export interface BookingLocation {
   readonly address: string | null;
   readonly timeZone: TimeZone;
   readonly openingHours: AvailabilityPlan;
+  /**
+   * The week in which employees may work here, inside the opening hours, or
+   * `null` when they may work whenever it is open. A manager narrows it; an
+   * employee's own hours stay inside it.
+   */
+  readonly staffHours: AvailabilityPlan | null;
   readonly isActive: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
@@ -49,6 +56,8 @@ export interface BookingLocationInput {
   readonly address: string | null;
   readonly timeZone: string;
   readonly openingHours: AvailabilityPlanInput;
+  /** `null`: employees may work whenever the location is open. */
+  readonly staffHours?: AvailabilityPlanInput | null | undefined;
   readonly isActive: boolean;
 }
 
@@ -57,6 +66,34 @@ export type BookingLocationDraft = Omit<
   BookingLocation,
   'id' | 'tenantId' | 'createdAt' | 'updatedAt'
 >;
+
+function parseStaffHours(
+  raw: BookingLocationInput['staffHours'],
+  bag: FieldErrorBag,
+): AvailabilityPlan | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+  const staff = createAvailabilityPlan(raw, 'staffHours');
+  if (staff.isErr()) {
+    addFieldErrors(bag, staff.error);
+    return null;
+  }
+  return staff.value;
+}
+
+/**
+ * The week employees may work at a location: the hours set for them, cut to
+ * the opening hours (narrowing the opening hours narrows this too, so the two
+ * can never disagree), or the opening hours themselves when none are set.
+ */
+export function employeeHoursOf(
+  location: Pick<BookingLocation, 'openingHours' | 'staffHours'>,
+): AvailabilityPlan {
+  return location.staffHours === null
+    ? location.openingHours
+    : clipToFrame(location.staffHours, location.openingHours);
+}
 
 export function createBookingLocationDraft(
   input: BookingLocationInput,
@@ -85,6 +122,8 @@ export function createBookingLocationDraft(
     addFieldErrors(bag, hours.error);
   }
 
+  const staff = parseStaffHours(input.staffHours, bag);
+
   if (bag.hasErrors || timeZone === null || hours.isErr()) {
     return err(bag.toError());
   }
@@ -95,6 +134,7 @@ export function createBookingLocationDraft(
     address,
     timeZone,
     openingHours: hours.value,
+    staffHours: staff,
     isActive: input.isActive,
   });
 }

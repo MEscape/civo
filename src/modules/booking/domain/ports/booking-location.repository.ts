@@ -31,6 +31,12 @@ export interface BookingLocationRepository {
     readonly draft: BookingLocationDraft;
   }): AppResultAsync<BookingLocation, NotFoundAppError | InfrastructureAppError>;
 
+  /** Idempotent. The caller has checked that nothing refers to the location any more. */
+  deleteById(
+    id: BookingLocationId,
+    tenantId: TenantId,
+  ): AppResultAsync<void, InfrastructureAppError>;
+
   update(
     id: BookingLocationId,
     tenantId: TenantId,

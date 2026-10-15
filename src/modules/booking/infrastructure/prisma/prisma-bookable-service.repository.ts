@@ -111,6 +111,16 @@ export class PrismaBookableServiceRepository implements BookableServiceRepositor
       .andThen(toService);
   }
 
+  deleteById(
+    id: BookableServiceId,
+    tenantId: TenantId,
+  ): AppResultAsync<void, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () => servicesOf(tenantId).where({ id }).deleteAndCount(),
+      failures.infraOnly('deleteById'),
+    ).map(() => undefined);
+  }
+
   update(
     id: BookableServiceId,
     tenantId: TenantId,

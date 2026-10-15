@@ -11,7 +11,13 @@ export const DEFAULT_RANGE: RangeForm = { start: '09:00', end: '17:00' };
 export const DEFAULT_BREAK: RangeForm = { start: '12:00', end: '13:00' };
 
 /** A new exception starts as a one-day closure whose dates the editor still has to fill in. */
-export const DEFAULT_EXCEPTION: ExceptionForm = { kind: 'closed', from: '', to: '', label: '' };
+export const DEFAULT_EXCEPTION: ExceptionForm = {
+  kind: 'closed',
+  from: '',
+  to: '',
+  label: '',
+  holiday: null,
+};
 
 export const NO_HOURS: DayForm = { intervals: [], breaks: [] };
 

@@ -138,8 +138,11 @@ export function CalendarAdapter({
         className={cn(
           'text-sm text-copy',
           '[--fc-border-color:var(--color-border)] [--fc-page-bg-color:var(--color-surface)]',
-          '[--fc-neutral-bg-color:var(--color-canvas)] [--fc-today-bg-color:var(--color-info-subtle)]',
+          '[--fc-neutral-bg-color:var(--color-canvas)] [--fc-today-bg-color:var(--color-today)]',
           '[--fc-list-event-hover-bg-color:var(--color-canvas)] [--fc-now-indicator-color:var(--color-danger)]',
+          '[--fc-highlight-color:var(--color-today)] [--fc-non-business-color:var(--color-canvas)]',
+          '[&_.fc-day-today_.fc-daygrid-day-number]:font-semibold [&_.fc-day-today_.fc-col-header-cell-cushion]:text-accent-copy',
+          '[&_.fc-col-header-cell-cushion]:text-copy [&_.fc-timegrid-slot-label-cushion]:text-copy-muted',
           '[&_.fc-event]:cursor-pointer [&_.fc-event:focus-visible]:outline-2 [&_.fc-event:focus-visible]:outline-accent',
         )}
       >

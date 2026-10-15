@@ -1,5 +1,12 @@
 /** The public actions a visitor can repeat; each has its own budget. */
-export const LIMITED_ACTIONS = ['search', 'hold', 'confirm', 'lookup', 'change'] as const;
+export const LIMITED_ACTIONS = [
+  'search',
+  'hold',
+  'confirm',
+  'lookup',
+  'change',
+  'address',
+] as const;
 export type LimitedAction = (typeof LIMITED_ACTIONS)[number];
 
 /**

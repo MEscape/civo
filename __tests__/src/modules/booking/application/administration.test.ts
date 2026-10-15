@@ -9,20 +9,31 @@ import { CreateBookingLocation } from '@modules/booking/application/commands/cre
 import { MarkBookingNoShow } from '@modules/booking/application/commands/mark-booking-no-show';
 import { ReleaseExpiredHolds } from '@modules/booking/application/commands/release-expired-holds';
 import { RescheduleBookingAsStaff } from '@modules/booking/application/commands/reschedule-booking-as-staff';
+import { SaveOwnProfile } from '@modules/booking/application/commands/save-own-profile';
+import { UpdateBookableResource } from '@modules/booking/application/commands/update-bookable-resource';
 import { UpdateBookableService } from '@modules/booking/application/commands/update-bookable-service';
-import { UpdateOwnAvailability } from '@modules/booking/application/commands/update-own-availability';
 import type {
   CreateBookableServiceInput,
   CreateBookingLocationInput,
 } from '@modules/booking/application/contracts/booking-inputs';
 import { GetBookingAccess } from '@modules/booking/application/queries/get-booking-access';
-import { GetBookingSetup } from '@modules/booking/application/queries/get-booking-setup';
+import { GetBookingOptions } from '@modules/booking/application/queries/get-booking-options';
 import { GetOperationsCalendar } from '@modules/booking/application/queries/get-operations-calendar';
-import { GetOwnResources } from '@modules/booking/application/queries/get-own-resources';
+import { GetOwnProfile } from '@modules/booking/application/queries/get-own-profile';
 import { BOOKING_ERROR_CODES as CODES } from '@modules/booking/domain/errors/booking-errors';
+import { toBookingLocationId } from '@modules/booking/domain/models/ids';
 
 import { OTHER_TENANT, actorWithRole } from '../support/fakes';
-import { LOCATION_ID, TENANT, WEBSITE, at, makeBooking, makeResource } from '../support/fixtures';
+import {
+  LOCATION_ID,
+  TENANT,
+  WEBSITE,
+  at,
+  makeBooking,
+  makeLocation,
+  makeResource,
+  makeService,
+} from '../support/fixtures';
 import { book, hold, iso } from '../support/flow-helpers';
 import { createWorld } from '../support/world';
 
@@ -77,7 +88,7 @@ describe('who may do what', () => {
     const results = await Promise.all([
       new CreateBookingLocation(world.admin).execute(locationInput()),
       new CreateBookableService(world.admin).execute(serviceInput()),
-      new GetBookingSetup(world.admin).execute(WEBSITE),
+      new GetBookingOptions(world.admin).execute(WEBSITE),
       new CancelBookingAsStaff(world.admin).execute({ bookingId: 'x' }),
       new ReleaseExpiredHolds(world.admin).execute({ websiteId: WEBSITE }),
     ]);
@@ -103,7 +114,7 @@ describe('who may do what', () => {
       expect(released.isOk()).toBe(manage);
 
       // Every role that can sign in may look.
-      expect((await new GetBookingSetup(world.admin).execute(WEBSITE)).isOk()).toBe(true);
+      expect((await new GetBookingOptions(world.admin).execute(WEBSITE)).isOk()).toBe(true);
     },
   );
 
@@ -199,13 +210,13 @@ describe('configuring locations, resources and services', () => {
     expect(world.audit.types()).toEqual(['booking.service_created', 'booking.service_updated']);
   });
 
-  it('lists the configuration for the setup screen', async () => {
+  it('lists the names the screens choose from', async () => {
     const world = createWorld({ actor: as('viewer') });
-    const setup = (await new GetBookingSetup(world.admin).execute(WEBSITE))._unsafeUnwrap();
+    const options = (await new GetBookingOptions(world.admin).execute(WEBSITE))._unsafeUnwrap();
 
-    expect(setup.locations.map((l) => l.name)).toEqual(['Town hall']);
-    expect(setup.resources.map((r) => r.name)).toEqual(['emp-1']);
-    expect(setup.services.map((s) => s.name)).toEqual(['Passport application']);
+    expect(options.locations.map((l) => l.name)).toEqual(['Town hall']);
+    expect(options.resources.map((r) => r.name)).toEqual(['emp-1']);
+    expect(options.services.map((s) => s.name)).toEqual(['Passport application']);
   });
 });
 
@@ -415,7 +426,7 @@ describe('an employee and their calendar', () => {
     expect(cancelled._unsafeUnwrapErr().kind).toBe('forbidden');
   });
 
-  it('is assigned by an editor, but only to an employee resource', async () => {
+  it('adds rooms and equipment, never people: an employee makes their own calendar', async () => {
     const world = createWorld({ actor: as('editor') });
     const base = {
       websiteId: WEBSITE,
@@ -427,33 +438,43 @@ describe('an employee and their calendar', () => {
       isActive: true,
     } as const;
 
+    const room = await new CreateBookableResource(world.admin).execute({ ...base, type: 'room' });
     const person = await new CreateBookableResource(world.admin).execute({
       ...base,
       type: 'employee',
-      assignedActorId: 'actor-employee',
-      employeeMayEditHours: true,
     });
-    const room = await new CreateBookableResource(world.admin).execute({
+    const assigned = await new CreateBookableResource(world.admin).execute({
       ...base,
       type: 'room',
       assignedActorId: 'actor-employee',
     });
-    const ownerless = await new CreateBookableResource(world.admin).execute({
-      ...base,
-      type: 'employee',
-      employeeMayEditHours: true,
+
+    expect(room.isOk()).toBe(true);
+    expect(person._unsafeUnwrapErr().kind).toBe('validation');
+    expect(assigned._unsafeUnwrapErr().kind).toBe('validation');
+  });
+
+  it("does not change an employee's own calendar, which does not exist for them", async () => {
+    const own = makeResource('emp-own', { assignedActorId: 'actor-employee' });
+    const world = createWorld({ actor: as('editor'), resources: [own] });
+
+    const result = await new UpdateBookableResource(world.admin).execute({
+      id: 'emp-own',
+      websiteId: WEBSITE,
+      locationId: null,
+      name: 'Renamed by someone else',
+      type: 'room',
+      skills: [],
+      capacity: null,
+      availability: null,
+      isActive: true,
     });
 
-    expect(person._unsafeUnwrap()).toMatchObject({
-      assignedActorId: 'actor-employee',
-      employeeMayEditHours: true,
-    });
-    expect(room.isErr()).toBe(true);
-    expect(ownerless.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().kind).toBe('not_found');
   });
 });
 
-describe('an employee changing their own hours', () => {
+describe('an employee setting up their own calendar', () => {
   const WEEKDAY_HOURS = { intervals: [{ start: '09:00', end: '12:00' }], breaks: [] };
   const HOURS = {
     weekly: [
@@ -467,70 +488,155 @@ describe('an employee changing their own hours', () => {
     ],
     exceptions: [],
   };
-  const mine = (overrides: Parameters<typeof makeResource>[1] = {}) =>
-    makeResource('emp-mine', {
+  const profile = (overrides: Partial<Parameters<SaveOwnProfile['execute']>[0]> = {}) => ({
+    websiteId: WEBSITE,
+    name: 'Anna Beispiel',
+    locationId: LOCATION_ID as string,
+    offeredServiceIds: ['service-1'],
+    availability: HOURS,
+    ...overrides,
+  });
+
+  it('makes the calendar the first time, and changes the same one after', async () => {
+    const world = createWorld({ actor: as('employee'), resources: [] });
+
+    const first = (await new SaveOwnProfile(world.admin).execute(profile()))._unsafeUnwrap();
+    const second = (
+      await new SaveOwnProfile(world.admin).execute(profile({ name: 'Anna B.' }))
+    )._unsafeUnwrap();
+
+    expect(second.id).toBe(first.id);
+    expect(second).toMatchObject({
+      name: 'Anna B.',
+      type: 'employee',
       assignedActorId: 'actor-employee',
-      employeeMayEditHours: true,
-      ...overrides,
+      isActive: true,
     });
-
-  it('changes only the hours of a calendar assigned to them and allowed by an editor', async () => {
-    const world = createWorld({ actor: as('employee'), resources: [mine()] });
-
-    const updated = await new UpdateOwnAvailability(world.admin).execute({
-      resourceId: 'emp-mine',
-      availability: HOURS,
-    });
-
-    expect(updated._unsafeUnwrap().availability?.weekly[0]?.intervals).toEqual([
-      { start: '09:00', end: '12:00' },
-    ]);
-    expect(updated._unsafeUnwrap()).toMatchObject({
-      name: 'emp-mine',
-      assignedActorId: 'actor-employee',
-      employeeMayEditHours: true,
-    });
+    expect(second.availability?.weekly[0]?.intervals).toEqual([{ start: '09:00', end: '12:00' }]);
+    expect(world.audit.types()).toEqual(['booking.resource_created', 'booking.resource_updated']);
   });
 
-  it.each([
-    ['not allowed by an editor', mine({ employeeMayEditHours: false })],
-    ['assigned to someone else', mine({ assignedActorId: 'someone-else' })],
-    ['assigned to nobody', mine({ assignedActorId: null, employeeMayEditHours: false })],
-  ])('finds nothing to change on a calendar that is %s', async (_name, resource) => {
-    const world = createWorld({ actor: as('employee'), resources: [resource] });
-
-    const result = await new UpdateOwnAvailability(world.admin).execute({
-      resourceId: 'emp-mine',
-      availability: HOURS,
-    });
-
-    expect(result._unsafeUnwrapErr().kind).toBe('not_found');
-  });
-
-  it('is refused to roles without the permission, even for a calendar assigned to their id', async () => {
-    const world = createWorld({
-      actor: as('viewer'),
-      resources: [mine({ assignedActorId: 'actor-viewer' })],
-    });
-
-    const result = await new UpdateOwnAvailability(world.admin).execute({
-      resourceId: 'emp-mine',
-      availability: HOURS,
-    });
-
-    expect(result._unsafeUnwrapErr().kind).toBe('forbidden');
-  });
-
-  it('lists to an employee only the resources assigned to them', async () => {
+  it('offers the services they tick, and no others, keeping any other skill', async () => {
+    const own = makeResource('emp-own', { assignedActorId: 'actor-employee' });
     const world = createWorld({
       actor: as('employee'),
-      resources: [mine(), makeResource('emp-other', { assignedActorId: 'someone-else' })],
+      resources: [{ ...own, skills: ['german'] }],
     });
 
-    const own = (await new GetOwnResources(world.admin).execute(WEBSITE))._unsafeUnwrap();
+    const none = (
+      await new SaveOwnProfile(world.admin).execute(profile({ offeredServiceIds: [] }))
+    )._unsafeUnwrap();
+    expect(none.skills).toEqual(['german']);
+
+    const some = (await new SaveOwnProfile(world.admin).execute(profile()))._unsafeUnwrap();
+    expect(some.skills).toEqual(['german', 'svc-service-1']);
+  });
+
+  it("cannot offer a service that is not the website's", async () => {
+    const world = createWorld({ actor: as('employee'), resources: [] });
+
+    const result = await new SaveOwnProfile(world.admin).execute(
+      profile({ offeredServiceIds: ['foreign-service'] }),
+    );
+
+    expect(result._unsafeUnwrapErr().kind).toBe('validation');
+  });
+
+  it('works at one location: without one the calendar is not made', async () => {
+    const world = createWorld({ actor: as('employee'), resources: [] });
+
+    const result = await new SaveOwnProfile(world.admin).execute(
+      profile({ locationId: 'location-nowhere' }),
+    );
+
+    expect(result._unsafeUnwrapErr().kind).toBe('validation');
+  });
+
+  it('offers only services that are offered where they work', async () => {
+    const annex = toBookingLocationId('location-annex');
+    const world = createWorld({ actor: as('employee'), resources: [] });
+    world.locations.seed(makeLocation({ id: annex, name: 'Annex' }));
+
+    const result = await new SaveOwnProfile(world.admin).execute(
+      profile({ locationId: annex, offeredServiceIds: ['service-1'] }),
+    );
+
+    expect(result._unsafeUnwrapErr().kind).toBe('validation');
+  });
+
+  it('may not move to another location while upcoming bookings hold the calendar', async () => {
+    const annex = toBookingLocationId('location-annex');
+    const own = makeResource('emp-own', {
+      assignedActorId: 'actor-employee',
+      locationId: LOCATION_ID,
+    });
+    const world = createWorld({
+      actor: as('employee'),
+      resources: [own],
+      service: makeService({ locationIds: [LOCATION_ID, annex] }),
+    });
+    world.locations.seed(makeLocation({ id: annex, name: 'Annex' }));
+    world.bookings.seed(
+      makeBooking({
+        id: 'b-upcoming',
+        start: at('2027-01-11', '10:00'),
+        resources: ['emp-own'],
+        status: 'confirmed',
+      }),
+    );
+
+    const refused = await new SaveOwnProfile(world.admin).execute(profile({ locationId: annex }));
+    world.bookings.seed(
+      makeBooking({
+        id: 'b-upcoming',
+        start: at('2027-01-11', '10:00'),
+        resources: ['emp-own'],
+        status: 'cancelled',
+      }),
+    );
+    const allowed = await new SaveOwnProfile(world.admin).execute(profile({ locationId: annex }));
+
+    expect(refused._unsafeUnwrapErr().code).toBe(CODES.hasUpcomingBookings);
+    expect(allowed._unsafeUnwrap().locationId).toBe(annex);
+  });
+
+  it("never touches a colleague's calendar, whatever the request names", async () => {
+    const colleague = makeResource('emp-colleague', { assignedActorId: 'someone-else' });
+    const world = createWorld({ actor: as('employee'), resources: [colleague] });
+
+    const saved = (await new SaveOwnProfile(world.admin).execute(profile()))._unsafeUnwrap();
+
+    expect(saved.id).not.toBe('emp-colleague');
+    const stored = (await world.resources.findById('emp-colleague', TENANT))._unsafeUnwrap();
+    expect(stored?.name).toBe('emp-colleague');
+  });
+
+  it('is refused to roles without the permission', async () => {
+    for (const role of ['viewer', 'contributor'] as const) {
+      const world = createWorld({ actor: as(role), resources: [] });
+
+      expect(
+        (await new SaveOwnProfile(world.admin).execute(profile()))._unsafeUnwrapErr().kind,
+      ).toBe('forbidden');
+    }
+  });
+
+  it("reads their own calendar and what to choose from, and sees no one else's", async () => {
+    const world = createWorld({
+      actor: as('employee'),
+      resources: [
+        makeResource('emp-own', { assignedActorId: 'actor-employee' }),
+        makeResource('emp-other', { assignedActorId: 'someone-else' }),
+      ],
+    });
+
+    const own = (await new GetOwnProfile(world.admin).execute(WEBSITE))._unsafeUnwrap();
     const access = (await new GetBookingAccess(world.admin).execute())._unsafeUnwrap();
 
-    expect(own.map((resource) => resource.id)).toEqual(['emp-mine']);
+    expect(own.profile?.id).toBe('emp-own');
+    expect(own.offeredServiceIds).toEqual(['service-1']);
+    expect(own.services.map((service) => service.name)).toEqual(['Passport application']);
+    expect(own.locations.map((location) => location.name)).toEqual(['Town hall']);
     expect(access).toEqual({ canConfigure: false, canManage: false, isOwnOnly: true });
   });
 });

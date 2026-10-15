@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getOperationsCalendarAction } from '../actions/get-operations-calendar-action';
 
@@ -46,7 +46,17 @@ export interface OperationsCalendarData {
   readonly refresh: () => void;
 }
 
-/** Loads the bookings of the visible range for the chosen filters, again after every change or refresh. */
+/** Ranges kept for going back to one: a few weeks and months, no more. */
+const KEPT_RANGES = 12;
+
+/**
+ * Loads the bookings of the visible range for the chosen filters, and nothing
+ * beyond it: the view (month, week, day) decides what is fetched. A range
+ * that was shown before appears at once while it is read again, so paging
+ * back and forth does not flash empty; every change or refresh forgets them,
+ * and they live only in this browser tab (the data is personal and
+ * tenant-scoped, so it is never shared through a cache).
+ */
 export function useOperationsCalendar(
   websiteId: string,
   filters: CalendarFilters,
@@ -54,12 +64,16 @@ export function useOperationsCalendar(
   const [range, setRange] = useState<CalendarRange | null>(null);
   const [version, setVersion] = useState(0);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const seen = useRef(new Map<string, CalendarOutcome>());
   const { locationId, serviceId, resourceId } = filters;
 
   const requestKey =
     range === null
       ? null
       : `${range.from}|${range.to}|${locationId}|${serviceId}|${resourceId}|${version}`;
+
+  const rangeKey =
+    range === null ? '' : `${range.from}|${range.to}|${locationId}|${serviceId}|${resourceId}`;
 
   useEffect(() => {
     if (range === null || requestKey === null) {
@@ -75,30 +89,39 @@ export function useOperationsCalendar(
       if (cancelled) {
         return;
       }
-      setLoaded({
-        key: requestKey,
-        outcome: result.ok
-          ? { kind: 'ready', calendar: result.data }
-          : { kind: 'failed', code: result.error.code },
-      });
+      const outcome: CalendarOutcome = result.ok
+        ? { kind: 'ready', calendar: result.data }
+        : { kind: 'failed', code: result.error.code };
+      if (result.ok) {
+        seen.current.delete(rangeKey);
+        seen.current.set(rangeKey, outcome);
+        if (seen.current.size > KEPT_RANGES) {
+          seen.current.delete(seen.current.keys().next().value ?? rangeKey);
+        }
+      }
+      setLoaded({ key: requestKey, outcome });
     });
     return () => {
       cancelled = true;
     };
-  }, [websiteId, range, requestKey, locationId, serviceId, resourceId]);
+  }, [websiteId, range, requestKey, rangeKey, locationId, serviceId, resourceId]);
 
   const outcome = loaded?.key === requestKey ? loaded.outcome : null;
 
   return {
     range,
     outcome,
-    shown: readyCalendar(outcome) ?? readyCalendar(loaded?.outcome ?? null),
+    shown:
+      readyCalendar(outcome) ??
+      readyCalendar(seen.current.get(rangeKey) ?? null) ??
+      readyCalendar(loaded?.outcome ?? null),
     changeRange: useCallback((next: CalendarRange) => {
       setRange((current) =>
         current?.from === next.from && current.to === next.to ? current : next,
       );
     }, []),
     refresh: useCallback(() => {
+      seen.current.clear();
       setVersion((current) => current + 1);
     }, []),
   };

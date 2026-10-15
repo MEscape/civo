@@ -5,21 +5,21 @@ import { useTranslations } from '@i18n/client';
 import { ALL_FILTER } from '../../hooks/use-operations-calendar';
 import { OptionSelectField } from '../shared/option-select-field';
 
-import type { BookingSetupDto } from '../../dto/setup-dto';
+import type { BookingOptionsDto } from '../../dto/setup-dto';
 import type { CalendarFilters as Filters } from '../../hooks/use-operations-calendar';
 
 export interface CalendarFiltersProps {
-  readonly setup: BookingSetupDto;
+  readonly options: BookingOptionsDto;
   readonly filters: Filters;
   readonly onChange: (next: Filters) => void;
 }
 
 /** Narrow the calendar to one location, service or resource. */
-export function CalendarFilters({ setup, filters, onChange }: CalendarFiltersProps) {
+export function CalendarFilters({ options, filters, onChange }: CalendarFiltersProps) {
   const t = useTranslations('booking');
   const id = useId();
 
-  const resourcesForFilter = setup.resources.filter(
+  const resourcesForFilter = options.resources.filter(
     (resource) =>
       filters.locationId === ALL_FILTER ||
       resource.locationId === null ||
@@ -34,7 +34,7 @@ export function CalendarFilters({ setup, filters, onChange }: CalendarFiltersPro
         value={filters.locationId}
         options={[
           { value: ALL_FILTER, label: t('calendar.firstLocation') },
-          ...setup.locations.map((location) => ({ value: location.id, label: location.name })),
+          ...options.locations.map((location) => ({ value: location.id, label: location.name })),
         ]}
         // A resource of another location would no longer be offered, so that choice is reset.
         onValueChange={(locationId) => {
@@ -47,7 +47,7 @@ export function CalendarFilters({ setup, filters, onChange }: CalendarFiltersPro
         value={filters.serviceId}
         options={[
           { value: ALL_FILTER, label: t('calendar.allServices') },
-          ...setup.services.map((service) => ({ value: service.id, label: service.name })),
+          ...options.services.map((service) => ({ value: service.id, label: service.name })),
         ]}
         onValueChange={(serviceId) => {
           onChange({ ...filters, serviceId });

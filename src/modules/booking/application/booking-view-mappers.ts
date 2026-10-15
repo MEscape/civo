@@ -2,7 +2,7 @@ import { toAvailabilityPlanInput } from '../domain/models/availability-plan';
 import { checkCancellation, checkRescheduling } from '../domain/policies/change-policy';
 
 import type { BookingView, HoldView } from './contracts/booking-views';
-import type { CalendarBookingView } from './contracts/calendar-views';
+import type { CalendarBookingView, UpcomingBookingView } from './contracts/calendar-views';
 import type {
   AvailabilityView,
   PublicLocationView,
@@ -24,6 +24,7 @@ export function toLocationView(location: BookingLocation): LocationView {
     address: location.address,
     timeZone: location.timeZone,
     openingHours: toAvailabilityPlanInput(location.openingHours),
+    staffHours: location.staffHours === null ? null : toAvailabilityPlanInput(location.staffHours),
     isActive: location.isActive,
     createdAt: location.createdAt,
     updatedAt: location.updatedAt,
@@ -43,7 +44,7 @@ export function toResourceView(resource: BookableResource): ResourceView {
       resource.availability === null ? null : toAvailabilityPlanInput(resource.availability),
     isActive: resource.isActive,
     assignedActorId: resource.assignedActorId,
-    employeeMayEditHours: resource.employeeMayEditHours,
+    managerChange: resource.managerChange,
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt,
   };
@@ -194,6 +195,16 @@ function customerName(booking: Booking): string | null {
     (part): part is string => part !== null && part !== undefined,
   );
   return parts.length > 0 ? parts.join(' ') : null;
+}
+
+export function toUpcomingBookingView(booking: Booking, serviceName: string): UpcomingBookingView {
+  return {
+    id: booking.id,
+    start: booking.start,
+    end: booking.end,
+    serviceName,
+    customerName: customerName(booking),
+  };
 }
 
 export function toCalendarBookingView(booking: Booking, serviceName: string): CalendarBookingView {

@@ -31,12 +31,6 @@ export const resourceConfigSchema = z.object({
     .nullable(),
   availability: availabilityPlanSchema.nullable(),
   isActive: z.boolean(),
-  assignedActorId: z
-    .string()
-    .max(RESOURCE_LIMITS.assignedActorIdMax, CODES.assignmentInvalid)
-    .nullable()
-    .default(null),
-  employeeMayEditHours: z.boolean().default(false),
 });
 
 export type ResourceConfig = z.infer<typeof resourceConfigSchema>;

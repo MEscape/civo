@@ -6,7 +6,9 @@ import type { AppResultAsync } from '@lib/result';
 import { createBookableServiceDraft } from '../../domain/models/bookable-service';
 import { parseWebsiteId } from '../../domain/models/ids';
 import { toServiceView } from '../booking-view-mappers';
+import { checkServiceFitsLocations } from '../services/hours-fit-checks';
 import { checkServiceReference } from '../services/reference-checks';
+import { requireBookableWhenActive } from '../services/require-bookable-when-active';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { CreateBookableServiceInput } from '../contracts/booking-inputs';
@@ -32,6 +34,20 @@ export class CreateBookableService {
             this.deps,
             { tenantId: actor.tenantId, websiteId: draft.websiteId },
             draft,
+          ),
+        )
+        .andThen((draft) =>
+          checkServiceFitsLocations(
+            this.deps,
+            { tenantId: actor.tenantId, websiteId: draft.websiteId },
+            draft,
+          ),
+        )
+        .andThen((draft) =>
+          requireBookableWhenActive(
+            this.deps,
+            { tenantId: actor.tenantId, websiteId: draft.websiteId },
+            { draft, serviceId: null },
           ),
         )
         .andThen((draft) => services.create({ tenantId: actor.tenantId, draft }))

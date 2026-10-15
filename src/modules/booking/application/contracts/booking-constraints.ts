@@ -56,5 +56,12 @@ export {
 } from '../../domain/time/time-zone';
 export { BOOKING_ERROR_CODES, BOOKING_VALIDATION_CODES } from '../../domain/errors/booking-errors';
 export type { BookingCode } from '../../domain/errors/booking-errors';
+export {
+  GERMAN_REGIONS,
+  HOLIDAY_KEYS,
+  publicHolidaysOf,
+} from '../../domain/holidays/german-holidays';
+export type { GermanRegion, HolidayKey } from '../../domain/holidays/german-holidays';
+export { ADDRESS_SEARCH_LIMITS, MAX_TEAM_HOURS_BATCH } from '../booking-limits';
 export { MAX_CUSTOMER_RESCHEDULES } from '../../domain/policies/change-policy';
 export type { LimitedAction } from '../../domain/ports/request-limiter.port';

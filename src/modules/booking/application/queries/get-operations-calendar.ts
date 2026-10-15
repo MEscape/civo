@@ -35,8 +35,9 @@ import type { OperationsCalendarView } from '../contracts/calendar-views';
  *
  * Everyone who may read bookings (`booking.read`) sees all of them. An
  * employee holds only `booking.read.own` and sees exactly the bookings that
- * occupy a resource assigned to them: the filter is applied here, on the
- * server, to what the store returned, so no screen can widen it.
+ * occupy a resource assigned to them. The restriction is part of the store
+ * queries (`assignedTo`, `listAssignedTo`), so a colleague's booking is never
+ * read, never counted against the limit and cannot be reached by a filter.
  */
 export class GetOperationsCalendar {
   constructor(private readonly deps: BookingDependencies) {}
@@ -80,48 +81,49 @@ export class GetOperationsCalendar {
           return bookings
             .listInRange(
               { websiteId, tenantId: actor.tenantId },
-              { span, filter, limit: MAX_CALENDAR_BOOKINGS_PER_QUERY },
+              {
+                span,
+                filter,
+                limit: MAX_CALENDAR_BOOKINGS_PER_QUERY,
+                assignedTo: isOwnOnly ? actor.id : undefined,
+              },
             )
             .andThen((found) =>
               services
                 .listByWebsite(websiteId, actor.tenantId, MAX_SERVICES_PER_WEBSITE)
                 .andThen((storedServices) =>
-                  resources
-                    .listByWebsite(websiteId, actor.tenantId, MAX_RESOURCES_PER_WEBSITE)
-                    .map((allResources) => {
-                      const storedResources = isOwnOnly
-                        ? allResources.filter((resource) => resource.assignedActorId === actor.id)
-                        : allResources;
-                      const ownedIds = new Set(storedResources.map((resource) => resource.id));
-                      const visible = isOwnOnly
-                        ? found.filter((booking) =>
-                            booking.resourceIds.some((resourceId) => ownedIds.has(resourceId)),
-                          )
-                        : found;
-                      const names = new Map(
-                        storedServices.map((service) => [service.id, service.name]),
-                      );
-                      return {
-                        timeZone: chosen.timeZone,
-                        from: input.from,
-                        to: input.to,
-                        bookings: visible.map((booking) =>
-                          toCalendarBookingView(booking, names.get(booking.serviceId) ?? ''),
-                        ),
-                        resources: storedResources
-                          .filter((resource) => resource.isActive)
-                          .filter(
-                            (resource) =>
-                              resource.locationId === null || resource.locationId === chosen.id,
-                          )
-                          .map((resource) => ({
-                            id: resource.id,
-                            name: resource.name,
-                            type: resource.type,
-                            locationId: resource.locationId,
-                          })),
-                      };
-                    }),
+                  (isOwnOnly
+                    ? resources.listAssignedTo(
+                        { websiteId, tenantId: actor.tenantId },
+                        actor.id,
+                        MAX_RESOURCES_PER_WEBSITE,
+                      )
+                    : resources.listByWebsite(websiteId, actor.tenantId, MAX_RESOURCES_PER_WEBSITE)
+                  ).map((storedResources) => {
+                    const names = new Map(
+                      storedServices.map((service) => [service.id, service.name]),
+                    );
+                    return {
+                      timeZone: chosen.timeZone,
+                      from: input.from,
+                      to: input.to,
+                      bookings: found.map((booking) =>
+                        toCalendarBookingView(booking, names.get(booking.serviceId) ?? ''),
+                      ),
+                      resources: storedResources
+                        .filter((resource) => resource.isActive)
+                        .filter(
+                          (resource) =>
+                            resource.locationId === null || resource.locationId === chosen.id,
+                        )
+                        .map((resource) => ({
+                          id: resource.id,
+                          name: resource.name,
+                          type: resource.type,
+                          locationId: resource.locationId,
+                        })),
+                    };
+                  }),
                 ),
             );
         });

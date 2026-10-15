@@ -33,6 +33,8 @@ function toColumns(draft: BookingLocationDraft) {
     address: draft.address,
     timeZone: draft.timeZone,
     openingHours: toJsonValue(toAvailabilityPlanInput(draft.openingHours)),
+    staffHours:
+      draft.staffHours === null ? null : toJsonValue(toAvailabilityPlanInput(draft.staffHours)),
     isActive: draft.isActive,
   };
 }
@@ -99,6 +101,16 @@ export class PrismaBookingLocationRepository implements BookingLocationRepositor
     )
       .andThen(failures.requireRow(websiteNotFoundForBooking))
       .andThen(toLocation);
+  }
+
+  deleteById(
+    id: BookingLocationId,
+    tenantId: TenantId,
+  ): AppResultAsync<void, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () => locationsOf(tenantId).where({ id }).deleteAndCount(),
+      failures.infraOnly('deleteById'),
+    ).map(() => undefined);
   }
 
   update(

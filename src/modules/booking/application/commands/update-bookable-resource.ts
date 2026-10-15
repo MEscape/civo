@@ -1,9 +1,13 @@
 import type { InfrastructureAppError, NotFoundAppError, ValidationAppError } from '@lib/errors';
+import { errAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
+import { resourceNotFound } from '../../domain/errors/booking-errors';
 import { createBookableResourceDraft } from '../../domain/models/bookable-resource';
 import { toResourceView } from '../booking-view-mappers';
 import { loadAuthorizedResource } from '../load-authorized-resource';
+import { refuseEmployeeResource } from '../services/employee-resources';
+import { checkResourceFitsLocation } from '../services/hours-fit-checks';
 import { checkLocationReference } from '../services/reference-checks';
 
 import type { BookingDependencies } from '../booking-dependencies';
@@ -24,10 +28,22 @@ export class UpdateBookableResource {
     const { resources, audit } = this.deps;
 
     return loadAuthorizedResource(this.deps, input.id, 'booking.configure').andThen(
-      ({ actor, resource }) =>
-        createBookableResourceDraft({ ...input, websiteId: resource.websiteId })
+      ({ actor, resource }) => {
+        // An employee's own resource is theirs to keep: for anyone else it does not exist.
+        if (resource.type === 'employee') {
+          return errAsync(resourceNotFound());
+        }
+        return refuseEmployeeResource(input)
+          .andThen(() => createBookableResourceDraft({ ...input, websiteId: resource.websiteId }))
           .asyncAndThen((draft) =>
             checkLocationReference(
+              this.deps,
+              { tenantId: actor.tenantId, websiteId: resource.websiteId },
+              draft,
+            ),
+          )
+          .andThen((draft) =>
+            checkResourceFitsLocation(
               this.deps,
               { tenantId: actor.tenantId, websiteId: resource.websiteId },
               draft,
@@ -43,7 +59,8 @@ export class UpdateBookableResource {
               resourceId: updated.id,
             });
             return toResourceView(updated);
-          }),
+          });
+      },
     );
   }
 }

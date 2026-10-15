@@ -2,6 +2,7 @@ import type { AuthorizationService } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
 
+import type { AddressSearch } from '../domain/ports/address-search.port';
 import type { BookableResourceRepository } from '../domain/ports/bookable-resource.repository';
 import type { BookableServiceRepository } from '../domain/ports/bookable-service.repository';
 import type { BookingAuditLog } from '../domain/ports/booking-audit-log.port';
@@ -20,6 +21,10 @@ export interface BookingDependencies {
   readonly services: BookableServiceRepository;
   readonly bookings: BookingRepository;
   readonly audit: BookingAuditLog;
+  /** Suggests addresses while an editor types one; `null` when no geocoder is configured. */
+  readonly addresses: AddressSearch | null;
+  /** Bounds how often one editor may ask the external address service. */
+  readonly limiter: RequestLimiter;
   /** Tells the customer when staff cancel or move their booking. */
   readonly notifier: BookingNotifier;
   readonly clock: Clock;

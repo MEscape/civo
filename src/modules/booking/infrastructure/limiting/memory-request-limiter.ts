@@ -15,6 +15,8 @@ export const DEFAULT_BUDGETS: Readonly<Record<LimitedAction, RequestBudget>> = {
   confirm: { max: 12, windowMs: ONE_MINUTE_MS },
   lookup: { max: 10, windowMs: ONE_MINUTE_MS },
   change: { max: 10, windowMs: ONE_MINUTE_MS },
+  // Each one is a call to a paid external service, made by a signed-in editor typing.
+  address: { max: 60, windowMs: ONE_MINUTE_MS },
 };
 
 /** A bound on memory: when exceeded, the oldest visitors are forgotten first. */

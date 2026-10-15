@@ -45,6 +45,45 @@ export const RESOURCE_TYPES = [
 ] as const;
 export type ResourceKind = (typeof RESOURCE_TYPES)[number];
 
+/** What somebody other than the employee changed on an employee's calendar. */
+export const MANAGER_CHANGE_KINDS = ['hours', 'services'] as const;
+export type ManagerChangeKind = (typeof MANAGER_CHANGE_KINDS)[number];
+
+/**
+ * A change to an employee's calendar made by a manager, kept until the
+ * employee has seen it (by acknowledging it, or by saving their calendar
+ * themselves): an employee is never changed behind their back. It names what
+ * changed and when, never who.
+ */
+export interface ManagerChange {
+  readonly at: Date;
+  readonly kinds: readonly ManagerChangeKind[];
+}
+
+/** A manager change as it is stored: a time as text and the kinds by name. */
+export interface ManagerChangeInput {
+  readonly at: string;
+  readonly kinds: readonly string[];
+}
+
+/** The change a stored row holds, or `null` when its time does not read. */
+export function managerChangeOf(stored: ManagerChangeInput): ManagerChange | null {
+  const at = new Date(stored.at);
+  if (Number.isNaN(at.getTime())) {
+    return null;
+  }
+  return { at, kinds: MANAGER_CHANGE_KINDS.filter((kind) => stored.kinds.includes(kind)) };
+}
+
+/** The same change with one more kind of change, at the time given: several changes before the employee looks read as one. */
+export function withManagerChange(
+  current: ManagerChange | null,
+  change: { readonly kind: ManagerChangeKind; readonly at: Date },
+): ManagerChange {
+  const kinds = new Set([...(current?.kinds ?? []), change.kind]);
+  return { at: change.at, kinds: MANAGER_CHANGE_KINDS.filter((kind) => kinds.has(kind)) };
+}
+
 /** A qualification key such as `identity-services`: lower-case words joined by hyphens. */
 export const SKILL_KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -74,12 +113,12 @@ export interface BookableResource {
   readonly isActive: boolean;
   /**
    * The employee (a member of the tenant) whose calendar this is, or `null`. Only an
-   * `employee` resource can be assigned; the assigned person sees the bookings of
-   * this resource and no others.
+   * `employee` resource has one: it is the employee's own, made and kept by them. The
+   * person sees the bookings of this resource and no others.
    */
   readonly assignedActorId: string | null;
-  /** Whether the assigned employee may change `availability` themselves. Off unless an editor allows it. */
-  readonly employeeMayEditHours: boolean;
+  /** What a manager changed here that the employee has not seen yet; `null` for none. */
+  readonly managerChange: ManagerChange | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -94,13 +133,29 @@ export interface BookableResourceInput {
   readonly availability: AvailabilityPlanInput | null;
   readonly isActive: boolean;
   readonly assignedActorId?: string | null | undefined;
-  readonly employeeMayEditHours?: boolean | undefined;
+  readonly managerChange?: ManagerChange | null | undefined;
 }
 
 export type BookableResourceDraft = Omit<
   BookableResource,
   'id' | 'tenantId' | 'createdAt' | 'updatedAt'
 >;
+
+/** What a stored resource is made of, without identity and timestamps: the starting point for changing one part of it. */
+export function draftOfResource(resource: BookableResource): BookableResourceDraft {
+  return {
+    websiteId: resource.websiteId,
+    locationId: resource.locationId,
+    name: resource.name,
+    type: resource.type,
+    skills: resource.skills,
+    capacity: resource.capacity,
+    availability: resource.availability,
+    isActive: resource.isActive,
+    assignedActorId: resource.assignedActorId,
+    managerChange: resource.managerChange,
+  };
+}
 
 /** Whether a resource may serve a location: it belongs there, or belongs nowhere in particular. */
 export function servesLocation(resource: BookableResource, locationId: BookingLocationId): boolean {
@@ -168,26 +223,21 @@ function parseAvailability(
   return plan.value;
 }
 
-/**
- * Who a resource belongs to. Only an employee resource has an owner, and
- * letting the owner edit their hours means there is one.
- */
+/** Who a resource belongs to. Only an employee resource has an owner. */
 function parseAssignment(
   input: BookableResourceInput,
   type: ResourceKind | null,
   bag: FieldErrorBag,
-): { readonly assignedActorId: string | null; readonly employeeMayEditHours: boolean } {
+): { readonly assignedActorId: string | null } {
   const trimmedActor = input.assignedActorId?.trim() ?? '';
   const assignedActorId = trimmedActor === '' ? null : trimmedActor;
-  const employeeMayEditHours = input.employeeMayEditHours === true;
   const isTooLong =
     assignedActorId !== null && assignedActorId.length > RESOURCE_LIMITS.assignedActorIdMax;
-  const isOwnerless = assignedActorId === null && employeeMayEditHours;
   const isNotAnEmployee = assignedActorId !== null && type !== 'employee';
-  if (isTooLong || isOwnerless || isNotAnEmployee) {
+  if (isTooLong || isNotAnEmployee) {
     bag.add('assignedActorId', CODES.assignmentInvalid);
   }
-  return { assignedActorId, employeeMayEditHours };
+  return { assignedActorId };
 }
 
 export function createBookableResourceDraft(
@@ -205,6 +255,10 @@ export function createBookableResourceDraft(
   const locationId = parseLocation(input.locationId, bag);
   const availability = parseAvailability(input.availability, bag);
   const assignment = parseAssignment(input, type, bag);
+  // A person is at one place at a time: only equipment that travels may belong to every location.
+  if (type === 'employee' && input.locationId === null) {
+    bag.add('locationId', CODES.locationsRequired);
+  }
 
   if (bag.hasErrors || type === null) {
     return err(bag.toError());
@@ -219,6 +273,7 @@ export function createBookableResourceDraft(
     capacity: input.capacity,
     availability,
     isActive: input.isActive,
+    managerChange: input.managerChange ?? null,
     ...assignment,
   });
 }

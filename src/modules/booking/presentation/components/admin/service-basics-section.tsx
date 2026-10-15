@@ -1,17 +1,22 @@
 import { CheckboxField } from '@components/shared/checkbox-field';
+import { ComboboxField } from '@components/shared/combobox-field';
 import { TextField } from '@components/shared/text-field';
 import { Label, Textarea } from '@components/ui/input';
 
 import { useTranslations } from '@i18n/client';
 
 import { SERVICE_LIMITS } from '../../../application/contracts/booking-constraints';
+import { skillChoices, toSkillKey } from '../../drafts/skill-key';
 import { FormSection } from '../shared/form-section';
+import { NumberField } from '../shared/number-field';
 
 import type { ServiceDraft } from '../../drafts/service-draft';
 
 export interface ServiceBasicsSectionProps {
   readonly idPrefix: string;
-  readonly draft: Pick<ServiceDraft, 'name' | 'category' | 'description' | 'isActive'>;
+  readonly draft: Pick<ServiceDraft, 'name' | 'category' | 'description' | 'isActive' | 'duration'>;
+  /** The categories other services already use. */
+  readonly categories: readonly string[];
   readonly errorText: (field: string) => string | undefined;
   readonly onChange: (patch: Partial<ServiceDraft>) => void;
 }
@@ -20,6 +25,7 @@ export interface ServiceBasicsSectionProps {
 export function ServiceBasicsSection({
   idPrefix,
   draft,
+  categories,
   errorText,
   onChange,
 }: ServiceBasicsSectionProps) {
@@ -37,14 +43,32 @@ export function ServiceBasicsSection({
             onChange({ name: event.target.value });
           }}
         />
-        <TextField
+        <NumberField
+          id={`${idPrefix}-duration`}
+          label={t('services.duration')}
+          hint={t('services.durationHint')}
+          value={draft.duration}
+          min={SERVICE_LIMITS.durationMin}
+          max={SERVICE_LIMITS.durationMax}
+          error={errorText('durationMinutes')}
+          onChange={(duration) => {
+            onChange({ duration });
+          }}
+        />
+        <ComboboxField
+          selectionMode="single"
           id={`${idPrefix}-category`}
           label={t('services.category')}
           hint={t('services.categoryHint')}
-          value={draft.category}
+          placeholder={t('services.categoryPlaceholder')}
           error={errorText('category')}
-          onChange={(event) => {
-            onChange({ category: event.target.value });
+          options={skillChoices(categories, draft.category === '' ? [] : [draft.category])}
+          value={draft.category}
+          emptyText={t('form.noMatches')}
+          createText={(value) => t('form.addValue', { value })}
+          normalizeCreated={toSkillKey}
+          onValueChange={(category) => {
+            onChange({ category });
           }}
         />
         <div className="space-y-1.5 sm:col-span-2">

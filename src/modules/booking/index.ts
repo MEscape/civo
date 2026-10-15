@@ -7,10 +7,17 @@
  * in a client bundle.
  */
 
+/** Server-only queries for Server Components. */
+export { bookingQueries } from './composition';
+
 export { BookingSection } from './presentation/components/booking-section';
+export { LocationWorkspacePage } from './presentation/components/location-workspace-page';
 export { BookingAdministration } from './presentation/components/booking-administration';
+export { BookingOverviewCard } from './presentation/components/booking-overview-card';
 
 export { default as enBooking } from './presentation/i18n/en.json';
 export { default as deBooking } from './presentation/i18n/de.json';
 
+export type { BookingSummaryView } from './application/contracts/calendar-views';
+export type { BookingSearchParams } from './presentation/components/booking-administration';
 export type { BookingSectionProps } from './presentation/components/booking-section';

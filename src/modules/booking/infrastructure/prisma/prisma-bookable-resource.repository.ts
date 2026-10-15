@@ -1,4 +1,4 @@
-import type { TenantId } from '@modules/auth';
+import type { ActorId, TenantId } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
 import { createPersistenceFailures, dateToInstant, toJsonValue } from '@lib/db';
@@ -22,6 +22,7 @@ import type {
 } from '../../domain/models/bookable-resource';
 import type { BookableResourceId, WebsiteId } from '../../domain/models/ids';
 import type { BookableResourceRepository } from '../../domain/ports/bookable-resource.repository';
+import type { WebsiteScope } from '../../domain/ports/booking.repository';
 
 const failures = createPersistenceFailures({
   module: 'booking.persistence',
@@ -40,7 +41,13 @@ function toColumns(draft: BookableResourceDraft) {
       draft.availability === null ? null : toJsonValue(toAvailabilityPlanInput(draft.availability)),
     isActive: draft.isActive,
     assignedActorId: draft.assignedActorId,
-    employeeMayEditHours: draft.employeeMayEditHours,
+    managerChange:
+      draft.managerChange === null
+        ? null
+        : toJsonValue({
+            at: draft.managerChange.at.toISOString(),
+            kinds: [...draft.managerChange.kinds],
+          }),
   };
 }
 
@@ -79,6 +86,23 @@ export class PrismaBookableResourceRepository implements BookableResourceReposit
     ).andThen((records) => combine(records.map((record) => toResource(record))));
   }
 
+  listAssignedTo(
+    { websiteId, tenantId }: WebsiteScope,
+    actorId: ActorId,
+    limit: number,
+  ): AppResultAsync<readonly BookableResource[], InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        resourcesOf(tenantId)
+          .select(...RESOURCE_SELECT)
+          .where({ websiteId, assignedActorId: actorId })
+          .orderBy([(resource) => resource.name.asc(), (resource) => resource.id.asc()])
+          .limit(limit)
+          .all(),
+      failures.infraOnly('listAssignedTo'),
+    ).andThen((records) => combine(records.map((record) => toResource(record))));
+  }
+
   create(input: {
     readonly tenantId: TenantId;
     readonly draft: BookableResourceDraft;
@@ -101,6 +125,16 @@ export class PrismaBookableResourceRepository implements BookableResourceReposit
     )
       .andThen(failures.requireRow(websiteNotFoundForBooking))
       .andThen(toResource);
+  }
+
+  deleteById(
+    id: BookableResourceId,
+    tenantId: TenantId,
+  ): AppResultAsync<void, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () => resourcesOf(tenantId).where({ id }).deleteAndCount(),
+      failures.infraOnly('deleteById'),
+    ).map(() => undefined);
   }
 
   update(
