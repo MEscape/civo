@@ -1,5 +1,5 @@
 -- Auth database (the one AUTH_DATABASE_URL points at, owned by `pg`, not Prisma).
--- Run it as a reviewed migration next to Better Auth's own `@better-auth/cli migrate`.
+-- Applied by `npm run db:migrate:auth` together with the other files in this folder.
 -- Used by PgAuthRateLimiter; see application/rate-limit-policy.ts for the budgets.
 
 CREATE TABLE IF NOT EXISTS auth_rate_limit (

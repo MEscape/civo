@@ -25,6 +25,10 @@ const MIGRATIONS: readonly Migration[] = [
     file: join('migrations', 'auth', '0001_auth_rate_limit.sql'),
     description: 'auth_rate_limit table',
   },
+  {
+    file: join('migrations', 'auth', '0002_better_auth_tables.sql'),
+    description: 'Better Auth tables (user, session, account, verification, rateLimit)',
+  },
 ];
 
 async function applyMigration(pool: Pool, migration: Migration): Promise<void> {

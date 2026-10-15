@@ -74,6 +74,8 @@ model Website {
   publishedRelease WebsiteRelease? @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
 
   @@unique([id, tenantId])
+  // A tenant is its website: the one id serves as both, and every table below it points at the pair.
+  @@check(expression: "\"id\" = \"tenantId\"", name: "Website_tenant_is_website_check")
 }
 
 /// A routed page belonging to a website.
@@ -131,6 +133,12 @@ model WebsiteRelease {
   status        ReleaseStatus @default(DRAFT)
   snapshot      Json
   snapshotHash  String
+  /// What the editor wrote when publishing; shown in the history. Null for releases made before notes existed.
+  note          String?
+  /// What this release changed against the one live before it, frozen at publish time. Null for earlier releases.
+  changes       Json?
+  /// Who published it (an actor id; the name is looked up where it is shown, so it is never stale). Null for earlier releases.
+  publishedBy   String?
   publishedAt   DateTime?
   createdAt     DateTime @default(now())
 
@@ -238,6 +246,8 @@ model BookingLocation {
   address      String?
   timeZone     String
   openingHours Json
+  // The week in which employees may work here. NULL: the opening hours.
+  staffHours   Json?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
@@ -264,8 +274,9 @@ model BookableResource {
   // The employee (a Membership actor of this tenant) whose calendar this resource is. No foreign
   // key: actors live in the authentication database. NULL: not a person's calendar.
   assignedActorId        String?
-  // Whether the assigned employee may change `availability` themselves.
-  employeeMayEditHours   Boolean  @default(false)
+  // What somebody else changed on this calendar since the employee last looked: who, when, which
+  // parts. NULL: nothing to tell. The employee clears it by acknowledging or by saving.
+  managerChange Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
 

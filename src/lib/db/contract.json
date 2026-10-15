@@ -224,13 +224,6 @@
                   "kind": "scalar"
                 }
               },
-              "employeeMayEditHours": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/bool@1",
-                  "kind": "scalar"
-                }
-              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -249,6 +242,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "managerChange": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/json@1",
                   "kind": "scalar"
                 }
               },
@@ -360,9 +360,6 @@
                 "createdAt": {
                   "column": "createdAt"
                 },
-                "employeeMayEditHours": {
-                  "column": "employeeMayEditHours"
-                },
                 "id": {
                   "column": "id"
                 },
@@ -371,6 +368,9 @@
                 },
                 "locationId": {
                   "column": "locationId"
+                },
+                "managerChange": {
+                  "column": "managerChange"
                 },
                 "name": {
                   "column": "name"
@@ -1037,6 +1037,13 @@
                   "kind": "scalar"
                 }
               },
+              "staffHours": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/json@1",
+                  "kind": "scalar"
+                }
+              },
               "tenantId": {
                 "nullable": false,
                 "type": {
@@ -1135,6 +1142,9 @@
                 },
                 "openingHours": {
                   "column": "openingHours"
+                },
+                "staffHours": {
+                  "column": "staffHours"
                 },
                 "tenantId": {
                   "column": "tenantId"
@@ -2363,6 +2373,13 @@
           },
           "WebsiteRelease": {
             "fields": {
+              "changes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/json@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2377,10 +2394,24 @@
                   "kind": "scalar"
                 }
               },
+              "note": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "publishedAt": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "publishedBy": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -2476,14 +2507,23 @@
             },
             "storage": {
               "fields": {
+                "changes": {
+                  "column": "changes"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
                 "id": {
                   "column": "id"
                 },
+                "note": {
+                  "column": "note"
+                },
                 "publishedAt": {
                   "column": "publishedAt"
+                },
+                "publishedBy": {
+                  "column": "publishedBy"
                 },
                 "releaseNumber": {
                   "column": "releaseNumber"
@@ -2658,15 +2698,6 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
-                "employeeMayEditHours": {
-                  "codecId": "pg/bool@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": false
-                  },
-                  "nativeType": "bool",
-                  "nullable": false
-                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -2684,6 +2715,11 @@
                 "locationId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "managerChange": {
+                  "codecId": "pg/json@1",
+                  "nativeType": "json",
                   "nullable": true
                 },
                 "name": {
@@ -3325,6 +3361,11 @@
                   "codecId": "pg/json@1",
                   "nativeType": "json",
                   "nullable": false
+                },
+                "staffHours": {
+                  "codecId": "pg/json@1",
+                  "nativeType": "json",
+                  "nullable": true
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
@@ -4098,6 +4139,13 @@
               ]
             },
             "Website": {
+              "checks": [
+                {
+                  "expression": "\"id\" = \"tenantId\"",
+                  "name": "Website_tenant_is_website_check_34a4fea9",
+                  "prefix": "Website_tenant_is_website_check"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4350,6 +4398,11 @@
                 }
               ],
               "columns": {
+                "changes": {
+                  "codecId": "pg/json@1",
+                  "nativeType": "json",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "default": {
@@ -4364,9 +4417,19 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "note": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "publishedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "publishedBy": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "releaseNumber": {
@@ -4622,7 +4685,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "830c90c47d93cd23f53ed015783c3c087958cc8f355aeff63dc20c0570f73d19"
+    "storageHash": "e864e7176ac498f5e5140d09507b1a1a130f54b9a7ee0d1103b38d8748a919a3"
   },
   "execution": {
     "executionHash": "66b28dc7c1c3496def0cd411814fa6f32251d215ca7bdedfd9fc5d28c3f01145",

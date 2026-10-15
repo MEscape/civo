@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'830c90c47d93cd23f53ed015783c3c087958cc8f355aeff63dc20c0570f73d19'>;
+  StorageHashBase<'e864e7176ac498f5e5140d09507b1a1a130f54b9a7ee0d1103b38d8748a919a3'>;
 export type ExecutionHash =
   ExecutionHashBase<'66b28dc7c1c3496def0cd411814fa6f32251d215ca7bdedfd9fc5d28c3f01145'>;
 export type ProfileHash =
@@ -255,10 +255,10 @@ export type FieldOutputTypes = {
       readonly availability: CodecTypes['pg/json@1']['output'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly employeeMayEditHours: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly locationId: CodecTypes['pg/text@1']['output'] | null;
+      readonly managerChange: CodecTypes['pg/json@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly skills: CodecTypes['pg/json@1']['output'];
       readonly tenantId: CodecTypes['pg/text@1']['output'];
@@ -324,6 +324,7 @@ export type FieldOutputTypes = {
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly openingHours: CodecTypes['pg/json@1']['output'];
+      readonly staffHours: CodecTypes['pg/json@1']['output'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly timeZone: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -423,9 +424,12 @@ export type FieldOutputTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly WebsiteRelease: {
+      readonly changes: CodecTypes['pg/json@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly note: CodecTypes['pg/text@1']['output'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly publishedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['output'];
       readonly snapshot: CodecTypes['pg/json@1']['output'];
       readonly snapshotHash: CodecTypes['pg/text@1']['output'];
@@ -452,10 +456,10 @@ export type FieldInputTypes = {
       readonly availability: CodecTypes['pg/json@1']['input'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly employeeMayEditHours: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly locationId: CodecTypes['pg/text@1']['input'] | null;
+      readonly managerChange: CodecTypes['pg/json@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly skills: CodecTypes['pg/json@1']['input'];
       readonly tenantId: CodecTypes['pg/text@1']['input'];
@@ -521,6 +525,7 @@ export type FieldInputTypes = {
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly openingHours: CodecTypes['pg/json@1']['input'];
+      readonly staffHours: CodecTypes['pg/json@1']['input'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly timeZone: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -620,9 +625,12 @@ export type FieldInputTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly WebsiteRelease: {
+      readonly changes: CodecTypes['pg/json@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly note: CodecTypes['pg/text@1']['input'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly publishedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['input'];
       readonly snapshot: CodecTypes['pg/json@1']['input'];
       readonly snapshotHash: CodecTypes['pg/text@1']['input'];
@@ -649,10 +657,10 @@ export type StorageColumnTypes = {
       readonly availability: CodecTypes['pg/json@1']['output'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly employeeMayEditHours: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly locationId: CodecTypes['pg/text@1']['output'] | null;
+      readonly managerChange: CodecTypes['pg/json@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly skills: CodecTypes['pg/json@1']['output'];
       readonly tenantId: CodecTypes['pg/text@1']['output'];
@@ -718,6 +726,7 @@ export type StorageColumnTypes = {
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly openingHours: CodecTypes['pg/json@1']['output'];
+      readonly staffHours: CodecTypes['pg/json@1']['output'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly timeZone: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -817,9 +826,12 @@ export type StorageColumnTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly WebsiteRelease: {
+      readonly changes: CodecTypes['pg/json@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly note: CodecTypes['pg/text@1']['output'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly publishedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['output'];
       readonly snapshot: CodecTypes['pg/json@1']['output'];
       readonly snapshotHash: CodecTypes['pg/text@1']['output'];
@@ -846,10 +858,10 @@ export type StorageColumnInputTypes = {
       readonly availability: CodecTypes['pg/json@1']['input'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly employeeMayEditHours: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly locationId: CodecTypes['pg/text@1']['input'] | null;
+      readonly managerChange: CodecTypes['pg/json@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly skills: CodecTypes['pg/json@1']['input'];
       readonly tenantId: CodecTypes['pg/text@1']['input'];
@@ -915,6 +927,7 @@ export type StorageColumnInputTypes = {
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly openingHours: CodecTypes['pg/json@1']['input'];
+      readonly staffHours: CodecTypes['pg/json@1']['input'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly timeZone: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1014,9 +1027,12 @@ export type StorageColumnInputTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly WebsiteRelease: {
+      readonly changes: CodecTypes['pg/json@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly note: CodecTypes['pg/text@1']['input'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly publishedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['input'];
       readonly snapshot: CodecTypes['pg/json@1']['input'];
       readonly snapshotHash: CodecTypes['pg/text@1']['input'];
@@ -1043,10 +1059,10 @@ export namespace Models {
     availability: CodecTypes['pg/json@1']['output'] | null;
     capacity: CodecTypes['pg/int4@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    employeeMayEditHours: CodecTypes['pg/bool@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     isActive: CodecTypes['pg/bool@1']['output'];
     locationId: CodecTypes['pg/text@1']['output'] | null;
+    managerChange: CodecTypes['pg/json@1']['output'] | null;
     name: CodecTypes['pg/text@1']['output'];
     skills: CodecTypes['pg/json@1']['output'];
     tenantId: CodecTypes['pg/text@1']['output'];
@@ -1124,6 +1140,7 @@ export namespace Models {
     isActive: CodecTypes['pg/bool@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     openingHours: CodecTypes['pg/json@1']['output'];
+    staffHours: CodecTypes['pg/json@1']['output'] | null;
     tenantId: CodecTypes['pg/text@1']['output'];
     timeZone: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1266,9 +1283,12 @@ export namespace Models {
     readonly [RelationKeys]?: 'sourceRelease' | 'website';
   };
   export type public_WebsiteRelease = {
+    changes: CodecTypes['pg/json@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
+    note: CodecTypes['pg/text@1']['output'] | null;
     publishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    publishedBy: CodecTypes['pg/text@1']['output'] | null;
     releaseNumber: CodecTypes['pg/int4@1']['output'];
     snapshot: CodecTypes['pg/json@1']['output'];
     snapshotHash: CodecTypes['pg/text@1']['output'];
@@ -1355,15 +1375,6 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
-                readonly employeeMayEditHours: {
-                  readonly nativeType: 'bool';
-                  readonly codecId: 'pg/bool@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
-                  };
-                };
                 readonly id: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -1381,6 +1392,11 @@ type ContractBase = Omit<
                 readonly locationId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly managerChange: {
+                  readonly nativeType: 'json';
+                  readonly codecId: 'pg/json@1';
                   readonly nullable: true;
                 };
                 readonly name: {
@@ -1895,6 +1911,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'json';
                   readonly codecId: 'pg/json@1';
                   readonly nullable: false;
+                };
+                readonly staffHours: {
+                  readonly nativeType: 'json';
+                  readonly codecId: 'pg/json@1';
+                  readonly nullable: true;
                 };
                 readonly tenantId: {
                   readonly nativeType: 'text';
@@ -2627,6 +2648,11 @@ type ContractBase = Omit<
             };
             readonly WebsiteRelease: {
               columns: {
+                readonly changes: {
+                  readonly nativeType: 'json';
+                  readonly codecId: 'pg/json@1';
+                  readonly nullable: true;
+                };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -2638,9 +2664,19 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly note: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly publishedAt: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly publishedBy: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
                 readonly releaseNumber: {
@@ -2914,10 +2950,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
-              readonly employeeMayEditHours: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
-              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2929,6 +2961,10 @@ type ContractBase = Omit<
               readonly locationId: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly managerChange: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
               };
               readonly name: {
                 readonly nullable: false;
@@ -3003,10 +3039,10 @@ type ContractBase = Omit<
                 readonly availability: { readonly column: 'availability' };
                 readonly capacity: { readonly column: 'capacity' };
                 readonly createdAt: { readonly column: 'createdAt' };
-                readonly employeeMayEditHours: { readonly column: 'employeeMayEditHours' };
                 readonly id: { readonly column: 'id' };
                 readonly isActive: { readonly column: 'isActive' };
                 readonly locationId: { readonly column: 'locationId' };
+                readonly managerChange: { readonly column: 'managerChange' };
                 readonly name: { readonly column: 'name' };
                 readonly skills: { readonly column: 'skills' };
                 readonly tenantId: { readonly column: 'tenantId' };
@@ -3404,6 +3440,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
               };
+              readonly staffHours: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+              };
               readonly tenantId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3470,6 +3510,7 @@ type ContractBase = Omit<
                 readonly isActive: { readonly column: 'isActive' };
                 readonly name: { readonly column: 'name' };
                 readonly openingHours: { readonly column: 'openingHours' };
+                readonly staffHours: { readonly column: 'staffHours' };
                 readonly tenantId: { readonly column: 'tenantId' };
                 readonly timeZone: { readonly column: 'timeZone' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -4244,6 +4285,10 @@ type ContractBase = Omit<
           };
           readonly WebsiteRelease: {
             readonly fields: {
+              readonly changes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -4255,12 +4300,20 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly note: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly publishedAt: {
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
+              };
+              readonly publishedBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly releaseNumber: {
                 readonly nullable: false;
@@ -4323,9 +4376,12 @@ type ContractBase = Omit<
               readonly table: 'WebsiteRelease';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly changes: { readonly column: 'changes' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly note: { readonly column: 'note' };
                 readonly publishedAt: { readonly column: 'publishedAt' };
+                readonly publishedBy: { readonly column: 'publishedBy' };
                 readonly releaseNumber: { readonly column: 'releaseNumber' };
                 readonly snapshot: { readonly column: 'snapshot' };
                 readonly snapshotHash: { readonly column: 'snapshotHash' };

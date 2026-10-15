@@ -1,0 +1,44 @@
+[
+  {
+    "id": "checkConstraint.Website.Website_tenant_is_website_check_34a4fea9",
+    "label": "Add check constraint \"Website_tenant_is_website_check_34a4fea9\" on \"Website\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Website_tenant_is_website_check_34a4fea9",
+        "table": "Website"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Website_tenant_is_website_check_34a4fea9\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_tenant_is_website_check_34a4fea9",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Website_tenant_is_website_check_34a4fea9\"",
+        "sql": "ALTER TABLE \"public\".\"Website\" ADD CONSTRAINT \"Website_tenant_is_website_check_34a4fea9\" CHECK (\"id\" = \"tenantId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Website_tenant_is_website_check_34a4fea9\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Website_tenant_is_website_check_34a4fea9",
+          "public",
+          "\"public\".\"Website\""
+        ]
+      }
+    ]
+  }
+]
