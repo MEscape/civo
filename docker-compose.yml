@@ -11,7 +11,7 @@ services:
     env_file:
       - .env.docker
     volumes:
-      - civo-postgres-data:/var/lib/postgresql
+      - civo-postgres-data:/var/lib/postgresql/data
       - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
@@ -38,6 +38,25 @@ services:
       retries: 5
 
   # -----------------------------
+  # Database Migrations (One-Off)
+  # -----------------------------
+  migrate:
+    profiles: ["production"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    container_name: civo-migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo
+      AUTH_DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo_auth
+      AUTH_DATABASE_NAME: civo_auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # -----------------------------
   # Next.js Production
   # -----------------------------
   app:
@@ -45,6 +64,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
       args:
         NEXT_PUBLIC_APP_URL: http://localhost:3000
     container_name: civo-app
@@ -76,6 +96,8 @@ services:
         condition: service_healthy
       mailhog:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [

@@ -13,6 +13,18 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --no-audit --no-fund
 
+# ---- migrator ----
+# Ephemeral target for running database migrations in Docker Compose / Kubernetes
+# without bloating the final standalone Next.js runtime image.
+FROM base AS migrator
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json prisma.config.ts tsconfig.json ./
+COPY prisma ./prisma
+COPY scripts ./scripts
+USER node
+CMD ["npm", "run", "db:migrate"]
+
 # ---- build ----
 FROM base AS builder
 ARG NEXT_PUBLIC_APP_URL
@@ -25,6 +37,9 @@ ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL} \
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Emit Prisma contract before building Next.js.
+RUN npm run db:generate
 
 # Build-only placeholders.
 # These exist only during this RUN and are not stored in the image.
