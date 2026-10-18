@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@components/ui/button';
+import { PortalContainerContext } from '@components/ui/portal-container';
 
 import { cn } from '@lib/utils';
 
@@ -44,13 +45,12 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const descriptionId = useId();
 
   useEffect(() => {
-    const dialog = dialogRef.current;
     if (dialog === null) {
       return;
     }
@@ -60,11 +60,11 @@ export function ConfirmDialog({
     } else if (!open && dialog.open) {
       dialog.close();
     }
-  }, [open]);
+  }, [open, dialog]);
 
   return (
     <dialog
-      ref={dialogRef}
+      ref={setDialog}
       role={confirmVariant === 'destructive' ? 'alertdialog' : 'dialog'}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
@@ -74,7 +74,7 @@ export function ConfirmDialog({
         onCancel();
       }}
       className={cn(
-        'm-auto w-[calc(100%-2rem)] rounded-token border border-border bg-surface p-6 text-copy backdrop:bg-copy/50',
+        'm-auto w-[calc(100%-2rem)] text-start rounded-token border border-border bg-surface p-6 text-copy backdrop:bg-copy/50',
         size === 'lg' ? 'max-w-lg' : 'max-w-md',
       )}
     >
@@ -84,7 +84,11 @@ export function ConfirmDialog({
       <p id={descriptionId} className="mt-2 text-sm text-copy-muted">
         {description}
       </p>
-      {children !== undefined && <div className="mt-4">{children}</div>}
+      {children !== undefined && (
+        <PortalContainerContext value={dialog}>
+          <div className="mt-4">{children}</div>
+        </PortalContainerContext>
+      )}
       <div
         className={cn(
           'mt-6 flex flex-wrap gap-2',
