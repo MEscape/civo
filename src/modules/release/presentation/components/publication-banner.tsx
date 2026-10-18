@@ -9,6 +9,7 @@ import { getAppFormatters, getTranslations } from '@i18n/server';
 
 import { releaseRoutes } from '../routes';
 
+import { changeCountOf, settingsChangeKeys } from './change-kinds';
 import { PublishButton } from './publish-button';
 
 import type { PublicationStatusView } from '../../application/contracts/release-views';
@@ -44,8 +45,11 @@ export async function PublicationBanner({
   const { live, draft, componentUpdates } = status;
   const isBlocked = draft.blockedPageCount > 0;
   const updates = componentUpdates?.available ?? 0;
-  const names = draft.pageChanges.slice(0, TITLES_SHOWN).map((change) => change.title);
-  const rest = draft.pageChangeCount - names.length;
+  const names = [
+    ...draft.pageChanges.map((change) => change.title),
+    ...settingsChangeKeys(draft).map((key) => t(`publication.settings.${key}`)),
+  ].slice(0, TITLES_SHOWN);
+  const rest = changeCountOf(draft) - names.length;
 
   if (live !== null && !draft.hasChanges) {
     return (
@@ -78,7 +82,7 @@ export async function PublicationBanner({
           <p className="font-heading text-base font-semibold">
             {live === null
               ? t('banner.firstTitle')
-              : t('banner.changesTitle', { count: Math.max(1, draft.pageChangeCount) })}
+              : t('banner.changesTitle', { count: Math.max(1, changeCountOf(draft)) })}
           </p>
           <p className="text-sm text-copy">
             {names.length > 0

@@ -132,7 +132,7 @@ async function PreviewContent({ params, searchParams }: RouteProps) {
   if (page === undefined) {
     notFound();
   }
-  const restored = await restoreStoredPageConfig(page.config);
+  const restored = restoreStoredPageConfig(page.config);
 
   const from = fromPageOf(firstOf(query['from']));
   const number = release.releaseNumber;

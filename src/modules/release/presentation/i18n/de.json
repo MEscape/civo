@@ -3,11 +3,7 @@
     "history": {
       "listLabel": "Release-Verlauf",
       "pagination": {
-        "nav": "Seiten des Release-Verlaufs",
-        "previous": "Zurück",
-        "next": "Weiter",
-        "summary": "{first}–{last} von {total}",
-        "page": "Seite {page}"
+        "nav": "Seiten des Release-Verlaufs"
       },
       "empty": "Noch keine Veröffentlichung. Wählen Sie „Veröffentlichen“, um die aktuellen Seiten live zu schalten.",
       "publish": "Veröffentlichen",
@@ -123,20 +119,18 @@
         "title": "Update-Verlauf",
         "listLabel": "Update-Verlauf",
         "pagination": {
-          "nav": "Seiten des Update-Verlaufs",
-          "previous": "Zurück",
-          "next": "Weiter",
-          "summary": "{first}–{last} von {total}",
-          "page": "Seite {page}"
+          "nav": "Seiten des Update-Verlaufs"
         },
         "empty": "Es wurden noch keine Updates vorgeschlagen.",
         "proposedAt": "Vorgeschlagen: {date}",
         "appliedAt": "Übernommen: {date}",
         "changeCount": "{count, plural, one {# Komponente aktualisiert} other {# Komponenten aktualisiert}}",
-        "detailsToggle": "Details anzeigen",
+        "detailsToggle": "{count, plural, one {Änderungen auf # Seite} other {Änderungen auf # Seiten}}",
         "noNodeChanges": "Keine Komponentenänderungen auf dieser Seite",
-        "versionUnchanged": "(v{version})",
-        "versionChanged": "(v{from} → v{to})"
+        "pageChangeCount": "{count, plural, one {# Änderung} other {# Änderungen}}",
+        "instanceCount": "{count, plural, one {# Verwendung} other {# Verwendungen}}",
+        "versionUnchanged": "v{version}",
+        "versionChanged": "v{from} → v{to}"
       },
       "status": {
         "proposed": "Vorgeschlagen",
@@ -161,10 +155,13 @@
         "removed": "Entfernt"
       },
       "morePages": "+{count} weitere",
-      "websiteChanged": "Website-Angaben geändert",
-      "themeChanged": "Design geändert",
       "blocked": "Veröffentlichen ist blockiert: {count, plural, one {# Seite braucht} other {# Seiten brauchen}} Aufmerksamkeit im Editor.",
-      "allReleases": "Alle Releases"
+      "allReleases": "Alle Releases",
+      "settings": {
+        "website": "Website-Angaben",
+        "theme": "Design",
+        "scope": "ganze Website"
+      }
     },
     "banner": {
       "liveTitle": "Alles veröffentlicht",
@@ -181,15 +178,15 @@
       "changesChip": "{count, plural, one {# Änderung} other {# Änderungen}}",
       "title": "Änderungen veröffentlichen",
       "first": "Das ist Ihr erstes Release. Diese Seiten gehen live:",
-      "pages": "{count, plural, one {Diese Seite geht live:} other {Diese # Seiten gehen live:}}",
-      "settingsOnly": "Nur Einstellungen ändern sich: die Seiten bleiben, wie sie sind.",
       "noteLabel": "Notiz (optional)",
       "notePlaceholder": "z. B. Kontaktdaten aktualisiert",
       "noteHint": "Wird im Release-Verlauf angezeigt. {count} von {max} Zeichen.",
       "info": "Besucher sehen die Änderungen sofort. Sie können jederzeit ein früheres Release wiederherstellen.",
       "confirm": "Als Release #{number} veröffentlichen",
       "cancel": "Abbrechen",
-      "chipLabel": "{count, plural, one {# Änderung} other {# Änderungen}} · Prüfen & veröffentlichen"
+      "chipLabel": "{count, plural, one {# Änderung} other {# Änderungen}} · Prüfen & veröffentlichen",
+      "changes": "{count, plural, one {Diese Änderung geht live:} other {Diese # Änderungen gehen live:}}",
+      "allPublishedShort": "Alles live"
     },
     "table": {
       "release": "Release",
@@ -293,6 +290,16 @@
       "broken": {
         "title": "Diese Seite kann nicht angezeigt werden",
         "description": "Ihr gespeicherter Inhalt hat keine Form mehr, die diese Version lesen kann. Andere Seiten dieses Releases lassen sich möglicherweise noch öffnen."
+      }
+    },
+    "auditEvents": {
+      "release": {
+        "published": "Release veröffentlicht",
+        "rolled_back": "Release wiederhergestellt",
+        "publish_blocked": "Veröffentlichung durch Fehler blockiert",
+        "migration_proposed": "Komponenten-Update vorgeschlagen",
+        "migration_applied": "Komponenten-Update übernommen",
+        "migration_apply_incomplete": "Komponenten-Update teilweise übernommen"
       }
     }
   }

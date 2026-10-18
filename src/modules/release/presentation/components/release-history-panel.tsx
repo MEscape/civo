@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { EmptyState } from '@components/layout/layout-primitives';
 import { DataPanel } from '@components/shared/data-panel';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@components/ui/table';
@@ -22,6 +24,8 @@ export interface ReleaseHistoryPanelProps {
   readonly mayRollback: boolean;
   /** The names of those who published, by actor id. */
   readonly authors: Readonly<Record<string, string>> | null;
+  /** The page links, drawn in the table's footer when there is more than one page. */
+  readonly pagination?: ReactNode;
 }
 
 /**
@@ -36,6 +40,7 @@ export function ReleaseHistoryPanel({
   page,
   mayRollback,
   authors,
+  pagination,
 }: ReleaseHistoryPanelProps) {
   const t = useTranslations('release');
 
@@ -47,7 +52,8 @@ export function ReleaseHistoryPanel({
     <div className="space-y-2">
       <DataPanel
         title={t('table.title')}
-        footer={t('table.count', { shown: history.releases.length, total: history.total })}
+        meta={t('table.count', { shown: history.releases.length, total: history.total })}
+        footer={pagination}
       >
         <Table aria-label={t('history.listLabel')} containerClassName="rounded-none border-0">
           <TableHeader>

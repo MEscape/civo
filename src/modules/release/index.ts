@@ -6,7 +6,7 @@
  */
 
 /** Server-only queries for Server Components. Mutations are reachable through Server Actions only. */
-export { releaseQueries } from './composition';
+export { invalidateRemovedData, releaseQueries } from './composition';
 
 export { HistoryPagination } from './presentation/components/history-pagination';
 export { MigrationPanel } from './presentation/components/migration-panel';

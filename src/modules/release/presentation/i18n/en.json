@@ -3,11 +3,7 @@
     "history": {
       "listLabel": "Release history",
       "pagination": {
-        "nav": "Release pages",
-        "previous": "Previous",
-        "next": "Next",
-        "summary": "{first}–{last} of {total}",
-        "page": "Page {page}"
+        "nav": "Release pages"
       },
       "empty": "No releases published yet. Select “Publish” to put the current pages live.",
       "publish": "Publish",
@@ -123,20 +119,18 @@
         "title": "Update history",
         "listLabel": "Update history",
         "pagination": {
-          "nav": "Update history pages",
-          "previous": "Previous",
-          "next": "Next",
-          "summary": "{first}–{last} of {total}",
-          "page": "Page {page}"
+          "nav": "Update history pages"
         },
         "empty": "No updates have been proposed yet.",
         "proposedAt": "Proposed: {date}",
         "appliedAt": "Applied: {date}",
         "changeCount": "{count, plural, one {# component updated} other {# components updated}}",
-        "detailsToggle": "View details",
+        "detailsToggle": "{count, plural, one {Changes on # page} other {Changes on # pages}}",
         "noNodeChanges": "No component changes on this page",
-        "versionUnchanged": "(v{version})",
-        "versionChanged": "(v{from} → v{to})"
+        "pageChangeCount": "{count, plural, one {# change} other {# changes}}",
+        "instanceCount": "{count, plural, one {# use} other {# uses}}",
+        "versionUnchanged": "v{version}",
+        "versionChanged": "v{from} → v{to}"
       },
       "status": {
         "proposed": "Proposed",
@@ -161,10 +155,13 @@
         "removed": "Removed"
       },
       "morePages": "+{count} more",
-      "websiteChanged": "Website details changed",
-      "themeChanged": "Theme changed",
       "blocked": "Publishing is blocked: {count, plural, one {# page needs} other {# pages need}} attention in the editor.",
-      "allReleases": "All releases"
+      "allReleases": "All releases",
+      "settings": {
+        "website": "Website details",
+        "theme": "Theme",
+        "scope": "whole website"
+      }
     },
     "banner": {
       "liveTitle": "Everything is published",
@@ -181,15 +178,15 @@
       "changesChip": "{count, plural, one {# change} other {# changes}}",
       "title": "Publish changes",
       "first": "This is your first release. These pages go live:",
-      "pages": "{count, plural, one {This page goes live:} other {These # pages go live:}}",
-      "settingsOnly": "Only settings change: the pages stay as they are.",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "e.g. Contact details updated",
       "noteHint": "Shown in the release history. {count} of {max} characters.",
       "info": "Visitors see the changes immediately. You can restore an earlier release at any time.",
       "confirm": "Publish as release #{number}",
       "cancel": "Cancel",
-      "chipLabel": "{count, plural, one {# change} other {# changes}} · Review & publish"
+      "chipLabel": "{count, plural, one {# change} other {# changes}} · Review & publish",
+      "changes": "{count, plural, one {This change goes live:} other {These # changes go live:}}",
+      "allPublishedShort": "All live"
     },
     "table": {
       "release": "Release",
@@ -293,6 +290,16 @@
       "broken": {
         "title": "This page cannot be shown",
         "description": "Its stored content no longer has a shape this version can read. Other pages of this release may still open."
+      }
+    },
+    "auditEvents": {
+      "release": {
+        "published": "Release published",
+        "rolled_back": "Release restored",
+        "publish_blocked": "Publishing blocked by errors",
+        "migration_proposed": "Component update proposed",
+        "migration_applied": "Component update applied",
+        "migration_apply_incomplete": "Component update partly applied"
       }
     }
   }

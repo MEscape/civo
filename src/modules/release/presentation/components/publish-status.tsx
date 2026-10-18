@@ -5,6 +5,7 @@ import type { Locale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
 
+import { changeCountOf } from './change-kinds';
 import { PublishButton } from './publish-button';
 
 import type { PublicationStatusView } from '../../application/contracts/release-views';
@@ -24,13 +25,17 @@ export interface PublishStatusProps {
 export async function PublishStatus({ locale, websiteId, status, mayPublish }: PublishStatusProps) {
   const t = await getTranslations({ locale, namespace: 'release' });
   const { live, draft } = status;
-  const count = Math.max(1, draft.pageChangeCount);
+  const count = Math.max(1, changeCountOf(draft));
 
   if (live !== null && !draft.hasChanges) {
     return (
-      <p role="status" className="flex items-center gap-1.5 text-sm font-medium text-success">
+      <p
+        role="status"
+        className="flex items-center gap-1.5 text-sm font-medium whitespace-nowrap text-success"
+      >
         <Check className="size-4" aria-hidden="true" />
-        {t('publish.allPublished')}
+        <span className="lg:hidden">{t('publish.allPublishedShort')}</span>
+        <span className="hidden lg:inline">{t('publish.allPublished')}</span>
       </p>
     );
   }
@@ -42,6 +47,7 @@ export async function PublishStatus({ locale, websiteId, status, mayPublish }: P
       isFirst={live === null}
       disabled={draft.blockedPageCount > 0}
       label={t('publish.chipLabel', { count })}
+      shortLabel={t('publish.changesChip', { count })}
       variant="outline"
     />
   ) : (

@@ -274,3 +274,8 @@ export interface ApplyMigrationInput {
   readonly migrationId: string;
   readonly resolutions: ConflictResolutionsInput;
 }
+
+/** The live pages that show each dataset, by dataset id; a dataset the live site does not show is absent. */
+export type LiveDatasetUsageView = Readonly<
+  Record<string, ReadonlyArray<{ readonly path: string; readonly title: string }>>
+>;

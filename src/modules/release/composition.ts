@@ -1,12 +1,27 @@
 import 'server-only';
+import { withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
-import { listPagesForRelease, restoreStoredPageConfig, savePageDraft } from '@modules/builder';
+import {
+  builderQueries,
+  datasetUsesInStoredPage,
+  listPagesForRelease,
+  restoreStoredPageConfig,
+  savePageDraft,
+} from '@modules/builder';
 import { componentPlatformQueries } from '@modules/component-platform';
+import {
+  datasetInUse,
+  deleteDataSourceGuarded,
+  deleteDatasetGuarded,
+  invalidateDatasetConsumers,
+  invalidateRemovedDataSource,
+} from '@modules/data-sources';
 import { websiteQueries } from '@modules/website';
 
 import { systemClock } from '@lib/clock';
 
 import { ApplyMigration } from './application/commands/apply-migration';
+import { DeleteUnusedData } from './application/commands/delete-unused-data';
 import { ProposeMigration } from './application/commands/propose-migration';
 import { PublishRelease } from './application/commands/publish-release';
 import { RollbackRelease } from './application/commands/rollback-release';
@@ -15,14 +30,22 @@ import { GetMigration } from './application/queries/get-migration';
 import { GetPublicationStatus } from './application/queries/get-publication-status';
 import { GetPublishedSnapshot } from './application/queries/get-published-snapshot';
 import { GetReleasePreview } from './application/queries/get-release-preview';
+import { ListLiveDatasetUsage } from './application/queries/list-live-dataset-usage';
 import { ListMigrations } from './application/queries/list-migrations';
 import { ListReleases } from './application/queries/list-releases';
 import { ComponentPlatformCatalog } from './infrastructure/component-platform/component-platform-catalog';
-import { loggerReleaseAuditLog } from './infrastructure/logging/logger-release-audit-log';
+import {
+  LEVEL_BY_EVENT,
+  TRAIL_BY_EVENT,
+  loggerReleaseAuditLog,
+} from './infrastructure/logging/logger-release-audit-log';
 import { PrismaMigrationRepository } from './infrastructure/prisma/prisma-migration.repository';
 import { PrismaReleaseRepository } from './infrastructure/prisma/prisma-release.repository';
 import { BuilderPageSource } from './infrastructure/source/builder-page-source';
+import { DataSourcesModuleSource } from './infrastructure/source/data-sources-module-source';
 import { WebsiteModuleSource } from './infrastructure/source/website-module-source';
+
+import type { DataRemoval } from './domain/ports/data-source.port';
 
 /**
  * The module's composition root: the one file that knows both the
@@ -38,11 +61,18 @@ import { WebsiteModuleSource } from './infrastructure/source/website-module-sour
  */
 const releases = new PrismaReleaseRepository();
 
+/** The module's audit port: its log lines, and the trail the website's audit page reads. */
+const auditLog = withAuditTrail(loggerReleaseAuditLog, {
+  source: 'release',
+  levels: LEVEL_BY_EVENT,
+  policy: TRAIL_BY_EVENT,
+});
+
 const dependencies = {
   authorization: getAccessControl(),
   websites: new WebsiteModuleSource((id) => websiteQueries.getWebsiteById.execute(id)),
   releases,
-  audit: loggerReleaseAuditLog,
+  audit: auditLog,
 };
 
 const migrationDependencies = {
@@ -59,6 +89,18 @@ const components = new ComponentPlatformCatalog(
 
 const clock = systemClock;
 
+const dataDependencies = {
+  ...dependencies,
+  data: new DataSourcesModuleSource({
+    usesInStoredPage: datasetUsesInStoredPage,
+    draftUsage: (websiteId) =>
+      builderQueries.listDatasetUsage.execute(websiteId).map((usage) => usage.byDataset),
+    inUse: datasetInUse,
+    deleteDataset: deleteDatasetGuarded,
+    deleteDataSource: deleteDataSourceGuarded,
+  }),
+};
+
 /** Publishing, and reading where a website stands before it, work from the same pages and components. */
 const publishDependencies = { ...dependencies, pages, components, clock };
 
@@ -71,6 +113,7 @@ export const releaseCommands = {
     pages,
     components,
   }),
+  deleteUnusedData: new DeleteUnusedData(dataDependencies),
   applyMigration: new ApplyMigration({
     ...migrationDependencies,
     pages,
@@ -86,4 +129,20 @@ export const releaseQueries = {
   findWebsitesUsingComponent: new FindWebsitesUsingComponent(dependencies),
   listMigrations: new ListMigrations(migrationDependencies),
   getMigration: new GetMigration(migrationDependencies),
+  listLiveDatasetUsage: new ListLiveDatasetUsage(dataDependencies),
 } as const;
+
+/**
+ * Refreshes every screen and cache that showed removed data, through the data
+ * module's own invalidation. Handed to this module's deletion action; also
+ * public, for any route that deletes data through `releaseCommands`.
+ */
+export function invalidateRemovedData(removal: DataRemoval): void {
+  if (removal.dataSourceId === null) {
+    removal.datasetIds.forEach((datasetId) => {
+      invalidateDatasetConsumers(removal.websiteId, datasetId);
+    });
+    return;
+  }
+  invalidateRemovedDataSource(removal.websiteId, removal.dataSourceId, removal.datasetIds);
+}

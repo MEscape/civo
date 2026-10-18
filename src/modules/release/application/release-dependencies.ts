@@ -3,6 +3,7 @@ import type { AuthorizationService } from '@modules/auth';
 import type { Clock } from '@lib/clock';
 
 import type { ComponentCatalog } from '../domain/ports/component-catalog.port';
+import type { DataSourcePort } from '../domain/ports/data-source.port';
 import type { MigrationRepository } from '../domain/ports/migration.repository';
 import type { PageSource } from '../domain/ports/page-source.port';
 import type { ReleaseAuditLog } from '../domain/ports/release-audit-log.port';
@@ -49,4 +50,9 @@ export interface ProposeMigrationDependencies extends MigrationDependencies {
 export interface ApplyMigrationDependencies extends MigrationDependencies {
   readonly pages: PageSource;
   readonly clock: Clock;
+}
+
+/** Deleting data asks the pages and the live release whether they still show it. */
+export interface DeleteUnusedDataDependencies extends ReleaseDependencies {
+  readonly data: DataSourcePort;
 }

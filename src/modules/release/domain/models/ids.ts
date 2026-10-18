@@ -21,10 +21,15 @@ export type MigrationId = Brand<string, 'MigrationId'>;
  */
 export type PageId = Brand<string, 'PageId'>;
 
+/** The release module's own brands for the data module's records, which pages refer to. */
+export type DataSourceId = Brand<string, 'DataSourceId'>;
+export type DatasetId = Brand<string, 'DatasetId'>;
+
 export const RELEASE_ID_MAX_LENGTH = 128;
 export const WEBSITE_ID_MAX_LENGTH = 128;
 export const MIGRATION_ID_MAX_LENGTH = 128;
 export const PAGE_ID_MAX_LENGTH = 128;
+export const DATA_ID_MAX_LENGTH = 128;
 
 function hasValidLength(raw: string, max: number): boolean {
   return raw.length > 0 && raw.length <= max;
@@ -41,6 +46,16 @@ export function toReleaseId(raw: string): ReleaseId {
 /** Brands a website id read from storage or from another module's adapter. */
 export function toWebsiteId(raw: string): WebsiteId {
   return raw as WebsiteId; // Brand constructor: the cast is only permitted here.
+}
+
+/** Brands a data source id read from another module's adapter. */
+export function toDataSourceId(raw: string): DataSourceId {
+  return raw as DataSourceId; // Brand constructor: the cast is only permitted here.
+}
+
+/** Brands a dataset id read from stored page JSON or from another module's adapter. */
+export function toDatasetId(raw: string): DatasetId {
+  return raw as DatasetId; // Brand constructor: the cast is only permitted here.
 }
 
 /** Brands a migration id read from storage. */
@@ -79,4 +94,18 @@ export const parsePageId = createIdParser({
   isValid: (raw: string) => hasValidLength(raw, PAGE_ID_MAX_LENGTH),
   brand: toPageId,
   mapError: () => fieldValidationFailed('pageId', RELEASE_VALIDATION_CODES.idInvalid),
+});
+
+/** A dataset id from a request; the data module re-validates and resolves it. */
+export const parseDatasetId = createIdParser({
+  isValid: (raw: string) => hasValidLength(raw, DATA_ID_MAX_LENGTH),
+  brand: toDatasetId,
+  mapError: () => fieldValidationFailed('id', RELEASE_VALIDATION_CODES.idInvalid),
+});
+
+/** A data source id from a request; the data module re-validates and resolves it. */
+export const parseDataSourceId = createIdParser({
+  isValid: (raw: string) => hasValidLength(raw, DATA_ID_MAX_LENGTH),
+  brand: toDataSourceId,
+  mapError: () => fieldValidationFailed('id', RELEASE_VALIDATION_CODES.idInvalid),
 });

@@ -8,4 +8,5 @@
 export { toMigrationHistoryDto } from './presentation/dto/migration-history-dto';
 export { toReleaseHistoryDto } from './presentation/dto/release-history-dto';
 
+export { deleteUnusedDataAction } from './presentation/actions/delete-unused-data-action';
 export { releaseRoutes } from './presentation/routes';

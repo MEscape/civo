@@ -4,7 +4,6 @@ import { useId, useState, useTransition } from 'react';
 
 import { ConfirmDialog } from '@components/shared/confirm-dialog';
 import { FieldMessage } from '@components/shared/field-message';
-import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Label, Textarea } from '@components/ui/input';
 
@@ -17,8 +16,8 @@ import { RELEASE_NOTE_MAX_LENGTH } from '../../application/contracts/release-con
 import { publishReleaseAction } from '../actions/publish-release-action';
 import { messageKeyForCode } from '../messages/message-keys';
 
-import { CHANGE_KIND_KEYS, CHANGE_KIND_VARIANTS } from './change-kinds';
-import { PagePathLabel } from './page-path-label';
+import { changeCountOf } from './change-kinds';
+import { ChangeList, describe } from './publish-change-list';
 
 import type { PublicationStatusView } from '../../application/contracts/release-views';
 
@@ -34,47 +33,9 @@ export interface PublishButtonProps {
   readonly disabled?: boolean;
   /** What the button says; "Review & publish" when left out. */
   readonly label?: string;
+  /** What it says on a narrow screen instead, where the bar has little room. */
+  readonly shortLabel?: string;
   readonly variant?: 'default' | 'outline';
-}
-
-type Translator = ReturnType<typeof useTranslations<'release'>>;
-
-/** What the question says is about to happen. */
-function describe(draft: PublishButtonProps['draft'], isFirst: boolean, t: Translator): string {
-  if (draft.pageChangeCount === 0) {
-    return t('publish.settingsOnly');
-  }
-  return isFirst ? t('publish.first') : t('publish.pages', { count: draft.pageChangeCount });
-}
-
-function ChangeList({ draft }: { readonly draft: PublishButtonProps['draft'] }) {
-  const t = useTranslations('release');
-  const hidden = draft.pageChangeCount - draft.pageChanges.length;
-
-  return (
-    <ul className="divide-y divide-border rounded-token border border-border">
-      {draft.pageChanges.map((change) => (
-        <li key={change.path} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-          <span className="min-w-0 truncate">
-            <span className="font-medium text-copy">{change.title}</span>
-            {change.path !== '' && (
-              <span className="ml-2 text-xs text-copy-muted">
-                <PagePathLabel path={change.path} />
-              </span>
-            )}
-          </span>
-          <Badge variant={CHANGE_KIND_VARIANTS[change.kind]} className="shrink-0">
-            {t(CHANGE_KIND_KEYS[change.kind])}
-          </Badge>
-        </li>
-      ))}
-      {hidden > 0 && (
-        <li className="px-3 py-2 text-xs text-copy-muted">
-          {t('publication.morePages', { count: hidden })}
-        </li>
-      )}
-    </ul>
-  );
 }
 
 /**
@@ -90,6 +51,7 @@ export function PublishButton({
   isFirst,
   disabled = false,
   label,
+  shortLabel,
   variant = 'default',
 }: PublishButtonProps) {
   const t = useTranslations('release');
@@ -126,7 +88,14 @@ export function PublishButton({
           setIsOpen(true);
         }}
       >
-        {label ?? t('publish.review')}
+        {shortLabel === undefined ? (
+          (label ?? t('publish.review'))
+        ) : (
+          <>
+            <span className="lg:hidden">{shortLabel}</span>
+            <span className="hidden lg:inline">{label ?? t('publish.review')}</span>
+          </>
+        )}
       </Button>
       {publishedNumber !== null && (
         <p role="status" className="text-xs text-success">
@@ -152,13 +121,7 @@ export function PublishButton({
         }}
       >
         <div className="space-y-4">
-          {draft.pageChanges.length > 0 && <ChangeList draft={draft} />}
-          {!isFirst && (draft.websiteChanged || draft.themeChanged) && (
-            <ul className="space-y-0.5 text-sm text-copy-muted">
-              {draft.websiteChanged && <li>{t('publication.websiteChanged')}</li>}
-              {draft.themeChanged && <li>{t('publication.themeChanged')}</li>}
-            </ul>
-          )}
+          {changeCountOf(draft) > 0 && <ChangeList draft={draft} isFirst={isFirst} />}
 
           <div className="space-y-1.5">
             <Label htmlFor={`${id}-note`}>{t('publish.noteLabel')}</Label>
