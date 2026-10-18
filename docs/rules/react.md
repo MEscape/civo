@@ -15,3 +15,4 @@
 - Components must expose accessible names and states. See [`accessibility.md`](accessibility.md).
 - Prefer composition over deeply configurable components.
 - Component naming follows [`naming.md`](naming.md).
+- A form that edits stored data protects unsaved work: it reports to an `UnsavedChangesGuard` (`useReportUnsavedChanges`) or uses `useUnsavedNavigationGuard` with `useBeforeUnloadGuard`. A form with nothing worth keeping (sign-in, a single field) says so with `@unsaved-work none <reason>`; lint checks `react-hook-form` forms in module components.

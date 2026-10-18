@@ -58,6 +58,7 @@ Allowed direction:
 - Shared UI must not import business modules.
 - Modules must not import another module's infrastructure.
 - Framework entry points may depend on application and presentation APIs.
+- Framework entry points (`src/app`) are the application's composition boundary and may import any module's public API.
 - Runtime calls into another module happen only in the module's `composition.ts` and in infrastructure adapters that implement the module's own domain ports.
 - Domain and application may `import type` from another module's public API; at runtime they may call only the pure functions the architecture policy lists (`CROSS_MODULE_RUNTIME_ALLOW`).
 - Presentation may import another module's browser-safe API (`client.ts`: routes, vocabulary, Server Actions) or its types; another module's server-side parts are handed in by `composition.ts`.
@@ -90,8 +91,8 @@ Allowed direction:
 - `composition.ts` is the module's composition root: the only file that knows both use cases and adapters, and the only place another module is wired in.
 - `index.ts` exposes the module's intentional server-side public API; `client.ts` exposes the browser-safe part. Nothing else in a module is a barrel file.
 - Internal implementation details must not be exported from the module public API; re-export named members, never `export *`.
-- A module that refers to another module's aggregate declares its own branded reference id under the same brand name (for example `WebsiteId`) instead of importing the owner's.
-- Every use case is protected by default; a `public` or `system` use case carries an `@authorization <category> <reason>` tag.
+- A module that refers to another module's aggregate declares its own branded reference id under the same brand name (for example `WebsiteId`) instead of importing the owner's. Values cross without mapping, the modules share no types, and no cycle appears.
+- Every use case is protected by default; a `public` or `system` use case carries an `@authorization <category> <reason>` tag, and the reviewed list lives in the architecture tests.
 
 ---
 
@@ -114,17 +115,18 @@ Allowed direction:
 - Route Handlers exist only for actual HTTP consumers.
 - Use `proxy.ts` only for request-level concerns.
 - Do not put business authorization rules in `proxy.ts`.
-- Use `loading.tsx` for meaningful route loading states.
-- Use `error.tsx` for unexpected route-level failures; it shows translated generic text, never `error.message`. `global-error.tsx` covers the locale layout.
+- Use `loading.tsx` for meaningful route loading states. A page that streams per-request data puts its `loading.tsx` in its OWN segment (or wraps the data in `<Suspense>` inside the page): a client navigation re-renders only the segments below the one that changed, so a boundary in a parent route group cannot catch the page's load and Cache Components reports "uncached data during prerendering or a navigation".
+- Use `error.tsx` for unexpected route-level failures; it shows translated generic text, never `error.message`, and renders through the shared `RouteErrorPanel` and `NotFoundPanel`. `global-error.tsx` covers failures of the locale layout.
 - Use `not-found.tsx` or `notFound()` for missing resources.
 - Use Suspense boundaries for independently streamable UI.
 - Use async request APIs such as `params`, `searchParams`, `cookies`, and `headers`.
 - Use Next.js navigation primitives instead of raw equivalents where applicable.
-- Use route metadata APIs for page metadata, through the builders in `@lib/seo`; private and single-use-link pages are `noindex`.
-- `robots.ts`, `sitemap.ts` and `manifest.ts` are the only sources of those files.
-- With `cacheComponents`, route segment options such as `dynamic` are rejected; make a handler per-request with `connection()`.
+- Use route metadata APIs for page metadata, through the builders in `@lib/seo`: localized pages declare canonical and language alternates, untranslated content one canonical URL, and private or single-use-link pages `noindex`.
+- `robots.ts`, `sitemap.ts` and `manifest.ts` are the only sources of those files; private areas are excluded in `robots.ts` and marked `noindex`.
+- With `cacheComponents`, route segment options such as `dynamic` and `runtime` are rejected (every route runs on Node.js); make a handler per-request with `connection()`.
 - Keep Node-only dependencies out of Edge-compatible code.
-- Declare runtime requirements explicitly when they matter.
+- Declare runtime requirements explicitly when they matter, except where the framework forbids it.
+- `'use server'` appears only in a module's `presentation/actions`, because every such function is a public endpoint. Pages, layouts and route files stay Server Components; the interactive part is a small `'use client'` component they render. Lint enforces both.
 
 ---
 
@@ -144,6 +146,7 @@ Allowed direction:
 - Use memoization only when it solves a demonstrated performance problem or is required by an API.
 - Components must expose accessible names and states.
 - Prefer composition over deeply configurable components.
+- A form that edits stored data protects unsaved work: it reports to an `UnsavedChangesGuard` (`useReportUnsavedChanges`) or uses `useUnsavedNavigationGuard` with `useBeforeUnloadGuard`. A form with nothing worth keeping (sign-in, a single field) says so with `@unsaved-work none <reason>`; lint checks `react-hook-form` forms in module components.
 
 ---
 
@@ -254,8 +257,6 @@ Allowed direction:
 - Authenticate every protected operation.
 - Authorize every protected use case.
 - Never rely on UI visibility for authorization.
-- A tenant is its website. An actor's tenant comes from their memberships (the platform administrator's from the address, set by `proxy.ts`), never from a value the client controls; only the platform administrator is not tenant-scoped.
-- Screens draw only what the actor can use, and learn it from the one per-request access object (`getWebsiteAccess()`), never from a role name or a permission list of their own. Code asks for permissions, never for roles; the role table is the only place that maps one to the other.
 - Server Actions must enforce authorization independently.
 - Never expose secrets to Client Components.
 - Never log credentials, tokens, session secrets, or sensitive personal data.
@@ -268,6 +269,7 @@ Allowed direction:
 - Use secure, `HttpOnly`, `SameSite` cookies for sessions.
 - Set standard security headers, including CSP, `X-Content-Type-Options`, `Referrer-Policy`, and frame protections.
 - Never render untrusted content as raw HTML; sanitize it first if unavoidable.
+- `dangerouslySetInnerHTML` is rejected by lint; if sanitized HTML is unavoidable, disable the rule on that line and say how it is sanitized.
 - Prefer allowlists over blocklists for security-sensitive decisions.
 
 ---
@@ -402,7 +404,7 @@ Allowed direction:
 - One catalog per locale is assembled in `src/i18n/locales/<locale>.ts`; namespaces are never merged into each other.
 - A module's message map points only at keys of its own namespace, including its fallback error texts.
 - Format dates and numbers through `getAppFormatters` / `useAppFormatters`; never pass a locale to `@lib/utils` from a component, build an `Intl` formatter, or call `toLocale*String` (lint enforces it).
-- Every locale has exactly the keys and ICU arguments of the default locale (`npm run i18n:check`).
+- Every locale has exactly the keys and ICU arguments of the default locale, and no text is empty (`npm run i18n:check`).
 - Product names are brands and are not translated.
 - Domain errors use stable error codes; presentation maps them to translations.
 
@@ -471,8 +473,8 @@ Allowed direction:
 - Include request/correlation identifiers where available.
 - Record important application failures with sufficient context.
 - Instrument external integrations and important persistence operations.
-- Audit events are built with `createAuditLog('<module>.audit', LEVEL_BY_EVENT)` from `@lib/logger`; the module owns the event types and their levels.
-- A module's `TRAIL_BY_EVENT` (`AuditTrailPolicy`) decides which of its events the website's durable audit trail keeps; `composition.ts` wraps the log with `withAuditTrail` from `@modules/audit`. Events hold ids, counts and codes only.
+- Audit events are built with `createAuditLog('<module>.audit', LEVEL_BY_EVENT)` from `@lib/logger`; the module owns the event types and their levels, and a new event type does not compile until it has one.
+- A module's `TRAIL_BY_EVENT` (`satisfies AuditTrailPolicy<…>` from `@modules/audit`) decides which of its events the website's durable audit trail keeps, and who causes the ones that name no actor (`visitor`, `system`), or `false` for noise that stays in the logs. `composition.ts` wraps the log with `withAuditTrail`. Events carry ids, counts and codes only, never content or personal data.
 - Use log levels consistently:
   - `error` for unexpected failures
   - `warn` for recoverable anomalies
@@ -550,7 +552,13 @@ docs/conventions/
 └── fixing-a-bug.md
 ```
 
-The split files are organized by responsibility. `AI_RULES.md` exists so an AI assistant can receive the complete engineering rules with one copy/paste.
+Other documentation:
+
+- `docs/architecture/`: how the larger subsystems work (audit, booking, component platform, i18n, map, pagination, release, route protection).
+- `docs/agents/`: review-agent specifications.
+- `src/lib/README.md` and `src/components/README.md`: indexes of the shared code.
+
+The split files are organized by responsibility. `AI_RULES.md` exists so an AI assistant can receive the complete engineering rules with one copy/paste; when it differs from `docs/rules/`, the split files win and this file must be corrected.
 
 ---
 

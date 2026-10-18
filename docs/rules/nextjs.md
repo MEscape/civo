@@ -29,3 +29,4 @@
 - With `cacheComponents`, route segment options such as `dynamic` are rejected; make a handler per-request with `connection()`.
 - Keep Node-only dependencies out of Edge-compatible code.
 - Declare runtime requirements explicitly when they matter, except where the framework forbids it: with `cacheComponents` the `runtime` segment option is rejected and every route runs on Node.js.
+- `'use server'` appears only in a module's `presentation/actions`, because every such function is a public endpoint. Pages, layouts and route files stay Server Components; the interactive part is a small `'use client'` component they render. Lint enforces both.

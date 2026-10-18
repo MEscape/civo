@@ -16,3 +16,4 @@
 - Set standard security headers (CSP, `X-Content-Type-Options`, `Referrer-Policy`, frame protections).
 - Never render untrusted content as raw HTML; sanitize it first if unavoidable.
 - Prefer allowlists over blocklists for security-sensitive decisions.
+- `dangerouslySetInnerHTML` is rejected by lint; if sanitized HTML is unavoidable, disable the rule on that line and say how it is sanitized.
