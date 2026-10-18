@@ -35,7 +35,8 @@ export async function BookingBlock({
   const heading = trimToNull(props.heading) ?? t('booking.defaultHeading');
 
   return (
-    <Section>
+    // The anchor of the e-mail links: they open the page that holds the booking, at the booking.
+    <Section id="booking">
       <Container>
         <SectionHeading>{heading}</SectionHeading>
         <BookingSection

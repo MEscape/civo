@@ -46,6 +46,8 @@ export interface ComponentDefinition<TProps extends object = object> {
   readonly municipalFields: readonly string[];
   /** Whether the component is offered in the municipality editor's palette. */
   readonly municipallyEditable: boolean;
+  /** At most one on a page. */
+  readonly isSingleton: boolean;
   readonly dataBinding: { readonly canonicalKind: ContentKind } | null;
   readonly dependsOnContracts: readonly ContractDependency[];
   /** Props of a freshly inserted node. Derived from the prop fields, so defaults are written once. */

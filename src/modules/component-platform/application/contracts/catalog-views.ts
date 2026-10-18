@@ -75,6 +75,7 @@ export interface ComponentCatalogEntry {
   readonly fields: readonly CatalogFieldView[];
   readonly municipalFields: readonly string[];
   readonly municipallyEditable: boolean;
+  readonly isSingleton: boolean;
   readonly dependsOnContracts: readonly CatalogContractView[];
   /** What a freshly inserted node looks like. The builder adds the id. */
   readonly blueprint: {

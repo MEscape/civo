@@ -26,6 +26,8 @@ export interface ComponentSpec<TType extends string, P extends PropSet> {
   readonly category: ComponentCategory;
   readonly props: P;
   readonly municipallyEditable?: boolean;
+  /** At most one on a page: a page holds the one place a visitor books, a link can lead to. */
+  readonly isSingleton?: boolean;
   readonly canHaveChildren?: boolean;
   readonly acceptsChildTypes?: readonly string[];
   /**
@@ -106,6 +108,7 @@ export function defineComponent<const TType extends string, P extends PropSet>(
     fields: entries.map(([key, field]) => toFieldDefinition(key, field)),
     municipalFields: entries.filter(([, field]) => field.municipal).map(([key]) => key),
     municipallyEditable: spec.municipallyEditable ?? false,
+    isSingleton: spec.isSingleton ?? false,
     dataBinding: binding === undefined ? null : { canonicalKind: binding.kind },
     dependsOnContracts,
     defaultProps: withoutUndefined(restoreProps(spec.props, {})),

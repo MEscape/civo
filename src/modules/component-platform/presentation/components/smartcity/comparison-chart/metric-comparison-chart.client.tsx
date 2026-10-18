@@ -17,7 +17,7 @@ import {
   CHART_COLORS,
   CHART_SERIES_COLORS,
   TOOLTIP_STYLE,
-} from '../support/chart-theme';
+} from '@components/ui/chart-theme';
 
 export interface ComparisonDatum {
   readonly label: string;

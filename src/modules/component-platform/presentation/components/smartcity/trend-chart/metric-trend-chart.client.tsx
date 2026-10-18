@@ -12,9 +12,9 @@ import {
   YAxis,
 } from 'recharts';
 
-import { useAppFormatters } from '@i18n/client';
+import { AXIS_FONT_SIZE, CHART_COLORS, TOOLTIP_STYLE } from '@components/ui/chart-theme';
 
-import { AXIS_FONT_SIZE, CHART_COLORS, TOOLTIP_STYLE } from '../support/chart-theme';
+import { useAppFormatters } from '@i18n/client';
 
 const DATE_FORMAT = { day: '2-digit', month: 'short' } as const;
 

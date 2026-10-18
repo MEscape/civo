@@ -2,9 +2,9 @@
 
 import { RadialBar, RadialBarChart, ResponsiveContainer } from 'recharts';
 
-import { useAppFormatters } from '@i18n/client';
+import { CHART_COLORS } from '@components/ui/chart-theme';
 
-import { CHART_COLORS } from '../support/chart-theme';
+import { useAppFormatters } from '@i18n/client';
 
 const MAX_PERCENT = 100;
 

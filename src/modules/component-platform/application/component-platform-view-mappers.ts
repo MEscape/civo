@@ -91,6 +91,7 @@ export function toCatalogEntry(definition: ComponentDefinition): ComponentCatalo
     fields: definition.fields.map((field) => toFieldView(definition, field)),
     municipalFields: definition.municipalFields,
     municipallyEditable: definition.municipallyEditable,
+    isSingleton: definition.isSingleton,
     dependsOnContracts: definition.dependsOnContracts,
     blueprint: { type: definition.type, props: definition.defaultProps },
   };

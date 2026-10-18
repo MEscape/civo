@@ -16,6 +16,7 @@ export const bookingDefinition = defineComponent({
   type: 'booking',
   category: 'civic',
   municipallyEditable: true,
+  isSingleton: true,
   props: {
     heading: prop.text(PROP_LIMITS.heading, {
       group: 'content',

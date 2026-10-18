@@ -2,9 +2,14 @@
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { useAppFormatters } from '@i18n/client';
+import {
+  AXIS_FONT_SIZE,
+  BAR_RADIUS,
+  CHART_COLORS,
+  TOOLTIP_STYLE,
+} from '@components/ui/chart-theme';
 
-import { AXIS_FONT_SIZE, BAR_RADIUS, CHART_COLORS, TOOLTIP_STYLE } from '../support/chart-theme';
+import { useAppFormatters } from '@i18n/client';
 
 export interface MetricChartDatum {
   readonly label: string;
