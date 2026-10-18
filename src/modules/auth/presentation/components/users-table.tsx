@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { EmptyState } from '@components/layout/layout-primitives';
 import { DataPanel } from '@components/shared/data-panel';
 import { Badge } from '@components/ui/badge';
-import { ChevronDown, ChevronUp, Search } from '@components/ui/icons';
+import { Search } from '@components/ui/icons';
 import {
   Table,
   TableBody,
@@ -13,8 +13,6 @@ import {
   TableRow,
 } from '@components/ui/table';
 
-import { Link } from '@i18n';
-
 import { getAppFormatters, getTranslations } from '@i18n/server';
 
 import type { SortSpec } from '@lib/pagination';
@@ -23,6 +21,7 @@ import { toUserRowDto } from '../dto/user-dto';
 import { ROLE_MESSAGE_KEYS } from '../messages/message-keys';
 
 import { UserRowActions } from './user-row-actions.client';
+import { SortLink, UserAvatar, ariaSortOf } from './user-table-parts';
 
 import type { UserSortField } from '../../application/contracts/auth-constraints';
 import type { UserView } from '../../application/contracts/user-views';
@@ -40,50 +39,6 @@ export interface UsersTableProps {
   readonly toolbar?: ReactNode;
   /** The page links, drawn in the panel's footer. */
   readonly pagination?: ReactNode;
-}
-
-type AriaSort = 'ascending' | 'descending' | undefined;
-
-function ariaSortOf(sort: SortSpec<UserSortField>, field: UserSortField): AriaSort {
-  if (sort.field !== field) {
-    return undefined;
-  }
-  return sort.direction === 'asc' ? 'ascending' : 'descending';
-}
-
-/** Up to two letters of a name, for the avatar circle. */
-function initialsOf(name: string): string {
-  const words = name.trim().split(/\s+/u).filter(Boolean);
-  const letters = words.length > 1 ? [words[0], words.at(-1)] : [words[0]?.slice(0, 2)];
-  return letters
-    .map((word) => word?.[0] ?? '')
-    .join('')
-    .toUpperCase();
-}
-
-/** A column heading that sorts by its field; the arrow shows the current direction. */
-function SortLink({
-  href,
-  label,
-  direction,
-}: {
-  readonly href: string;
-  readonly label: string;
-  readonly direction: AriaSort;
-}) {
-  const Arrow = direction === 'descending' ? ChevronDown : ChevronUp;
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1 rounded-sm hover:text-copy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-    >
-      {label}
-      <Arrow
-        className={direction === undefined ? 'size-3.5 opacity-0' : 'size-3.5'}
-        aria-hidden="true"
-      />
-    </Link>
-  );
 }
 
 /** The member rows. Management controls are drawn only for people who may use them. */
@@ -152,12 +107,7 @@ export async function UsersTable({
                 <TableRow key={row.id} className="align-top">
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <span
-                        aria-hidden="true"
-                        className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-canvas text-xs font-semibold text-copy-muted"
-                      >
-                        {initialsOf(row.name)}
-                      </span>
+                      <UserAvatar name={row.name} />
                       <div className="min-w-0">
                         <p className="flex flex-wrap items-center gap-1.5 font-medium text-copy">
                           {row.name}

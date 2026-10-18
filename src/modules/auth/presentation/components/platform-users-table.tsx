@@ -15,13 +15,17 @@ import {
 
 import { Link } from '@i18n';
 
-import { getTranslations } from '@i18n/server';
+import { getAppFormatters, getTranslations } from '@i18n/server';
+
+import type { SortSpec } from '@lib/pagination';
 
 import { ROLE_MESSAGE_KEYS } from '../messages/message-keys';
 
 import { UserAccessEditor } from './user-access-editor.client';
+import { SortLink, UserAvatar, ariaSortOf } from './user-table-parts';
 
 import type { AccessWebsite } from './user-access-editor.client';
+import type { UserSortField } from '../../application/contracts/auth-constraints';
 import type { PlatformUserView } from '../../application/contracts/user-views';
 
 /** How many websites a row names before it says "+3 more". */
@@ -31,6 +35,9 @@ export interface PlatformUsersTableProps {
   readonly users: readonly PlatformUserView[];
   readonly selfId: string;
   readonly total: number;
+  readonly sort: SortSpec<UserSortField>;
+  /** The address that sorts by `field` (flipping the direction when it is the current one). */
+  readonly sortHref: (field: UserSortField) => string;
   readonly websites: readonly AccessWebsite[];
   /** Where a website's own people are managed; the website module owns that address. */
   readonly websiteUsersHref: (websiteId: string) => string;
@@ -44,12 +51,14 @@ export async function PlatformUsersTable({
   users,
   selfId,
   total,
+  sort,
+  sortHref,
   websites,
   websiteUsersHref,
   toolbar,
   pagination,
 }: PlatformUsersTableProps) {
-  const t = await getTranslations('auth');
+  const [t, formats] = await Promise.all([getTranslations('auth'), getAppFormatters()]);
   const nameOf = (id: string) => websites.find((website) => website.id === id)?.name ?? id;
 
   return (
@@ -69,8 +78,28 @@ export async function PlatformUsersTable({
         <Table containerClassName="rounded-none border-0">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead>{t('platformUsers.table.person')}</TableHead>
+              <TableHead aria-sort={ariaSortOf(sort, 'name')}>
+                <SortLink
+                  href={sortHref('name')}
+                  label={t('users.table.name')}
+                  direction={ariaSortOf(sort, 'name')}
+                />
+              </TableHead>
+              <TableHead aria-sort={ariaSortOf(sort, 'email')} className="hidden md:table-cell">
+                <SortLink
+                  href={sortHref('email')}
+                  label={t('users.table.email')}
+                  direction={ariaSortOf(sort, 'email')}
+                />
+              </TableHead>
               <TableHead>{t('platformUsers.table.access')}</TableHead>
+              <TableHead aria-sort={ariaSortOf(sort, 'createdAt')} className="hidden sm:table-cell">
+                <SortLink
+                  href={sortHref('createdAt')}
+                  label={t('users.table.since')}
+                  direction={ariaSortOf(sort, 'createdAt')}
+                />
+              </TableHead>
               <TableHead>
                 <span className="sr-only">{t('users.table.actions')}</span>
               </TableHead>
@@ -83,21 +112,37 @@ export async function PlatformUsersTable({
               return (
                 <TableRow key={user.id} className="align-top">
                   <TableCell>
-                    <p className="flex flex-wrap items-center gap-1.5 font-medium text-copy">
-                      {user.name}
-                      {user.id === selfId && (
-                        <Badge variant="muted">{t('platformUsers.table.you')}</Badge>
-                      )}
-                      {user.isPlatformAdmin && (
-                        <Badge variant="default">{t('platformUsers.table.platformAdmin')}</Badge>
-                      )}
-                    </p>
-                    <p className="flex flex-wrap items-center gap-1.5 text-xs text-copy-muted">
-                      <span className="break-all">{user.email}</span>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar name={user.name} />
+                      <div className="min-w-0">
+                        <p className="flex flex-wrap items-center gap-1.5 font-medium text-copy">
+                          {user.name}
+                          {user.id === selfId && (
+                            <Badge variant="muted">{t('platformUsers.table.you')}</Badge>
+                          )}
+                          {user.isPlatformAdmin && (
+                            <Badge variant="default">
+                              {t('platformUsers.table.platformAdmin')}
+                            </Badge>
+                          )}
+                        </p>
+                        {/* Below md the email column folds into the name cell. */}
+                        <p className="flex flex-wrap items-center gap-1.5 text-xs text-copy-muted md:hidden">
+                          <span className="break-all">{user.email}</span>
+                          {!user.emailVerified && (
+                            <Badge variant="warning">{t('users.table.unverified')}</Badge>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden text-copy-muted md:table-cell">
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      {user.email}
                       {!user.emailVerified && (
                         <Badge variant="warning">{t('users.table.unverified')}</Badge>
                       )}
-                    </p>
+                    </span>
                   </TableCell>
                   <TableCell>
                     {shown.length === 0 ? (
@@ -133,6 +178,9 @@ export async function PlatformUsersTable({
                         )}
                       </ul>
                     )}
+                  </TableCell>
+                  <TableCell className="hidden whitespace-nowrap text-copy-muted sm:table-cell">
+                    {formats.date(user.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
                     {user.id !== selfId && (

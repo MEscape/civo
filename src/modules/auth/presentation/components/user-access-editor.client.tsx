@@ -7,7 +7,7 @@ import { FieldMessage } from '@components/shared/field-message';
 import { SelectField } from '@components/shared/select-field';
 import { Alert } from '@components/ui/alert';
 import { Button } from '@components/ui/button';
-import { Info, Settings } from '@components/ui/icons';
+import { Info, Pencil } from '@components/ui/icons';
 
 import { useTranslations } from '@i18n/client';
 
@@ -157,7 +157,7 @@ export function UserAccessEditor({
   return (
     <>
       <Button type="button" variant="ghost" size="sm" onClick={open}>
-        <Settings className="size-3.5" aria-hidden="true" />
+        <Pencil className="size-3.5" aria-hidden="true" />
         {t('platformUsers.table.manage')}
         <span className="sr-only"> {userName}</span>
       </Button>

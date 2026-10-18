@@ -82,16 +82,21 @@ export async function PlatformUsersAdministration({
   }
 
   const { users, isTruncated, selfId } = listing.value;
-  const hrefFor = (target: number) =>
+  const hrefFor = (target: number, nextSort: SortSpec<UserSortField> = sort) =>
     `${pathname}${buildQueryString({
       q: text ?? undefined,
       website: websiteId ?? undefined,
       role: role ?? undefined,
       kind: onlyAdmins ? 'admins' : undefined,
       pageSize: page.pageSize,
-      sort: formatSort(sort),
+      sort: formatSort(nextSort),
       page: target === 1 ? undefined : target,
     })}`;
+  const sortHref = (field: UserSortField) =>
+    hrefFor(1, {
+      field,
+      direction: sort.field === field && sort.direction === 'asc' ? 'desc' : 'asc',
+    });
 
   return (
     <I18nProvider locale={locale} namespaces={['auth']}>
@@ -105,6 +110,8 @@ export async function PlatformUsersAdministration({
           users={users.items}
           selfId={selfId}
           total={users.total}
+          sort={sort}
+          sortHref={sortHref}
           websites={websites}
           websiteUsersHref={websiteUsersHref}
           toolbar={

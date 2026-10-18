@@ -301,7 +301,6 @@
       "table": {
         "title": "People",
         "count": "{count, plural, one {# person} other {# people}}",
-        "person": "Person",
         "access": "Access",
         "empty": "No one matches these filters.",
         "noAccess": "No website yet",
