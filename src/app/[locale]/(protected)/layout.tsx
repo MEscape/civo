@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { isAuthEnabled, requireSignedIn, SignOutButton } from '@modules/auth';
 import { websiteRoutes } from '@modules/website';
 
-import { AppNav } from '@components/layout/app-nav';
+import { AppBrand } from '@components/brand/app-brand';
 import { AppHeader, PageShell } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
 import { PageSkeleton } from '@components/shared/page-skeleton';
@@ -33,10 +33,9 @@ async function ProtectedHeader({ locale }: { readonly locale: Locale }) {
 
   return (
     <AppHeader className="justify-between gap-4">
-      <AppNav
-        variant="header"
-        label={app('navigation.label')}
-        links={[{ href: websiteRoutes.list(), label: APP_IDENTITY.name, isBrand: true }]}
+      <AppBrand
+        href={websiteRoutes.list()}
+        byline={app('brand.byline', { company: APP_IDENTITY.company })}
       />
       {isAuthEnabled && (
         <I18nProvider locale={locale} namespaces={['auth']}>

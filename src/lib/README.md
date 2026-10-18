@@ -103,6 +103,7 @@ Wrapper around `neverthrow` to enforce Railway Oriented Programming.
   - `toActionResult<T, E extends AppError>(result: AppResult<T, E>): ActionResult<T>`
   - `isActionSuccess<T>(result: ActionResult<T>): result is { ok: true; data: T }`
   - `createIdParser<T, E>(config: IdParserConfig<T, E>): (raw: string) => AppResult<T, E>`: Builds a module's branded id parser for request values.
+  - `parseValidIds<T>(raw, parse, limit): T[]`: The ids of a lookup by id: those that parse, each once, at most `limit`; malformed ones are dropped.
 
 ### `@lib/actions` (Server Actions)
 

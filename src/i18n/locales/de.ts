@@ -1,3 +1,4 @@
+import { deAudit as audit } from '@modules/audit';
 import { deAuth as auth } from '@modules/auth';
 import { deBooking as booking } from '@modules/booking';
 import { deBuilder as builder } from '@modules/builder';
@@ -16,6 +17,7 @@ import deApp from '../de.json';
  */
 const messages = {
   app: deApp,
+  audit: audit.audit,
   auth: auth.auth,
   booking: booking.booking,
   builder: builder.builder,

@@ -8,6 +8,7 @@ Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/ap
 
 - **Primitives:** Accordion, Alert, Badge (`default`, `secondary`, `accent`, `outline`, `muted`, status variants), Button (`default`, `secondary`, `accent`, `outline`, `ghost`, `destructive`, `link`; use `buttonVariants` to style a link as a button), Card, Input / Textarea / Label, Select, Skeleton (decorative: the busy region announces loading), Switch, Table, Tabs (`TABS_LIST_CLASS_NAME` / `TABS_TRIGGER_CLASS_NAME` carry the look, with a hover state, for tabs that are links).
 - **Pointer:** `globals.css` gives every enabled control (buttons, `summary`, selects, checkboxes, `role=button|tab|option|switch`) the pointer cursor in `@layer base`; do not repeat `cursor-pointer` per component.
+- **Charts:** `chart-theme.ts` names the design tokens for Recharts, which takes colors as strings: `CHART_COLORS` (surfaces, text, `warning` for a status that is a warning), `CHART_SERIES_COLORS` (the categorical `--civo-chart-*` order), `TOOLTIP_STYLE`, `AXIS_FONT_SIZE`, `BAR_RADIUS`. Every chart states its numbers in text too.
 - **Icons:** `icons.tsx` holds the custom SVG icons on one shared 24×24 stroke canvas; `dynamic-icon.tsx` renders an icon named by content data, falling back to a known icon.
 
 ## `@components/layout` (Layout primitives)
@@ -33,6 +34,7 @@ Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/ap
 - `copy-button.tsx` (`CopyButton`): copies a value and says so for a moment; quiet where the clipboard is refused.
 - `refresh-on-focus.tsx` (`RefreshOnFocus`): re-reads the page when its tab becomes visible again (at most every 30 seconds), so a screen left open is current on return. Renders nothing.
 - `progress-bar.tsx` (`ProgressBar`): how far along something is, as a thin bar with an accessible name; the numbers go beside it in words.
+- `filter-select.tsx` (`FilterSelect`): a select for a GET filter strip, with its label read out but not shown, so the strip's controls share one height. Each option names what it filters ("Any role", "25 per page").
 - `data-panel.tsx` (`DataPanel`): the frame of a list or table that is the subject of a screen: a tinted header with the title and the actions on the whole list, the rows, an optional footer. Put a `Table` inside with `containerClassName="rounded-none border-0"`.
 - `breadcrumbs.tsx` (`Breadcrumbs`): where a page sits and the way back up; the last step is the page itself.
 - `process-steps.tsx` (`ProcessSteps`): how something goes, as numbered steps in order.

@@ -151,7 +151,7 @@ describe('the data source form', () => {
     });
     await choose(await openList('Authentication'), 'API key');
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Connect source' }));
       await Promise.resolve();
     });
 

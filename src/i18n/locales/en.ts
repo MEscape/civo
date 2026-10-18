@@ -1,3 +1,4 @@
+import { enAudit as audit } from '@modules/audit';
 import { enAuth as auth } from '@modules/auth';
 import { enBooking as booking } from '@modules/booking';
 import { enBuilder as builder } from '@modules/builder';
@@ -16,6 +17,7 @@ import enApp from '../en.json';
  */
 const messages = {
   app: enApp,
+  audit: audit.audit,
   auth: auth.auth,
   booking: booking.booking,
   builder: builder.builder,

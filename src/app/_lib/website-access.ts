@@ -4,11 +4,12 @@ import { getCurrentTenantId, getHeldPermissions, isAuthEnabled, PERMISSIONS } fr
 import type { Permission } from '@modules/auth';
 import { bookingRoutes } from '@modules/booking/client';
 import { builderRoutes } from '@modules/builder/client';
+import { dataSourceRoutes } from '@modules/data-sources';
 import { releaseRoutes } from '@modules/release/client';
 import { websiteRoutes } from '@modules/website/client';
 
 export type WebsiteSectionKey =
-  'overview' | 'builder' | 'bookings' | 'releases' | 'settings' | 'users';
+  'overview' | 'builder' | 'bookings' | 'releases' | 'data' | 'settings' | 'users' | 'audit';
 
 export interface WebsiteSection {
   readonly key: WebsiteSectionKey;
@@ -25,8 +26,10 @@ const SECTION_PERMISSIONS = {
   builder: ['page.update'],
   bookings: ['booking.read', 'booking.read.own'],
   releases: ['release.read', 'release.publish'],
-  settings: ['website.update', 'theme.update', 'datasource.create'],
+  data: ['datasource.create'],
+  settings: ['website.update', 'theme.update'],
   users: ['user.read'],
+  audit: ['audit.read'],
 } as const satisfies Record<WebsiteSectionKey, readonly Permission[]>;
 
 const SECTION_KEYS = Object.keys(SECTION_PERMISSIONS) as WebsiteSectionKey[];
@@ -69,8 +72,10 @@ export function createWebsiteAccess(
       builder: builderRoutes.pages(websiteId),
       bookings: bookingRoutes.admin(websiteId),
       releases: releaseRoutes.releases(websiteId),
+      data: dataSourceRoutes.sources(websiteId),
       settings: websiteRoutes.settings(websiteId),
       users: websiteRoutes.users(websiteId),
+      audit: websiteRoutes.audit(websiteId),
     };
     return SECTION_KEYS.filter(maySection).map((key) => ({ key, href: hrefs[key] }));
   };

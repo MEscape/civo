@@ -5,12 +5,14 @@ import { cn } from '@lib/utils';
 export interface DataPanelProps {
   readonly title: string;
   readonly description?: string;
+  /** A quiet fact about the whole list beside the title's opposite edge: its count. */
+  readonly meta?: ReactNode;
   /** Controls that act on the whole panel: a refresh, the one main action. */
   readonly actions?: ReactNode;
   readonly children: ReactNode;
   /** A quiet line under the content: a count, a hint. */
   readonly footer?: ReactNode;
-  readonly className?: string;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -21,6 +23,7 @@ export interface DataPanelProps {
 export function DataPanel({
   title,
   description,
+  meta,
   actions,
   children,
   footer,
@@ -38,7 +41,12 @@ export function DataPanel({
           <h2 className="text-sm font-semibold text-copy">{title}</h2>
           {description !== undefined && <p className="text-xs text-copy-muted">{description}</p>}
         </div>
-        {actions}
+        {(meta !== undefined || actions !== undefined) && (
+          <div className="flex flex-wrap items-center gap-3">
+            {meta !== undefined && <span className="text-xs text-copy-muted">{meta}</span>}
+            {actions}
+          </div>
+        )}
       </header>
       {children}
       {footer !== undefined && (

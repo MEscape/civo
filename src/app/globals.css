@@ -198,6 +198,10 @@
   --spacing-section: var(--civo-section-spacing);
   --spacing-app-header: var(--civo-app-header-height);
   --spacing-website-bar: var(--civo-website-bar-height);
+  /* Where a panel that follows the scroll stops: under both bars, with a gap. */
+  --spacing-sticky-panel: calc(
+    var(--civo-app-header-height) + var(--civo-website-bar-height) + 1.5rem
+  );
 
   --radius-token: var(--civo-radius);
   --radius-token-sm: calc(var(--civo-radius) - 2px);
@@ -254,6 +258,18 @@
   [role='option']:not([aria-disabled='true']),
   [role='switch']:not([aria-disabled='true']) {
     cursor: pointer;
+  }
+}
+
+/*
+ * Edge draws its own "show password" eye in every password input. The platform's
+ * password field has one that also warns about Caps Lock, so a second would only
+ * crowd the field.
+ */
+@layer base {
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
   }
 }
 

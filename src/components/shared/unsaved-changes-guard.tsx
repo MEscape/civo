@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useId, useState } from 'react';
+import {
+  Fragment,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
 
 import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
@@ -24,7 +32,9 @@ export interface UnsavedChangesGuardProps {
  * Guards a whole screen made of several forms: each one reports whether it
  * holds unsaved work (`useReportUnsavedChanges`), and while any does, leaving
  * through an in-app link asks first (`ConfirmDialog`) and closing or reloading
- * the tab asks through the browser.
+ * the tab asks through the browser. Leaving discards the work for real: Cache
+ * Components keep a left page mounted but hidden (`<Activity>`), so the forms
+ * are remounted, or the discarded edits would be back on return.
  */
 export function UnsavedChangesGuard({
   title,
@@ -34,6 +44,8 @@ export function UnsavedChangesGuard({
   children,
 }: UnsavedChangesGuardProps) {
   const [dirtyReporters, setDirtyReporters] = useState<ReadonlySet<string>>(new Set());
+  // Bumped on a confirmed leave: a new key remounts every form with its saved values.
+  const [generation, setGeneration] = useState(0);
   const isDirty = dirtyReporters.size > 0;
 
   const report = useCallback<ReportUnsaved>((reporterId, reporterIsDirty) => {
@@ -56,14 +68,17 @@ export function UnsavedChangesGuard({
 
   return (
     <UnsavedChangesContext.Provider value={report}>
-      {children}
+      <Fragment key={generation}>{children}</Fragment>
       <ConfirmDialog
         open={leaveGuard.isPrompting}
         title={title}
         description={description}
         confirmLabel={confirmLabel}
         cancelLabel={cancelLabel}
-        onConfirm={leaveGuard.confirm}
+        onConfirm={() => {
+          leaveGuard.confirm();
+          setGeneration((current) => current + 1);
+        }}
         onCancel={leaveGuard.cancel}
       />
     </UnsavedChangesContext.Provider>

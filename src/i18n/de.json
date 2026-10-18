@@ -15,5 +15,19 @@
   "navigation": {
     "label": "Hauptnavigation"
   },
-  "loading": "Wird geladen…"
+  "loading": "Wird geladen…",
+  "brand": {
+    "byline": "von {company}",
+    "poweredBy": "Bereitgestellt mit"
+  },
+  "pagination": {
+    "previous": "Zurück",
+    "next": "Weiter",
+    "summary": "{first}–{last} von {total}",
+    "page": "Seite {page}"
+  },
+  "password": {
+    "toggle": "Passwort anzeigen",
+    "capsLock": "Die Feststelltaste ist aktiv."
+  }
 }

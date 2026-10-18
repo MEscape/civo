@@ -7,6 +7,10 @@ const DEFAULT_NODE_ENV = 'development' as const;
 const DEFAULT_DATABASE_POOL_SIZE = 10;
 const DEFAULT_DATABASE_POOL_TIMEOUT_SECONDS = 10;
 const DEFAULT_LOG_LEVEL = 'info' as const;
+/** A year of history; a municipality with a different retention duty sets its own. */
+const DEFAULT_AUDIT_RETENTION_DAYS = 365;
+const MIN_AUDIT_RETENTION_DAYS = 30;
+const MAX_AUDIT_RETENTION_DAYS = 3650;
 
 const serverEnvBaseSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default(DEFAULT_NODE_ENV),
@@ -22,6 +26,13 @@ const serverEnvBaseSchema = z.object({
     .default(DEFAULT_DATABASE_POOL_TIMEOUT_SECONDS),
 
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default(DEFAULT_LOG_LEVEL),
+
+  AUDIT_RETENTION_DAYS: z.coerce
+    .number()
+    .int()
+    .min(MIN_AUDIT_RETENTION_DAYS)
+    .max(MAX_AUDIT_RETENTION_DAYS)
+    .default(DEFAULT_AUDIT_RETENTION_DAYS),
 });
 
 /**

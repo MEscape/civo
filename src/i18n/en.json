@@ -15,5 +15,19 @@
   "navigation": {
     "label": "Main navigation"
   },
-  "loading": "Loading…"
+  "loading": "Loading…",
+  "brand": {
+    "byline": "by {company}",
+    "poweredBy": "Provided with"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "summary": "{first}–{last} of {total}",
+    "page": "Page {page}"
+  },
+  "password": {
+    "toggle": "Show password",
+    "capsLock": "Caps Lock is on."
+  }
 }

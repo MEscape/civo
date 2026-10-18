@@ -76,7 +76,8 @@ const SelectContent = forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 max-h-96 min-w-32 overflow-hidden rounded-token border border-border bg-surface shadow-lg',
+        // Never taller than the room beside the trigger, so a long list scrolls instead of leaving the screen.
+        'relative z-50 max-h-[var(--radix-select-content-available-height)] min-w-32 overflow-hidden rounded-token border border-border bg-surface shadow-lg',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',

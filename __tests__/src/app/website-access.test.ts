@@ -30,9 +30,13 @@ describe('website access', () => {
     });
 
     it('offer settings to anyone who may change any part of it', () => {
-      for (const permission of ['website.update', 'theme.update', 'datasource.create'] as const) {
+      for (const permission of ['website.update', 'theme.update'] as const) {
         expect(keys([permission])).toEqual(['settings']);
       }
+    });
+
+    it('offer the data sources, before settings, to whoever may add one', () => {
+      expect(keys(['datasource.create', 'website.update'])).toEqual(['data', 'settings']);
       expect(keys(['datasource.read', 'dataset.read'])).toEqual([]);
     });
 
@@ -64,7 +68,8 @@ describe('website access', () => {
       expect(current.may('release.publish')).toBe(true);
       expect(current.may('release.rollback')).toBe(false);
       expect(current.maySection('releases')).toBe(true);
-      expect(current.maySection('settings')).toBe(true);
+      expect(current.maySection('data')).toBe(true);
+      expect(current.maySection('settings')).toBe(false);
       expect(current.maySection('builder')).toBe(false);
     });
   });
@@ -72,7 +77,7 @@ describe('website access', () => {
   // The real role table, not hand-picked permissions: a change to a role's grants must be seen here.
   describe('for each role', () => {
     const SECTIONS_BY_ROLE = {
-      admin: ['overview', 'builder', 'bookings', 'releases', 'settings', 'users'],
+      admin: ['overview', 'builder', 'bookings', 'releases', 'data', 'settings', 'users', 'audit'],
       editor: ['overview', 'builder', 'bookings', 'releases'],
       contributor: ['overview', 'builder', 'releases'],
       viewer: ['overview', 'bookings', 'releases'],

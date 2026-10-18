@@ -14,3 +14,21 @@ export function createIdParser<T, E extends AppError>(config: IdParserConfig<T, 
   return (raw: string): AppResult<T, E> =>
     config.isValid(raw) ? ok(config.brand(raw)) : err(config.mapError());
 }
+
+/**
+ * The ids of a lookup by id: those that parse, each once, at most `limit`.
+ * A malformed id cannot name anything, so it is dropped rather than failing
+ * the whole lookup.
+ */
+export function parseValidIds<T>(
+  raw: readonly string[],
+  parse: (raw: string) => AppResult<T>,
+  limit: number,
+): T[] {
+  return [...new Set(raw)].slice(0, limit).flatMap((id) =>
+    parse(id).match(
+      (parsed): T[] => [parsed],
+      () => [],
+    ),
+  );
+}
