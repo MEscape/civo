@@ -472,6 +472,7 @@ Allowed direction:
 - Record important application failures with sufficient context.
 - Instrument external integrations and important persistence operations.
 - Audit events are built with `createAuditLog('<module>.audit', LEVEL_BY_EVENT)` from `@lib/logger`; the module owns the event types and their levels.
+- A module's `TRAIL_BY_EVENT` (`AuditTrailPolicy`) decides which of its events the website's durable audit trail keeps; `composition.ts` wraps the log with `withAuditTrail` from `@modules/audit`. Events hold ids, counts and codes only.
 - Use log levels consistently:
   - `error` for unexpected failures
   - `warn` for recoverable anomalies
