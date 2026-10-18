@@ -3,8 +3,10 @@
 import { useId, useState, useTransition } from 'react';
 
 import { CheckboxField } from '@components/shared/checkbox-field';
+import { ConfirmDialog } from '@components/shared/confirm-dialog';
 import { FieldMessage } from '@components/shared/field-message';
 import { Button } from '@components/ui/button';
+import { Pencil, Trash2 } from '@components/ui/icons';
 
 import { useTranslations } from '@i18n/client';
 
@@ -31,6 +33,7 @@ export function UserRowActions({ user }: UserRowActionsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [roles, setRoles] = useState<readonly string[]>(user.roles);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [isConfirmingRemove, setIsConfirmingRemove] = useState(false);
 
   function run(action: () => ReturnType<typeof removeUserAction>, onDone: () => void) {
     setErrorCode(null);
@@ -44,14 +47,18 @@ export function UserRowActions({ user }: UserRowActionsProps) {
     });
   }
 
+  // The name cell already says "you"; nobody changes or removes themselves here.
   if (user.isSelf) {
-    return <span className="text-xs text-copy-muted">{t('users.table.you')}</span>;
+    return null;
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 text-left">
       {isEditing ? (
-        <fieldset className="space-y-1" disabled={isPending}>
+        <fieldset
+          className="ml-auto w-fit space-y-1 rounded-token border border-border bg-canvas p-3"
+          disabled={isPending}
+        >
           <legend className="sr-only">{t('users.table.rolesOf', { name: user.name })}</legend>
           {ROLES.map((role) => (
             <CheckboxField
@@ -98,15 +105,16 @@ export function UserRowActions({ user }: UserRowActionsProps) {
           </div>
         </fieldset>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex justify-end gap-1">
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => {
               setIsEditing(true);
             }}
           >
+            <Pencil className="size-3.5" aria-hidden="true" />
             {t('users.table.editRoles')}
           </Button>
           <Button
@@ -114,23 +122,39 @@ export function UserRowActions({ user }: UserRowActionsProps) {
             size="sm"
             variant="ghost"
             disabled={isPending}
+            className="text-danger hover:text-danger"
             onClick={() => {
-              if (window.confirm(t('users.table.confirmRemove', { name: user.name }))) {
-                run(
-                  () => removeUserAction({ userId: user.id }),
-                  () => undefined,
-                );
-              }
+              setIsConfirmingRemove(true);
             }}
           >
+            <Trash2 className="size-3.5" aria-hidden="true" />
             {t('users.table.remove')}
+            <span className="sr-only"> {user.name}</span>
           </Button>
         </div>
       )}
       <FieldMessage
         id={`${id}-error`}
         message={errorCode === null ? undefined : t(messageKeyForCode(errorCode), MESSAGE_PARAMS)}
-        className="text-xs"
+        className="text-right text-xs"
+      />
+      <ConfirmDialog
+        open={isConfirmingRemove}
+        title={t('users.table.removeTitle', { name: user.name })}
+        description={t('users.table.confirmRemove', { name: user.name })}
+        confirmLabel={t('users.table.remove')}
+        cancelLabel={t('users.table.cancel')}
+        onCancel={() => {
+          setIsConfirmingRemove(false);
+        }}
+        onConfirm={() => {
+          // Closed at once, so a refusal shows in the row instead of behind the dialog.
+          setIsConfirmingRemove(false);
+          run(
+            () => removeUserAction({ userId: user.id }),
+            () => undefined,
+          );
+        }}
       />
     </div>
   );

@@ -23,7 +23,7 @@ export {
   getHeldPermissions,
   isAuthEnabled,
 } from './composition';
-export type { EmployeeView } from './application/contracts/user-views';
+export type { EmployeeView, MemberSummaryView } from './application/contracts/user-views';
 
 /** Framework entry points: the auth Route Handler and the page guard. */
 export { authRouteHandlers, runAuthStartup } from './composition';
@@ -38,13 +38,17 @@ export {
 } from './presentation/schemas/page-params-schema';
 
 export { UsersAdministration } from './presentation/components/users-administration';
+export { PlatformUsersAdministration } from './presentation/components/platform-users-administration';
+export { MemberOverviewCard } from './presentation/components/member-overview-card';
 export { EmailVerificationResult } from './presentation/components/email-verification-result';
 export { ForgotPasswordForm } from './presentation/components/forgot-password-form';
 export { ResetPasswordForm } from './presentation/components/reset-password-form';
 export { ResetPasswordLinkMissing } from './presentation/components/reset-password-link-missing';
+export { AuthShell } from './presentation/components/auth-shell';
 export { SignInForm } from './presentation/components/sign-in-form';
 export { SignOutButton } from './presentation/components/sign-out-button';
 export { AcceptInvitationForm } from './presentation/components/accept-invitation-form';
+export { InvitationLinkInvalid } from './presentation/components/invitation-link-invalid';
 export { InvitationLinkMissing } from './presentation/components/invitation-link-missing';
 
 export { default as enAuth } from './presentation/i18n/en.json';

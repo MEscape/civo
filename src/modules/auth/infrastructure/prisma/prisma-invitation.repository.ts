@@ -112,6 +112,17 @@ export class PrismaInvitationRepository implements InvitationRepository {
     ).map(() => undefined);
   }
 
+  countOpen(tenantId: TenantId, now: Date): AppResultAsync<number, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Invitation.where({ tenantId })
+          .where((invitation) => invitation.acceptedAt.isNull())
+          .where((invitation) => invitation.expiresAt.gt(dateToInstant(now)))
+          .aggregate((aggregate) => ({ total: aggregate.count() })),
+      failures.infraOnly('countOpen'),
+    ).map(({ total }) => total);
+  }
+
   listOpen(
     tenantId: TenantId,
     now: Date,

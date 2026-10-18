@@ -1,9 +1,13 @@
+import { buttonVariants } from '@components/ui/button';
+import { AlertTriangle, ShieldCheck } from '@components/ui/icons';
+
+import { Link } from '@i18n';
+
 import { getTranslations } from '@i18n/server';
 
 import { authRoutes } from '../routes';
 
-import { AuthLink } from './auth-link';
-import { StatusNotice } from './status-notice';
+import { AuthPanel } from './auth-panel';
 
 export interface EmailVerificationResultProps {
   /** True when the provider redirected back with an `error` parameter. */
@@ -18,11 +22,18 @@ export async function EmailVerificationResult({ hasFailed }: EmailVerificationRe
   const t = await getTranslations('auth');
 
   return (
-    <StatusNotice
+    <AuthPanel
+      icon={hasFailed ? AlertTriangle : ShieldCheck}
+      tone={hasFailed ? 'warning' : 'success'}
       title={hasFailed ? t('emailVerification.failureTitle') : t('emailVerification.successTitle')}
+      description={hasFailed ? t('emailVerification.failure') : t('emailVerification.success')}
     >
-      <p>{hasFailed ? t('emailVerification.failure') : t('emailVerification.success')}</p>
-      <AuthLink href={authRoutes.signIn()}>{t('emailVerification.signIn')}</AuthLink>
-    </StatusNotice>
+      <Link
+        href={authRoutes.signIn()}
+        className={buttonVariants({ size: 'lg', className: 'w-full' })}
+      >
+        {t('emailVerification.signIn')}
+      </Link>
+    </AuthPanel>
   );
 }

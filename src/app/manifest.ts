@@ -24,6 +24,10 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     display: 'browser',
     theme_color: APP_IDENTITY.themeColor,
     background_color: APP_IDENTITY.backgroundColor,
-    icons: [{ src: '/favicon.ico', sizes: 'any', type: 'image/x-icon' }],
+    // The Artemis Connect mark: `app/icon.svg` and `app/apple-icon.png`, served at the root.
+    icons: [
+      { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
+      { src: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   };
 }

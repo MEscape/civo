@@ -3,12 +3,11 @@
 import { useId, useState, useTransition } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
-import { FieldMessage } from '@components/shared/field-message';
-import { TextField } from '@components/shared/text-field';
-import { Button } from '@components/ui/button';
-import { Card } from '@components/ui/card';
+import { PasswordField } from '@components/shared/password-field';
+import { Alert } from '@components/ui/alert';
+import { Info, Lock } from '@components/ui/icons';
 
 import { useRouter } from '@i18n';
 
@@ -21,7 +20,11 @@ import { MESSAGE_PARAMS, messageKeyForCode } from '../messages/message-keys';
 import { authRoutes } from '../routes';
 import { signInSchema } from '../schemas/sign-in-schema';
 
+import { AuthEmailField } from './auth-email-field';
+import { AuthFormAlert } from './auth-form-alert';
 import { AuthLink } from './auth-link';
+import { AuthPanel } from './auth-panel';
+import { AuthSubmitButton } from './auth-submit-button';
 
 import type { SignIn } from '../schemas/sign-in-schema';
 
@@ -41,11 +44,14 @@ export function SignInForm({ returnTo }: SignInFormProps) {
   const [isPending, startTransition] = useTransition();
   const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
 
+  // A field is checked when it is left and again on every key after that: errors appear before submitting.
   const form = useForm<SignIn>({
     resolver: zodResolver(signInSchema),
+    mode: 'onTouched',
     defaultValues: { email: '', password: '' },
   });
-  const { errors } = form.formState;
+  const { errors, touchedFields } = form.formState;
+  const email = useWatch({ control: form.control, name: 'email' });
 
   function handleSubmit(values: SignIn) {
     setFormErrorCode(null);
@@ -59,52 +65,66 @@ export function SignInForm({ returnTo }: SignInFormProps) {
       // Keep the email so it can be corrected, but never leave a rejected password behind.
       form.resetField('password');
       setFormErrorCode(applyActionError(result.error, form.setError));
+      form.setFocus('password');
     });
   }
 
   return (
-    <Card>
+    <AuthPanel
+      icon={Lock}
+      title={t('signIn.title')}
+      description={t('signIn.description')}
+      footer={t('signIn.byInvitation')}
+    >
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         noValidate
         aria-busy={isPending}
-        className="space-y-6 p-6"
+        className="space-y-5"
       >
-        <TextField
+        {returnTo !== undefined && (
+          <Alert variant="info" role="status">
+            <Info className="size-4" aria-hidden="true" />
+            <div className="text-sm">{t('signIn.continueNotice')}</div>
+          </Alert>
+        )}
+        <AuthEmailField
           id={`${id}-email`}
           label={t('signIn.email')}
-          type="email"
-          inputMode="email"
-          autoComplete="email"
+          registration={form.register('email')}
+          value={email}
           error={errorText(errors.email?.message)}
-          {...form.register('email')}
+          isTouched={touchedFields.email === true}
+          onAccept={(accepted) => {
+            form.setValue('email', accepted, { shouldDirty: true, shouldValidate: true });
+          }}
         />
-        <TextField
+        <PasswordField
           id={`${id}-password`}
           label={t('signIn.password')}
-          type="password"
           autoComplete="current-password"
+          labelAction={
+            <AuthLink href={authRoutes.forgotPassword()} className="text-xs">
+              {t('signIn.forgotPassword')}
+            </AuthLink>
+          }
           error={errorText(errors.password?.message)}
           {...form.register('password')}
         />
 
-        {formErrorCode !== null && (
-          <FieldMessage
-            id={`${id}-form-error`}
-            message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
-            className="text-sm"
-          />
-        )}
+        <AuthFormAlert
+          id={`${id}-form-error`}
+          message={
+            formErrorCode === null ? null : t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)
+          }
+        />
 
-        <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? t('signIn.submitting') : t('signIn.submit')}
-        </Button>
-
-        <div className="flex flex-col gap-2">
-          <AuthLink href={authRoutes.forgotPassword()}>{t('signIn.forgotPassword')}</AuthLink>
-          <p className="text-sm text-copy-muted">{t('signIn.byInvitation')}</p>
-        </div>
+        <AuthSubmitButton
+          isPending={isPending}
+          label={t('signIn.submit')}
+          pendingLabel={t('signIn.submitting')}
+        />
       </form>
-    </Card>
+    </AuthPanel>
   );
 }

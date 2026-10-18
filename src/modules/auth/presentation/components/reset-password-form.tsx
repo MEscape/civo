@@ -3,12 +3,12 @@
 import { useId, useState, useTransition } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
-import { FieldMessage } from '@components/shared/field-message';
-import { TextField } from '@components/shared/text-field';
-import { Button } from '@components/ui/button';
-import { Card } from '@components/ui/card';
+import { buttonVariants } from '@components/ui/button';
+import { ArrowLeft, Lock, ShieldCheck } from '@components/ui/icons';
+
+import { Link } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
@@ -19,8 +19,11 @@ import { MESSAGE_PARAMS, messageKeyForCode } from '../messages/message-keys';
 import { authRoutes } from '../routes';
 import { resetPasswordFormSchema } from '../schemas/reset-password-schema';
 
+import { AuthFormAlert } from './auth-form-alert';
 import { AuthLink } from './auth-link';
-import { StatusNotice } from './status-notice';
+import { AuthPanel } from './auth-panel';
+import { AuthSubmitButton } from './auth-submit-button';
+import { NewPasswordFields } from './new-password-fields';
 
 import type { ResetPasswordForm as ResetPasswordValues } from '../schemas/reset-password-schema';
 
@@ -42,9 +45,14 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   const form = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordFormSchema),
+    mode: 'onTouched',
     defaultValues: { newPassword: '', confirmPassword: '' },
   });
-  const { errors } = form.formState;
+  const { errors, touchedFields } = form.formState;
+  const [newPassword, confirmPassword] = useWatch({
+    control: form.control,
+    name: ['newPassword', 'confirmPassword'],
+  });
 
   function handleSubmit(values: ResetPasswordValues) {
     setFormErrorCode(null);
@@ -63,51 +71,72 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   if (isDone) {
     return (
-      <StatusNotice title={t('resetPassword.successTitle')}>
-        <p>{t('resetPassword.success')}</p>
-        <AuthLink href={authRoutes.signIn()}>{t('resetPassword.signIn')}</AuthLink>
-      </StatusNotice>
+      <AuthPanel
+        icon={ShieldCheck}
+        tone="success"
+        title={t('resetPassword.successTitle')}
+        description={t('resetPassword.success')}
+      >
+        <Link
+          href={authRoutes.signIn()}
+          className={buttonVariants({ size: 'lg', className: 'w-full' })}
+        >
+          {t('resetPassword.signIn')}
+        </Link>
+      </AuthPanel>
     );
   }
 
   return (
-    <Card>
+    <AuthPanel
+      icon={Lock}
+      title={t('resetPassword.title')}
+      description={t('resetPassword.description')}
+      footer={
+        <AuthLink href={authRoutes.signIn()} className="inline-flex items-center gap-1.5">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          {t('forgotPassword.backToSignIn')}
+        </AuthLink>
+      }
+    >
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         noValidate
         aria-busy={isPending}
-        className="space-y-6 p-6"
+        className="space-y-5"
       >
-        <TextField
-          id={`${id}-new-password`}
-          label={t('resetPassword.newPassword')}
-          hint={t('resetPassword.passwordHint', MESSAGE_PARAMS)}
-          type="password"
-          autoComplete="new-password"
-          error={errorText(errors.newPassword?.message)}
-          {...form.register('newPassword')}
-        />
-        <TextField
-          id={`${id}-confirm-password`}
-          label={t('resetPassword.confirmPassword')}
-          type="password"
-          autoComplete="new-password"
-          error={errorText(errors.confirmPassword?.message)}
-          {...form.register('confirmPassword')}
+        <NewPasswordFields
+          id={id}
+          passwordLabel={t('resetPassword.newPassword')}
+          confirmLabel={t('resetPassword.confirmPassword')}
+          passwordRegistration={form.register('newPassword', {
+            // The repeat is judged again when the password changes, once the person has been there.
+            onChange: () => {
+              if (touchedFields.confirmPassword === true) {
+                void form.trigger('confirmPassword');
+              }
+            },
+          })}
+          confirmRegistration={form.register('confirmPassword')}
+          password={newPassword}
+          confirmation={confirmPassword}
+          passwordError={errorText(errors.newPassword?.message)}
+          confirmError={errorText(errors.confirmPassword?.message)}
         />
 
-        {formErrorCode !== null && (
-          <FieldMessage
-            id={`${id}-form-error`}
-            message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
-            className="text-sm"
-          />
-        )}
+        <AuthFormAlert
+          id={`${id}-form-error`}
+          message={
+            formErrorCode === null ? null : t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)
+          }
+        />
 
-        <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? t('resetPassword.submitting') : t('resetPassword.submit')}
-        </Button>
+        <AuthSubmitButton
+          isPending={isPending}
+          label={t('resetPassword.submit')}
+          pendingLabel={t('resetPassword.submitting')}
+        />
       </form>
-    </Card>
+    </AuthPanel>
   );
 }

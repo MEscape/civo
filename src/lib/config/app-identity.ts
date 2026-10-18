@@ -7,6 +7,8 @@
  */
 export const APP_IDENTITY = {
   name: 'Civo',
+  /** The company behind the product, whose logo the product carries. */
+  company: 'Artemis Connect',
   themeColor: '#1f3a34',
   backgroundColor: '#f6f4ee',
 } as const;

@@ -4,6 +4,8 @@ import { cache } from 'react';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
 
+import { withAuditTrail } from '@modules/audit';
+
 import type { Locale } from '@i18n';
 
 import { systemClock } from '@lib/clock';
@@ -24,16 +26,21 @@ import { GrantPlatformAdmin } from './application/commands/grant-platform-admin'
 import { InviteBootstrapAdmins } from './application/commands/invite-bootstrap-admins';
 import { InviteUser } from './application/commands/invite-user';
 import { RemoveUser } from './application/commands/remove-user';
+import { RemoveUserAccess } from './application/commands/remove-user-access';
 import { RequestPasswordReset } from './application/commands/request-password-reset';
 import { ResetPassword } from './application/commands/reset-password';
 import { RevokeInvitation } from './application/commands/revoke-invitation';
 import { RevokePlatformAdmin } from './application/commands/revoke-platform-admin';
+import { SetUserAccess } from './application/commands/set-user-access';
 import { SignIn } from './application/commands/sign-in';
 import { SignOut } from './application/commands/sign-out';
 import { GetCurrentActor } from './application/queries/get-current-actor';
+import { GetMemberSummary } from './application/queries/get-member-summary';
 import { ListInvitations } from './application/queries/list-invitations';
 import { ListPlatformAdmins } from './application/queries/list-platform-admins';
+import { ListPlatformUsers } from './application/queries/list-platform-users';
 import { ListUsers } from './application/queries/list-users';
+import { PreviewInvitation } from './application/queries/preview-invitation';
 import { ResolveMemberNames } from './application/queries/resolve-member-names';
 import { actorHasPermission } from './domain/models/authorize';
 import { PLATFORM_ADMIN_ROLE, isAnyRole } from './domain/models/role';
@@ -46,7 +53,11 @@ import { createAuth } from './infrastructure/better-auth/create-auth';
 import { createAuthRouteHandlers } from './infrastructure/better-auth/create-auth-route-handlers';
 import { Sha256TokenGenerator } from './infrastructure/crypto/sha256-token-generator';
 import { DevCurrentActorProvider } from './infrastructure/dev/dev-current-actor-provider';
-import { loggerSecurityAuditLog } from './infrastructure/logging/logger-security-audit-log';
+import {
+  LEVEL_BY_EVENT,
+  TRAIL_BY_EVENT,
+  loggerSecurityAuditLog,
+} from './infrastructure/logging/logger-security-audit-log';
 import { TransactionalAuthMailer } from './infrastructure/mail/transactional-auth-mailer';
 import { UnconfiguredAuthMailer } from './infrastructure/mail/unconfigured-auth-mailer';
 import { getAuthPool } from './infrastructure/pg/auth-pool';
@@ -54,10 +65,12 @@ import { PgAuthRateLimiter } from './infrastructure/pg/pg-auth-rate-limiter';
 import { PgUserDirectory } from './infrastructure/pg/pg-user-directory';
 import { PrismaInvitationRepository } from './infrastructure/prisma/prisma-invitation.repository';
 import { PrismaMembershipRepository } from './infrastructure/prisma/prisma-membership.repository';
+import { PrismaTenantRepository } from './infrastructure/prisma/prisma-tenant.repository';
 import { authRoutes } from './presentation/routes';
 
 import type {
   AuthenticationDependencies,
+  PlatformAccessDependencies,
   UserAdministrationDependencies,
 } from './application/auth-dependencies';
 import type { AuthorizationService } from './application/authorization-service';
@@ -141,6 +154,11 @@ function buildMailer(): AuthMailer {
           link.searchParams.set('token', token);
           return link.toString();
         },
+        signInLink: (locale) =>
+          new URL(
+            toLocalizedPath(locale, authRoutes.signIn()),
+            publicEnv.NEXT_PUBLIC_APP_URL,
+          ).toString(),
       });
 }
 
@@ -159,6 +177,14 @@ const getPool = once(() =>
 /** Whether real authentication runs. Pages for sign-in and sign-up use it to answer 404 when it does not. */
 export const isAuthEnabled: boolean = serverEnv.AUTH_ENABLED;
 
+/** The module's audit port: its log lines, and the trail the website's audit page reads. */
+const auditLog = withAuditTrail(loggerSecurityAuditLog, {
+  source: 'auth',
+  levels: LEVEL_BY_EVENT,
+  policy: TRAIL_BY_EVENT,
+  isWebsite: (tenantId) => tenantId !== PLATFORM_TENANT_ID && tenantId !== UNASSIGNED_TENANT_ID,
+});
+
 /**
  * The Better Auth instance. Throws when auth is disabled: there is nothing
  * to hand out.
@@ -170,7 +196,7 @@ const getAuth = once<BetterAuthInstance>(() => {
   return createAuth(toAuthSettings(serverEnv), {
     pool: getPool(),
     mailer: getMailer(),
-    audit: loggerSecurityAuditLog,
+    audit: auditLog,
   });
 });
 
@@ -228,7 +254,7 @@ const getCurrentActorProvider = once(() => memoizePerRequest(buildCurrentActorPr
 export const getAccessControl = once<AuthorizationService>(() =>
   createAuthorizationService({
     currentActor: getCurrentActorProvider(),
-    audit: loggerSecurityAuditLog,
+    audit: auditLog,
   }),
 );
 
@@ -294,7 +320,7 @@ const getAdministrationDependencies = once((): UserAdministrationDependencies =>
   invitations: new PrismaInvitationRepository(),
   tokens: new Sha256TokenGenerator(),
   mailer: getMailer(),
-  audit: loggerSecurityAuditLog,
+  audit: auditLog,
   clock: systemClock,
 }));
 
@@ -308,6 +334,9 @@ export const getAuthQueries = once(
       resolveMemberNames: new ResolveMemberNames(getAdministrationDependencies()),
       listPlatformAdmins: new ListPlatformAdmins(getAdministrationDependencies()),
       listInvitations: new ListInvitations(getAdministrationDependencies()),
+      getMemberSummary: new GetMemberSummary(getAdministrationDependencies()),
+      previewInvitation: new PreviewInvitation(getAdministrationDependencies()),
+      listPlatformUsers: new ListPlatformUsers(getAdministrationDependencies()),
     }) as const,
 );
 
@@ -327,7 +356,7 @@ const getAuthenticationDependencies = once((): AuthenticationDependencies => {
       },
     }),
     rateLimiter: new PgAuthRateLimiter(getPool(), requireAuthCredentials(serverEnv).secret),
-    audit: loggerSecurityAuditLog,
+    audit: auditLog,
   };
   return dependencies;
 });
@@ -335,6 +364,13 @@ const getAuthenticationDependencies = once((): AuthenticationDependencies => {
 export const getAuthCommands = once(() => {
   const dependencies = getAuthenticationDependencies();
   const administration = getAdministrationDependencies();
+  const platformAccess: PlatformAccessDependencies = {
+    authorization: administration.authorization,
+    members: administration.members,
+    directory: administration.directory,
+    audit: administration.audit,
+    tenants: new PrismaTenantRepository(),
+  };
 
   return {
     signIn: new SignIn(dependencies),
@@ -344,6 +380,8 @@ export const getAuthCommands = once(() => {
     inviteUser: new InviteUser(administration),
     changeUserRoles: new ChangeUserRoles(administration),
     removeUser: new RemoveUser(administration),
+    setUserAccess: new SetUserAccess(platformAccess),
+    removeUserAccess: new RemoveUserAccess(platformAccess),
     grantPlatformAdmin: new GrantPlatformAdmin(administration),
     revokePlatformAdmin: new RevokePlatformAdmin(administration),
     revokeInvitation: new RevokeInvitation(administration),

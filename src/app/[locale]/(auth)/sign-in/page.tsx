@@ -6,8 +6,6 @@ import { notFound } from 'next/navigation';
 
 import { SignInForm, isAuthEnabled, parseSignInPageParams } from '@modules/auth';
 
-import { Container, PageHeading, Section } from '@components/layout/layout-primitives';
-
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
@@ -32,28 +30,19 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   });
 }
 
-async function SignInContent({ params, searchParams }: RouteProps) {
-  const locale = requireLocale((await params).locale);
-  const t = await getTranslations({ locale, namespace: 'auth' });
+async function SignInContent({ searchParams }: Pick<RouteProps, 'searchParams'>) {
   const { returnTo } = parseSignInPageParams(await searchParams);
 
-  return (
-    <Container className="max-w-md">
-      <Section className="space-y-8">
-        <PageHeading title={t('signIn.title')} description={t('signIn.description')} />
-        <SignInForm returnTo={returnTo} />
-      </Section>
-    </Container>
-  );
+  return <SignInForm returnTo={returnTo} />;
 }
 
-export default function SignInPage({ params, searchParams }: RouteProps) {
+export default function SignInPage({ searchParams }: RouteProps) {
   if (!isAuthEnabled) {
     notFound();
   }
   return (
     <Suspense fallback={<AuthFormSkeleton />}>
-      <SignInContent params={params} searchParams={searchParams} />
+      <SignInContent searchParams={searchParams} />
     </Suspense>
   );
 }

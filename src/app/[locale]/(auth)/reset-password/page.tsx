@@ -11,8 +11,6 @@ import {
   parseResetPasswordPageParams,
 } from '@modules/auth';
 
-import { Container, PageHeading, Section } from '@components/layout/layout-primitives';
-
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
@@ -33,31 +31,19 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   return buildPrivateMetadata(t('resetPassword.metadata.title'));
 }
 
-async function ResetPasswordContent({ params, searchParams }: RouteProps) {
-  const locale = requireLocale((await params).locale);
-  const t = await getTranslations({ locale, namespace: 'auth' });
+async function ResetPasswordContent({ searchParams }: Pick<RouteProps, 'searchParams'>) {
   const { token } = parseResetPasswordPageParams(await searchParams);
 
-  return (
-    <Container className="max-w-md">
-      <Section className="space-y-8">
-        <PageHeading
-          title={t('resetPassword.title')}
-          description={t('resetPassword.description')}
-        />
-        {token === undefined ? <ResetPasswordLinkMissing /> : <ResetPasswordForm token={token} />}
-      </Section>
-    </Container>
-  );
+  return token === undefined ? <ResetPasswordLinkMissing /> : <ResetPasswordForm token={token} />;
 }
 
-export default function ResetPasswordPage({ params, searchParams }: RouteProps) {
+export default function ResetPasswordPage({ searchParams }: RouteProps) {
   if (!isAuthEnabled) {
     notFound();
   }
   return (
     <Suspense fallback={<AuthFormSkeleton />}>
-      <ResetPasswordContent params={params} searchParams={searchParams} />
+      <ResetPasswordContent searchParams={searchParams} />
     </Suspense>
   );
 }

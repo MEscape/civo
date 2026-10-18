@@ -9,7 +9,7 @@ import {
   CREDENTIAL_LIMITS,
 } from '../../application/contracts/auth-constraints';
 
-import type { AuthCode, InvitationRole } from '../../application/contracts/auth-constraints';
+import type { AuthCode, InvitationRole, TenantRole } from '../../application/contracts/auth-constraints';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['auth']>;
 
@@ -53,6 +53,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.nameTooLong]: fieldPath('validation', 'nameTooLong'),
   [VALIDATION.tokenInvalid]: fieldPath('validation', 'tokenInvalid'),
   [VALIDATION.roleInvalid]: fieldPath('validation', 'roleInvalid'),
+  [VALIDATION.tenantInvalid]: fieldPath('validation', 'tenantInvalid'),
   [VALIDATION.rolesRequired]: fieldPath('validation', 'rolesRequired'),
 } as const satisfies Record<AuthCode, ValidKeys>;
 
@@ -64,6 +65,15 @@ export const ROLE_MESSAGE_KEYS = {
   employee: fieldPath('users', 'roles', 'employee'),
   platform_admin: fieldPath('users', 'roles', 'platformAdmin'),
 } as const satisfies Record<InvitationRole, ValidKeys>;
+
+/** What each role allows, in one line: shown wherever a role is chosen. */
+export const ROLE_HINT_KEYS = {
+  admin: fieldPath('users', 'roleHints', 'admin'),
+  editor: fieldPath('users', 'roleHints', 'editor'),
+  contributor: fieldPath('users', 'roleHints', 'contributor'),
+  viewer: fieldPath('users', 'roleHints', 'viewer'),
+  employee: fieldPath('users', 'roleHints', 'employee'),
+} as const satisfies Record<TenantRole, ValidKeys>;
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 

@@ -21,7 +21,7 @@ export function RevokeInvitationButton({ invitationId, email }: RevokeInvitation
   const [errorCode, setErrorCode] = useState<string | null>(null);
 
   return (
-    <div className="space-y-1">
+    <div className="shrink-0 space-y-1 text-right">
       <Button
         type="button"
         size="sm"
@@ -37,7 +37,8 @@ export function RevokeInvitationButton({ invitationId, email }: RevokeInvitation
           });
         }}
       >
-        {t('users.invitations.revoke', { email })}
+        <span aria-hidden="true">{t('users.invitations.withdraw')}</span>
+        <span className="sr-only">{t('users.invitations.revoke', { email })}</span>
       </Button>
       {errorCode !== null && (
         <p role="alert" className="text-xs text-danger">

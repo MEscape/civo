@@ -10,8 +10,6 @@ import {
   parseEmailVerifiedPageParams,
 } from '@modules/auth';
 
-import { Container, PageHeading, Section } from '@components/layout/layout-primitives';
-
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
@@ -32,28 +30,19 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   return buildPrivateMetadata(t('emailVerification.metadata.title'));
 }
 
-async function EmailVerifiedContent({ params, searchParams }: RouteProps) {
-  const locale = requireLocale((await params).locale);
-  const t = await getTranslations({ locale, namespace: 'auth' });
+async function EmailVerifiedContent({ searchParams }: Pick<RouteProps, 'searchParams'>) {
   const { hasFailed } = parseEmailVerifiedPageParams(await searchParams);
 
-  return (
-    <Container className="max-w-md">
-      <Section className="space-y-8">
-        <PageHeading title={t('emailVerification.title')} />
-        <EmailVerificationResult hasFailed={hasFailed} />
-      </Section>
-    </Container>
-  );
+  return <EmailVerificationResult hasFailed={hasFailed} />;
 }
 
-export default function EmailVerifiedPage({ params, searchParams }: RouteProps) {
+export default function EmailVerifiedPage({ searchParams }: RouteProps) {
   if (!isAuthEnabled) {
     notFound();
   }
   return (
     <Suspense fallback={<AuthFormSkeleton />}>
-      <EmailVerifiedContent params={params} searchParams={searchParams} />
+      <EmailVerifiedContent searchParams={searchParams} />
     </Suspense>
   );
 }

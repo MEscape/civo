@@ -1,9 +1,13 @@
+import { buttonVariants } from '@components/ui/button';
+import { AlertTriangle } from '@components/ui/icons';
+
+import { Link } from '@i18n';
+
 import { getTranslations } from '@i18n/server';
 
 import { authRoutes } from '../routes';
 
-import { AuthLink } from './auth-link';
-import { StatusNotice } from './status-notice';
+import { AuthPanel } from './auth-panel';
 
 /**
  * Shown instead of the form when the page was opened without a usable token
@@ -13,9 +17,18 @@ export async function InvitationLinkMissing() {
   const t = await getTranslations('auth');
 
   return (
-    <StatusNotice title={t('acceptInvitation.missingTokenTitle')}>
-      <p>{t('acceptInvitation.missingToken')}</p>
-      <AuthLink href={authRoutes.signIn()}>{t('acceptInvitation.signInLink')}</AuthLink>
-    </StatusNotice>
+    <AuthPanel
+      icon={AlertTriangle}
+      tone="warning"
+      title={t('acceptInvitation.missingTokenTitle')}
+      description={t('acceptInvitation.missingToken')}
+    >
+      <Link
+        href={authRoutes.signIn()}
+        className={buttonVariants({ size: 'lg', className: 'w-full' })}
+      >
+        {t('acceptInvitation.signInLink')}
+      </Link>
+    </AuthPanel>
   );
 }

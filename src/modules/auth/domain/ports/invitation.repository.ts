@@ -32,6 +32,9 @@ export interface InvitationRepository {
   release(id: InvitationId): AppResultAsync<void, InfrastructureAppError>;
 
   /** Open invitations of the tenant, newest first. */
+  /** How many invitations of the tenant can still be accepted at `now`. */
+  countOpen(tenantId: TenantId, now: Date): AppResultAsync<number, InfrastructureAppError>;
+
   listOpen(
     tenantId: TenantId,
     now: Date,

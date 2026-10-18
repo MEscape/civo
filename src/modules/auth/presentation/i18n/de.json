@@ -1,8 +1,8 @@
 {
   "auth": {
     "signIn": {
-      "title": "Anmelden",
-      "description": "Melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an.",
+      "title": "Willkommen zurück",
+      "description": "Melden Sie sich an, um Ihre Websites zu verwalten.",
       "email": "E-Mail-Adresse",
       "password": "Passwort",
       "submit": "Anmelden",
@@ -12,7 +12,8 @@
         "title": "In Ihrem Konto anmelden",
         "description": "Melden Sie sich an, um auf Ihr Dashboard zuzugreifen und Ihr Konto zu verwalten."
       },
-      "byInvitation": "Konten werden nur auf Einladung angelegt. Bitten Sie eine Administratorin oder einen Administrator darum."
+      "byInvitation": "Konten werden nur auf Einladung angelegt. Bitten Sie eine Administratorin oder einen Administrator darum.",
+      "continueNotice": "Melden Sie sich an, um zur geöffneten Seite zu gelangen."
     },
     "forgotPassword": {
       "title": "Passwort zurücksetzen",
@@ -26,13 +27,18 @@
       "metadata": {
         "title": "Ihr Passwort zurücksetzen",
         "description": "Fordern Sie einen Link zum Zurücksetzen Ihres Passworts an, um wieder Zugriff auf Ihr Konto zu erhalten."
-      }
+      },
+      "sentTo": "Wir haben den Link gesendet an",
+      "checkSpam": "Nichts angekommen? Schauen Sie im Spam-Ordner nach.",
+      "resend": "Erneut senden",
+      "resendIn": "Erneut senden in {seconds} s",
+      "resent": "Wir haben einen weiteren Link gesendet.",
+      "differentAddress": "Andere Adresse verwenden"
     },
     "resetPassword": {
       "title": "Neues Passwort festlegen",
       "description": "Das neue Passwort ersetzt das alte auf allen Geräten.",
       "newPassword": "Neues Passwort",
-      "passwordHint": "Mindestens {passwordMin} Zeichen.",
       "confirmPassword": "Neues Passwort wiederholen",
       "submit": "Passwort speichern",
       "submitting": "Wird gespeichert…",
@@ -99,25 +105,44 @@
       "nameTooLong": "Der Name darf höchstens {nameMax} Zeichen lang sein.",
       "tokenInvalid": "Dieser Link ist ungültig. Fordern Sie einen neuen an.",
       "roleInvalid": "Wählen Sie eine gültige Rolle.",
-      "rolesRequired": "Wählen Sie mindestens eine Rolle."
+      "rolesRequired": "Wählen Sie mindestens eine Rolle.",
+      "tenantInvalid": "Wählen Sie eine vorhandene Website."
     },
     "acceptInvitation": {
       "title": "Einladung annehmen",
       "description": "Wählen Sie Ihren Namen und ein Passwort, um beizutreten.",
       "name": "Ihr Name",
       "password": "Passwort",
-      "passwordHint": "Mindestens {passwordMin} Zeichen.",
       "confirmPassword": "Passwort wiederholen",
       "submit": "Konto erstellen",
       "submitting": "Konto wird erstellt …",
       "successTitle": "Ihr Konto ist bereit",
-      "success": "Prüfen Sie Ihr Postfach: Wir haben einen Link zur Bestätigung Ihrer E-Mail-Adresse gesendet. Danach können Sie sich anmelden.",
+      "success": "Ihr Konto wurde angelegt.",
       "signInLink": "Zur Anmeldung",
       "missingTokenTitle": "Dieser Einladungslink ist unvollständig",
       "missingToken": "Öffnen Sie den Link aus Ihrer Einladungs-E-Mail erneut oder fordern Sie eine neue Einladung an.",
       "metadata": {
         "title": "Einladung annehmen"
-      }
+      },
+      "steps": {
+        "label": "So geht es weiter",
+        "confirm": {
+          "title": "E-Mail bestätigen",
+          "description": "Öffnen Sie den Link, den wir Ihnen gerade gesendet haben."
+        },
+        "signIn": {
+          "title": "Anmelden",
+          "description": "Mit Ihrer E-Mail-Adresse und Ihrem neuen Passwort."
+        }
+      },
+      "invitation": {
+        "organisation": "Website",
+        "email": "E-Mail-Adresse",
+        "role": "Rolle",
+        "expires": "Gültig bis"
+      },
+      "invalidTitle": "Diese Einladung ist nicht mehr gültig",
+      "invalid": "Sie wurde vielleicht schon verwendet, zurückgezogen oder ist abgelaufen. Bitten Sie um eine neue Einladung."
     },
     "users": {
       "metadata": {
@@ -150,7 +175,9 @@
         "role": "Rolle",
         "anyRole": "Jede Rolle",
         "pageSize": "Pro Seite",
-        "apply": "Anwenden"
+        "perPage": "{size} pro Seite",
+        "apply": "Anwenden",
+        "reset": "Filter zurücksetzen"
       },
       "table": {
         "title": "Mitglieder",
@@ -162,25 +189,39 @@
         "unverified": "Unbestätigt",
         "you": "Sie",
         "empty": "Keine passenden Mitglieder.",
+        "count": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
         "truncated": "Diese Organisation hat mehr Mitglieder, als auf einmal aufgelistet werden können. Schränken Sie die Suche ein.",
         "editRoles": "Rollen bearbeiten",
         "save": "Speichern",
         "cancel": "Abbrechen",
         "remove": "Entfernen",
         "rolesOf": "Rollen von {name}",
+        "removeTitle": "{name} entfernen?",
         "confirmRemove": "{name} aus dieser Organisation entfernen? Das Konto bleibt bestehen, hier gehen aber alle Zugriffsrechte verloren."
       },
       "pagination": {
-        "nav": "Seiten der Benutzerliste",
-        "previous": "Zurück",
-        "next": "Weiter",
-        "page": "Seite {page}",
-        "summary": "{first}–{last} von {total}"
+        "nav": "Seiten der Benutzerliste"
       },
       "invitations": {
         "title": "Offene Einladungen",
         "expires": "läuft ab am {date}",
+        "none": "Keine offenen Einladungen.",
+        "withdraw": "Zurückziehen",
         "revoke": "Einladung für {email} zurückziehen"
+      },
+      "overview": {
+        "title": "Personen",
+        "link": "Benutzer verwalten",
+        "members": "Mitglieder",
+        "openInvitations": "Offene Einladungen",
+        "byRole": "Mitglieder nach Rolle"
+      },
+      "roleHints": {
+        "admin": "Alles an der Website: Einstellungen, Veröffentlichen, Daten und Personen.",
+        "editor": "Baut und bearbeitet Seiten und die Buchungseinrichtung. Kann weder veröffentlichen noch Personen verwalten.",
+        "contributor": "Bearbeitet Inhalte vorhandener Seiten. Kann keine Komponenten hinzufügen oder verschieben.",
+        "viewer": "Sieht die Website und ihre Buchungen an; ändert nichts.",
+        "employee": "Nur der eigene Buchungskalender und das eigene Profil."
       }
     },
     "platformAdmins": {
@@ -191,7 +232,115 @@
       "emailHint": "Eines bestehenden Kontos.",
       "add": "Zum Plattform-Administrator machen",
       "remove": "Entfernen",
-      "failed": "Das hat nicht geklappt. Prüfen Sie die Adresse: Sie muss zu einem bestehenden Konto mit bestätigter Adresse gehören."
+      "failed": "Das hat nicht geklappt. Prüfen Sie die Adresse: Sie muss zu einem bestehenden Konto mit bestätigter Adresse gehören.",
+      "count": "{count, plural, one {# Administrator} other {# Administratoren}}",
+      "confirmTitle": "{name} entfernen?",
+      "confirmDescription": "Die Person bleibt Mitglied ihrer Websites, kann die Plattform aber nicht mehr administrieren."
+    },
+    "auditEvents": {
+      "authorization": {
+        "denied": "Zugriff verweigert"
+      },
+      "membership": {
+        "roles_changed": "Rollen geändert",
+        "removed": "Mitglied entfernt"
+      },
+      "invitation": {
+        "created": "Einladung versendet",
+        "accepted": "Einladung angenommen",
+        "revoked": "Einladung zurückgezogen"
+      }
+    },
+    "shell": {
+      "headline": "Ihre Gemeinde im Netz – ohne Komplexität.",
+      "summary": "Website erstellen, veröffentlichen und betreiben – an einem Ort.",
+      "byline": "{product} wird bereitgestellt von {company}",
+      "features": {
+        "builder": {
+          "title": "Visuell gestalten",
+          "description": "Setzen Sie Seiten aus fertigen Komponenten zusammen und sehen Sie das Ergebnis sofort."
+        },
+        "booking": {
+          "title": "Termine online vergeben",
+          "description": "Bürgerinnen und Bürger buchen eine Leistung in wenigen Klicks; Ihr Team sieht jeden Termin."
+        },
+        "releases": {
+          "title": "Sicher veröffentlichen",
+          "description": "Prüfen Sie jede Änderung vor dem Livegang und gehen Sie jederzeit zurück."
+        }
+      }
+    },
+    "emailSuggestion": {
+      "question": "Meinten Sie"
+    },
+    "passwordGuidance": {
+      "empty": "Die Stärke erscheint beim Tippen.",
+      "strengthLabel": "Stärke: {level}",
+      "strength": {
+        "weak": "Schwach",
+        "fair": "Mittel",
+        "good": "Gut",
+        "strong": "Stark"
+      },
+      "required": "Erforderlich",
+      "recommended": "Empfohlen",
+      "length": "Mindestens {passwordMin} Zeichen",
+      "notCommon": "Kein gängiges Passwort oder Muster",
+      "avoidsPersonal": "Enthält nicht Ihren Namen",
+      "met": "Erfüllt.",
+      "notMet": "Noch nicht erfüllt.",
+      "tip": "Tipp: Eine Passphrase aus vier oder mehr unzusammenhängenden Wörtern ist stark und leicht zu merken.",
+      "match": "Die Passwörter stimmen überein"
+    },
+    "platformUsers": {
+      "title": "Benutzer",
+      "description": "Alle Konten über alle Websites hinweg. Nach Website oder Rolle filtern und festlegen, wer wo arbeitet.",
+      "metadata": {
+        "title": "Benutzer"
+      },
+      "table": {
+        "title": "Personen",
+        "count": "{count, plural, one {# Person} other {# Personen}}",
+        "person": "Person",
+        "access": "Zugriff",
+        "empty": "Keine Person passt zu diesen Filtern.",
+        "noAccess": "Noch keine Website",
+        "platformAdmin": "Plattform-Administrator",
+        "truncated": "Der Filter trifft mehr Personen, als auf einmal eingegrenzt werden können. Ergänzen Sie einen Suchtext.",
+        "more": "+{count} weitere",
+        "manage": "Zugriff verwalten",
+        "you": "Sie"
+      },
+      "filters": {
+        "website": "Website",
+        "anyWebsite": "Alle Websites",
+        "kind": "Personen",
+        "everyone": "Alle",
+        "platformAdmins": "Plattform-Administratoren",
+        "reset": "Filter zurücksetzen"
+      },
+      "access": {
+        "title": "Zugriff von {name}",
+        "description": "Legen Sie fest, in welchen Websites diese Person arbeitet und was sie dort darf. Eine Website behält immer mindestens eine Administration.",
+        "rolesOf": "Rollen in {site}",
+        "remove": "Entfernen",
+        "keep": "Behalten",
+        "addTitle": "Zu einer Website hinzufügen",
+        "addWebsite": "Website",
+        "addButton": "Hinzufügen",
+        "save": "Änderungen speichern",
+        "cancel": "Abbrechen",
+        "empty": "Noch in keiner Website.",
+        "needRole": "Wählen Sie für jede Website mindestens eine Rolle.",
+        "nothingToAdd": "Diese Person arbeitet bereits in jeder Website.",
+        "saveCount": "{count, plural, one {# Änderung} other {# Änderungen}} speichern",
+        "state": {
+          "new": "Neu",
+          "changed": "Geändert",
+          "removed": "Wird entfernt"
+        },
+        "platformAdminNote": "Diese Person administriert die Plattform und kann ohnehin in jeder Website arbeiten. Die Rollen hier sind die, die sie als Mitglied hat."
+      }
     }
   }
 }

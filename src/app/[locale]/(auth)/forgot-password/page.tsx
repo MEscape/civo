@@ -6,8 +6,6 @@ import { notFound } from 'next/navigation';
 
 import { ForgotPasswordForm, isAuthEnabled } from '@modules/auth';
 
-import { Container, PageHeading, Section } from '@components/layout/layout-primitives';
-
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
@@ -31,30 +29,13 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   });
 }
 
-async function ForgotPasswordContent({ params }: RouteProps) {
-  const locale = requireLocale((await params).locale);
-  const t = await getTranslations({ locale, namespace: 'auth' });
-
-  return (
-    <Container className="max-w-md">
-      <Section className="space-y-8">
-        <PageHeading
-          title={t('forgotPassword.title')}
-          description={t('forgotPassword.description')}
-        />
-        <ForgotPasswordForm />
-      </Section>
-    </Container>
-  );
-}
-
-export default function ForgotPasswordPage({ params }: RouteProps) {
+export default function ForgotPasswordPage() {
   if (!isAuthEnabled) {
     notFound();
   }
   return (
     <Suspense fallback={<AuthFormSkeleton />}>
-      <ForgotPasswordContent params={params} />
+      <ForgotPasswordForm />
     </Suspense>
   );
 }

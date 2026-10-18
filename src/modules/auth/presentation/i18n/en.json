@@ -1,8 +1,8 @@
 {
   "auth": {
     "signIn": {
-      "title": "Sign in",
-      "description": "Sign in with your email address and password.",
+      "title": "Welcome back",
+      "description": "Sign in to manage your websites.",
       "email": "Email address",
       "password": "Password",
       "submit": "Sign in",
@@ -12,7 +12,8 @@
         "title": "Sign in to your account",
         "description": "Sign in to access your dashboard and manage your account."
       },
-      "byInvitation": "Accounts are created by invitation only. Ask an administrator for one."
+      "byInvitation": "Accounts are created by invitation only. Ask an administrator for one.",
+      "continueNotice": "Sign in to continue to the page you opened."
     },
     "forgotPassword": {
       "title": "Reset your password",
@@ -26,13 +27,18 @@
       "metadata": {
         "title": "Reset your password",
         "description": "Request a password reset link to regain access to your account."
-      }
+      },
+      "sentTo": "We sent the link to",
+      "checkSpam": "Nothing there yet? Check your spam folder.",
+      "resend": "Send again",
+      "resendIn": "Send again in {seconds}s",
+      "resent": "We sent another link.",
+      "differentAddress": "Use a different address"
     },
     "resetPassword": {
       "title": "Choose a new password",
       "description": "Your new password replaces the old one on all devices.",
       "newPassword": "New password",
-      "passwordHint": "At least {passwordMin} characters.",
       "confirmPassword": "Repeat new password",
       "submit": "Save password",
       "submitting": "Saving…",
@@ -99,25 +105,44 @@
       "nameTooLong": "The name must be at most {nameMax} characters long.",
       "tokenInvalid": "This link is invalid. Request a new one.",
       "roleInvalid": "Choose a valid role.",
-      "rolesRequired": "Choose at least one role."
+      "rolesRequired": "Choose at least one role.",
+      "tenantInvalid": "Choose a website that exists."
     },
     "acceptInvitation": {
       "title": "Accept your invitation",
       "description": "Choose your name and a password to join.",
       "name": "Your name",
       "password": "Password",
-      "passwordHint": "At least {passwordMin} characters.",
       "confirmPassword": "Repeat the password",
       "submit": "Create account",
       "submitting": "Creating account…",
       "successTitle": "Your account is ready",
-      "success": "Check your inbox: we sent a link to confirm your email address. After that you can sign in.",
+      "success": "Your account has been created.",
       "signInLink": "Go to sign in",
       "missingTokenTitle": "This invitation link is incomplete",
       "missingToken": "Open the link from your invitation email again, or ask for a new invitation.",
       "metadata": {
         "title": "Accept your invitation"
-      }
+      },
+      "steps": {
+        "label": "What happens next",
+        "confirm": {
+          "title": "Confirm your email",
+          "description": "Open the link we just sent you."
+        },
+        "signIn": {
+          "title": "Sign in",
+          "description": "Use your email address and your new password."
+        }
+      },
+      "invitation": {
+        "organisation": "Website",
+        "email": "Email address",
+        "role": "Role",
+        "expires": "Valid until"
+      },
+      "invalidTitle": "This invitation is no longer valid",
+      "invalid": "It may have been used already, withdrawn or expired. Ask for a new invitation."
     },
     "users": {
       "metadata": {
@@ -150,7 +175,9 @@
         "role": "Role",
         "anyRole": "Any role",
         "pageSize": "Per page",
-        "apply": "Apply"
+        "perPage": "{size} per page",
+        "apply": "Apply",
+        "reset": "Reset filters"
       },
       "table": {
         "title": "Members",
@@ -162,25 +189,39 @@
         "unverified": "Unverified",
         "you": "You",
         "empty": "No members match.",
+        "count": "{count, plural, one {# member} other {# members}}",
         "truncated": "This organisation has more members than can be listed at once. Narrow the search.",
         "editRoles": "Edit roles",
         "save": "Save",
         "cancel": "Cancel",
         "remove": "Remove",
         "rolesOf": "Roles of {name}",
+        "removeTitle": "Remove {name}?",
         "confirmRemove": "Remove {name} from this organisation? Their account stays, but they lose all access here."
       },
       "pagination": {
-        "nav": "Users pages",
-        "previous": "Previous",
-        "next": "Next",
-        "page": "Page {page}",
-        "summary": "{first}–{last} of {total}"
+        "nav": "Users pages"
       },
       "invitations": {
         "title": "Open invitations",
         "expires": "expires {date}",
+        "none": "No open invitations.",
+        "withdraw": "Withdraw",
         "revoke": "Withdraw invitation for {email}"
+      },
+      "overview": {
+        "title": "People",
+        "link": "Manage users",
+        "members": "Members",
+        "openInvitations": "Open invitations",
+        "byRole": "Members by role"
+      },
+      "roleHints": {
+        "admin": "Everything on the website: settings, publishing, data and people.",
+        "editor": "Builds and edits pages and the booking setup. Cannot publish or manage people.",
+        "contributor": "Edits the content of existing pages. Cannot add or move components.",
+        "viewer": "Looks at the website and its bookings; changes nothing.",
+        "employee": "Only their own booking calendar and profile."
       }
     },
     "platformAdmins": {
@@ -191,7 +232,115 @@
       "emailHint": "Of an existing account.",
       "add": "Make platform administrator",
       "remove": "Remove",
-      "failed": "That did not work. Check the address: it must belong to an existing account with a verified address."
+      "failed": "That did not work. Check the address: it must belong to an existing account with a verified address.",
+      "count": "{count, plural, one {# administrator} other {# administrators}}",
+      "confirmTitle": "Remove {name}?",
+      "confirmDescription": "They stay a member of their websites but can no longer administer the platform."
+    },
+    "auditEvents": {
+      "authorization": {
+        "denied": "Access refused"
+      },
+      "membership": {
+        "roles_changed": "Roles changed",
+        "removed": "Member removed"
+      },
+      "invitation": {
+        "created": "Invitation sent",
+        "accepted": "Invitation accepted",
+        "revoked": "Invitation withdrawn"
+      }
+    },
+    "shell": {
+      "headline": "Your community online, without the complexity.",
+      "summary": "Build, publish and run your website in one place.",
+      "byline": "{product} is provided by {company}",
+      "features": {
+        "builder": {
+          "title": "Build visually",
+          "description": "Compose pages from ready-made components and see the result as you work."
+        },
+        "booking": {
+          "title": "Take appointments online",
+          "description": "Citizens book a service in a few clicks; your team sees every appointment."
+        },
+        "releases": {
+          "title": "Publish with confidence",
+          "description": "Review every change before it goes live, and go back whenever you need to."
+        }
+      }
+    },
+    "emailSuggestion": {
+      "question": "Did you mean"
+    },
+    "passwordGuidance": {
+      "empty": "Strength shows as you type.",
+      "strengthLabel": "Strength: {level}",
+      "strength": {
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      },
+      "required": "Required",
+      "recommended": "Recommended",
+      "length": "At least {passwordMin} characters",
+      "notCommon": "Not a common password or pattern",
+      "avoidsPersonal": "Doesn't contain your name",
+      "met": "Done.",
+      "notMet": "Not done yet.",
+      "tip": "Tip: a passphrase of four or more unrelated words is strong and easy to remember.",
+      "match": "The passwords match"
+    },
+    "platformUsers": {
+      "title": "Users",
+      "description": "Everyone with an account, across all websites. Filter by website or role, and change who works where.",
+      "metadata": {
+        "title": "Users"
+      },
+      "table": {
+        "title": "People",
+        "count": "{count, plural, one {# person} other {# people}}",
+        "person": "Person",
+        "access": "Access",
+        "empty": "No one matches these filters.",
+        "noAccess": "No website yet",
+        "platformAdmin": "Platform administrator",
+        "truncated": "The filter matches more people than can be narrowed at once. Add a search text.",
+        "more": "+{count} more",
+        "manage": "Manage access",
+        "you": "You"
+      },
+      "filters": {
+        "website": "Website",
+        "anyWebsite": "All websites",
+        "kind": "People",
+        "everyone": "Everyone",
+        "platformAdmins": "Platform administrators",
+        "reset": "Reset filters"
+      },
+      "access": {
+        "title": "Access of {name}",
+        "description": "Choose the websites this person works in and what they may do there. A website always keeps at least one administrator.",
+        "rolesOf": "Roles in {site}",
+        "remove": "Remove",
+        "keep": "Keep",
+        "addTitle": "Add to a website",
+        "addWebsite": "Website",
+        "addButton": "Add",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "empty": "Not in any website yet.",
+        "needRole": "Choose at least one role for each website.",
+        "nothingToAdd": "This person already works in every website.",
+        "saveCount": "Save {count, plural, one {# change} other {# changes}}",
+        "state": {
+          "new": "New",
+          "changed": "Changed",
+          "removed": "Will be removed"
+        },
+        "platformAdminNote": "This person administers the platform and can work in every website anyway. The roles here are the ones they hold as a member."
+      }
     }
   }
 }
