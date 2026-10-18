@@ -9,7 +9,11 @@ import {
   CREDENTIAL_LIMITS,
 } from '../../application/contracts/auth-constraints';
 
-import type { AuthCode, InvitationRole, TenantRole } from '../../application/contracts/auth-constraints';
+import type {
+  AuthCode,
+  InvitationRole,
+  TenantRole,
+} from '../../application/contracts/auth-constraints';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['auth']>;
 

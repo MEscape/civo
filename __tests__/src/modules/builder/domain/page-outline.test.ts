@@ -42,7 +42,10 @@ describe('outlineOf', () => {
   });
 
   it('keeps a few blocks and a few columns, however large the page', () => {
-    const wide = node('columns', Array.from({ length: 9 }, () => node('text')));
+    const wide = node(
+      'columns',
+      Array.from({ length: 9 }, () => node('text')),
+    );
     const outline = outlineOf(page(...Array.from({ length: 9 }, () => wide)), catalog);
 
     expect(outline).toHaveLength(MAX_OUTLINE_BLOCKS);

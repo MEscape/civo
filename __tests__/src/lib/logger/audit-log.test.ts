@@ -38,7 +38,9 @@ describe('createAuditLog', () => {
     const audit = createAuditLog<'shop.tested'>('shop.audit', { 'shop.tested': 'info' });
 
     audit.record({ type: 'shop.tested', errorCode: null } as { readonly type: 'shop.tested' });
-    audit.record({ type: 'shop.tested', errorCode: 'shop.down' } as { readonly type: 'shop.tested' });
+    audit.record({ type: 'shop.tested', errorCode: 'shop.down' } as {
+      readonly type: 'shop.tested';
+    });
 
     expect(info).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith('shop.tested', { errorCode: 'shop.down' });

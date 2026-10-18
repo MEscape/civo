@@ -4,7 +4,6 @@ import type { AuditSubjects } from '@modules/audit';
 import { subjectIdsOf } from '@modules/audit/domain/models/audit-subject';
 import { factsOf, headlineOf } from '@modules/audit/presentation/components/audit-details';
 
-
 describe('the things audit entries name', () => {
   it('collects each id once per kind, from every field that names one, and nothing else', () => {
     const ids = subjectIdsOf([

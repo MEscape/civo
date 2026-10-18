@@ -73,10 +73,7 @@ export function ArtemisLogo({ variant = 'full', className, title }: ArtemisLogoP
         {MARK_PATHS.map((d) => (
           <path key={d} d={d} />
         ))}
-        {variant === 'full' &&
-          WORDMARK_PATHS.map((d) => (
-            <path key={d} d={d} />
-          ))}
+        {variant === 'full' && WORDMARK_PATHS.map((d) => <path key={d} d={d} />)}
       </g>
     </svg>
   );

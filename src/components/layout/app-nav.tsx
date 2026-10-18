@@ -153,7 +153,9 @@ function SectionNavList({ label, compactLabel, moreLabel, links, pathname }: Nav
           {groupLabel !== undefined && (
             <li className={cn(classes.link, 'gap-1 border-transparent pr-5')}>{groupLabel}</li>
           )}
-          <li className={cn(classes.link, 'gap-1 border-transparent pr-5')}>{moreLabel ?? label}</li>
+          <li className={cn(classes.link, 'gap-1 border-transparent pr-5')}>
+            {moreLabel ?? label}
+          </li>
         </ul>
 
         {isCompact ? (

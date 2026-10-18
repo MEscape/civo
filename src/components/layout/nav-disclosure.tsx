@@ -87,7 +87,9 @@ export function NavDisclosure({
         }}
         className={cn(
           'flex items-center gap-1 whitespace-nowrap border-b-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
-          isCurrent ? 'border-primary text-copy' : 'border-transparent text-copy-muted hover:text-copy',
+          isCurrent
+            ? 'border-primary text-copy'
+            : 'border-transparent text-copy-muted hover:text-copy',
         )}
       >
         {label}
