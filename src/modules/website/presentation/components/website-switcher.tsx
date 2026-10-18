@@ -74,7 +74,7 @@ export function WebsiteSwitcher({
     <Select value={current.id} onValueChange={handleChange}>
       <SelectTrigger
         aria-label={t('nav.switch')}
-        className="mr-3 h-8 w-auto max-w-56 self-center gap-2 border-transparent bg-transparent px-2 font-heading font-semibold shadow-none hover:bg-canvas"
+        className="mr-1 h-8 w-auto max-w-36 self-center sm:mr-3 sm:max-w-56 gap-2 border-transparent bg-transparent px-2 font-heading font-semibold shadow-none hover:bg-canvas"
       >
         <SelectValue />
       </SelectTrigger>

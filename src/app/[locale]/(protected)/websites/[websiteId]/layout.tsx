@@ -31,9 +31,14 @@ const SECTION_LABELS = {
   builder: 'nav.builder',
   bookings: 'nav.bookings',
   releases: 'nav.releases',
+  data: 'nav.data',
   settings: 'nav.settings',
   users: 'nav.users',
+  audit: 'nav.audit',
 } as const satisfies Record<WebsiteSectionKey, string>;
+
+/** Rarely visited administration sits behind one dropdown, so the everyday areas stay tabs. */
+const ADMINISTRATION: ReadonlySet<WebsiteSectionKey> = new Set(['settings', 'users', 'audit']);
 
 /**
  * The website's name and the way between its sections, as one line. A reader
@@ -74,6 +79,8 @@ async function WebsiteNav({ params }: Pick<LayoutProps, 'params'>) {
       <AppNav
         variant="section"
         label={t('nav.label')}
+        compactLabel={t('nav.sections')}
+        moreLabel={t('nav.more')}
         links={[
           ...(website.isOk() && !hasSwitcher
             ? [{ href: websiteRoutes.detail(websiteId), label: website.value.name, isBrand: true }]
@@ -82,6 +89,7 @@ async function WebsiteNav({ params }: Pick<LayoutProps, 'params'>) {
             href,
             label: t(SECTION_LABELS[key]),
             isExact: key === 'overview',
+            ...(ADMINISTRATION.has(key) ? { group: t('nav.administration') } : {}),
           })),
         ]}
       />

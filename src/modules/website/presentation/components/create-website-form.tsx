@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { builderRoutes } from '@modules/builder/client';
 
 import { FieldMessage } from '@components/shared/field-message';
+import { FormPanelBody, FormPanelFooter } from '@components/shared/form-panel';
 import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
 
@@ -90,43 +91,42 @@ export function CreateWebsiteForm() {
   }
 
   return (
-    <form
-      onSubmit={form.handleSubmit(handleSubmit)}
-      noValidate
-      aria-busy={isPending}
-      className="space-y-6"
-    >
-      <TextField
-        id={nameId}
-        label={t('createForm.name')}
-        placeholder={t('createForm.namePlaceholder')}
-        autoComplete="organization"
-        error={errorText(errors.name?.message)}
-        {...form.register('name', { onChange: handleNameChange })}
-      />
-
-      <TextField
-        id={slugId}
-        label={t('createForm.slug')}
-        placeholder={t('createForm.slugPlaceholder')}
-        autoComplete="off"
-        error={errorText(errors.slug?.message)}
-        {...form.register('slug', { onBlur: handleSlugBlur })}
-      />
-
-      <TemplatePicker control={form.control} />
-
-      {formErrorCode !== null && (
-        <FieldMessage
-          id={`${id}-form-error`}
-          message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
-          className="text-sm"
+    <form onSubmit={form.handleSubmit(handleSubmit)} noValidate aria-busy={isPending}>
+      <FormPanelBody>
+        <TextField
+          id={nameId}
+          label={t('createForm.name')}
+          placeholder={t('createForm.namePlaceholder')}
+          autoComplete="organization"
+          error={errorText(errors.name?.message)}
+          {...form.register('name', { onChange: handleNameChange })}
         />
-      )}
 
-      <Button type="submit" disabled={isPending}>
-        {isPending ? t('createForm.submitting') : t('createForm.submit')}
-      </Button>
+        <TextField
+          id={slugId}
+          label={t('createForm.slug')}
+          placeholder={t('createForm.slugPlaceholder')}
+          autoComplete="off"
+          error={errorText(errors.slug?.message)}
+          {...form.register('slug', { onBlur: handleSlugBlur })}
+        />
+
+        <TemplatePicker control={form.control} />
+      </FormPanelBody>
+      <FormPanelFooter
+        status={
+          formErrorCode !== null && (
+            <FieldMessage
+              id={`${id}-form-error`}
+              message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
+            />
+          )
+        }
+      >
+        <Button type="submit" disabled={isPending}>
+          {isPending ? t('createForm.submitting') : t('createForm.submit')}
+        </Button>
+      </FormPanelFooter>
     </form>
   );
 }

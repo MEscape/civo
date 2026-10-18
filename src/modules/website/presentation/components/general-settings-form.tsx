@@ -5,12 +5,11 @@ import { useId, useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
-import { FieldMessage } from '@components/shared/field-message';
+import { DataPanel } from '@components/shared/data-panel';
+import { FormPanelBody } from '@components/shared/form-panel';
 import { TextField } from '@components/shared/text-field';
-import { Button } from '@components/ui/button';
+import { useReportUnsavedChanges } from '@components/shared/unsaved-changes-guard';
 import { Field, FieldError, Label, Textarea } from '@components/ui/input';
-
-import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
 
 import { useTranslations } from '@i18n/client';
 
@@ -20,6 +19,8 @@ import { updateWebsiteAction } from '../actions/update-website-action';
 import { toWebsiteEdit } from '../forms/to-website-edit';
 import { MESSAGE_PARAMS, messageKeyForCode } from '../messages/message-keys';
 import { generalSettingsSchema } from '../schemas/general-settings-schema';
+
+import { SettingsActions } from './settings-actions';
 
 import type { GeneralSettings } from '../schemas/general-settings-schema';
 
@@ -46,7 +47,7 @@ export function GeneralSettingsForm({ websiteId, initialValues, slug }: GeneralS
     defaultValues: initialValues,
   });
   const { errors, isDirty } = form.formState;
-  useBeforeUnloadGuard(isDirty);
+  useReportUnsavedChanges(isDirty);
 
   // Derived, not stored: the confirmation disappears as soon as the user edits again.
   const showSaved = hasSaved && !isDirty;
@@ -71,68 +72,58 @@ export function GeneralSettingsForm({ websiteId, initialValues, slug }: GeneralS
   }
 
   return (
-    <section aria-labelledby={`${id}-title`} className="space-y-6">
-      <div className="space-y-1">
-        <h2 id={`${id}-title`} className="text-xl font-semibold text-copy">
-          {t('generalSettings.title')}
-        </h2>
-        <p className="text-sm text-copy-muted">{t('generalSettings.description')}</p>
-      </div>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        noValidate
-        aria-busy={isPending}
-        className="space-y-6 rounded-token border border-border bg-surface p-4 sm:p-6"
-      >
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <TextField
-            id={nameId}
-            label={t('generalSettings.name')}
-            autoComplete="organization"
-            error={errorText(errors.name?.message)}
-            {...form.register('name')}
-          />
-          <TextField
-            id={slugId}
-            label={t('generalSettings.slug')}
-            hint={t('generalSettings.slugHint')}
-            value={slug}
-            readOnly
-          />
-        </div>
+    <DataPanel title={t('generalSettings.title')} description={t('generalSettings.description')}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} noValidate aria-busy={isPending}>
+        <FormPanelBody>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <TextField
+              id={nameId}
+              label={t('generalSettings.name')}
+              autoComplete="organization"
+              error={errorText(errors.name?.message)}
+              {...form.register('name')}
+            />
+            <TextField
+              id={slugId}
+              label={t('generalSettings.slug')}
+              hint={t('generalSettings.slugHint')}
+              value={slug}
+              readOnly
+              className="bg-canvas text-copy-muted"
+            />
+          </div>
 
-        <Field>
-          <Label htmlFor={descriptionId}>{t('generalSettings.descriptionLabel')}</Label>
-          <Textarea
-            id={descriptionId}
-            rows={3}
-            placeholder={t('generalSettings.descriptionPlaceholder')}
-            aria-invalid={descriptionError === undefined ? undefined : true}
-            aria-describedby={descriptionError === undefined ? undefined : `${descriptionId}-error`}
-            {...form.register('description')}
-          />
-          {descriptionError !== undefined && (
-            <FieldError id={`${descriptionId}-error`}>{descriptionError}</FieldError>
-          )}
-        </Field>
+          <Field>
+            <Label htmlFor={descriptionId}>{t('generalSettings.descriptionLabel')}</Label>
+            <Textarea
+              id={descriptionId}
+              rows={3}
+              placeholder={t('generalSettings.descriptionPlaceholder')}
+              aria-invalid={descriptionError === undefined ? undefined : true}
+              aria-describedby={
+                descriptionError === undefined ? undefined : `${descriptionId}-error`
+              }
+              {...form.register('description')}
+            />
+            {descriptionError !== undefined && (
+              <FieldError id={`${descriptionId}-error`}>{descriptionError}</FieldError>
+            )}
+          </Field>
+        </FormPanelBody>
 
-        {formErrorCode !== null && (
-          <FieldMessage
-            id={`${id}-form-error`}
-            message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
-            className="text-sm"
-          />
-        )}
-        {showSaved && (
-          <p role="status" className="text-sm text-success">
-            {t('generalSettings.saved')}
-          </p>
-        )}
-
-        <Button type="submit" disabled={isPending || !isDirty}>
-          {isPending ? t('generalSettings.submitting') : t('generalSettings.submit')}
-        </Button>
+        <SettingsActions
+          id={id}
+          isPending={isPending}
+          isDirty={isDirty}
+          showSaved={showSaved}
+          savedLabel={t('generalSettings.saved')}
+          unsavedLabel={t('settingsActions.unsaved')}
+          submitLabel={isPending ? t('generalSettings.submitting') : t('generalSettings.submit')}
+          error={
+            formErrorCode === null ? undefined : t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)
+          }
+        />
       </form>
-    </section>
+    </DataPanel>
   );
 }

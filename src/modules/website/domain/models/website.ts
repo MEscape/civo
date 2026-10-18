@@ -151,6 +151,23 @@ export function parseWebsiteChanges(
   return bag.hasErrors ? err(bag.toError()) : ok(changes);
 }
 
+/**
+ * Only what really differs from the stored website. A form sends every field
+ * it shows, so without this an edit of the description would be recorded as
+ * a change of the name too.
+ */
+export function onlyRealChanges(
+  changes: WebsiteChanges,
+  current: Pick<Website, 'name' | 'description'>,
+): WebsiteChanges {
+  return {
+    ...(changes.name !== undefined && changes.name !== current.name ? { name: changes.name } : {}),
+    ...(changes.description !== undefined && changes.description !== current.description
+      ? { description: changes.description }
+      : {}),
+  };
+}
+
 export function isEmptyChanges(changes: WebsiteChanges): boolean {
   return Object.keys(changes).length === 0;
 }

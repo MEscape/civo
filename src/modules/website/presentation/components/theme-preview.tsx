@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { DataPanel } from '@components/shared/data-panel';
 
 import { useTranslations } from '@i18n/client';
 
@@ -21,14 +21,14 @@ const SAMPLE_BUTTON =
  */
 export function ThemePreview({ theme }: ThemePreviewProps) {
   const t = useTranslations('website');
-  const headingId = useId();
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col">
-      <h2 id={headingId} className="mb-6 text-xl font-semibold text-copy">
-        {t('themeSettings.previewTitle')}
-      </h2>
-      <div className="relative flex-1 overflow-hidden rounded-token border border-border bg-surface p-4 sm:p-6">
+    <DataPanel
+      title={t('themeSettings.previewTitle')}
+      description={t('themeSettings.previewDescription')}
+      className="lg:sticky lg:top-sticky-panel"
+    >
+      <div className="relative overflow-hidden p-4 sm:p-6">
         <ThemeProvider theme={theme}>
           <div
             aria-hidden="true"
@@ -64,6 +64,6 @@ export function ThemePreview({ theme }: ThemePreviewProps) {
           </div>
         </ThemeProvider>
       </div>
-    </section>
+    </DataPanel>
   );
 }

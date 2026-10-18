@@ -1,21 +1,38 @@
 import 'server-only';
+import { auditQueries, withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
 import { HOME_PAGE_PATH, createSystemPage } from '@modules/builder';
 
 import { CreateWebsite } from './application/commands/create-website';
 import { UpdateWebsite } from './application/commands/update-website';
 import { UpdateWebsiteTheme } from './application/commands/update-website-theme';
+import { GetPlatformAuditTrail } from './application/queries/get-platform-audit-trail';
 import { GetPublicWebsiteBySlug } from './application/queries/get-public-website-by-slug';
+import { GetWebsiteAuditDigest } from './application/queries/get-website-audit-digest';
+import { GetWebsiteAuditTrail } from './application/queries/get-website-audit-trail';
 import { GetWebsiteById } from './application/queries/get-website-by-id';
 import { ListWebsiteNames } from './application/queries/list-website-names';
+import { ListWebsiteOptions } from './application/queries/list-website-options';
 import { ListWebsites } from './application/queries/list-websites';
 import { restoreWebsiteTheme } from './domain/models/website-theme';
-import { loggerWebsiteAuditLog } from './infrastructure/logging/logger-website-audit-log';
+import { AuditModuleTrailReader } from './infrastructure/audit-trail/audit-module-trail-reader';
+import {
+  LEVEL_BY_EVENT,
+  TRAIL_BY_EVENT,
+  loggerWebsiteAuditLog,
+} from './infrastructure/logging/logger-website-audit-log';
 import { PrismaWebsiteRepository } from './infrastructure/prisma/prisma-website.repository';
 import { BuilderHomePageProvisioner } from './infrastructure/provisioner/builder-home-page-provisioner';
 
 import type { WebsiteThemeView } from './application/contracts/website-views';
 import type { StoredWebsiteTheme } from './domain/models/website-theme';
+
+/** The module's audit port: its log lines, and the trail the website's audit page reads. */
+const auditLog = withAuditTrail(loggerWebsiteAuditLog, {
+  source: 'website',
+  levels: LEVEL_BY_EVENT,
+  policy: TRAIL_BY_EVENT,
+});
 
 /**
  * The module's composition root: the one file that knows both the
@@ -27,7 +44,8 @@ import type { StoredWebsiteTheme } from './domain/models/website-theme';
 const websites = new PrismaWebsiteRepository();
 const homePages = new BuilderHomePageProvisioner(createSystemPage, HOME_PAGE_PATH);
 const authorization = getAccessControl();
-const dependencies = { authorization, websites, audit: loggerWebsiteAuditLog };
+const dependencies = { authorization, websites, audit: auditLog };
+const auditTrail = new AuditModuleTrailReader(auditQueries);
 
 export const websiteCommands = {
   createWebsite: new CreateWebsite({ ...dependencies, homePages }),
@@ -38,8 +56,12 @@ export const websiteCommands = {
 export const websiteQueries = {
   getWebsiteById: new GetWebsiteById(dependencies),
   listWebsites: new ListWebsites(dependencies),
+  listWebsiteOptions: new ListWebsiteOptions(dependencies),
   listWebsiteNames: new ListWebsiteNames({ websites }),
   getPublicWebsiteBySlug: new GetPublicWebsiteBySlug({ websites }),
+  getAuditTrail: new GetWebsiteAuditTrail({ ...dependencies, auditTrail }),
+  getPlatformAuditTrail: new GetPlatformAuditTrail({ ...dependencies, auditTrail }),
+  getAuditDigest: new GetWebsiteAuditDigest({ ...dependencies, auditTrail }),
 } as const;
 
 /**

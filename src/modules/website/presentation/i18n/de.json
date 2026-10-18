@@ -43,8 +43,12 @@
       "submitting": "Wird gespeichert…",
       "saved": "Änderungen gespeichert."
     },
+    "settingsActions": {
+      "unsaved": "Ungespeicherte Änderungen"
+    },
     "themeSettings": {
-      "title": "Theme Einstellungen",
+      "title": "Design",
+      "description": "Farben, Schriften und Formen, die Besucher auf jeder Seite sehen.",
       "colors": "Farben",
       "primary": "Primär",
       "secondary": "Sekundär",
@@ -67,9 +71,10 @@
         "comfortable": "Komfortabel",
         "spacious": "Großzügig"
       },
-      "submit": "Theme speichern",
+      "submit": "Design speichern",
       "submitting": "Speichert…",
-      "saved": "Theme erfolgreich gespeichert!",
+      "saved": "Design gespeichert.",
+      "previewDescription": "Folgt jeder Änderung. Gespeichert wird erst beim Speichern.",
       "previewTitle": "Live-Vorschau",
       "preview": {
         "heading": "Willkommen",
@@ -105,10 +110,15 @@
       "builder": "Seiten",
       "bookings": "Buchungen",
       "releases": "Releases",
+      "data": "Datenquellen",
       "settings": "Einstellungen",
       "users": "Benutzer",
+      "audit": "Protokoll",
       "switch": "Website wechseln",
-      "allWebsites": "Alle Websites"
+      "allWebsites": "Alle Websites",
+      "sections": "Bereiche",
+      "administration": "Verwaltung",
+      "more": "Mehr"
     },
     "pages": {
       "list": {
@@ -118,13 +128,18 @@
         "emptyDescription": "Erstellen Sie Ihre erste Website, um loszulegen.",
         "createTitle": "Website erstellen",
         "pagination": {
-          "nav": "Seiten der Webseitenliste",
-          "previous": "Zurück",
-          "next": "Weiter",
-          "summary": "{first}–{last} von {total}",
-          "page": "Seite {page}"
+          "nav": "Seiten der Webseitenliste"
         },
-        "memberDescription": "Die Websites, zu denen Sie gehören. Wählen Sie eine zum Arbeiten."
+        "memberDescription": "Die Websites, zu denen Sie gehören. Wählen Sie eine zum Arbeiten.",
+        "panelTitle": "Websites",
+        "count": "{count, plural, one {# Website} other {# Websites}}",
+        "paginationNav": "Seiten der Websiteliste",
+        "open": "Öffnen",
+        "columns": {
+          "website": "Website",
+          "address": "Adresse",
+          "actions": "Aktionen"
+        }
       },
       "detail": {
         "publicSite": "Öffentliche Seite",
@@ -169,8 +184,29 @@
       },
       "settings": {
         "title": "Einstellungen",
-        "description": "Design und Datenquellen dieser Website."
+        "description": "Angaben und Design dieser Website.",
+        "leave": {
+          "title": "Ohne Speichern verlassen?",
+          "description": "Die Angaben oder das Design der Website haben ungespeicherte Änderungen. Sie gehen verloren, wenn Sie die Seite verlassen.",
+          "confirm": "Änderungen verwerfen",
+          "stay": "Weiter bearbeiten"
+        }
       }
+    },
+    "auditEvents": {
+      "website": {
+        "created": "Website erstellt",
+        "updated": "Website-Angaben geändert",
+        "theme_updated": "Design geändert",
+        "provisioning_rollback_failed": "Aufräumen nach fehlgeschlagener Erstellung fehlgeschlagen"
+      }
+    },
+    "platformNav": {
+      "label": "Plattform",
+      "websites": "Websites",
+      "audit": "Protokoll",
+      "users": "Benutzer",
+      "optionsTruncated": "Im Filter werden nur die ersten 1000 Websites angeboten."
     }
   }
 }

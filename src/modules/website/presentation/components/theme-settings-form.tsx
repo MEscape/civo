@@ -5,11 +5,9 @@ import { useId, useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 
-import { FieldMessage } from '@components/shared/field-message';
+import { DataPanel } from '@components/shared/data-panel';
 import { FormSelectField } from '@components/shared/form-select-field';
-import { Button } from '@components/ui/button';
-
-import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+import { useReportUnsavedChanges } from '@components/shared/unsaved-changes-guard';
 
 import { useTranslations } from '@i18n/client';
 
@@ -31,6 +29,7 @@ import { themeSettingsSchema } from '../schemas/theme-settings-schema';
 import { toPreviewTheme } from '../theme/preview-theme';
 
 import { ColorField } from './color-field';
+import { SettingsActions } from './settings-actions';
 import { ThemePreview } from './theme-preview';
 
 import type { WebsiteThemeView } from '../../application/contracts/website-views';
@@ -73,7 +72,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
     defaultValues: initialTheme,
   });
   const { isDirty } = form.formState;
-  useBeforeUnloadGuard(isDirty);
+  useReportUnsavedChanges(isDirty);
   const previewTheme = toPreviewTheme(useWatch({ control: form.control }), initialTheme);
 
   // Derived, not stored: the confirmation disappears as soon as the user edits again.
@@ -97,102 +96,94 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <section aria-labelledby={`${id}-title`} className="flex flex-col">
-        <h2 id={`${id}-title`} className="mb-6 text-xl font-semibold text-copy">
-          {t('themeSettings.title')}
-        </h2>
-        <form
-          onSubmit={form.handleSubmit(handleSubmit)}
-          noValidate
-          aria-busy={isPending}
-          className="flex-1 space-y-6 rounded-token border border-border bg-surface p-4 sm:p-6"
-        >
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-medium text-copy">{t('themeSettings.colors')}</legend>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <ColorField
-                control={form.control}
-                name="colors.primary"
-                label={t('themeSettings.primary')}
-              />
-              <ColorField
-                control={form.control}
-                name="colors.secondary"
-                label={t('themeSettings.secondary')}
-              />
-              <ColorField
-                control={form.control}
-                name="colors.accent"
-                label={t('themeSettings.accent')}
-              />
-            </div>
-          </fieldset>
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <DataPanel title={t('themeSettings.title')} description={t('themeSettings.description')}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} noValidate aria-busy={isPending}>
+          <div className="divide-y divide-border">
+            <fieldset className="p-4 sm:p-6">
+              <legend className="float-left mb-4 w-full text-xs font-semibold uppercase tracking-wide text-copy-muted">
+                {t('themeSettings.colors')}
+              </legend>
+              <div className="clear-both grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <ColorField
+                  control={form.control}
+                  name="colors.primary"
+                  label={t('themeSettings.primary')}
+                />
+                <ColorField
+                  control={form.control}
+                  name="colors.secondary"
+                  label={t('themeSettings.secondary')}
+                />
+                <ColorField
+                  control={form.control}
+                  name="colors.accent"
+                  label={t('themeSettings.accent')}
+                />
+              </div>
+            </fieldset>
 
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-medium text-copy">
-              {t('themeSettings.typography')}
-            </legend>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormSelectField
-                control={form.control}
-                name="typography.headingFont"
-                id={`${id}-heading-font`}
-                label={t('themeSettings.headingFont')}
-                options={headingFontOptions}
-                errorText={errorText}
-              />
-              <FormSelectField
-                control={form.control}
-                name="typography.bodyFont"
-                id={`${id}-body-font`}
-                label={t('themeSettings.bodyFont')}
-                options={bodyFontOptions}
-                errorText={errorText}
-              />
-            </div>
-          </fieldset>
+            <fieldset className="p-4 sm:p-6">
+              <legend className="float-left mb-4 w-full text-xs font-semibold uppercase tracking-wide text-copy-muted">
+                {t('themeSettings.typography')}
+              </legend>
+              <div className="clear-both grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormSelectField
+                  control={form.control}
+                  name="typography.headingFont"
+                  id={`${id}-heading-font`}
+                  label={t('themeSettings.headingFont')}
+                  options={headingFontOptions}
+                  errorText={errorText}
+                />
+                <FormSelectField
+                  control={form.control}
+                  name="typography.bodyFont"
+                  id={`${id}-body-font`}
+                  label={t('themeSettings.bodyFont')}
+                  options={bodyFontOptions}
+                  errorText={errorText}
+                />
+              </div>
+            </fieldset>
 
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-medium text-copy">{t('themeSettings.layout')}</legend>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormSelectField
-                control={form.control}
-                name="radius"
-                id={`${id}-radius`}
-                label={t('themeSettings.radiusLabel')}
-                options={radiusOptions}
-                errorText={errorText}
-              />
-              <FormSelectField
-                control={form.control}
-                name="spacingScale"
-                id={`${id}-spacing`}
-                label={t('themeSettings.spacingLabel')}
-                options={spacingOptions}
-                errorText={errorText}
-              />
-            </div>
-          </fieldset>
+            <fieldset className="p-4 sm:p-6">
+              <legend className="float-left mb-4 w-full text-xs font-semibold uppercase tracking-wide text-copy-muted">
+                {t('themeSettings.layout')}
+              </legend>
+              <div className="clear-both grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormSelectField
+                  control={form.control}
+                  name="radius"
+                  id={`${id}-radius`}
+                  label={t('themeSettings.radiusLabel')}
+                  options={radiusOptions}
+                  errorText={errorText}
+                />
+                <FormSelectField
+                  control={form.control}
+                  name="spacingScale"
+                  id={`${id}-spacing`}
+                  label={t('themeSettings.spacingLabel')}
+                  options={spacingOptions}
+                  errorText={errorText}
+                />
+              </div>
+            </fieldset>
+          </div>
 
-          {formErrorCode !== null && (
-            <FieldMessage
-              id={`${id}-form-error`}
-              message={t(messageKeyForCode(formErrorCode))}
-              className="text-sm"
-            />
-          )}
-          {showSaved && (
-            <p role="status" className="text-sm text-success">
-              {t('themeSettings.saved')}
-            </p>
-          )}
-
-          <Button type="submit" disabled={isPending}>
-            {isPending ? t('themeSettings.submitting') : t('themeSettings.submit')}
-          </Button>
+          <SettingsActions
+            id={id}
+            isPending={isPending}
+            isDirty={isDirty}
+            showSaved={showSaved}
+            savedLabel={t('themeSettings.saved')}
+            unsavedLabel={t('settingsActions.unsaved')}
+            submitLabel={isPending ? t('themeSettings.submitting') : t('themeSettings.submit')}
+            error={formErrorCode === null ? undefined : t(messageKeyForCode(formErrorCode))}
+          />
         </form>
-      </section>
+      </DataPanel>
 
       <ThemePreview theme={previewTheme} />
     </div>

@@ -43,8 +43,12 @@
       "submitting": "Saving…",
       "saved": "Changes saved."
     },
+    "settingsActions": {
+      "unsaved": "Unsaved changes"
+    },
     "themeSettings": {
-      "title": "Theme settings",
+      "title": "Theme",
+      "description": "Colors, fonts and shapes visitors see on every page.",
       "colors": "Colors",
       "primary": "Primary",
       "secondary": "Secondary",
@@ -70,6 +74,7 @@
       "submit": "Save theme",
       "submitting": "Saving…",
       "saved": "Theme saved.",
+      "previewDescription": "Updates as you change the theme. Saved only when you save.",
       "previewTitle": "Live preview",
       "preview": {
         "heading": "Welcome",
@@ -105,10 +110,15 @@
       "builder": "Pages",
       "bookings": "Bookings",
       "releases": "Releases",
+      "data": "Data sources",
       "settings": "Settings",
       "users": "Users",
+      "audit": "Audit log",
       "switch": "Switch website",
-      "allWebsites": "All websites"
+      "allWebsites": "All websites",
+      "sections": "Sections",
+      "administration": "Administration",
+      "more": "More"
     },
     "pages": {
       "list": {
@@ -118,13 +128,18 @@
         "emptyDescription": "Create your first website to get started.",
         "createTitle": "Create a website",
         "pagination": {
-          "nav": "Websites pages",
-          "previous": "Previous",
-          "next": "Next",
-          "summary": "{first}–{last} of {total}",
-          "page": "Page {page}"
+          "nav": "Websites pages"
         },
-        "memberDescription": "The websites you belong to. Choose one to work in."
+        "memberDescription": "The websites you belong to. Choose one to work in.",
+        "panelTitle": "Websites",
+        "count": "{count, plural, one {# website} other {# websites}}",
+        "paginationNav": "Websites pages",
+        "open": "Open",
+        "columns": {
+          "website": "Website",
+          "address": "Address",
+          "actions": "Actions"
+        }
       },
       "detail": {
         "publicSite": "Public site",
@@ -169,8 +184,29 @@
       },
       "settings": {
         "title": "Settings",
-        "description": "Theme and data sources of this website."
+        "description": "Details and theme of this website.",
+        "leave": {
+          "title": "Leave without saving?",
+          "description": "The website details or the theme have changes that are not saved yet. They are lost if you leave.",
+          "confirm": "Discard changes",
+          "stay": "Keep editing"
+        }
       }
+    },
+    "auditEvents": {
+      "website": {
+        "created": "Website created",
+        "updated": "Website details changed",
+        "theme_updated": "Theme changed",
+        "provisioning_rollback_failed": "Clean-up after a failed creation failed"
+      }
+    },
+    "platformNav": {
+      "label": "Platform",
+      "websites": "Websites",
+      "audit": "Audit log",
+      "users": "Users",
+      "optionsTruncated": "Only the first 1000 websites are offered in the filter."
     }
   }
 }

@@ -4,12 +4,12 @@ import type { Metadata } from 'next';
 
 import { notFound } from 'next/navigation';
 
-import { DataSourcesSettings } from '@modules/data-sources';
 import { GeneralSettingsForm, ThemeSettingsForm, websiteQueries } from '@modules/website';
 
 import { AdminContainer, PageHeading, Section } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
 import { PageSkeleton } from '@components/shared/page-skeleton';
+import { UnsavedChangesGuard } from '@components/shared/unsaved-changes-guard';
 
 import { requireLocale } from '@i18n';
 
@@ -45,23 +45,31 @@ async function WebsiteSettingsContent({ params }: RouteProps) {
 
   return (
     <AdminContainer>
-      <Section className="space-y-10 py-8">
+      <Section className="space-y-8 py-8">
         <PageHeading
           title={t('pages.settings.title')}
           description={t('pages.settings.description')}
         />
-        <I18nProvider locale={locale} namespaces={['website', 'dataSources']}>
-          {access.may('website.update') && (
-            <GeneralSettingsForm
-              websiteId={website.id}
-              slug={website.slug}
-              initialValues={{ name: website.name, description: website.description ?? '' }}
-            />
-          )}
-          {access.may('theme.update') && (
-            <ThemeSettingsForm websiteId={website.id} initialTheme={website.theme} />
-          )}
-          {access.may('datasource.create') && <DataSourcesSettings websiteId={website.id} />}
+        <I18nProvider locale={locale} namespaces={['website']}>
+          <UnsavedChangesGuard
+            title={t('pages.settings.leave.title')}
+            description={t('pages.settings.leave.description')}
+            confirmLabel={t('pages.settings.leave.confirm')}
+            cancelLabel={t('pages.settings.leave.stay')}
+          >
+            <div className="space-y-6">
+              {access.may('website.update') && (
+                <GeneralSettingsForm
+                  websiteId={website.id}
+                  slug={website.slug}
+                  initialValues={{ name: website.name, description: website.description ?? '' }}
+                />
+              )}
+              {access.may('theme.update') && (
+                <ThemeSettingsForm websiteId={website.id} initialTheme={website.theme} />
+              )}
+            </div>
+          </UnsavedChangesGuard>
         </I18nProvider>
       </Section>
     </AdminContainer>

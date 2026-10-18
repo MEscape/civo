@@ -3,7 +3,7 @@ import { okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 import { definedKeys } from '@lib/utils';
 
-import { isEmptyChanges, parseWebsiteChanges } from '../../domain/models/website';
+import { isEmptyChanges, onlyRealChanges, parseWebsiteChanges } from '../../domain/models/website';
 import { loadAuthorizedWebsite } from '../load-authorized-website';
 import { toWebsiteView } from '../website-view-mappers';
 
@@ -22,6 +22,7 @@ export class UpdateWebsite {
     return loadAuthorizedWebsite(this.deps, input.id, 'website.update').andThen(
       ({ actor, website }) =>
         parseWebsiteChanges(input)
+          .map((parsed) => onlyRealChanges(parsed, website))
           .asyncAndThen(
             (changes): AppResultAsync<Website, NotFoundAppError | InfrastructureAppError> => {
               if (isEmptyChanges(changes)) {
