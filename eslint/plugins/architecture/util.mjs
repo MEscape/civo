@@ -2,7 +2,7 @@
  * Helpers shared by the rules. Everything is syntactic (no type checker, no
  * file system) so enabling a rule costs one AST walk per file.
  */
-import { classifyFile, resolveSpecifier, toRepoPath } from '../../architecture-policy/paths.mjs';
+import { classifyFile, resolveSpecifier, toRepoPath } from '../../policy/paths.mjs';
 
 /** Repo-relative posix path of the linted file. */
 export function repoPathOf(context) {
@@ -15,7 +15,7 @@ export function classifyContext(context) {
 }
 
 /** Stable "docs" link target used in rule metadata. */
-export const DOCS_URL = 'docs/architecture/eslint-architecture.md';
+export const DOCS_URL = 'eslint/README.md';
 
 /**
  * Builds a rule module with the plugin-wide conventions: one `violation`

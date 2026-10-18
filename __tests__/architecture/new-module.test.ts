@@ -2,8 +2,8 @@ import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
 
-import { runAllChecks } from '../../eslint/architecture-policy/index.mjs';
-import { architectureRules } from '../../eslint/architecture.mjs';
+import { architectureRules } from '../../eslint/config/architecture.mjs';
+import { runAllChecks } from '../../eslint/policy/index.mjs';
 
 import { makeTree, relativeToRoot } from './fixture-tree';
 import { MODULE, standardModule } from './standard-module';

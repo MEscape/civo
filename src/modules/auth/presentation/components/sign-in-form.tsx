@@ -28,6 +28,7 @@ import { AuthSubmitButton } from './auth-submit-button';
 
 import type { SignIn } from '../schemas/sign-in-schema';
 
+// @unsaved-work none credentials; nothing worth keeping
 export interface SignInFormProps {
   /** Where to go afterwards; the server re-checks it, so this is never trusted. */
   readonly returnTo?: string | undefined;

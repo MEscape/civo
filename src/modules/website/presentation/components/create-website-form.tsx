@@ -33,6 +33,7 @@ import { TemplatePicker } from './template-picker';
 import type { NewWebsite } from '../schemas/new-website-schema';
 import type { FieldPath } from 'react-hook-form';
 
+// @unsaved-work none creating, not editing; the fields are re-entered in a minute
 const DEFAULT_TEMPLATE_KEY = TEMPLATE_KEYS[0];
 
 /** "Slug taken" is reported on the slug input, not as a form-level message. */

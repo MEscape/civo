@@ -24,6 +24,7 @@ import { inviteUserSchema } from '../schemas/user-admin-schema';
 import type { InviteOutcome } from '../../application/contracts/user-views';
 import type { z } from 'zod';
 
+// @unsaved-work none an address and roles, re-entered in seconds
 type InviteValues = z.infer<typeof inviteUserSchema>;
 
 export interface InviteUserFormProps {

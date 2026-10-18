@@ -27,6 +27,7 @@ import { newPageSchema } from '../schemas/new-page-schema';
 import type { NewPage } from '../schemas/new-page-schema';
 import type { FieldPath } from 'react-hook-form';
 
+// @unsaved-work none a title and a path; creating, not editing
 /** "Path taken" is reported on the path input, not as a form-level message. */
 const CODE_FIELDS: Readonly<Record<string, FieldPath<NewPage>>> = {
   [BUILDER_ERROR_CODES.pagePathTaken]: 'path',

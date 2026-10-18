@@ -7,10 +7,10 @@ import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
 
-import { overrides } from '../../eslint/overrides.mjs';
-import { react } from '../../eslint/react.mjs';
-import { restrictions } from '../../eslint/restrictions.mjs';
-import { afterPrettier, style } from '../../eslint/style.mjs';
+import { overrides } from '../../eslint/config/overrides.mjs';
+import { react } from '../../eslint/config/react.mjs';
+import { restrictions } from '../../eslint/config/restrictions.mjs';
+import { afterPrettier, style } from '../../eslint/config/style.mjs';
 import { makeTree, relativeToRoot } from '../architecture/fixture-tree';
 
 async function lintFiles(files: Record<string, string>): Promise<Record<string, string[]>> {
@@ -321,5 +321,19 @@ describe('zod stays in the presentation layer', () => {
     const file = 'src/modules/shop/presentation/schemas/thing-schema.ts';
     const out = await lintFiles({ [file]: ZOD_IMPORT });
     expect(out[file]!.join('\n')).not.toMatch(/Zod belongs/);
+  });
+});
+
+describe('raw HTML', () => {
+  it('forbids dangerouslySetInnerHTML in every source folder', async () => {
+    const html = 'export const A = () => <div dangerouslySetInnerHTML={{ __html: "x" }} />;\n';
+    const out = await lintFiles({
+      'src/components/shared/a.tsx': html,
+      'src/modules/shop/presentation/components/b.tsx': html,
+      'src/app/error.tsx': html,
+    });
+    for (const file of Object.keys(out)) {
+      expect(out[file]!.join('\n')).toMatch(/Do not render raw HTML/);
+    }
   });
 });

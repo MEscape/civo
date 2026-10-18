@@ -30,6 +30,7 @@ import { NewPasswordFields } from './new-password-fields';
 import type { InvitationSummaryProps } from './invitation-summary';
 import type { AcceptInvitation } from '../schemas/accept-invitation-schema';
 
+// @unsaved-work none a one-step form that sets a password; nothing is edited
 export interface AcceptInvitationFormProps {
   /** The single-use secret of the emailed link. */
   readonly token: string;

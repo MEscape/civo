@@ -354,3 +354,39 @@ ruleTester.run('architecture/route-usage', rules['route-usage']!, {
     ),
   ],
 });
+
+const FORM_FILE = 'src/modules/shops/presentation/components/shop-form.tsx';
+
+ruleTester.run('architecture/unsaved-work-guard', rules['unsaved-work-guard']!, {
+  valid: [
+    valid(
+      FORM_FILE,
+      "import { useForm } from 'react-hook-form';\nexport function ShopForm() { useForm(); useReportUnsavedChanges('shop', true); return null; }",
+    ),
+    valid(
+      FORM_FILE,
+      'export function ShopForm() { useForm(); useUnsavedNavigationGuard(true); useBeforeUnloadGuard(true); return null; }',
+    ),
+    valid(
+      FORM_FILE,
+      '// @unsaved-work none one field, nothing to lose\nexport function ShopForm() { useForm(); return null; }',
+    ),
+    // no form, no guard needed
+    valid(FORM_FILE, 'export function ShopButton() { return null; }'),
+    // only module components are checked
+    valid('src/components/shared/thing.tsx', 'export function Thing() { useForm(); return null; }'),
+  ],
+  invalid: [
+    invalid(
+      FORM_FILE,
+      'export function ShopForm() { useForm(); return null; }',
+      /can lose unsaved work/,
+    ),
+    // the opt-out needs a reason
+    invalid(
+      FORM_FILE,
+      '// @unsaved-work none\nexport function ShopForm() { useForm(); return null; }',
+      /can lose unsaved work/,
+    ),
+  ],
+});

@@ -409,6 +409,7 @@ import { applyActionError } from '@lib/actions';
 import { createItemAction } from '../actions/create-item-action';
 import { newItemSchema } from '../schemas/new-item-schema';
 
+// @unsaved-work none creating, not editing; one field
 export function CreateItemForm() {
   const t = useTranslations('inventory');
   const form = useForm({ resolver: zodResolver(newItemSchema), defaultValues: { name: '' } });

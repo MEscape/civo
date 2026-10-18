@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { describeEntryPoints } from '../../eslint/architecture-policy/checks-behavior.mjs';
-import { checkPublicApi } from '../../eslint/architecture-policy/checks-dependencies.mjs';
-import { checkModuleStructure } from '../../eslint/architecture-policy/checks-structure.mjs';
-import { CHECKS, loadProject } from '../../eslint/architecture-policy/index.mjs';
+import plugin from '../../eslint/plugins/architecture/index.mjs';
+import { describeEntryPoints } from '../../eslint/policy/checks-behavior.mjs';
+import { checkPublicApi } from '../../eslint/policy/checks-dependencies.mjs';
+import { checkModuleStructure } from '../../eslint/policy/checks-structure.mjs';
+import { CHECKS, loadProject } from '../../eslint/policy/index.mjs';
 import {
   KNOWN_MODULE_CYCLES,
   LEGACY_MODULES,
   MODULE_OVERRIDES,
-} from '../../eslint/architecture-policy/policy.mjs';
-import plugin from '../../eslint/plugins/architecture/index.mjs';
+} from '../../eslint/policy/policy.mjs';
 
 import { describeViolations } from './fixture-tree';
 

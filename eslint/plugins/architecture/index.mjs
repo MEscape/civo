@@ -2,31 +2,33 @@
  * eslint-plugin-architecture
  *
  * Enforces the module architecture described in
- * docs/architecture/eslint-architecture.md. All rules are syntactic and read
- * the central policy in eslint/architecture-policy/policy.mjs; none of them needs the
+ * eslint/README.md. All rules are syntactic and read
+ * the central policy in eslint/policy/policy.mjs; none of them needs the
  * type checker or the file system, and none names a module.
  */
-import { actionContract } from './rules/action-contract.mjs';
-import { auditAdapter } from './rules/audit-adapter.mjs';
-import { authorizationFlow } from './rules/authorization-flow.mjs';
-import { brandedIdUsage } from './rules/branded-id-usage.mjs';
-import { commandAuditDependency } from './rules/command-audit-dependency.mjs';
-import { commandQueryShape } from './rules/command-query-shape.mjs';
-import { dtoSerialization } from './rules/dto-serialization.mjs';
-import { fieldErrorBagOwner } from './rules/field-error-bag-owner.mjs';
-import { formConventions } from './rules/form-conventions.mjs';
-import { headingHierarchy } from './rules/heading-hierarchy.mjs';
-import { layerImports } from './rules/layer-imports.mjs';
-import { limitsUsage } from './rules/limits-usage.mjs';
-import { messageKeyCoverage } from './rules/message-key-coverage.mjs';
-import { metadataConventions } from './rules/metadata-conventions.mjs';
-import { modulePublicApi } from './rules/module-public-api.mjs';
-import { moduleStructure } from './rules/module-structure.mjs';
-import { noCrossModuleDeepImports } from './rules/no-cross-module-deep-imports.mjs';
-import { noI18nInCore } from './rules/no-i18n-in-core.mjs';
-import { noThrowInCoreLayers } from './rules/no-throw-in-core-layers.mjs';
-import { persistenceFailures } from './rules/persistence-failures.mjs';
-import { routeUsage } from './rules/route-usage.mjs';
+import { auditAdapter } from './rules/adapters/audit-adapter.mjs';
+import { persistenceFailures } from './rules/adapters/persistence-failures.mjs';
+import { directivePlacement } from './rules/boundaries/directive-placement.mjs';
+import { fieldErrorBagOwner } from './rules/boundaries/field-error-bag-owner.mjs';
+import { layerImports } from './rules/boundaries/layer-imports.mjs';
+import { noCrossModuleDeepImports } from './rules/boundaries/no-cross-module-deep-imports.mjs';
+import { noI18nInCore } from './rules/boundaries/no-i18n-in-core.mjs';
+import { headingHierarchy } from './rules/pages/heading-hierarchy.mjs';
+import { metadataConventions } from './rules/pages/metadata-conventions.mjs';
+import { actionContract } from './rules/presentation/action-contract.mjs';
+import { dtoSerialization } from './rules/presentation/dto-serialization.mjs';
+import { formConventions } from './rules/presentation/form-conventions.mjs';
+import { messageKeyCoverage } from './rules/presentation/message-key-coverage.mjs';
+import { routeUsage } from './rules/presentation/route-usage.mjs';
+import { unsavedWorkGuard } from './rules/presentation/unsaved-work-guard.mjs';
+import { modulePublicApi } from './rules/structure/module-public-api.mjs';
+import { moduleStructure } from './rules/structure/module-structure.mjs';
+import { authorizationFlow } from './rules/use-cases/authorization-flow.mjs';
+import { brandedIdUsage } from './rules/use-cases/branded-id-usage.mjs';
+import { commandAuditDependency } from './rules/use-cases/command-audit-dependency.mjs';
+import { commandQueryShape } from './rules/use-cases/command-query-shape.mjs';
+import { limitsUsage } from './rules/use-cases/limits-usage.mjs';
+import { noThrowInCoreLayers } from './rules/use-cases/no-throw-in-core-layers.mjs';
 
 /** @type {import('eslint').ESLint.Plugin} */
 const plugin = {
@@ -38,6 +40,7 @@ const plugin = {
     'branded-id-usage': brandedIdUsage,
     'command-audit-dependency': commandAuditDependency,
     'command-query-shape': commandQueryShape,
+    'directive-placement': directivePlacement,
     'dto-serialization': dtoSerialization,
     'field-error-bag-owner': fieldErrorBagOwner,
     'form-conventions': formConventions,
@@ -53,6 +56,7 @@ const plugin = {
     'no-throw-in-core-layers': noThrowInCoreLayers,
     'persistence-failures': persistenceFailures,
     'route-usage': routeUsage,
+    'unsaved-work-guard': unsavedWorkGuard,
   },
 };
 

@@ -27,6 +27,7 @@ import { NewPasswordFields } from './new-password-fields';
 
 import type { ResetPasswordForm as ResetPasswordValues } from '../schemas/reset-password-schema';
 
+// @unsaved-work none a one-step form that sets a password; nothing is edited
 export interface ResetPasswordFormProps {
   /** From the emailed link. Validated by the page and again by the action. */
   readonly token: string;

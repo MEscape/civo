@@ -53,7 +53,7 @@ ruleTester.run('architecture/module-structure', rules['module-structure']!, {
       'presentation/hooks/use-shop-selection.ts',
       'presentation/theme/theme-to-css.ts',
     ].map((p) => ok(`src/modules/shop/${p}`)),
-    // documented exceptions live in eslint/architecture-policy/policy.mjs and are scoped to the module that earned them
+    // documented exceptions live in eslint/policy/policy.mjs and are scoped to the module that earned them
     ok('src/modules/auth/application/authorization-service.ts'),
     // not module code
     ok('src/lib/utils/x.ts'),

@@ -3,8 +3,8 @@ import { join } from 'node:path';
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { verifyMessageMap } from '../../eslint/architecture-policy/checks-behavior.mjs';
-import { loadProject } from '../../eslint/architecture-policy/index.mjs';
+import { verifyMessageMap } from '../../eslint/policy/checks-behavior.mjs';
+import { loadProject } from '../../eslint/policy/index.mjs';
 
 import { describeViolations } from './fixture-tree';
 

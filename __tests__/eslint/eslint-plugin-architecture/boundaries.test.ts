@@ -424,3 +424,43 @@ ruleTester.run('architecture/no-throw-in-core-layers', rules['no-throw-in-core-l
     ), // the exemption belongs to auth's policy, not to a file name
   ],
 });
+
+const SERVER_ACTION = 'src/modules/shops/presentation/actions/create-shop-action.ts';
+
+ruleTester.run('architecture/directive-placement', rules['directive-placement']!, {
+  valid: [
+    valid(SERVER_ACTION, "'use server';\nexport async function createShopAction() { return 1; }"),
+    valid(
+      'src/modules/shops/presentation/components/shop-form.tsx',
+      "'use client';\nexport function ShopForm() { return null; }",
+    ),
+    // error boundaries must be Client Components
+    valid(
+      'src/app/[locale]/error.tsx',
+      "'use client';\nexport default function Error() { return null; }",
+    ),
+    valid('src/app/[locale]/shops/page.tsx', 'export default function Page() { return null; }'),
+  ],
+  invalid: [
+    invalid(
+      'src/modules/shops/presentation/components/shop-form.tsx',
+      "'use server';\nexport async function save() { return 1; }",
+      /public endpoint/,
+    ),
+    invalid(
+      'src/modules/shops/presentation/components/shop-form.tsx',
+      "export function ShopForm() { async function save() { 'use server'; } return null; }",
+      /public endpoint/,
+    ),
+    invalid(
+      'src/app/[locale]/shops/page.tsx',
+      "'use client';\nexport default function Page() { return null; }",
+      /stay Server Components/,
+    ),
+    invalid(
+      'src/modules/shops/application/commands/create-shop.ts',
+      "'use client';\nexport class CreateShop {}",
+      /never runs in the browser/,
+    ),
+  ],
+});
