@@ -4,6 +4,8 @@ import { useTranslations } from '@i18n/client';
 
 import { cn } from '@lib/utils';
 
+import { STRENGTH } from '../password/password-strength';
+
 import type { StrengthLevel } from '../password/password-strength';
 
 const LEVEL_KEYS = {
@@ -13,7 +15,7 @@ const LEVEL_KEYS = {
   4: 'passwordGuidance.strength.strong',
 } as const;
 
-const SEGMENTS: readonly StrengthLevel[] = [1, 2, 3, 4];
+const SEGMENTS = [STRENGTH.weak, STRENGTH.fair, STRENGTH.good, STRENGTH.strong] as const;
 
 /** The colour of the filled segments: status colours, so a website's theme cannot change what "weak" looks like. */
 const FILL = {
@@ -50,7 +52,7 @@ export function StrengthMeter({ level }: StrengthMeterProps) {
             key={segment}
             className={cn(
               'h-1.5 rounded-full transition-colors motion-reduce:transition-none',
-              level >= segment && level > 0 ? FILL[level as 1 | 2 | 3 | 4] : 'bg-border',
+              level >= segment && level !== STRENGTH.none ? FILL[level] : 'bg-border',
             )}
           />
         ))}

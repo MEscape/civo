@@ -1,7 +1,8 @@
 import { CREDENTIAL_LIMITS } from '../../application/contracts/auth-constraints';
 
 /** 0 while nothing is typed, then weak to strong. */
-export type StrengthLevel = 0 | 1 | 2 | 3 | 4;
+export const STRENGTH = { none: 0, weak: 1, fair: 2, good: 3, strong: 4 } as const;
+export type StrengthLevel = (typeof STRENGTH)[keyof typeof STRENGTH];
 
 export interface PasswordAssessment {
   readonly level: StrengthLevel;
@@ -118,9 +119,13 @@ function personalPartsOf(inputs: readonly string[]): string[] {
 }
 
 function levelOf(score: number): StrengthLevel {
-  if (score >= SCORE_FOR_LEVEL[4]) {return 4;}
-  if (score >= SCORE_FOR_LEVEL[3]) {return 3;}
-  return score >= SCORE_FOR_LEVEL[2] ? 2 : 1;
+  if (score >= SCORE_FOR_LEVEL[STRENGTH.strong]) {
+    return STRENGTH.strong;
+  }
+  if (score >= SCORE_FOR_LEVEL[STRENGTH.good]) {
+    return STRENGTH.good;
+  }
+  return score >= SCORE_FOR_LEVEL[STRENGTH.fair] ? STRENGTH.fair : STRENGTH.weak;
 }
 
 /**

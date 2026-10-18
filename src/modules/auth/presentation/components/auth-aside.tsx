@@ -16,6 +16,10 @@ const FEATURES = [
   { key: 'releases', icon: ShieldCheck },
 ] as const satisfies ReadonlyArray<{ key: string; icon: ComponentType<IconProps> }>;
 
+const RING_COUNT = 5;
+const RING_STEP = 40;
+const RING_RADII = Array.from({ length: RING_COUNT }, (_, index) => (index + 1) * RING_STEP);
+
 /** Rings like the contour lines of a map: the page's one decoration, behind the content. */
 function Contours() {
   return (
@@ -28,7 +32,7 @@ function Contours() {
       strokeWidth="1"
       className="pointer-events-none absolute -right-24 -bottom-24 size-96 text-primary-foreground/10"
     >
-      {[40, 80, 120, 160, 200].map((radius) => (
+      {RING_RADII.map((radius) => (
         <circle key={radius} cx="200" cy="200" r={radius} />
       ))}
     </svg>
