@@ -303,6 +303,7 @@
         "count": "{count, plural, one {# Person} other {# Personen}}",
         "access": "Zugriff",
         "empty": "Keine Person passt zu diesen Filtern.",
+        "allWebsites": "Alle Websites",
         "noAccess": "Noch keine Website",
         "platformAdmin": "Plattform-Administrator",
         "truncated": "Der Filter trifft mehr Personen, als auf einmal eingegrenzt werden können. Ergänzen Sie einen Suchtext.",

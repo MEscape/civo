@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { EmptyState } from '@components/layout/layout-primitives';
 import { DataPanel } from '@components/shared/data-panel';
+import { UserAvatar } from '@components/shared/user-avatar';
 import { Badge } from '@components/ui/badge';
 import { Search } from '@components/ui/icons';
 import {
@@ -21,7 +22,7 @@ import { toUserRowDto } from '../dto/user-dto';
 import { ROLE_MESSAGE_KEYS } from '../messages/message-keys';
 
 import { UserRowActions } from './user-row-actions.client';
-import { SortLink, UserAvatar, ariaSortOf } from './user-table-parts';
+import { SortLink, ariaSortOf } from './user-table-parts';
 
 import type { UserSortField } from '../../application/contracts/auth-constraints';
 import type { UserView } from '../../application/contracts/user-views';

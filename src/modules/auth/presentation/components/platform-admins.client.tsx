@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@components/shared/confirm-dialog';
 import { DataPanel } from '@components/shared/data-panel';
 import { FormPanelFooter } from '@components/shared/form-panel';
 import { TextField } from '@components/shared/text-field';
+import { UserAvatar } from '@components/shared/user-avatar';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Trash2 } from '@components/ui/icons';
@@ -62,14 +63,17 @@ export function PlatformAdminsPanel({ admins, selfId }: PlatformAdminsPanelProps
         <ul className="divide-y divide-border">
           {admins.map((admin) => (
             <li key={admin.id} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div className="min-w-0">
-                <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-copy">
-                  {admin.name}
-                  {admin.id === selfId && (
-                    <Badge variant="muted">{t('platformUsers.table.you')}</Badge>
-                  )}
-                </p>
-                <p className="truncate text-xs text-copy-muted">{admin.email}</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <UserAvatar name={admin.name} />
+                <div className="min-w-0">
+                  <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-copy">
+                    {admin.name}
+                    {admin.id === selfId && (
+                      <Badge variant="muted">{t('platformUsers.table.you')}</Badge>
+                    )}
+                  </p>
+                  <p className="truncate text-xs text-copy-muted">{admin.email}</p>
+                </div>
               </div>
               {admin.id !== selfId && (
                 <Button

@@ -303,6 +303,7 @@
         "count": "{count, plural, one {# person} other {# people}}",
         "access": "Access",
         "empty": "No one matches these filters.",
+        "allWebsites": "All websites",
         "noAccess": "No website yet",
         "platformAdmin": "Platform administrator",
         "truncated": "The filter matches more people than can be narrowed at once. Add a search text.",

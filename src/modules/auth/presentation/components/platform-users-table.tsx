@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { EmptyState } from '@components/layout/layout-primitives';
 import { DataPanel } from '@components/shared/data-panel';
+import { UserAvatar } from '@components/shared/user-avatar';
 import { Badge } from '@components/ui/badge';
 import { Search } from '@components/ui/icons';
 import {
@@ -13,23 +14,17 @@ import {
   TableRow,
 } from '@components/ui/table';
 
-import { Link } from '@i18n';
-
 import { getAppFormatters, getTranslations } from '@i18n/server';
 
 import type { SortSpec } from '@lib/pagination';
 
-import { ROLE_MESSAGE_KEYS } from '../messages/message-keys';
-
 import { UserAccessEditor } from './user-access-editor.client';
-import { SortLink, UserAvatar, ariaSortOf } from './user-table-parts';
+import { UserAccessList } from './user-access-list';
+import { SortLink, ariaSortOf } from './user-table-parts';
 
 import type { AccessWebsite } from './user-access-editor.client';
 import type { UserSortField } from '../../application/contracts/auth-constraints';
 import type { PlatformUserView } from '../../application/contracts/user-views';
-
-/** How many websites a row names before it says "+3 more". */
-const SHOWN_MEMBERSHIPS = 3;
 
 export interface PlatformUsersTableProps {
   readonly users: readonly PlatformUserView[];
@@ -107,8 +102,6 @@ export async function PlatformUsersTable({
           </TableHeader>
           <TableBody>
             {users.map((user) => {
-              const shown = user.memberships.slice(0, SHOWN_MEMBERSHIPS);
-              const hidden = user.memberships.length - shown.length;
               return (
                 <TableRow key={user.id} className="align-top">
                   <TableCell>
@@ -119,11 +112,6 @@ export async function PlatformUsersTable({
                           {user.name}
                           {user.id === selfId && (
                             <Badge variant="muted">{t('platformUsers.table.you')}</Badge>
-                          )}
-                          {user.isPlatformAdmin && (
-                            <Badge variant="default">
-                              {t('platformUsers.table.platformAdmin')}
-                            </Badge>
                           )}
                         </p>
                         {/* Below md the email column folds into the name cell. */}
@@ -145,39 +133,11 @@ export async function PlatformUsersTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    {shown.length === 0 ? (
-                      <span className="text-xs text-copy-muted">
-                        {t('platformUsers.table.noAccess')}
-                      </span>
-                    ) : (
-                      <ul className="max-w-md divide-y divide-border overflow-hidden rounded-token border border-border">
-                        {shown.map(({ tenantId, roles }) => (
-                          <li
-                            key={tenantId}
-                            className="flex items-center justify-between gap-3 px-3 py-1.5 text-sm"
-                          >
-                            <Link
-                              href={websiteUsersHref(tenantId)}
-                              className="min-w-0 truncate font-medium text-copy underline-offset-4 hover:underline"
-                            >
-                              {nameOf(tenantId)}
-                            </Link>
-                            <span className="flex shrink-0 flex-wrap justify-end gap-1">
-                              {roles.map((role) => (
-                                <Badge key={role} variant="outline">
-                                  {t(ROLE_MESSAGE_KEYS[role])}
-                                </Badge>
-                              ))}
-                            </span>
-                          </li>
-                        ))}
-                        {hidden > 0 && (
-                          <li className="bg-canvas px-3 py-1.5 text-xs text-copy-muted">
-                            {t('platformUsers.table.more', { count: hidden })}
-                          </li>
-                        )}
-                      </ul>
-                    )}
+                    <UserAccessList
+                      user={user}
+                      nameOf={nameOf}
+                      websiteUsersHref={websiteUsersHref}
+                    />
                   </TableCell>
                   <TableCell className="hidden whitespace-nowrap text-copy-muted sm:table-cell">
                     {formats.date(user.createdAt)}
