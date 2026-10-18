@@ -30,8 +30,6 @@ export interface PlatformUsersFiltersProps {
   /** Kept across a new search, so filtering does not reset the sort. */
   readonly sort: string;
   readonly websites: ReadonlyArray<{ readonly id: string; readonly name: string }>;
-  /** Whether any filter is set, so "reset" is offered only when it would change something. */
-  readonly isFiltered: boolean;
 }
 
 /**
@@ -47,7 +45,6 @@ export async function PlatformUsersFilters({
   pageSize,
   sort,
   websites,
-  isFiltered,
 }: PlatformUsersFiltersProps) {
   const t = await getTranslations('auth');
 
@@ -123,14 +120,12 @@ export async function PlatformUsersFilters({
         <Button type="submit" variant="outline" className="h-9">
           {t('users.filters.apply')}
         </Button>
-        {isFiltered && (
-          <Link
-            href={pathname}
-            className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 text-copy-muted')}
-          >
-            {t('platformUsers.filters.reset')}
-          </Link>
-        )}
+        <Link
+          href={pathname}
+          className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 text-copy-muted')}
+        >
+          {t('platformUsers.filters.reset')}
+        </Link>
       </div>
     </form>
   );

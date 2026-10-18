@@ -25,8 +25,6 @@ export interface UsersFiltersProps {
   readonly pageSize: number;
   /** Kept across a new search, so filtering does not reset the sort. */
   readonly sort: string;
-  /** Whether any filter is set, so "reset" is offered only when it would change something. */
-  readonly isFiltered: boolean;
 }
 
 /**
@@ -34,14 +32,7 @@ export interface UsersFiltersProps {
  * address, so a filtered list can be shared and needs no script. Drawn as one
  * row of equal-height controls under the member panel's header.
  */
-export async function UsersFilters({
-  pathname,
-  text,
-  role,
-  pageSize,
-  sort,
-  isFiltered,
-}: UsersFiltersProps) {
+export async function UsersFilters({ pathname, text, role, pageSize, sort }: UsersFiltersProps) {
   const t = await getTranslations('auth');
 
   const roleOptions = [
@@ -96,14 +87,12 @@ export async function UsersFilters({
         <Button type="submit" variant="outline" className="h-9">
           {t('users.filters.apply')}
         </Button>
-        {isFiltered && (
-          <Link
-            href={`${pathname}${buildQueryString({ sort })}`}
-            className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 text-copy-muted')}
-          >
-            {t('users.filters.reset')}
-          </Link>
-        )}
+        <Link
+          href={`${pathname}${buildQueryString({ sort })}`}
+          className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 text-copy-muted')}
+        >
+          {t('users.filters.reset')}
+        </Link>
       </div>
     </form>
   );

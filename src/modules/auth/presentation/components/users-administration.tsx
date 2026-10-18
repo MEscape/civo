@@ -119,7 +119,6 @@ export async function UsersAdministration({
               role={role}
               pageSize={page.pageSize}
               sort={formatSort(sort)}
-              isFiltered={text !== null || role !== null}
             />
           }
           pagination={

@@ -117,7 +117,6 @@ export async function PlatformUsersAdministration({
               pageSize={page.pageSize}
               sort={formatSort(sort)}
               websites={websites}
-              isFiltered={text !== null || websiteId !== null || role !== null || onlyAdmins}
             />
           }
           pagination={
