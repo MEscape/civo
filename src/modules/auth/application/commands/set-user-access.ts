@@ -31,8 +31,8 @@ export interface SetUserAccessInput {
 /**
  * Gives a person access to a website, or changes it: the complete set of
  * roles they hold there. For the platform's administrators, from outside the
- * website. The same guards as inside it: nobody changes their own access, and
- * the last administrator of a website keeps the role. A person who is not yet
+ * website. The last administrator of a website keeps the role; a platform
+ * administrator may change their own access like anyone's. A person who is not yet
  * a member becomes one.
  */
 export class SetUserAccess {
@@ -46,7 +46,7 @@ export class SetUserAccess {
       if (roles.isErr()) {
         return errAsync(roles.error);
       }
-      return resolveAccessTarget(this.deps, actor.id, input).andThen(({ subject, tenantId }) =>
+      return resolveAccessTarget(this.deps, input).andThen(({ subject, tenantId }) =>
         members.findRoles(subject, tenantId).andThen((current) => {
           const write =
             current.length === 0

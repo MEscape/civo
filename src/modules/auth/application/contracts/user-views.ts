@@ -48,7 +48,7 @@ export interface PlatformUserListing {
   readonly users: Page<PlatformUserView>;
   /** True when the website or role filter matches more people than one listing narrows to. */
   readonly isTruncated: boolean;
-  /** The actor, so a row can say you and offer no change of one's own access. */
+  /** The actor, so a row can say you. */
   readonly selfId: string;
 }
 

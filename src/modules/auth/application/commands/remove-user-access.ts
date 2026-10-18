@@ -20,7 +20,7 @@ export class RemoveUserAccess {
     const { authorization, members, audit } = this.deps;
 
     return authorization.requireInTenant('platform.admin.manage').andThen((actor) =>
-      resolveAccessTarget(this.deps, actor.id, input).andThen(({ subject, tenantId }) =>
+      resolveAccessTarget(this.deps, input).andThen(({ subject, tenantId }) =>
         members
           .removeMemberKeepingAdministrator(subject, tenantId)
           .andThen((isRemoved): AppResultAsync<undefined, SetUserAccessError> => {

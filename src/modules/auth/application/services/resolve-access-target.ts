@@ -7,7 +7,7 @@ import type {
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { lastAdmin, tenantInvalid, userNotFound } from '../../domain/errors/auth-errors';
+import { tenantInvalid, userNotFound } from '../../domain/errors/auth-errors';
 import { parseActorId, toTenantId } from '../../domain/models/ids';
 
 import type { ActorId, TenantId } from '../../domain/models/ids';
@@ -17,10 +17,14 @@ import type { PlatformAccessDependencies } from '../auth-dependencies';
 export type AccessTargetError =
   InfrastructureAppError | NotFoundAppError | ValidationAppError | ConflictAppError;
 
-/** Who may be changed, in which website: the subject exists, the website exists, and it is not the actor. */
+/**
+ * Who may be changed, in which website: the subject exists and the website
+ * exists. The actor may be the subject: a platform administrator's own access
+ * is theirs to manage (they are one by the platform, not by a website), and
+ * the last administrator of a website is kept by the write itself.
+ */
 export function resolveAccessTarget(
   deps: PlatformAccessDependencies,
-  actorId: ActorId,
   input: { readonly userId: string; readonly tenantId: string },
 ): AppResultAsync<{ readonly subject: ActorId; readonly tenantId: TenantId }, AccessTargetError> {
   const parsed = parseActorId(input.userId);
@@ -28,9 +32,6 @@ export function resolveAccessTarget(
     return errAsync(userNotFound());
   }
   const subject = parsed.value;
-  if (subject === actorId) {
-    return errAsync(lastAdmin());
-  }
   const tenantId = toTenantId(input.tenantId);
   return deps.tenants.exists(tenantId).andThen((isWebsite) => {
     if (!isWebsite) {

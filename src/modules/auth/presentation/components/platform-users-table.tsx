@@ -143,16 +143,14 @@ export async function PlatformUsersTable({
                     {formats.date(user.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
-                    {user.id !== selfId && (
-                      <UserAccessEditor
-                        userId={user.id}
-                        userName={user.name}
-                        userEmail={user.email}
-                        isPlatformAdmin={user.isPlatformAdmin}
-                        memberships={user.memberships}
-                        websites={websites}
-                      />
-                    )}
+                    <UserAccessEditor
+                      userId={user.id}
+                      userName={user.name}
+                      userEmail={user.email}
+                      isPlatformAdmin={user.isPlatformAdmin}
+                      memberships={user.memberships}
+                      websites={websites}
+                    />
                   </TableCell>
                 </TableRow>
               );

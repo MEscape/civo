@@ -42,13 +42,10 @@ export async function UserAccessList({ user, nameOf, websiteUsersHref }: UserAcc
         </li>
       )}
       {shown.map(({ tenantId, roles }) => (
-        <li
-          key={tenantId}
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5 text-sm"
-        >
+        <li key={tenantId} className="space-y-1 px-3 py-1.5 text-sm">
           <Link
             href={websiteUsersHref(tenantId)}
-            className="min-w-0 max-w-full flex-1 basis-28 truncate font-medium text-copy underline-offset-4 hover:underline"
+            className="block truncate font-medium text-copy underline-offset-4 hover:underline"
           >
             {nameOf(tenantId)}
           </Link>

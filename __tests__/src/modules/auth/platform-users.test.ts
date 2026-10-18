@@ -205,7 +205,7 @@ describe('changing a person’s access to a website from outside it', () => {
     ]);
   });
 
-  it('refuses a website that does not exist, an unknown person, and a change of one’s own access', async () => {
+  it('refuses a website that does not exist and an unknown person', async () => {
     const { dependencies } = world();
     const set = (input: { userId: string; tenantId: string }) =>
       new SetUserAccess(dependencies).execute({ ...input, roles: ['viewer'] });
@@ -216,9 +216,25 @@ describe('changing a person’s access to a website from outside it', () => {
     expect((await set({ userId: 'nobody', tenantId: SITE_A }))._unsafeUnwrapErr().kind).toBe(
       'not_found',
     );
-    expect((await set({ userId: ADMIN, tenantId: SITE_A }))._unsafeUnwrapErr().kind).toBe(
-      'conflict',
-    );
+  });
+
+  it('lets a platform administrator manage their own access, like anyone’s', async () => {
+    const { dependencies, memberships } = world();
+
+    const join = await new SetUserAccess(dependencies).execute({
+      userId: ADMIN,
+      tenantId: SITE_A,
+      roles: ['editor'],
+    });
+    expect(join.isOk()).toBe(true);
+    expect(memberships.get(`${ADMIN}|${SITE_A}`)).toEqual(['editor']);
+
+    const leave = await new RemoveUserAccess(dependencies).execute({
+      userId: ADMIN,
+      tenantId: SITE_A,
+    });
+    expect(leave.isOk()).toBe(true);
+    expect(memberships.has(`${ADMIN}|${SITE_A}`)).toBe(false);
   });
 
   it('keeps the last administrator of a website, whether the roles change or the person is removed', async () => {
