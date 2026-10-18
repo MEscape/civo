@@ -26,54 +26,74 @@ export interface PublicationBannerProps {
   readonly mayUpdate: boolean;
 }
 
+/** The count of component updates waiting, and whether this reader may act on them. */
+const updatesWaiting = (status: PublicationStatusView, mayUpdate: boolean) =>
+  mayUpdate ? (status.componentUpdates?.available ?? 0) : 0;
+
 /**
  * The first thing the overview says: whether visitors see what the editor
  * shows. One of three states (not published yet, changes waiting, everything
  * live), each with the one thing to do about it.
  */
-export async function PublicationBanner({
+export function PublicationBanner(props: PublicationBannerProps) {
+  const { live, draft } = props.status;
+  return live !== null && !draft.hasChanges ? (
+    <LiveBanner {...props} live={live} />
+  ) : (
+    <PendingBanner {...props} />
+  );
+}
+
+async function LiveBanner({
+  locale,
+  websiteId,
+  status,
+  mayUpdate,
+  live,
+}: PublicationBannerProps & { readonly live: NonNullable<PublicationStatusView['live']> }) {
+  const [t, format] = await Promise.all([
+    getTranslations({ locale, namespace: 'release' }),
+    getAppFormatters(),
+  ]);
+  const updates = updatesWaiting(status, mayUpdate);
+
+  return (
+    <Alert variant="success" role="status">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="flex items-center gap-2 font-heading text-base font-semibold">
+            <Check className="size-4" aria-hidden="true" />
+            {t('banner.liveTitle')}
+          </p>
+          <p className="text-sm text-copy">
+            {t('banner.liveDescription', {
+              number: live.releaseNumber,
+              date: format.dateTime(live.publishedAt ?? live.createdAt),
+            })}
+          </p>
+        </div>
+        {updates > 0 && <UpdatesLink locale={locale} websiteId={websiteId} count={updates} />}
+      </div>
+    </Alert>
+  );
+}
+
+async function PendingBanner({
   locale,
   websiteId,
   status,
   mayPublish,
   mayUpdate,
 }: PublicationBannerProps) {
-  const [t, format] = await Promise.all([
-    getTranslations({ locale, namespace: 'release' }),
-    getAppFormatters(),
-  ]);
-  const { live, draft, componentUpdates } = status;
+  const t = await getTranslations({ locale, namespace: 'release' });
+  const { live, draft } = status;
   const isBlocked = draft.blockedPageCount > 0;
-  const updates = componentUpdates?.available ?? 0;
+  const updates = updatesWaiting(status, mayUpdate);
   const names = [
     ...draft.pageChanges.map((change) => change.title),
     ...settingsChangeKeys(draft).map((key) => t(`publication.settings.${key}`)),
   ].slice(0, TITLES_SHOWN);
   const rest = changeCountOf(draft) - names.length;
-
-  if (live !== null && !draft.hasChanges) {
-    return (
-      <Alert variant="success" role="status">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-1">
-            <p className="flex items-center gap-2 font-heading text-base font-semibold">
-              <Check className="size-4" aria-hidden="true" />
-              {t('banner.liveTitle')}
-            </p>
-            <p className="text-sm text-copy">
-              {t('banner.liveDescription', {
-                number: live.releaseNumber,
-                date: format.dateTime(live.publishedAt ?? live.createdAt),
-              })}
-            </p>
-          </div>
-          {mayUpdate && updates > 0 && (
-            <UpdatesLink locale={locale} websiteId={websiteId} count={updates} />
-          )}
-        </div>
-      </Alert>
-    );
-  }
 
   return (
     <Alert variant={live === null ? 'info' : 'warning'} role="status">
@@ -106,7 +126,7 @@ export async function PublicationBanner({
           />
         )}
       </div>
-      {mayUpdate && updates > 0 && (
+      {updates > 0 && (
         <div className="mt-3 border-t border-current/20 pt-3">
           <UpdatesLink locale={locale} websiteId={websiteId} count={updates} />
         </div>

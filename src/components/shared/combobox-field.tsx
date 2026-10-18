@@ -172,6 +172,42 @@ function describedByOf(
   return joined === '' ? undefined : joined;
 }
 
+/** Where the arrow keys land: the next row (wrapping) while the list is open, the first row when it opens. */
+function nextActiveIndex(
+  { isOpen, rowCount, current }: { isOpen: boolean; rowCount: number; current: number },
+  step: number,
+): number {
+  return isOpen && rowCount > 0 ? (current + step + rowCount) % rowCount : 0;
+}
+
+/** What the input shows: what is typed, else (for a single choice) the label of the chosen value. */
+function inputValueOf({
+  query,
+  isMultiple,
+  selected,
+  labelOf,
+}: {
+  query: string | null;
+  isMultiple: boolean;
+  selected: readonly string[];
+  labelOf: (value: string) => string;
+}): string {
+  return query ?? (isMultiple ? '' : labelOf(selected[0] ?? ''));
+}
+
+/** Nothing to pick and nothing typed yet, in a field that lets people add values: no empty box. */
+function isIdleCreatableList(rowCount: number, text: string, canCreate: boolean) {
+  return rowCount === 0 && text === '' && canCreate;
+}
+
+function Hint({ id, hint }: { readonly id: string; readonly hint: string | undefined }) {
+  return hint === undefined ? null : (
+    <p id={`${id}-hint`} className="text-xs text-copy-muted">
+      {hint}
+    </p>
+  );
+}
+
 /**
  * A searchable list to pick from, with chips when several values are allowed
  * and an optional "add what I typed" row. It follows the ARIA combobox
@@ -205,8 +241,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
     normalize,
     createText: props.createText,
   });
-  // Nothing to pick and nothing typed yet, in a field that lets people add values: no empty box.
-  const isIdleCreatable = rows.length === 0 && text === '' && props.createText !== undefined;
+  const isIdleCreatable = isIdleCreatableList(rows.length, text, props.createText !== undefined);
   const activeRowIndex = Math.max(0, Math.min(activeIndex, rows.length - 1));
   const active = isOpen ? rows[activeRowIndex] : undefined;
 
@@ -251,9 +286,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
       case 'move':
         setIsOpen(true);
         setActiveIndex(
-          isOpen && rows.length > 0
-            ? (activeRowIndex + intent.step + rows.length) % rows.length
-            : 0,
+          nextActiveIndex({ isOpen, rowCount: rows.length, current: activeRowIndex }, intent.step),
         );
         break;
       case 'pick':
@@ -273,7 +306,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
     }
   }
 
-  const inputValue = query ?? (isMultiple ? '' : labelOf(selected[0] ?? ''));
+  const inputValue = inputValueOf({ query, isMultiple, selected, labelOf });
 
   return (
     <div className="space-y-1.5">
@@ -337,11 +370,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
           />
         )}
       </div>
-      {hint !== undefined && (
-        <p id={`${id}-hint`} className="text-xs text-copy-muted">
-          {hint}
-        </p>
-      )}
+      <Hint id={id} hint={hint} />
       <FieldMessage id={`${id}-error`} message={error} />
     </div>
   );

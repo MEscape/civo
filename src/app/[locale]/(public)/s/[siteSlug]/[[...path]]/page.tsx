@@ -80,9 +80,11 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
 function redirectToBooking(
   snapshot: Awaited<ReturnType<typeof loadPublishedPage>>['snapshot'],
   locale: Locale,
-  siteSlug: string,
-  currentPath: string,
-  reference: string,
+  {
+    siteSlug,
+    currentPath,
+    reference,
+  }: { siteSlug: string; currentPath: string; reference: string },
 ): void {
   const target = findBookingPagePath(snapshot.pages, currentPath);
   if (target !== null && target !== currentPath) {
@@ -101,7 +103,7 @@ export default async function PublishedSitePage({ params, searchParams }: RouteP
   ]);
   const reference = query[MANAGE_PARAM];
   if (typeof reference === 'string' && reference !== '') {
-    redirectToBooking(snapshot, locale, siteSlug, toPath(path), reference);
+    redirectToBooking(snapshot, locale, { siteSlug, currentPath: toPath(path), reference });
   }
 
   return (

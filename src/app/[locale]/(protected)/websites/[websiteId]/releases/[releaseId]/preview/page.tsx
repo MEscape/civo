@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { ComponentProps } from 'react';
 
 import type { Metadata } from 'next';
 
@@ -104,6 +105,122 @@ async function FidelityNotice({
   );
 }
 
+interface ReleaseRef {
+  readonly id: string;
+  readonly releaseNumber: number;
+}
+
+/** Previous and next release in the history, each a link or, at the end of the history, a disabled button. */
+async function NeighbourNav({
+  locale,
+  websiteId,
+  from,
+  older,
+  newer,
+}: {
+  readonly locale: Locale;
+  readonly websiteId: string;
+  readonly from: number;
+  readonly older: ReleaseRef | null;
+  readonly newer: ReleaseRef | null;
+}) {
+  const t = await getTranslations({ locale, namespace: 'release' });
+  return (
+    <nav aria-label={t('preview.navLabel')} className="flex gap-2">
+      {older === null ? (
+        <Button variant="outline" size="sm" disabled>
+          <ArrowLeft className="size-3.5" aria-hidden="true" />
+          {t('preview.older')}
+        </Button>
+      ) : (
+        <Link
+          href={releaseRoutes.preview(websiteId, older.id, from)}
+          aria-label={t('preview.olderLabel', { number: older.releaseNumber })}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          <ArrowLeft className="size-3.5" aria-hidden="true" />
+          {t('preview.older')}
+        </Link>
+      )}
+      {newer === null ? (
+        <Button variant="outline" size="sm" disabled>
+          {t('preview.newer')}
+          <ArrowRight className="size-3.5" aria-hidden="true" />
+        </Button>
+      ) : (
+        <Link
+          href={releaseRoutes.preview(websiteId, newer.id, from)}
+          aria-label={t('preview.newerLabel', { number: newer.releaseNumber })}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          {t('preview.newer')}
+          <ArrowRight className="size-3.5" aria-hidden="true" />
+        </Link>
+      )}
+    </nav>
+  );
+}
+
+/** The page asked for by path; with no path asked, the first one. */
+function pickPage<T extends { readonly path: string }>(
+  pages: readonly T[],
+  requested: string | undefined,
+): T | undefined {
+  return (
+    pages.find((candidate) => candidate.path === (requested ?? '')) ??
+    (requested === undefined ? pages[0] : undefined)
+  );
+}
+
+/** What sets a release apart: that it is the live one, and any status other than published. */
+function ReleaseBadges({
+  isActive,
+  status,
+  liveLabel,
+}: {
+  readonly isActive: boolean;
+  readonly status: ComponentProps<typeof ReleaseStatusBadge>['status'];
+  readonly liveLabel: string;
+}) {
+  return (
+    <>
+      {isActive && <Badge variant="success">{liveLabel}</Badge>}
+      {status !== 'published' && <ReleaseStatusBadge status={status} />}
+    </>
+  );
+}
+
+/** The frozen page drawn as the public site draws it, or a notice when its stored form cannot be read. */
+async function FrozenPage({
+  locale,
+  restored,
+  snapshot,
+}: {
+  readonly locale: Locale;
+  readonly restored: ReturnType<typeof restoreStoredPageConfig>;
+  readonly snapshot: {
+    readonly theme: Parameters<typeof restoreStoredWebsiteTheme>[0];
+    readonly website: { readonly id: string };
+  };
+}) {
+  const t = await getTranslations({ locale, namespace: 'release' });
+  return restored.isErr() ? (
+    <Alert variant="danger" role="status">
+      <p className="font-heading text-base font-semibold">{t('preview.broken.title')}</p>
+      <p className="mt-1 text-sm text-copy">{t('preview.broken.description')}</p>
+    </Alert>
+  ) : (
+    <div className="overflow-hidden rounded-token border border-border-strong">
+      <ThemeProvider theme={restoreStoredWebsiteTheme(snapshot.theme)} className="min-h-96">
+        {renderPageNodes(restored.value.children, {
+          mode: 'published',
+          websiteId: snapshot.website.id,
+        })}
+      </ThemeProvider>
+    </div>
+  );
+}
+
 /**
  * One release's pages as they were frozen, for looking at an earlier state or at
  * what is live. It sits under the release list (a way back that keeps the page
@@ -126,9 +243,7 @@ async function PreviewContent({ params, searchParams }: RouteProps) {
   const authors = await loadMemberNames([release.publishedBy]);
 
   const requested = firstOf(query['path']);
-  const page =
-    snapshot.pages.find((candidate) => candidate.path === (requested ?? '')) ??
-    (requested === undefined ? snapshot.pages[0] : undefined);
+  const page = pickPage(snapshot.pages, requested);
   if (page === undefined) {
     notFound();
   }
@@ -160,8 +275,11 @@ async function PreviewContent({ params, searchParams }: RouteProps) {
                   <h1 className="font-heading text-2xl font-semibold text-copy">
                     {t('history.releaseNumber', { number })}
                   </h1>
-                  {release.isActive && <Badge variant="success">{t('preview.live')}</Badge>}
-                  {release.status !== 'published' && <ReleaseStatusBadge status={release.status} />}
+                  <ReleaseBadges
+                    isActive={release.isActive}
+                    status={release.status}
+                    liveLabel={t('preview.live')}
+                  />
                 </div>
                 {release.note !== null && <p className="text-sm text-copy">{release.note}</p>}
                 <p className="text-sm text-copy-muted">
@@ -172,38 +290,13 @@ async function PreviewContent({ params, searchParams }: RouteProps) {
                 </p>
               </div>
               <div className="flex flex-wrap items-start gap-2">
-                <nav aria-label={t('preview.navLabel')} className="flex gap-2">
-                  {older === null ? (
-                    <Button variant="outline" size="sm" disabled>
-                      <ArrowLeft className="size-3.5" aria-hidden="true" />
-                      {t('preview.older')}
-                    </Button>
-                  ) : (
-                    <Link
-                      href={releaseRoutes.preview(websiteId, older.id, from)}
-                      aria-label={t('preview.olderLabel', { number: older.releaseNumber })}
-                      className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                    >
-                      <ArrowLeft className="size-3.5" aria-hidden="true" />
-                      {t('preview.older')}
-                    </Link>
-                  )}
-                  {newer === null ? (
-                    <Button variant="outline" size="sm" disabled>
-                      {t('preview.newer')}
-                      <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </Button>
-                  ) : (
-                    <Link
-                      href={releaseRoutes.preview(websiteId, newer.id, from)}
-                      aria-label={t('preview.newerLabel', { number: newer.releaseNumber })}
-                      className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                    >
-                      {t('preview.newer')}
-                      <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  )}
-                </nav>
+                <NeighbourNav
+                  locale={locale}
+                  websiteId={websiteId}
+                  from={from}
+                  older={older}
+                  newer={newer}
+                />
                 {access.may('release.rollback') && release.canRollback && (
                   <RestoreReleaseButton
                     websiteId={websiteId}
@@ -231,21 +324,7 @@ async function PreviewContent({ params, searchParams }: RouteProps) {
             }))}
           />
 
-          {restored.isErr() ? (
-            <Alert variant="danger" role="status">
-              <p className="font-heading text-base font-semibold">{t('preview.broken.title')}</p>
-              <p className="mt-1 text-sm text-copy">{t('preview.broken.description')}</p>
-            </Alert>
-          ) : (
-            <div className="overflow-hidden rounded-token border border-border-strong">
-              <ThemeProvider theme={restoreStoredWebsiteTheme(snapshot.theme)} className="min-h-96">
-                {renderPageNodes(restored.value.children, {
-                  mode: 'published',
-                  websiteId: snapshot.website.id,
-                })}
-              </ThemeProvider>
-            </div>
-          )}
+          <FrozenPage locale={locale} restored={restored} snapshot={snapshot} />
         </I18nProvider>
       </Section>
     </AdminContainer>

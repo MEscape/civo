@@ -60,6 +60,47 @@ function ChangesCell({ changes }: { readonly changes: ReleaseSummaryDto['changes
   );
 }
 
+/** The release itself: its number and badges, note, when and by whom, and whether the build failed. */
+function ReleaseCell({
+  release,
+  authors,
+}: {
+  readonly release: ReleaseSummaryDto;
+  readonly authors: ReleaseHistoryItemProps['authors'];
+}) {
+  const t = useTranslations('release');
+  const format = useAppFormatters();
+  const when = release.publishedAt ?? release.createdAt;
+  const author = release.publishedBy === null ? undefined : authors?.[release.publishedBy];
+
+  return (
+    <TableCell className="space-y-0.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-medium">
+          {t('history.releaseNumber', { number: release.releaseNumber })}
+        </span>
+        {release.isActive && <Badge variant="success">{t('history.active')}</Badge>}
+        {release.status !== 'published' && <ReleaseStatusBadge status={release.status} />}
+      </div>
+      {release.note !== null && <p className="text-sm text-copy">{release.note}</p>}
+      <p className="text-xs text-copy-muted">{format.dateTime(when)}</p>
+      {release.publishedBy !== null && authors !== null && (
+        <p className="text-xs text-copy-muted">
+          {author === undefined
+            ? t('history.publishedByFormer')
+            : t('history.publishedBy', { name: author })}
+        </p>
+      )}
+      {release.status === 'failed' && (
+        <p className="flex items-center gap-1.5 text-xs text-danger">
+          <AlertTriangle className="size-3.5" aria-hidden="true" />
+          {t('history.buildFailed')}
+        </p>
+      )}
+    </TableCell>
+  );
+}
+
 /**
  * One release as a table row. Whether it can be restored was decided by the
  * server (`canRollback`); this component only renders that answer. The live
@@ -73,10 +114,8 @@ export function ReleaseHistoryItem({
   previewHref,
 }: ReleaseHistoryItemProps) {
   const t = useTranslations('release');
-  const format = useAppFormatters();
   const number = release.releaseNumber;
   const when = release.publishedAt ?? release.createdAt;
-  const author = release.publishedBy === null ? undefined : authors?.[release.publishedBy];
 
   return (
     <TableRow
@@ -86,28 +125,7 @@ export function ReleaseHistoryItem({
         release.isActive && 'bg-success-subtle/40 hover:bg-success-subtle/40',
       )}
     >
-      <TableCell className="space-y-0.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{t('history.releaseNumber', { number })}</span>
-          {release.isActive && <Badge variant="success">{t('history.active')}</Badge>}
-          {release.status !== 'published' && <ReleaseStatusBadge status={release.status} />}
-        </div>
-        {release.note !== null && <p className="text-sm text-copy">{release.note}</p>}
-        <p className="text-xs text-copy-muted">{format.dateTime(when)}</p>
-        {release.publishedBy !== null && authors !== null && (
-          <p className="text-xs text-copy-muted">
-            {author === undefined
-              ? t('history.publishedByFormer')
-              : t('history.publishedBy', { name: author })}
-          </p>
-        )}
-        {release.status === 'failed' && (
-          <p className="flex items-center gap-1.5 text-xs text-danger">
-            <AlertTriangle className="size-3.5" aria-hidden="true" />
-            {t('history.buildFailed')}
-          </p>
-        )}
-      </TableCell>
+      <ReleaseCell release={release} authors={authors} />
 
       <ChangesCell changes={release.changes} />
 

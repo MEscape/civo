@@ -85,6 +85,39 @@ function nextComponentFor(
   );
 }
 
+type NextComponent = ReturnType<typeof nextComponentFor>;
+
+/** Everything is connected and mapped; the one thing left is a component that reads it. */
+function ReadyForUseNotice({
+  websiteId,
+  target,
+}: {
+  readonly websiteId: string;
+  readonly target: NextComponent;
+}) {
+  const t = useTranslations('dataSources');
+  return (
+    <Alert variant="success" role="status">
+      {/* One child, so the icon sits in the row instead of the alert's absolute icon slot. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Check className="size-4 shrink-0" aria-hidden="true" />
+        <p className="min-w-0 flex-1 text-sm text-copy">
+          {target === undefined
+            ? t('guide.ready')
+            : t('guide.readyFor', { page: target.page, component: target.label })}
+        </p>
+        <Link
+          href={target?.href ?? dataSourceRoutes.builder(websiteId)}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          {target === undefined ? t('guide.openPages') : t('guide.assign')}
+          <ArrowRight className="size-3.5" aria-hidden="true" />
+        </Link>
+      </div>
+    </Alert>
+  );
+}
+
 export function DataSourcesPanel({
   websiteId,
   sources,
@@ -188,26 +221,7 @@ export function DataSourcesPanel({
         cancelLabel={t('leave.stay')}
       >
         <div className="space-y-6">
-          {isOnlyUseLeft && (
-            <Alert variant="success" role="status">
-              {/* One child, so the icon sits in the row instead of the alert's absolute icon slot. */}
-              <div className="flex flex-wrap items-center gap-3">
-                <Check className="size-4 shrink-0" aria-hidden="true" />
-                <p className="min-w-0 flex-1 text-sm text-copy">
-                  {target === undefined
-                    ? t('guide.ready')
-                    : t('guide.readyFor', { page: target.page, component: target.label })}
-                </p>
-                <Link
-                  href={target?.href ?? dataSourceRoutes.builder(websiteId)}
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                >
-                  {target === undefined ? t('guide.openPages') : t('guide.assign')}
-                  <ArrowRight className="size-3.5" aria-hidden="true" />
-                </Link>
-              </div>
-            </Alert>
-          )}
+          {isOnlyUseLeft && <ReadyForUseNotice websiteId={websiteId} target={target} />}
           <div className="grid items-start gap-6 lg:grid-cols-3">
             <div className={showsGuide ? 'space-y-6 lg:col-span-2' : 'space-y-6 lg:col-span-3'}>
               {createForm}
