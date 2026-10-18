@@ -28,10 +28,9 @@ Mapbox is confined to `presentation/mapbox/`. `mapbox-layers.ts` turns a `LayerS
 
 The editor binds **existing datasets**; there are no URLs in the component.
 
-| Prop                                     | Accepts                          | Use                                                                        |
-| ---------------------------------------- | -------------------------------- | -------------------------------------------------------------------------- |
-| `primaryDatasetId`, `secondaryDatasetId` | canonical kind `GeoFeature`      | Any located thing: points, lines, areas                                    |
-| `metricsDatasetId`                       | canonical kind `SmartCityMetric` | The same dataset that feeds dashboards, once it has `latitude`/`longitude` |
+| Prop                                     | Accepts                     | Use                                     |
+| ---------------------------------------- | --------------------------- | --------------------------------------- |
+| `primaryDatasetId`, `secondaryDatasetId` | canonical kind `GeoFeature` | Any located thing: points, lines, areas |
 
 Nothing chosen: the editor canvas shows labelled sample features, a published page shows an empty map.
 
@@ -41,13 +40,13 @@ A REST endpoint that returns a GeoJSON `FeatureCollection` is read as a list of 
 
 ## Configuration
 
-| Prop                                  | Meaning                                                                                                                                         |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pointStyle`                          | `circles` (sized by data), `markers`, `clusters`, `heatmap`. Lines and areas always draw as lines and areas                                     |
-| `colorBy`                             | Any attribute name. Empty: `status`, then `category`, else one colour per layer. Text → categories (max 6, rest "other"); number → colour range |
-| `sizeBy`                              | Numeric attribute for circle size / heatmap intensity. Empty: `value` if it varies                                                              |
-| `interaction`                         | `details` (panel), `link` (open the feature's `href`, details if it has none), `none`                                                           |
-| `height`, `showFilters`, `showLegend` | Presentation                                                                                                                                    |
+| Prop                                           | Meaning                                                                                                                                         |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pointStyle`                                   | `circles` (sized by data), `markers`, `clusters`, `heatmap`. Lines and areas always draw as lines and areas                                     |
+| `colorBy`                                      | Any attribute name. Empty: `status`, then `category`, else one colour per layer. Text → categories (max 6, rest "other"); number → colour range |
+| `sizeBy`                                       | Numeric attribute for circle size / heatmap intensity. Empty: `value` if it varies                                                              |
+| `interaction`                                  | `details` (panel), `link` (open the feature's `href`, details if it has none), `none`                                                           |
+| `limit`, `height`, `showFilters`, `showLegend` | Presentation (`limit`: records read, see Limits)                                                                                                |
 
 A configured attribute a layer does not have is not an error: that layer picks its own. This is what lets one map mix datasets from different sources.
 
@@ -57,7 +56,7 @@ A configured attribute a layer does not have is not an error: that layer picks i
 - **Legend** is built from the same `LayerStyle` objects the Mapbox layers are built from. Entries are words with counts; swatches also vary by geometry (dot, line, area), so colour is never the only channel.
 - **Accessibility**: the list below the map contains every location that passes the filters and is fully usable by keyboard and screen reader; selection is exposed with `aria-pressed` and a polite live region; filters are labelled fieldsets; the canvas uses cooperative gestures so it never traps page scroll; reduced motion is respected.
 - **Invalid data**: a feature without a usable geometry (missing, unsupported, out-of-range, too large, duplicate id) is dropped, counted by reason, shown to visitors as text and logged once as a warning. The rest is drawn.
-- **Size limits**: Data Sources caps a dataset at 1000 records; a geometry is capped at 10 000 positions. Larger sources need server-side filtering or vector tiles, which `MapRenderer` does not preclude (a tile source would be another source type behind the same interface) but which is not built.
+- **Size limits**: a map reads at most 1 000 records (`LIST_LIMITS.dataset`); a geometry is capped at 10 000 positions. Larger sources need server-side filtering or vector tiles, which `MapRenderer` does not preclude (a tile source would be another source type behind the same interface) but which is not built.
 - **Degradation**: without a token, or if WebGL/Mapbox fails, the map background is replaced by a notice and everything else (filters, legend, list, details) keeps working.
 
 ## Configuration of Mapbox
@@ -77,11 +76,11 @@ If a Content-Security-Policy is added later, Mapbox GL needs `worker-src blob:`,
 
 ## Limits
 
-Two different ceilings bound what a component asks the platform for, and they must not be conflated:
+How many records a component asks for is bounded in one place, `LIST_LIMITS` (`component-platform/domain/content/list-scale.ts`). A content kind declares its scale where the kind is defined; `resolveListLimit(kind, requested)` (`component-platform/application/list-limits.ts`) clamps whatever is asked.
 
-| Ceiling                  | Value | Applies to                                                                                                            |
-| ------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------- |
-| `MAX_CONTENT_LIST_LIMIT` | 100   | Card lists (news, events, services…). Component props cap themselves at 50 or lower.                                  |
-| `MAX_DATASET_LIST_LIMIT` | 1000  | Kinds that read a dataset as data: `GeoFeature` (map), `SmartCityObservation` and `SmartCityBreakdownEntry` (charts). |
+| Scale     | Min | Max   | Initial | Kinds                                                                |
+| --------- | --- | ----- | ------- | -------------------------------------------------------------------- |
+| `cards`   | 1   | 100   | 12      | Card lists (news, events, services…)                                 |
+| `dataset` | 1   | 1 000 | 500     | Kinds read as data: `GeoFeature` (map), charts and dashboard metrics |
 
-Both live in `component-platform/application/list-limits.ts`; `resolveListLimit(kind, requested)` picks the ceiling by kind. 1000 equals the data-sources mapping cap (`MAX_MAPPED_RECORDS`), the most a dataset can hold. Presentation constants below the ceiling (`FEATURE_LIMIT` for the map, `OBSERVATION_LIMIT` and `BREAKDOWN_LIMIT` in `smartcity/support/dataset-limits.ts`) say how much one component wants; the application clamps whatever is asked.
+The editor's Limit prop uses the same bounds, so the builder, the properties panel and the use case never disagree. Data-sources adds only a connector backstop (`READ_WINDOW_LIMITS`: `maxPages` × `maxPageSize`).

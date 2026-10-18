@@ -531,8 +531,11 @@ docs/
     ├── security-agent.md
     ├── bug-bounty-agent.md
     ├── test-agent.md
-    └── production-blocker-agent.md
+    ├── production-blocker-agent.md
+    └── commit-agent.md
 ```
+
+`commit-agent.md` is not a review agent: it is the procedure for grouping changes into commits.
 
 Each agent specification should define:
 
@@ -549,7 +552,7 @@ Each agent specification should define:
 11. Examples
 12. Failure handling
 
-The root `README.md` provides the system-level overview. Individual agent specifications contain the detailed instructions required to execute each agent.
+This file provides the system-level overview. Individual agent specifications contain the detailed instructions required to execute each agent.
 
 ---
 
