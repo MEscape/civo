@@ -8,7 +8,7 @@
 
 - client.ts missing in map module
 
-- og and favicon
+- default Open Graph image (the favicon exists)
 
 - export const SMART_CITY_CATEGORIES = ['sustainability', 'mobility', 'energy', 'other'] as const;
   not good approach i think
@@ -31,27 +31,19 @@
 
 - confirm dialog everywhere where uload guard?
 
-- ci  only validate docker image no generate and migration but idk how to handle it because of standalone setting
-
-- user page should  not be in  website scope and not be tenant wide only for the platform admin and we need  that tenant is literally the created website!!! tenantid = websiteid? and normal admin also no website creation so  the normal websites route not available!!! thats for all only platform admin!!! is there also any correlation with booking sys?
+- ci only validate docker image no generate and migration but idk how to handle it because of standalone setting
 
 - navbar is loaded shortly and then got to sign in panel
 
 - Update-Verlauf always one step behind
 
-- release pagination in footer of releases table?
-
-- release "Veröffentlicht von einem ehemaligen Mitglied"  but i am logged in currently when i did this release?!?
+- release "Veröffentlicht von einem ehemaligen Mitglied" but i am logged in currently when i did this release?!?
 
 - details in component verlauf ui improvement
 
 - component updates conflicts > redirect to the causing elements on builder and highlight?
 
-- audit integration (on dashboard start and own page)
-
 - pre-commit and setup command
-
-- improved agent md files
 
 ## Open from the architecture review
 
@@ -60,10 +52,7 @@
   - B) Keep it atomic and move the orchestration up a level (bigger refactor).
   - Afterwards: booking mail should use the published theme colour, not the draft one.
 - Map: zoom/pan driven loading. Needs a bounding-box parameter in the data-source pagination strategies; offset alone cannot express "another place".
-- Paginate release history and migrations (`Page<T>`, same pattern as `ListWebsites`); still only bounded by `limit`.
-- Multi-tenancy: tenant is still fixed to `default` in `auth/composition.ts`. Missing: tenant picker, tenant assignment in the user table, platform-level admin role.
 - Verify against a real database and mail server (nothing ran here): invitation flow end to end, SMTP with `MAIL_SMTP_USER`/`MAIL_SMTP_PASSWORD`, user directory query, employee scoping, `npm run test:integration`.
-- Apply the migration `20261011T1147_employee_access_and_invitations` (`npm run db:migrate`).
 - Chart windows for the other dataset-scale components (donut, dashboard grid); only the trend chart has zoom/pan today.
 - Window semantics: category filter runs inside the window; consider fetching more when a category is set.
 - E2E tests for critical journeys: accept invitation, employee calendar, chart zoom/pan.

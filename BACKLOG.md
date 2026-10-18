@@ -1,968 +1,227 @@
-# GitHub Issue Backlog — Civic Website Platform
+# Backlog
 
-## Milestone: Data Integration
+Planned features that are **not built yet**, in suggested order. Finished work is deleted from this file in the same change that finishes it (the history is in git; how the finished parts work is in [`docs/architecture/`](./docs/architecture/)). Small fixes and findings live in [`TODO.md`](./TODO.md).
 
-### Issue: Add Data Sources management to Settings
+Each item names the goal, what it must cover, and when it is done. Every item follows the project rules ([`docs/rules/`](./docs/rules/README.md)): server-side validation, a use case behind every action, translated text, keyboard-usable UI.
 
-**Labels:** `feature`, `data-integration`, `admin`
+| #   | Milestone                                               | Items                                                       |
+| --- | ------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | [Pages and site structure](#1-pages-and-site-structure) | Manage pages, navigation editor, page SEO, delete a website |
+| 2   | [Media](#2-media)                                       | Media library, media picker in the builder                  |
+| 3   | [Civic forms](#3-civic-forms)                           | Form component, secure submission                           |
+| 4   | [Search](#4-search)                                     | Site-wide search, search index abstraction                  |
+| 5   | [Publishing](#5-publishing)                             | Scheduled publishing                                        |
+| 6   | [Quality](#6-quality)                                   | Accessibility audit, performance audit, architecture audit  |
 
-### Description
+## What exists today (so items are not rebuilt)
 
-Add a dedicated **Data Sources** section to the existing Settings area.
-
-The purpose is to allow internal administrators to connect municipal, civic, and smart-city data sources that can later be consumed by website components.
-
-### Requirements
-
-- Add `Settings → Data Sources`.
-- Display configured data sources.
-- Add a new data source.
-- Edit an existing data source.
-- Enable/disable a data source.
-- Delete a data source.
-- Display connection status.
-- Display last successful connection/fetch.
-- Display mapping status.
-- Provide a `Test Connection` action.
-- Keep credentials server-side.
-
-### Initial supported source
-
-Start with:
-
-- REST / JSON API
-
-The architecture should allow additional adapters later.
-
-### Acceptance Criteria
-
-- [ ] Data Sources appears in Settings.
-- [ ] Administrator can create a REST/JSON source.
-- [ ] Administrator can edit/delete/disable sources.
-- [ ] Credentials are never exposed to the client.
-- [ ] Connection status is visible.
-- [ ] Existing settings functionality remains unaffected.
+- Page builder with a component catalog (civic, content, smart-city, layout), draft saving with optimistic concurrency, per-page revisions.
+- Releases: preview, publish, roll back, component version migrations. Published sites read only the frozen snapshot of the live release.
+- Data sources (REST/JSON and mock), discovery, field mapping to canonical kinds, and dataset-bound civic, KPI, chart and map components.
+- Roles and permissions, invitations, platform administrators, audit trail.
+- Bookings (services, resources, locations, public booking flow, e-mails with calendar file).
+- A page has a **title and a path** (`about/team`), a `PageConfig` (its component tree) and nothing else.
 
 ---
 
-## Issue: Implement external Data Source adapter architecture
+## 1. Pages and site structure
 
-**Labels:** `feature`, `architecture`, `data-integration`
+### Manage pages (rename, move, delete)
 
-### Description
+**Labels:** `feature`, `builder`
 
-Create the adapter layer used to communicate with external civic and smart-city data providers.
+Pages can be created but not changed afterwards: there is no rename, no path change, no delete.
 
-External APIs must not be coupled directly to website components.
+- Rename a page and change its path; refuse a path another page already owns.
+- Delete a page; refuse the home page; warn when other pages link to it.
+- Every change is audited and goes live only with the next release.
 
-### Target architecture
+**Done when**
 
-```text
-Data Source
-    ↓
-Adapter
-    ↓
-External Response
-    ↓
-Mapping
-    ↓
-Canonical Data
-```
+- [ ] Rename, move and delete work behind `page.*` permissions and are refused for roles without them.
+- [ ] The public site of a released version is unaffected until the next release.
+- [ ] Draft and release history stay consistent (a deleted page can still be restored by rolling back).
 
-### Requirements
-
-Introduce an abstraction similar to:
-
-```ts
-interface DataSourceAdapter {
-  testConnection(...): Promise<Result<..., AppError>>;
-  discover(...): Promise<Result<..., AppError>>;
-  fetch(...): Promise<Result<..., AppError>>;
-}
-```
-
-Implement:
-
-```text
-RestJsonAdapter
-```
-
-first.
-
-### Acceptance Criteria
-
-- [ ] Adapter interface exists.
-- [ ] REST/JSON implementation exists.
-- [ ] Adapter uses `Result<T, AppError>`.
-- [ ] Expected network/API failures do not throw.
-- [ ] Components do not directly call external APIs.
-- [ ] Adapter implementation is independently testable.
-
----
-
-## Issue: Add Data Source connection testing
-
-**Labels:** `feature`, `data-integration`
-
-### Description
-
-Allow administrators to test a configured external data source before using it.
-
-### Requirements
-
-The server action/service should:
-
-1. Validate configuration.
-2. Resolve the correct adapter.
-3. Perform the request server-side.
-4. Apply timeout handling.
-5. Validate the response.
-6. Return a structured result.
-
-### Error states
-
-Support meaningful errors such as:
-
-```text
-DATA_SOURCE_INVALID
-DATA_SOURCE_UNREACHABLE
-DATA_SOURCE_TIMEOUT
-DATA_SOURCE_UNAUTHORIZED
-DATA_SOURCE_INVALID_RESPONSE
-```
-
-### Acceptance Criteria
-
-- [ ] Test Connection button exists.
-- [ ] Request executes server-side.
-- [ ] Success is clearly displayed.
-- [ ] Failure explains the category of problem.
-- [ ] Secrets are never returned.
-- [ ] No expected operational error crashes the application.
-
----
-
-## Issue: Implement civic data discovery
-
-**Labels:** `feature`, `data-integration`
-
-### Description
-
-After connecting a data source, administrators should be able to inspect the available data.
-
-### Example
-
-```text
-Municipal API
-
-/events
-/news
-/services
-/locations
-```
-
-For JSON responses, display the discovered structure and representative fields.
-
-### Requirements
-
-- Fetch a safe sample response.
-- Inspect object/array structures.
-- Identify available fields.
-- Display nested fields.
-- Handle malformed responses.
-- Limit response size.
-
-### Acceptance Criteria
-
-- [ ] Administrator can inspect a connected source.
-- [ ] JSON structures are displayed clearly.
-- [ ] Nested fields are discoverable.
-- [ ] Invalid responses are handled safely.
-
----
-
-## Issue: Implement canonical civic data mapping
-
-**Labels:** `feature`, `data-integration`, `architecture`
-
-### Description
-
-Allow external data to be mapped into the platform's canonical data models.
-
-Example:
-
-```text
-External API             Canonical Event
-
-event_name       →       title
-description      →       description
-start_time       →       startDate
-end_time         →       endDate
-venue            →       location.name
-website          →       url
-```
-
-### Requirements
-
-Support:
-
-- nested field mapping,
-- required fields,
-- optional fields,
-- default values,
-- basic transformations.
-
-Initial transformations:
-
-- string
-- number
-- boolean
-- date
-- datetime
-- URL
-- fallback value
-- nested property
-- basic array selection
-
-Do not introduce executable JavaScript into mappings.
-
-### Acceptance Criteria
-
-- [ ] External fields can be mapped.
-- [ ] Nested fields work.
-- [ ] Required fields are validated.
-- [ ] Mapping configuration is persisted.
-- [ ] Mapping produces canonical data.
-- [ ] Invalid mappings produce structured errors.
-
----
-
-## Issue: Connect external datasets to MunicipalityDataProvider
-
-**Labels:** `feature`, `data-integration`
-
-### Description
-
-Integrate configured external datasets into the existing `MunicipalityDataProvider`.
-
-The provider becomes the stable interface between external data and the website renderer.
-
-### Example
-
-```text
-REST API
-  ↓
-Adapter
-  ↓
-Mapping
-  ↓
-Canonical Event[]
-  ↓
-MunicipalityDataProvider
-  ↓
-EventsGrid
-```
-
-### Acceptance Criteria
-
-- [ ] Existing provider abstraction is reused.
-- [ ] External datasets can provide canonical data.
-- [ ] Components do not know the external API format.
-- [ ] Provider failures use `Result<T, AppError>`.
-- [ ] Existing mock/local providers continue to work.
-
----
-
-# Milestone: Smart City Components
-
-## Issue: Add canonical geospatial data model
-
-**Labels:** `feature`, `smart-city`, `maps`
-
-### Description
-
-Introduce or strengthen the canonical geospatial model required by smart-city features.
-
-### Requirements
-
-Support concepts such as:
-
-```ts
-Location {
-  latitude
-  longitude
-  address?
-  name?
-}
-```
-
-Consider support for:
-
-- coordinates,
-- addresses,
-- GeoJSON,
-- feature properties,
-- categories.
-
-The model should remain provider-agnostic.
-
-### Acceptance Criteria
-
-- [ ] Canonical location model exists.
-- [ ] Coordinates are validated.
-- [ ] GeoJSON can be represented safely where needed.
-- [ ] External provider-specific location formats remain hidden behind adapters.
-
----
-
-## Issue: Build reusable Map component
-
-**Labels:** `feature`, `smart-city`, `maps`, `builder`
-
-### Description
-
-Create a reusable map component for civic and smart-city websites.
-
-### Initial capabilities
-
-- display map,
-- display markers,
-- marker popup,
-- basic zoom,
-- basic center configuration,
-- responsive behavior,
-- accessible fallback.
-
-Later features can build on this component.
-
-### Acceptance Criteria
-
-- [ ] Map works as a PageConfig component.
-- [ ] Map receives canonical data.
-- [ ] Marker data is provider-agnostic.
-- [ ] Map can be configured in the builder.
-- [ ] Public renderer remains independent from editor implementation.
-
----
-
-## Issue: Add GeoJSON data support to Map component
-
-**Labels:** `feature`, `smart-city`, `maps`
-
-### Description
-
-Allow the Map component to consume canonical GeoJSON/geospatial datasets.
-
-### Example use cases
-
-- municipal boundaries,
-- construction zones,
-- cycling routes,
-- parking areas,
-- flood zones,
-- public facilities.
-
-### Acceptance Criteria
-
-- [ ] GeoJSON datasets can be configured.
-- [ ] Features render correctly.
-- [ ] Feature properties can be shown safely.
-- [ ] Invalid GeoJSON is handled gracefully.
-
----
-
-## Issue: Add smart-city KPI component
-
-**Labels:** `feature`, `smart-city`, `data-integration`
-
-### Description
-
-Create a reusable KPI/data card for live municipal data.
-
-Example:
-
-```text
-Available parking
-
-142
-
-spaces
-```
-
-Other examples:
-
-```text
-Air quality
-Good
-
-EV chargers
-18 available
-
-Temperature
-17.4 °C
-```
-
-### Requirements
-
-Support:
-
-- dataset selection,
-- value selection,
-- label,
-- unit,
-- formatting,
-- loading,
-- empty,
-- error,
-- stale-data state.
-
----
-
-## Issue: Add data-aware civic components
-
-**Labels:** `feature`, `data-integration`
-
-### Description
-
-Connect existing civic components to configured canonical datasets.
-
-Initial components:
-
-- Events Grid
-- News Grid
-- Services List
-- Contact List
-- Location List
-
-### Requirements
-
-Components should select a configured dataset rather than an external URL.
-
-Example:
-
-```text
-Events Grid
-
-Dataset
-[ Municipal Events ]
-
-Limit
-[ 6 ]
-```
-
-### Acceptance Criteria
-
-- [ ] Components consume canonical data.
-- [ ] Dataset selection is persisted in PageConfig.
-- [ ] Loading/empty/error states exist.
-- [ ] Components remain independent from external APIs.
-
----
-
-# Milestone: Media
-
-## Issue: Build municipal Media Library
-
-**Labels:** `feature`, `media`, `cms`
-
-### Description
-
-Create a centralized media library for municipality websites.
-
-### Supported assets
-
-Initially:
-
-- images,
-- PDFs,
-- documents.
-
-### Requirements
-
-- Upload.
-- Browse.
-- Search.
-- Preview.
-- Delete.
-- Metadata.
-- Alt text.
-- File type validation.
-- File size validation.
-
-### Accessibility
-
-Images should support meaningful alt text.
-
-Decorative images should be explicitly distinguishable.
-
-### Acceptance Criteria
-
-- [ ] Municipality users can access permitted media.
-- [ ] Upload validation exists.
-- [ ] Media can be selected from the builder.
-- [ ] Image URLs are not manually required for normal workflows.
-- [ ] Alt text can be managed.
-
----
-
-## Issue: Add image/media picker to builder
-
-**Labels:** `feature`, `builder`, `media`
-
-### Description
-
-Integrate the Media Library into the existing properties inspector.
-
-Replace manual image URL entry where appropriate.
-
-### Acceptance Criteria
-
-- [ ] User can select an existing asset.
-- [ ] User can upload/select media.
-- [ ] Selected media is stored as a stable reference.
-- [ ] Public renderer resolves the asset correctly.
-- [ ] Municipality editor only sees permitted media operations.
-
----
-
-# Milestone: Site Structure
-
-## Issue: Build navigation/site structure editor
+### Navigation / site structure editor
 
 **Labels:** `feature`, `navigation`, `builder`
 
-### Description
-
-Add a dedicated interface for managing the website's navigation and page hierarchy.
-
-### Example
+A dedicated interface for the website's navigation and page hierarchy:
 
 ```text
-Home
-
 Rathaus
   Bürgermeister
   Verwaltung
-  Gemeinderat
-
 Bürgerservice
   Dienstleistungen
   Formulare
-  Ansprechpartner
-
-Leben & Wohnen
-  Veranstaltungen
-  Einrichtungen
-
-Smart City
-  Mobilität
-  Umwelt
-  Open Data
 ```
 
-### Requirements
+- Add, reorder and nest pages; remove from navigation without deleting the page.
+- Navigation visibility per page; the URL follows the hierarchy.
+- Prevent invalid structures (cycles, duplicate paths, orphans).
 
-- Add page.
-- Rename page.
-- Reorder pages.
-- Nest pages.
-- Remove page.
-- Configure navigation visibility.
-- Configure URL/path.
-- Prevent invalid navigation structures.
+**Done when**
 
-### Acceptance Criteria
+- [ ] The hierarchy is persisted and is part of the release snapshot.
+- [ ] The public navigation reads the same source of truth.
+- [ ] Invalid nesting is refused by the domain, not only by the UI.
 
-- [ ] Navigation hierarchy is persisted.
-- [ ] Public navigation uses the same source of truth.
-- [ ] Builder/editor can navigate the hierarchy.
-- [ ] Invalid nesting is prevented.
+### Page metadata and SEO
 
----
+**Labels:** `feature`, `seo`
 
-## Issue: Add page metadata and SEO settings
+Per-page: title, description, social image, canonical URL where needed, indexing preference.
 
-**Labels:** `feature`, `seo`, `navigation`
+**Done when**
 
-### Description
+- [ ] Metadata is validated, persisted and part of the release snapshot.
+- [ ] Published pages render it through the builders in `@lib/seo`.
+- [ ] Editors with restricted roles see only the fields they may change.
+- [ ] A default social (Open Graph) image exists for pages without their own.
 
-Allow administrators to configure page-level metadata.
+### Delete a website
 
-### Fields
+**Labels:** `feature`, `platform`
 
-- title,
-- description,
-- slug,
-- social image,
-- canonical URL where needed,
-- indexing preference.
+Platform administrators can create and edit websites but not remove one.
 
-### Acceptance Criteria
+- Soft-delete first (the site stops being served, data is kept for a retention period), then purge.
+- Confirm with the website's name; audit it; revoke the memberships' access.
 
-- [ ] Metadata is persisted.
-- [ ] Public pages render metadata correctly.
-- [ ] Validation exists.
-- [ ] Municipality editor only sees permitted fields.
+**Done when**
+
+- [ ] Only `website.*` permission holders (platform administrators) can delete.
+- [ ] A deleted website's public address answers not found.
+- [ ] Purging removes every tenant-scoped row and nothing else.
 
 ---
 
-# Milestone: Civic Forms
+## 2. Media
 
-## Issue: Build reusable civic Form component
+### Media library
+
+**Labels:** `feature`, `media`
+
+A central library per website for images, PDFs and documents.
+
+- Upload, browse, search, preview, delete; metadata; file type and size validation.
+- Alt text for images, with decorative images explicitly marked.
+- Storage behind a port (object storage in production, local disk in development); nothing is served from a user-controlled path.
+
+**Done when**
+
+- [ ] Uploads are validated on the server (type by content, not only extension; size limit) and rate limited.
+- [ ] Permitted roles can use the library; others cannot read or change it.
+- [ ] Alt text can be managed and is required unless the image is marked decorative.
+
+### Media picker in the builder
+
+**Labels:** `feature`, `builder`, `media`
+
+Replace manual image URL entry in the properties inspector with select / upload.
+
+**Done when**
+
+- [ ] A component stores a stable media reference, not a URL.
+- [ ] The public renderer resolves the reference from the released snapshot.
+- [ ] Restricted editors only see the media operations their role allows.
+
+---
+
+## 3. Civic forms
+
+### Form component
 
 **Labels:** `feature`, `forms`, `civic`
 
-### Description
+A schema-driven form for municipal websites. Fields: text, textarea, email, number, select, checkbox, date. Required fields, accessible labels and errors, loading and success states. No workflow automation yet.
 
-Create a structured form component that can be used for municipal websites.
-
-### Initial field types
-
-- text,
-- textarea,
-- email,
-- number,
-- select,
-- checkbox,
-- date.
-
-### Requirements
-
-- schema-driven validation,
-- required fields,
-- accessible labels,
-- error messages,
-- success state,
-- loading state.
-
-Do not implement complex workflow automation yet.
-
----
-
-## Issue: Add server-side civic form submission
+### Secure submission
 
 **Labels:** `feature`, `forms`, `server`
 
-### Description
+- Server Action with Zod validation; structured field errors.
+- Rate limiting and a spam-protection strategy (honeypot, then a challenge if needed).
+- Where submissions go: stored for the website's staff and/or e-mailed to a configured address.
 
-Create a secure server-side submission flow for the Form component.
+**Done when (both)**
 
-### Requirements
-
-- Server Action.
-- Zod validation.
-- rate limiting strategy,
-- spam protection strategy,
-- structured errors,
-- success response.
-
-Never trust client-side validation alone.
+- [ ] A form can be placed in the builder and configured without code.
+- [ ] Client-side validation is a convenience only; the server validates everything.
+- [ ] Submitting twice does not create duplicates; failures keep the visitor's input.
 
 ---
 
-# Milestone: Search
+## 4. Search
 
-## Issue: Build site-wide civic search
+### Site-wide search
 
 **Labels:** `feature`, `search`
 
-### Description
+Search across pages, news, events, services, contacts, documents and locations: input, result list with type, title, excerpt and URL, empty and no-results states. Reads the published snapshot only.
 
-Create site-wide search across structured municipal content.
+### Search index abstraction
 
-### Search targets
+**Labels:** `architecture`, `search`
 
-Initially:
+A `SearchService` with `SearchDocument` / `SearchResult` behind a port, so the backend can change. Start with PostgreSQL full-text search; do not introduce Elasticsearch/OpenSearch unless scale demands it.
 
-- pages,
-- news,
-- events,
-- services,
-- contacts,
-- documents,
-- locations.
+**Done when (both)**
 
-### Requirements
-
-- search input,
-- result list,
-- result type,
-- title,
-- description/excerpt,
-- URL,
-- empty state,
-- no-results state.
-
-The architecture should allow a more advanced search backend later.
+- [ ] Drafts and unpublished content are never searchable.
+- [ ] The index updates when a release is published.
+- [ ] Results are bounded and paginated.
 
 ---
 
-## Issue: Add search indexing for structured content
+## 5. Publishing
 
-**Labels:** `feature`, `search`, `architecture`
-
-### Description
-
-Create a search index abstraction for the platform's structured content.
-
-The index should not depend directly on a specific search provider.
-
-Conceptually:
-
-```ts
-SearchService;
-SearchDocument;
-SearchResult;
-```
-
-Start simple.
-
-Do not introduce Elasticsearch/OpenSearch unless the actual scale requires it.
-
----
-
-# Milestone: Accessibility & Quality
-
-## Issue: Perform full WCAG accessibility audit
-
-**Labels:** `quality`, `accessibility`
-
-### Description
-
-Audit the builder and generated public websites for accessibility.
-
-### Areas
-
-- keyboard navigation,
-- focus management,
-- semantic HTML,
-- heading hierarchy,
-- landmarks,
-- forms,
-- error messages,
-- contrast,
-- image alt text,
-- screen reader behavior,
-- responsive layouts.
-
-### Acceptance Criteria
-
-- [ ] Critical accessibility issues are fixed.
-- [ ] Builder is keyboard usable.
-- [ ] Public components have accessible defaults.
-- [ ] Forms have accessible errors.
-- [ ] Images have appropriate alt handling.
-
----
-
-## Issue: Perform public website performance audit
-
-**Labels:** `performance`, `quality`
-
-### Description
-
-Audit generated websites for unnecessary client JavaScript and rendering overhead.
-
-### Focus
-
-- Server Components,
-- caching,
-- image optimization,
-- bundle size,
-- unnecessary hydration,
-- data fetching,
-- rendering performance.
-
-### Principle
-
-Prefer:
-
-```text
-Server Component
-```
-
-over:
-
-```text
-Client Component
-```
-
-unless interactivity genuinely requires client-side behavior.
-
----
-
-# Milestone: Architecture
-
-## Issue: Perform post-feature architecture audit
-
-**Labels:** `architecture`, `refactor`, `maintenance`
-
-### Description
-
-After several major features have been implemented, perform a focused architecture review.
-
-Do not rewrite working systems unnecessarily.
-
-### Inspect
-
-- duplicated logic,
-- inconsistent Result handling,
-- oversized components,
-- unnecessary client components,
-- duplicated validation,
-- repository/service boundaries,
-- Prisma usage,
-- Redux usage,
-- caching,
-- error handling,
-- component registry,
-- PageConfig types,
-- data-provider abstractions.
-
-### Acceptance Criteria
-
-- [ ] Duplicate abstractions are consolidated where justified.
-- [ ] Server/client boundaries are reviewed.
-- [ ] Existing architecture remains understandable.
-- [ ] No unnecessary rewrite is introduced.
-- [ ] Tests continue to pass.
-
----
-
-# Milestone: Publishing
-
-## Issue: Implement draft/published state
-
-**Labels:** `feature`, `publishing`, `cms`
-
-### Description
-
-Introduce a clear distinction between editable draft content and the currently published website.
-
-### Flow
-
-```text
-Draft
- ↓
-Preview
- ↓
-Publish
- ↓
-Published
-```
-
-### Requirements
-
-- draft state,
-- published state,
-- publish action,
-- validation before publishing,
-- public renderer reads published state.
-
----
-
-## Issue: Add page/site revision history
-
-**Labels:** `feature`, `publishing`, `cms`
-
-### Description
-
-Allow administrators to see previous published/draft versions and restore a previous version.
-
-### Initial scope
-
-- create revision,
-- list revisions,
-- view revision,
-- restore revision.
-
-Do not implement collaborative editing.
-
----
-
-## Issue: Add scheduled publishing
+### Scheduled publishing
 
 **Labels:** `feature`, `publishing`
 
-### Description
+Publish a prepared release at a future time.
 
-Allow a municipality to schedule a prepared website/content change for publication at a future time.
+- Scheduled time with explicit time zone; validation (not in the past, nothing newer superseding it).
+- Server-side execution without a user session (a job runner or cron entry), idempotent and audited as `system`.
+- Visible status: scheduled, published, failed; cancel or change before it runs.
 
-### Requirements
+**Done when**
 
-- scheduled publish time,
-- timezone handling,
-- validation,
-- server-side execution,
-- status visibility.
-
----
-
-# Milestone: Future Infrastructure
-
-## Issue: Introduce authentication boundary
-
-**Labels:** `security`, `infrastructure`, `future`
-
-### Description
-
-Introduce real authentication while preserving the existing authorization boundary.
-
-### Important
-
-Do not couple authentication deeply into:
-
-- PageRenderer,
-- components,
-- PageConfig,
-- data adapters.
-
-Authentication should sit at the application boundary.
+- [ ] A scheduled release goes live once, at the time, even if the job runs twice.
+- [ ] A failure leaves the live site unchanged and shows the reason.
 
 ---
 
-## Issue: Implement role-based authorization
+## 6. Quality
 
-**Labels:** `security`, `authorization`, `future`
+### Accessibility audit (WCAG)
 
-### Potential roles
+**Labels:** `quality`, `accessibility`
 
-```text
-Platform Admin
-Municipality Admin
-Municipality Editor
-Content Editor
-```
+Audit the builder and published sites: keyboard navigation, focus, semantics, heading hierarchy, landmarks, forms and errors, contrast, alt text, screen-reader behaviour, responsive layouts.
 
-The exact roles should be determined by actual product requirements.
+**Done when:** critical issues are fixed, the builder is keyboard-usable, public components have accessible defaults.
 
-Authorization should control:
+### Performance audit
 
-- data sources,
-- mappings,
-- media,
-- pages,
-- publishing,
-- settings.
+**Labels:** `quality`, `performance`
+
+Audit published sites for unnecessary client JavaScript and rendering cost: Server Components first, caching, image optimization, bundle size, hydration, data fetching. Prefer a Server Component unless interactivity truly needs the client.
+
+**Done when:** measured findings are fixed or recorded, with before/after numbers.
+
+### Architecture audit
+
+**Labels:** `architecture`, `maintenance`
+
+After the next large features, review: duplicated logic or validation, inconsistent `Result` handling, oversized components, unnecessary client components, repository and service boundaries, caching, the component registry and `PageConfig` types. Do not rewrite working systems.
+
+**Done when:** duplicates are consolidated where justified, tests pass, and the architecture stays understandable.
 
 ---
 
-# Product Development Rule
+## Working rule
 
-After the core data integration work, avoid creating another massive implementation phase unless a new subsystem is genuinely large.
-
-Prefer focused issues:
-
-```text
-One feature
-    ↓
-Implementation
-    ↓
-Tests
-    ↓
-Code review
-    ↓
-Architecture audit when needed
-```
-
-This keeps the codebase understandable while allowing the platform to grow.
+Prefer focused items over another large phase: one feature, then implementation, tests, review, and an architecture audit when needed. That keeps the codebase understandable while the platform grows.
