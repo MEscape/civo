@@ -3,12 +3,15 @@
     "panel": {
       "title": "Data sources",
       "intro": "Connect municipal and smart-city data sources to give your website components real data.",
-      "newSource": "+ New source",
-      "createTitle": "Add a data source",
-      "empty": "No data sources configured. Sample data is shown."
+      "newSource": "Connect a data source",
+      "createTitle": "Connect a data source",
+      "createIntro": "Three short questions. Nothing is read from the API until you add a dataset.",
+      "connected": "{count, plural, one {# connected source} other {# connected sources}}",
+      "emptyTitle": "No data sources yet",
+      "emptyDescription": "Until you connect one, components show sample data. All you need is the web address of an API that returns JSON."
     },
     "sourceCard": {
-      "confirmDelete": "Really remove this data source? All of its datasets are deleted too.",
+      "confirmDelete": "Remove this data source and all of its datasets? This cannot be undone.",
       "unknownEndpoint": "Unknown URL",
       "kind": "Type",
       "lastChecked": "Last checked",
@@ -16,7 +19,11 @@
       "testHealthy": "Connection successful.",
       "testing": "Checking…",
       "test": "Test connection",
-      "remove": "Remove"
+      "remove": "Remove",
+      "untestedHint": "Not tested yet. Test the connection to make sure the API can be reached; datasets can be added once it answers.",
+      "deleteTitle": "Remove \"{name}\"?",
+      "failedHint": "Fix the address or the API, then test again. Datasets can be added once the test succeeds.",
+      "failedWithDatasets": "The existing datasets are kept, but components using them cannot load current data until the source answers again. New datasets can be added once a test succeeds."
     },
     "sourceForm": {
       "name": "Source name",
@@ -56,18 +63,48 @@
       "credentialHint": "The credential is not stored here. It must be set on the server as an environment variable; ask your administrator.",
       "saving": "Saving…",
       "save": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "baseUrlHint": "The address the records are read from. It must start with https:// or http://.",
+      "afterSave": "You can test the connection right after saving.",
+      "connect": "Connect source",
+      "steps": {
+        "identity": {
+          "title": "Name it",
+          "description": "A name your team recognises in lists and in the editor."
+        },
+        "location": {
+          "title": "Where is the data?",
+          "description": "The API address, and whether it needs a key."
+        },
+        "advanced": {
+          "title": "Advanced: records and pagination",
+          "description": "Only needed if the API wraps its records unusually or returns them in pages. Common layouts are detected automatically."
+        }
+      }
     },
     "datasets": {
       "title": "Datasets",
-      "add": "+ Add dataset",
+      "add": "Add dataset",
       "empty": "This source has no datasets yet. Add one.",
       "kind": "Type: {kind}",
-      "confirmDelete": "Really delete this dataset and its mapping? Components that use it fall back to sample data.",
-      "hideMapping": "Hide mapping",
-      "editMapping": "Edit mapping",
+      "confirmDelete": "Delete this dataset and its field mapping? This cannot be undone.",
+      "hideMapping": "Close mapping",
+      "editMapping": "Map fields",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "firstTitle": "Next: say what this source provides",
+      "firstDescription": "A dataset is one list of records from this source, for example the events or the measuring stations. Components use datasets, not sources.",
+      "addFirst": "Add first dataset",
+      "mapped": "Ready to use",
+      "unmapped": "Fields not mapped",
+      "editLabel": "Edit {name}",
+      "deleteLabel": "Delete {name}",
+      "deleteTitle": "Delete \"{name}\"?",
+      "titleOf": "{count, plural, =0 {Datasets of {source}} one {# dataset of {source}} other {# datasets of {source}}}",
+      "unused": "Not used on any page yet.",
+      "usedOn": "Used on:",
+      "useLabel": "{page} › {component}",
+      "liveOnly": "No draft uses it any more, but the live site still shows it on: {pages}, until the next publish."
     },
     "datasetForm": {
       "title": "Add a dataset",
@@ -238,7 +275,8 @@
       "addressNotAllowed": "Invalid configuration: this address is not allowed.",
       "validation": "Please check your input.",
       "infrastructure": "A service error occurred. Please try again later.",
-      "unexpected": "An unexpected error occurred."
+      "unexpected": "An unexpected error occurred.",
+      "datasetInUse": "A page still shows this data, so it was not deleted. The page has been reloaded with the current usage."
     },
     "validation": {
       "idInvalid": "Invalid identifier.",
@@ -276,6 +314,65 @@
       "valueNotDate": "The value is not a valid date.",
       "valueNotUrl": "The value is not a valid http(s) URL.",
       "valueMissing": "The value is required but missing."
+    },
+    "auditEvents": {
+      "data_source": {
+        "created": "Data source added",
+        "tested": "Connection tested",
+        "deleted": "Data source removed"
+      },
+      "dataset": {
+        "created": "Dataset added",
+        "updated": "Dataset changed",
+        "mapping_saved": "Field mapping saved",
+        "deleted": "Dataset removed"
+      }
+    },
+    "pagination": {
+      "nav": "Data source pages"
+    },
+    "guide": {
+      "title": "How real data gets onto your pages",
+      "progress": "{done} of {total} done",
+      "done": "done",
+      "steps": {
+        "source": {
+          "title": "Connect a source",
+          "description": "The address of an API, such as an open data portal."
+        },
+        "dataset": {
+          "title": "Add a dataset",
+          "description": "One list of records from it, such as events or measuring stations."
+        },
+        "mapping": {
+          "title": "Map the fields",
+          "description": "Say which field holds the title, the date, the location and so on."
+        },
+        "use": {
+          "title": "Use it on a page",
+          "description": "Pick the dataset in a component in the page editor."
+        }
+      },
+      "ready": "Your data is ready. Last step: choose a dataset in a component such as a map, list or chart.",
+      "openPages": "Go to pages",
+      "readyFor": "Your data is ready. Last step: \"{page} › {component}\" still shows sample data; choose your dataset there.",
+      "assign": "Choose dataset there"
+    },
+    "leave": {
+      "title": "Leave without saving?",
+      "description": "A form or a field mapping on this page has changes that are not saved yet. They are lost if you leave.",
+      "confirm": "Discard changes",
+      "stay": "Keep editing",
+      "mappingTitle": "Discard the open mapping?",
+      "mappingDescription": "The field mapping you are editing has unsaved assignments. Opening another one discards them."
+    },
+    "inUse": {
+      "title": "\"{name}\" is still in use",
+      "description": "{count, plural, one {A component still shows this data.} other {# components still show this data.}} On the live site missing data shows an error, so choose another dataset for {count, plural, one {it} other {them}} first. Then it can be deleted.",
+      "openFirst": "Open in editor",
+      "close": "Cancel",
+      "liveDescription": "No page in the editor uses it any more, but the live site still shows it on: {pages}. Publish your changes first; then it can be deleted.",
+      "openReleases": "Go to publishing"
     }
   }
 }

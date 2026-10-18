@@ -8,9 +8,8 @@ import { useForm } from 'react-hook-form';
 import { FieldMessage } from '@components/shared/field-message';
 import { FormSelectField } from '@components/shared/form-select-field';
 import { TextField } from '@components/shared/text-field';
+import { useReportUnsavedChanges } from '@components/shared/unsaved-changes-guard';
 import { Button } from '@components/ui/button';
-
-import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
 
 import { useTranslations } from '@i18n/client';
 
@@ -64,7 +63,7 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
     defaultValues: toDefaultValues(dataset),
   });
   const { errors, isDirty } = form.formState;
-  useBeforeUnloadGuard(isDirty);
+  useReportUnsavedChanges(isDirty);
   const kindOptions = CANONICAL_KINDS.map((kind) => ({
     value: kind,
     label: t(CANONICAL_KIND_MESSAGE_KEYS[kind]),
@@ -104,9 +103,9 @@ export function DatasetForm({ dataSourceId, dataset, onSaved, onCancel }: Datase
       aria-busy={isPending}
       className="space-y-6"
     >
-      <h4 className="font-medium text-copy">
+      <p className="text-sm font-semibold text-copy">
         {dataset ? t('datasetForm.titleEdit') : t('datasetForm.title')}
-      </h4>
+      </p>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <TextField
           id={nameId}

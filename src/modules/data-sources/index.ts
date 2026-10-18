@@ -5,8 +5,20 @@
  * server-only code and must never end up in a client bundle.
  */
 
-export { dataSourceQueries } from './composition';
+export { dataSourceQueries, deleteDataSourceGuarded, deleteDatasetGuarded } from './composition';
+export {
+  invalidateDatasetConsumers,
+  invalidateRemovedDataSource,
+} from './presentation/cache/invalidate';
+export { datasetInUse } from './domain/errors/data-source-errors';
+export type { DatasetDeletionGuard, DeletionScope } from './application/contracts/deletion-inputs';
 
+export { dataSourceRoutes } from './presentation/routes';
+export type {
+  ComponentAwaitingData,
+  DatasetUse,
+  DatasetUsage,
+} from './presentation/components/dataset-management-item';
 export { DataSourcesSettings } from './presentation/components/data-sources-settings';
 
 export type { CanonicalKind, MappedRecordsView } from './application/contracts/data-source-views';

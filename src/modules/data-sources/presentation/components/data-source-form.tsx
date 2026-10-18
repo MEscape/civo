@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState, useTransition } from 'react';
+import type { ReactNode } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
@@ -8,9 +9,9 @@ import { useForm, useWatch } from 'react-hook-form';
 import { FieldMessage } from '@components/shared/field-message';
 import { FormSelectField } from '@components/shared/form-select-field';
 import { TextField } from '@components/shared/text-field';
+import { useReportUnsavedChanges } from '@components/shared/unsaved-changes-guard';
 import { Button } from '@components/ui/button';
-
-import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
+import { ChevronRight, Info } from '@components/ui/icons';
 
 import { useTranslations } from '@i18n/client';
 
@@ -39,6 +40,54 @@ export interface DataSourceFormProps {
   readonly onSaved: () => void;
 }
 
+/** The fields under the advanced part; an error there opens it, so it is never hidden. */
+const ADVANCED_FIELDS = [
+  'recordsPath',
+  'paginationKind',
+  'limitParam',
+  'offsetParam',
+  'pageParam',
+  'sizeParam',
+  'cursorParam',
+  'nextCursorPath',
+  'nextUrlPath',
+  'pageSize',
+] as const satisfies ReadonlyArray<keyof RestSourceForm>;
+
+/** One numbered part of the form: what it asks, why, and its fields. */
+function FormStep({
+  number,
+  title,
+  description,
+  children,
+}: {
+  readonly number: number;
+  readonly title: string;
+  readonly description: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <fieldset className="grid gap-4 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] sm:gap-8">
+      <legend className="sr-only">{title}</legend>
+      <div className="flex items-start gap-3" aria-hidden="true">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+          {number}
+        </span>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-copy">{title}</p>
+          <p className="text-xs text-copy-muted">{description}</p>
+        </div>
+      </div>
+      <div className="space-y-4">{children}</div>
+    </fieldset>
+  );
+}
+
+/**
+ * Connecting a source, in the order a newcomer thinks about it: what to call
+ * it, where the data is, and (folded away, because the defaults detect the
+ * common layouts) how the API wraps and pages its records.
+ */
 export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormProps) {
   const t = useTranslations('dataSources');
   /** A field's error code as text in this module's language; `undefined` while the field is valid. */
@@ -54,16 +103,14 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
     defaultValues: REST_SOURCE_FORM_DEFAULTS,
   });
   const { errors, isDirty } = form.formState;
-  useBeforeUnloadGuard(isDirty);
+  useReportUnsavedChanges(isDirty);
   const authMode = useWatch({ control: form.control, name: 'authMode' });
+  const hasAdvancedError = ADVANCED_FIELDS.some((field) => errors[field] !== undefined);
 
   const authModeOptions = AUTH_MODES.map((mode) => ({
     value: mode,
     label: t(AUTH_MODE_MESSAGE_KEYS[mode]),
   }));
-
-  const nameId = `${id}-name`;
-  const baseUrlId = `${id}-base-url`;
 
   function handleSubmit(values: RestSourceForm) {
     setFormErrorCode(null);
@@ -87,15 +134,37 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
       onSubmit={form.handleSubmit(handleSubmit)}
       noValidate
       aria-busy={isPending}
-      className="space-y-6"
+      className="space-y-8"
     >
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <FormStep
+        number={1}
+        title={t('sourceForm.steps.identity.title')}
+        description={t('sourceForm.steps.identity.description')}
+      >
         <TextField
-          id={nameId}
+          id={`${id}-name`}
           label={t('sourceForm.name')}
           placeholder={t('sourceForm.namePlaceholder')}
           error={errorText(errors.name?.message)}
           {...form.register('name')}
+        />
+      </FormStep>
+
+      <FormStep
+        number={2}
+        title={t('sourceForm.steps.location.title')}
+        description={t('sourceForm.steps.location.description')}
+      >
+        <TextField
+          id={`${id}-base-url`}
+          type="url"
+          inputMode="url"
+          autoComplete="off"
+          label={t('sourceForm.baseUrl')}
+          hint={t('sourceForm.baseUrlHint')}
+          placeholder={t('sourceForm.baseUrlPlaceholder')}
+          error={errorText(errors.baseUrl?.message)}
+          {...form.register('baseUrl')}
         />
         <FormSelectField
           control={form.control}
@@ -105,30 +174,43 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
           options={authModeOptions}
           errorText={errorText}
         />
-      </div>
+        {authMode !== 'NONE' && (
+          <p className="flex gap-2 rounded-token border border-info-border bg-info-subtle px-3 py-2 text-xs text-copy">
+            <Info className="mt-px size-3.5 shrink-0 text-info" aria-hidden="true" />
+            {t('sourceForm.credentialHint')}
+          </p>
+        )}
+      </FormStep>
 
-      <TextField
-        id={baseUrlId}
-        type="url"
-        inputMode="url"
-        autoComplete="off"
-        label={t('sourceForm.baseUrl')}
-        placeholder={t('sourceForm.baseUrlPlaceholder')}
-        error={errorText(errors.baseUrl?.message)}
-        {...form.register('baseUrl')}
-      />
-
-      {authMode !== 'NONE' && (
-        <p className="text-xs text-copy-muted">{t('sourceForm.credentialHint')}</p>
-      )}
-
-      <DataSourcePaginationFields
-        idPrefix={id}
-        control={form.control}
-        register={form.register}
-        errors={errors}
-        errorText={errorText}
-      />
+      {/* `open` follows an error so an invalid field is never folded away. */}
+      <details
+        className="group rounded-token border border-border bg-canvas/50"
+        open={hasAdvancedError ? true : undefined}
+      >
+        <summary className="flex cursor-pointer list-none items-start gap-3 rounded-token px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">
+          <ChevronRight
+            className="mt-0.5 size-4 shrink-0 text-copy-muted transition-transform group-open:rotate-90 motion-reduce:transition-none"
+            aria-hidden="true"
+          />
+          <span className="space-y-0.5">
+            <span className="block text-sm font-medium text-copy">
+              {t('sourceForm.steps.advanced.title')}
+            </span>
+            <span className="block text-xs text-copy-muted">
+              {t('sourceForm.steps.advanced.description')}
+            </span>
+          </span>
+        </summary>
+        <div className="border-t border-border p-4">
+          <DataSourcePaginationFields
+            idPrefix={id}
+            control={form.control}
+            register={form.register}
+            errors={errors}
+            errorText={errorText}
+          />
+        </div>
+      </details>
 
       {formErrorCode !== null && (
         <FieldMessage
@@ -138,13 +220,16 @@ export function DataSourceForm({ websiteId, onCancel, onSaved }: DataSourceFormP
         />
       )}
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={isPending}>
-          {isPending ? t('sourceForm.saving') : t('sourceForm.save')}
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>
-          {t('sourceForm.cancel')}
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <p className="text-xs text-copy-muted">{t('sourceForm.afterSave')}</p>
+        <div className="flex gap-2">
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>
+            {t('sourceForm.cancel')}
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? t('sourceForm.saving') : t('sourceForm.connect')}
+          </Button>
+        </div>
       </div>
     </form>
   );

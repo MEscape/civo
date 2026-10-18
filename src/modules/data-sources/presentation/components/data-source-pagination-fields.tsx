@@ -53,10 +53,8 @@ export function DataSourcePaginationFields({
   }));
 
   return (
-    <fieldset className="space-y-4 rounded-token-md border border-border p-4">
-      <legend className="px-1 text-sm font-medium text-copy">
-        {t('sourceForm.pagination.legend')}
-      </legend>
+    <fieldset className="space-y-4">
+      <legend className="sr-only">{t('sourceForm.pagination.legend')}</legend>
 
       <TextField
         id={`${idPrefix}-records-path`}

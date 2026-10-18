@@ -12,6 +12,7 @@ import {
   datasetSlugTaken,
   persistenceFailed,
 } from '../../domain/errors/data-source-errors';
+import { toDatasetId } from '../../domain/models/ids';
 
 import { DATA_SOURCE_SELECT } from './data-source-record-mapper';
 import {
@@ -78,6 +79,31 @@ export class PrismaDatasetRepository implements DatasetRepository {
       async () => ownDatasetsWithSource(tenantId).where({ id }).first(),
       failures.infraOnly('findWithSource'),
     ).map((record) => record && toDatasetWithSource(record, tenantId));
+  }
+
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly DatasetId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: DatasetId; readonly name: string }>,
+    InfrastructureAppError
+  > {
+    if (ids.length === 0) {
+      return okAsync([]);
+    }
+    return fromThrowableAsync(
+      async () =>
+        datasetsOf(tenantId)
+          .where((dataset) => dataset.id.in([...ids]))
+          .where((dataset) => dataset.dataSource.some({ websiteId }))
+          .select('id', 'name')
+          .limit(ids.length)
+          .all(),
+      failures.infraOnly('findNames'),
+    ).map((records) =>
+      records.map((record) => ({ id: toDatasetId(record.id), name: record.name })),
+    );
   }
 
   findWithSourceInWebsite(

@@ -36,6 +36,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.datasetNotFound]: fieldPath('errors', 'datasetNotFound'),
   [ERRORS.datasetSlugTaken]: fieldPath('errors', 'datasetSlugTaken'),
   [ERRORS.datasetNotMapped]: fieldPath('errors', 'datasetNotMapped'),
+  [ERRORS.datasetInUse]: fieldPath('errors', 'datasetInUse'),
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
   [ERRORS.mappingFailed]: fieldPath('errors', 'mappingFailed'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),

@@ -1,8 +1,9 @@
 'use client';
 
-import { useId, useState, useTransition } from 'react';
+import { useEffect, useId, useState, useTransition } from 'react';
 
 import { FieldMessage } from '@components/shared/field-message';
+import { useReportUnsavedChanges } from '@components/shared/unsaved-changes-guard';
 import { Button } from '@components/ui/button';
 
 import { useTranslations } from '@i18n/client';
@@ -32,6 +33,8 @@ export interface DataSourceMappingPanelProps {
   readonly canonicalKind: CanonicalKind;
   /** The mapping already saved, so reopening the panel does not discard it. */
   readonly existingMapping: DatasetMappingView | null;
+  /** Told whenever the assignments start or stop differing from the saved mapping. */
+  readonly onDirtyChange?: (isDirty: boolean) => void;
 }
 
 /**
@@ -56,6 +59,11 @@ function assignmentsFrom(mapping: DatasetMappingView | null): Record<string, str
   return Object.fromEntries((mapping?.fields ?? []).map((f) => [f.sourcePath, f.targetPath]));
 }
 
+function sameAssignments(a: Record<string, string>, b: Record<string, string>): boolean {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+}
+
 /**
  * Discovery plus mapping, in two steps: "load fields" samples the live
  * source, then each discovered field is assigned a canonical target field.
@@ -69,6 +77,7 @@ export function DataSourceMappingPanel({
   datasetId,
   canonicalKind,
   existingMapping,
+  onDirtyChange,
 }: DataSourceMappingPanelProps) {
   const t = useTranslations('dataSources');
 
@@ -77,6 +86,14 @@ export function DataSourceMappingPanel({
   const [fields, setFields] = useState<readonly DiscoveredFieldView[] | null>(null);
   const [assignments, setAssignments] = useState(() => assignmentsFrom(existingMapping));
   const [status, setStatus] = useState<PanelStatus>({ kind: 'idle' });
+
+  // After a save the route sends the new mapping back, which makes the panel clean again.
+  const isDirty = !sameAssignments(assignments, assignmentsFrom(existingMapping));
+  useReportUnsavedChanges(isDirty);
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+    return () => onDirtyChange?.(false);
+  }, [isDirty, onDirtyChange]);
 
   const targets = CANONICAL_TARGET_FIELDS[canonicalKind];
 

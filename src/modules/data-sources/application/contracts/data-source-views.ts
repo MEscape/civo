@@ -17,6 +17,18 @@ export type DiscoveredFieldView = DiscoveredField;
 /** One external record after mapping. `values` is UNVALIDATED canonical data. */
 export type MappedRecordView = MappedRecord;
 
+/** A source's or dataset's name by id, for a screen that keeps only ids (the audit log). */
+export interface DataNameView {
+  readonly id: string;
+  readonly name: string;
+}
+
+/** The names asked for, per kind; an id that names nothing of the website is absent. */
+export interface DataNamesView {
+  readonly dataSources: readonly DataNameView[];
+  readonly datasets: readonly DataNameView[];
+}
+
 /**
  * A source for its owner. The raw `config` and the tenant are deliberately
  * absent: only a display-safe `endpoint` (origin and path, no query string)

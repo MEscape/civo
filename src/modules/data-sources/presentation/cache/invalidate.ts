@@ -13,13 +13,13 @@ import { dataSourceRoutes } from '../routes';
  * Server Action for read-your-writes); adjust here and nowhere else.
  */
 export function invalidateSettings(websiteId: string): void {
-  revalidatePath(dataSourceRoutes.settings(websiteId));
+  revalidatePath(dataSourceRoutes.sources(websiteId));
 }
 
 /** A dataset change also changes what builder components resolve. */
 export function invalidateDatasetConsumers(websiteId: string, datasetId: string): void {
   revalidateTag(datasetCacheTag(datasetId), 'default');
-  revalidatePath(dataSourceRoutes.settings(websiteId));
+  revalidatePath(dataSourceRoutes.sources(websiteId));
   revalidatePath(dataSourceRoutes.builder(websiteId), 'layout');
 }
 
@@ -33,6 +33,6 @@ export function invalidateRemovedDataSource(
   datasetIds.forEach((datasetId) => {
     revalidateTag(datasetCacheTag(datasetId), 'default');
   });
-  revalidatePath(dataSourceRoutes.settings(websiteId));
+  revalidatePath(dataSourceRoutes.sources(websiteId));
   revalidatePath(dataSourceRoutes.builder(websiteId), 'layout');
 }

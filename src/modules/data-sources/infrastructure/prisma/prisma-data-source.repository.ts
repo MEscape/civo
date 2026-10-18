@@ -2,7 +2,9 @@ import type { TenantId } from '@modules/auth';
 
 import { db, createPersistenceFailures, dateToInstant } from '@lib/db';
 import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
-import { fromThrowableAsync } from '@lib/result';
+import { offsetOf, toPage } from '@lib/pagination';
+import type { Page } from '@lib/pagination';
+import { fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -10,6 +12,7 @@ import {
   dataSourceNotFound,
   websiteNotFoundForDataSource,
 } from '../../domain/errors/data-source-errors';
+import { toDataSourceId } from '../../domain/models/ids';
 
 import {
   DATA_SOURCE_SELECT,
@@ -22,6 +25,7 @@ import { dataSourcesOf } from './tenant-ownership';
 import type { DataSource, DataSourceDraft } from '../../domain/models/data-source';
 import type { DataSourceId, WebsiteId } from '../../domain/models/ids';
 import type {
+  DataSourceListSlice,
   DataSourceRepository,
   DataSourceWithDatasets,
   TestOutcome,
@@ -62,6 +66,31 @@ export class PrismaDataSourceRepository implements DataSourceRepository {
     ).map((record) => record && toDataSource(record, tenantId));
   }
 
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly DataSourceId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: DataSourceId; readonly name: string }>,
+    InfrastructureAppError
+  > {
+    if (ids.length === 0) {
+      return okAsync([]);
+    }
+    return fromThrowableAsync(
+      async () =>
+        dataSourcesOf(tenantId)
+          .where({ websiteId })
+          .where((source) => source.id.in([...ids]))
+          .select('id', 'name')
+          .limit(ids.length)
+          .all(),
+      failures.infraOnly('findNames'),
+    ).map((records) =>
+      records.map((record) => ({ id: toDataSourceId(record.id), name: record.name })),
+    );
+  }
+
   listByWebsite(
     websiteId: WebsiteId,
     tenantId: TenantId,
@@ -82,23 +111,32 @@ export class PrismaDataSourceRepository implements DataSourceRepository {
   listWithDatasets(
     websiteId: WebsiteId,
     tenantId: TenantId,
-    limits: { readonly sources: number; readonly datasetsPerSource: number },
-  ): AppResultAsync<readonly DataSourceWithDatasets[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        ownSources(tenantId)
-          .where({ websiteId })
-          .include('datasets', (datasets) =>
-            datasets
-              .select(...DATASET_SELECT)
-              .orderBy([(d) => d.name.asc(), (d) => d.id.asc()])
-              .limit(limits.datasetsPerSource),
-          )
-          .orderBy([(s) => s.createdAt.asc(), (s) => s.id.asc()])
-          .limit(limits.sources)
-          .all(),
-      failures.infraOnly('listWithDatasets'),
-    ).map((records) => records.map((record) => toDataSourceWithDatasets(record, tenantId)));
+    { page: request, datasetsPerSource }: DataSourceListSlice,
+  ): AppResultAsync<Page<DataSourceWithDatasets>, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      const total = await dataSourcesOf(tenantId)
+        .where({ websiteId })
+        .aggregate((aggregate) => ({ total: aggregate.count() }));
+      const records = await ownSources(tenantId)
+        .where({ websiteId })
+        .include('datasets', (datasets) =>
+          datasets
+            .select(...DATASET_SELECT)
+            .orderBy([(d) => d.name.asc(), (d) => d.id.asc()])
+            .limit(datasetsPerSource),
+        )
+        .orderBy([(s) => s.createdAt.asc(), (s) => s.id.asc()])
+        .limit(request.pageSize)
+        .offset(offsetOf(request))
+        .all();
+      return { records, total: total.total };
+    }, failures.infraOnly('listWithDatasets')).map(({ records, total }) =>
+      toPage(
+        records.map((record) => toDataSourceWithDatasets(record, tenantId)),
+        total,
+        request,
+      ),
+    );
   }
 
   create(input: {

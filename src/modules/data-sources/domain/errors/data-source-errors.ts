@@ -29,6 +29,7 @@ export const DATA_SOURCE_ERROR_CODES = {
   datasetNotFound: 'dataset.not_found',
   datasetSlugTaken: 'dataset.slug_taken',
   datasetNotMapped: 'dataset.not_mapped',
+  datasetInUse: 'dataset.in_use',
   validationFailed: 'data_source.validation_failed',
   mappingFailed: 'dataset.mapping_failed',
   persistenceFailed: 'data_source.persistence_failed',
@@ -121,6 +122,11 @@ export function datasetSlugTaken(): ConflictAppError {
     CODES.datasetSlugTaken,
     'A dataset with this slug already exists in the data source.',
   );
+}
+
+/** A page (a draft or the live site) still shows the data a deletion would remove. */
+export function datasetInUse(): ConflictAppError {
+  return conflictError(CODES.datasetInUse, 'A page still shows this data.');
 }
 
 /** The dataset exists but has no usable mapping yet, so it cannot serve records. */

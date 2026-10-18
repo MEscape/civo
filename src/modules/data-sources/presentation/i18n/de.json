@@ -3,12 +3,15 @@
     "panel": {
       "title": "Datenquellen",
       "intro": "Verbinden Sie kommunale und Smart-City-Datenquellen, um Ihren Website-Komponenten echte Daten zur Verfügung zu stellen.",
-      "newSource": "+ Neue Quelle",
-      "createTitle": "Neue Datenquelle anlegen",
-      "empty": "Keine Datenquellen konfiguriert. Es werden Beispieldaten angezeigt."
+      "newSource": "Datenquelle verbinden",
+      "createTitle": "Datenquelle verbinden",
+      "createIntro": "Drei kurze Fragen. Von der API wird erst gelesen, wenn Sie einen Datensatz anlegen.",
+      "connected": "{count, plural, one {# verbundene Quelle} other {# verbundene Quellen}}",
+      "emptyTitle": "Noch keine Datenquellen",
+      "emptyDescription": "Bis Sie eine verbinden, zeigen Komponenten Beispieldaten. Sie brauchen nur die Webadresse einer API, die JSON liefert."
     },
     "sourceCard": {
-      "confirmDelete": "Diese Datenquelle wirklich entfernen? Alle Datensätze dieser Quelle werden ebenfalls gelöscht.",
+      "confirmDelete": "Diese Datenquelle und alle ihre Datensätze wirklich entfernen? Das lässt sich nicht rückgängig machen.",
       "unknownEndpoint": "Unbekannte URL",
       "kind": "Typ",
       "lastChecked": "Zuletzt geprüft",
@@ -16,7 +19,11 @@
       "testHealthy": "Verbindung erfolgreich.",
       "testing": "Prüft…",
       "test": "Verbindung testen",
-      "remove": "Entfernen"
+      "remove": "Entfernen",
+      "untestedHint": "Noch nicht getestet. Testen Sie die Verbindung, um sicherzugehen, dass die API erreichbar ist; danach lassen sich Datensätze anlegen.",
+      "deleteTitle": "„{name}“ entfernen?",
+      "failedHint": "Prüfen Sie Adresse oder API und testen Sie erneut. Datensätze lassen sich anlegen, sobald der Test gelingt.",
+      "failedWithDatasets": "Die vorhandenen Datensätze bleiben erhalten, aber Komponenten, die sie nutzen, können keine aktuellen Daten laden, bis die Quelle wieder antwortet. Neue Datensätze lassen sich anlegen, sobald ein Test gelingt."
     },
     "sourceForm": {
       "name": "Name der Quelle",
@@ -56,18 +63,48 @@
       "credentialHint": "Das Zugangs-Credential wird nicht hier gespeichert, sondern muss serverseitig als Umgebungsvariable hinterlegt werden. Wenden Sie sich dazu an Ihren Administrator.",
       "saving": "Speichert…",
       "save": "Speichern",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "baseUrlHint": "Die Adresse, von der die Einträge gelesen werden. Sie beginnt mit https:// oder http://.",
+      "afterSave": "Die Verbindung können Sie direkt nach dem Speichern testen.",
+      "connect": "Quelle verbinden",
+      "steps": {
+        "identity": {
+          "title": "Benennen",
+          "description": "Ein Name, den Ihr Team in Listen und im Editor wiedererkennt."
+        },
+        "location": {
+          "title": "Wo liegen die Daten?",
+          "description": "Die API-Adresse und ob sie einen Schlüssel braucht."
+        },
+        "advanced": {
+          "title": "Erweitert: Einträge und Seitenweise Abfrage",
+          "description": "Nur nötig, wenn die API ihre Einträge ungewöhnlich verpackt oder seitenweise liefert. Übliche Formate werden automatisch erkannt."
+        }
+      }
     },
     "datasets": {
       "title": "Datensätze",
-      "add": "+ Datensatz hinzufügen",
+      "add": "Datensatz anlegen",
       "empty": "Diese Quelle stellt noch keine Datensätze bereit. Fügen Sie einen Datensatz hinzu.",
       "kind": "Typ: {kind}",
-      "confirmDelete": "Diesen Datensatz und das zugehörige Mapping wirklich löschen? Komponenten, die diesen Datensatz verwenden, werden auf Beispieldaten zurückfallen.",
-      "hideMapping": "Mapping ausblenden",
-      "editMapping": "Mapping bearbeiten",
+      "confirmDelete": "Diesen Datensatz und seine Feldzuordnung wirklich löschen? Das lässt sich nicht rückgängig machen.",
+      "hideMapping": "Zuordnung schließen",
+      "editMapping": "Felder zuordnen",
       "edit": "Bearbeiten",
-      "delete": "Löschen"
+      "delete": "Löschen",
+      "firstTitle": "Als Nächstes: Was liefert diese Quelle?",
+      "firstDescription": "Ein Datensatz ist eine Liste von Einträgen dieser Quelle, etwa die Termine oder die Messstationen. Komponenten nutzen Datensätze, nicht Quellen.",
+      "addFirst": "Ersten Datensatz anlegen",
+      "mapped": "Einsatzbereit",
+      "unmapped": "Felder nicht zugeordnet",
+      "editLabel": "{name} bearbeiten",
+      "deleteLabel": "{name} löschen",
+      "deleteTitle": "„{name}“ löschen?",
+      "titleOf": "{count, plural, =0 {Datensätze von {source}} one {# Datensatz von {source}} other {# Datensätze von {source}}}",
+      "unused": "Noch auf keiner Seite verwendet.",
+      "usedOn": "Verwendet auf:",
+      "useLabel": "{page} › {component}",
+      "liveOnly": "Kein Entwurf nutzt ihn mehr, die Live-Website zeigt ihn aber noch auf: {pages}, bis zur nächsten Veröffentlichung."
     },
     "datasetForm": {
       "title": "Neuen Datensatz anlegen",
@@ -238,7 +275,8 @@
       "addressNotAllowed": "Ungültige Konfiguration: Diese Adresse ist nicht erlaubt.",
       "validation": "Bitte überprüfen Sie Ihre Eingabe.",
       "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
-      "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten.",
+      "datasetInUse": "Eine Seite zeigt diese Daten noch an, deshalb wurde nichts gelöscht. Die Verwendung wurde neu geladen."
     },
     "validation": {
       "idInvalid": "Ungültige Kennung.",
@@ -276,6 +314,65 @@
       "valueNotDate": "Der Wert ist kein gültiges Datum.",
       "valueNotUrl": "Der Wert ist keine gültige http(s)-URL.",
       "valueMissing": "Der Wert ist erforderlich, fehlt aber."
+    },
+    "auditEvents": {
+      "data_source": {
+        "created": "Datenquelle hinzugefügt",
+        "tested": "Verbindung getestet",
+        "deleted": "Datenquelle entfernt"
+      },
+      "dataset": {
+        "created": "Datensatz hinzugefügt",
+        "updated": "Datensatz geändert",
+        "mapping_saved": "Feldzuordnung gespeichert",
+        "deleted": "Datensatz entfernt"
+      }
+    },
+    "pagination": {
+      "nav": "Seiten der Datenquellen"
+    },
+    "guide": {
+      "title": "So kommen echte Daten auf Ihre Seiten",
+      "progress": "{done} von {total} erledigt",
+      "done": "erledigt",
+      "steps": {
+        "source": {
+          "title": "Quelle verbinden",
+          "description": "Die Adresse einer API, etwa eines Open-Data-Portals."
+        },
+        "dataset": {
+          "title": "Datensatz anlegen",
+          "description": "Eine Liste von Einträgen daraus, etwa Termine oder Messstationen."
+        },
+        "mapping": {
+          "title": "Felder zuordnen",
+          "description": "Angeben, welches Feld Titel, Datum, Ort usw. enthält."
+        },
+        "use": {
+          "title": "Auf einer Seite nutzen",
+          "description": "Den Datensatz im Seiteneditor in einer Komponente wählen."
+        }
+      },
+      "ready": "Ihre Daten sind bereit. Letzter Schritt: Wählen Sie einen Datensatz in einer Komponente wie Karte, Liste oder Diagramm.",
+      "openPages": "Zu den Seiten",
+      "readyFor": "Ihre Daten sind bereit. Letzter Schritt: „{page} › {component}“ zeigt noch Beispieldaten; wählen Sie dort Ihren Datensatz.",
+      "assign": "Dort Datensatz wählen"
+    },
+    "leave": {
+      "title": "Ohne Speichern verlassen?",
+      "description": "Ein Formular oder eine Feldzuordnung auf dieser Seite hat ungespeicherte Änderungen. Sie gehen verloren, wenn Sie die Seite verlassen.",
+      "confirm": "Änderungen verwerfen",
+      "stay": "Weiter bearbeiten",
+      "mappingTitle": "Offene Zuordnung verwerfen?",
+      "mappingDescription": "Die Feldzuordnung, die Sie bearbeiten, hat ungespeicherte Änderungen. Wenn Sie eine andere öffnen, gehen sie verloren."
+    },
+    "inUse": {
+      "title": "„{name}“ wird noch verwendet",
+      "description": "{count, plural, one {Eine Komponente zeigt diese Daten noch an.} other {# Komponenten zeigen diese Daten noch an.}} Auf der Live-Website führen fehlende Daten zu einer Fehlermeldung. Wählen Sie deshalb zuerst einen anderen Datensatz; danach lässt sich löschen.",
+      "openFirst": "Im Editor öffnen",
+      "close": "Abbrechen",
+      "liveDescription": "Im Editor nutzt ihn keine Seite mehr, die Live-Website zeigt ihn aber noch auf: {pages}. Veröffentlichen Sie zuerst Ihre Änderungen; danach lässt er sich löschen.",
+      "openReleases": "Zum Veröffentlichen"
     }
   }
 }

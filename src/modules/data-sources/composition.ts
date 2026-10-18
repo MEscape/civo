@@ -1,4 +1,5 @@
 import 'server-only';
+import { withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
 
 import { systemClock } from '@lib/clock';
@@ -16,14 +17,20 @@ import { ListCompatibleDatasets } from './application/queries/list-compatible-da
 import { ListDataSources } from './application/queries/list-data-sources';
 import { ListDataSourcesWithDatasets } from './application/queries/list-data-sources-with-datasets';
 import { PreviewDatasetMapping } from './application/queries/preview-dataset-mapping';
+import { ResolveDataNames } from './application/queries/resolve-data-names';
 import { CachedDataSourceConnector } from './infrastructure/cache/cached-data-source-reader';
 import { KindRoutingConnector } from './infrastructure/connector/kind-routing-connector';
 import { restJsonConnector } from './infrastructure/connector/rest-json-connector';
 import { Sha256ContentHasher } from './infrastructure/hashing/sha256-content-hasher';
-import { loggerDataSourceAuditLog } from './infrastructure/logging/logger-data-source-audit-log';
+import {
+  LEVEL_BY_EVENT,
+  TRAIL_BY_EVENT,
+  loggerDataSourceAuditLog,
+} from './infrastructure/logging/logger-data-source-audit-log';
 import { PrismaDataSourceRepository } from './infrastructure/prisma/prisma-data-source.repository';
 import { PrismaDatasetRepository } from './infrastructure/prisma/prisma-dataset.repository';
 
+import type { DatasetDeletionGuard } from './application/contracts/deletion-inputs';
 import type { DataSourceDependencies } from './application/data-source-dependencies';
 
 /**
@@ -42,9 +49,16 @@ const datasets = new PrismaDatasetRepository();
 const hasher = new Sha256ContentHasher();
 const authorizationService = getAccessControl();
 
+/** The module's audit port: its log lines, and the trail the website's audit page reads. */
+const auditLog = withAuditTrail(loggerDataSourceAuditLog, {
+  source: 'data-sources',
+  levels: LEVEL_BY_EVENT,
+  policy: TRAIL_BY_EVENT,
+});
+
 const dependencies: DataSourceDependencies = {
   authorization: authorizationService,
-  audit: loggerDataSourceAuditLog,
+  audit: auditLog,
   clock: systemClock,
   dataSources,
   datasets,
@@ -69,6 +83,7 @@ export const dataSourceCommands = {
 
 export const dataSourceQueries = {
   listDataSources: new ListDataSources(dependencies),
+  resolveDataNames: new ResolveDataNames(dependencies),
   listDataSourcesWithDatasets: new ListDataSourcesWithDatasets(dependencies),
   listCompatibleDatasets: new ListCompatibleDatasets(dependencies),
   discoverDataset: new DiscoverDataset(connectedDependencies),
@@ -79,3 +94,22 @@ export const dataSourceQueries = {
     hasher,
   }),
 } as const;
+
+/*
+ * Module-to-module deletions: the caller can see the pages this module
+ * cannot, so it supplies the guard that keeps data a page shows (see
+ * `DatasetDeletionGuard`). Both still authorize the current actor.
+ */
+export function deleteDatasetGuarded(
+  id: string,
+  guard: DatasetDeletionGuard,
+): ReturnType<DeleteDataset['execute']> {
+  return dataSourceCommands.deleteDataset.execute(id, guard);
+}
+
+export function deleteDataSourceGuarded(
+  id: string,
+  guard: DatasetDeletionGuard,
+): ReturnType<DeleteDataSource['execute']> {
+  return dataSourceCommands.deleteDataSource.execute(id, guard);
+}

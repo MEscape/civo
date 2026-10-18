@@ -26,6 +26,16 @@ export interface DatasetRepository {
     tenantId: TenantId,
   ): AppResultAsync<DatasetWithSource | null, InfrastructureAppError>;
 
+  /** The names of those of `ids` that are datasets of the website's sources; nothing else is read. */
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly DatasetId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: DatasetId; readonly name: string }>,
+    InfrastructureAppError
+  >;
+
   findWithSourceInWebsite(
     id: DatasetId,
     websiteId: WebsiteId,

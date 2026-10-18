@@ -1,6 +1,7 @@
 import type { TenantId } from '@modules/auth';
 
 import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
+import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import type { DataSource, DataSourceDraft } from '../models/data-source';
@@ -30,11 +31,27 @@ export interface TestOutcome {
  * the use case's job. Adapters translate every driver failure into our own
  * error kinds before returning (errors.md).
  */
+/** Which sources to read, and how many datasets of each. */
+export interface DataSourceListSlice {
+  readonly page: PageRequest;
+  readonly datasetsPerSource: number;
+}
+
 export interface DataSourceRepository {
   findById(
     id: DataSourceId,
     tenantId: TenantId,
   ): AppResultAsync<DataSource | null, InfrastructureAppError>;
+
+  /** The names of those of `ids` that are sources of the website; nothing else is read. */
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly DataSourceId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: DataSourceId; readonly name: string }>,
+    InfrastructureAppError
+  >;
 
   /** Bounded: never returns more than `limit` items (performance.md). */
   listByWebsite(
@@ -43,12 +60,12 @@ export interface DataSourceRepository {
     limit: number,
   ): AppResultAsync<readonly DataSource[], InfrastructureAppError>;
 
-  /** Bounded twice: at most `sources` sources and `datasetsPerSource` datasets each. */
+  /** One page of sources, oldest first, each with at most `datasetsPerSource` datasets. */
   listWithDatasets(
     websiteId: WebsiteId,
     tenantId: TenantId,
-    limits: { readonly sources: number; readonly datasetsPerSource: number },
-  ): AppResultAsync<readonly DataSourceWithDatasets[], InfrastructureAppError>;
+    slice: DataSourceListSlice,
+  ): AppResultAsync<Page<DataSourceWithDatasets>, InfrastructureAppError>;
 
   /** `NotFoundAppError` when the website does not exist in the tenant. */
   create(input: {

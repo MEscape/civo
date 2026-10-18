@@ -16,8 +16,8 @@ import type { DataSourceStatus } from '../../application/contracts/data-source-v
 const VARIANTS = {
   OK: 'success',
   ERROR: 'danger',
-  UNKNOWN: 'secondary',
-} as const satisfies Record<DataSourceStatus, 'success' | 'danger' | 'secondary'>;
+  UNKNOWN: 'warning',
+} as const satisfies Record<DataSourceStatus, 'success' | 'danger' | 'warning'>;
 
 export function DataSourceStatusBadge({ status }: { status: DataSourceStatus }) {
   const t = useTranslations('dataSources');

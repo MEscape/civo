@@ -1,38 +1,53 @@
 import type { AuthorizationError } from '@modules/auth';
 
 import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
+import { loadClampedPage, resolvePageRequest } from '@lib/pagination';
+import type { Page } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import { parseWebsiteId } from '../../domain/models/ids';
 import { toDataSourceWithDatasetsView } from '../data-source-view-mappers';
-import { MAX_DATASETS_PER_SOURCE, MAX_SOURCES_PER_WEBSITE } from '../list-limits';
+import { DATA_SOURCE_PAGE_LIMITS, MAX_DATASETS_PER_SOURCE } from '../list-limits';
 
 import type { DataSourceWithDatasetsView } from '../contracts/data-source-views';
 import type { DataSourceDependencies } from '../data-source-dependencies';
 
-/** The settings view: sources with their datasets, which needs both read permissions. Always bounded. */
+/** The page asked for, as the address carries it: untrusted text, resolved here. */
+export interface ListDataSourcesWithDatasetsOptions {
+  readonly page?: unknown;
+  readonly pageSize?: unknown;
+}
+
+/**
+ * The data sources screen: one page of sources with their datasets, which
+ * needs both read permissions. A page past the end answers the last one.
+ */
 export class ListDataSourcesWithDatasets {
   constructor(private readonly deps: DataSourceDependencies) {}
 
   execute(
     websiteId: string,
+    options: ListDataSourcesWithDatasetsOptions = {},
   ): AppResultAsync<
-    readonly DataSourceWithDatasetsView[],
+    Page<DataSourceWithDatasetsView>,
     AuthorizationError | ValidationAppError | InfrastructureAppError
   > {
     const { authorization, dataSources } = this.deps;
+    const requested = resolvePageRequest(options, DATA_SOURCE_PAGE_LIMITS);
 
     return authorization
       .requireInTenant('datasource.read')
       .andThen(() => authorization.requireInTenant('dataset.read'))
       .andThen((actor) =>
         parseWebsiteId(websiteId).asyncAndThen((id) =>
-          dataSources.listWithDatasets(id, actor.tenantId, {
-            sources: MAX_SOURCES_PER_WEBSITE,
-            datasetsPerSource: MAX_DATASETS_PER_SOURCE,
-          }),
+          loadClampedPage(requested, (request) =>
+            dataSources.listWithDatasets(id, actor.tenantId, {
+              page: request,
+              datasetsPerSource: MAX_DATASETS_PER_SOURCE,
+            }),
+          ),
         ),
       )
-      .map((rows) => rows.map(toDataSourceWithDatasetsView));
+      .map((found) => ({ ...found, items: found.items.map(toDataSourceWithDatasetsView) }));
   }
 }
