@@ -500,6 +500,7 @@
       }
     },
     "calendar": {
+      "truncated": "Dieser Zeitraum enthält mehr Buchungen, als angezeigt werden können. Wählen Sie einen kürzeren Zeitraum oder filtern Sie nach Leistung oder Ressource.",
       "today": "Heute",
       "previous": "Zurück",
       "next": "Weiter",

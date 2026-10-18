@@ -500,6 +500,7 @@
       }
     },
     "calendar": {
+      "truncated": "This range has more bookings than can be shown. Switch to a shorter range or filter by service or resource.",
       "today": "Today",
       "previous": "Previous",
       "next": "Next",

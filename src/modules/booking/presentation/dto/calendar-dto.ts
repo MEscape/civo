@@ -34,6 +34,7 @@ export interface OperationsCalendarDto {
   readonly from: string;
   readonly to: string;
   readonly bookings: readonly CalendarBookingDto[];
+  readonly isTruncated: boolean;
   readonly resources: readonly CalendarResourceView[];
 }
 
@@ -74,6 +75,7 @@ export function toOperationsCalendarDto(view: OperationsCalendarView): Operation
     from: view.from,
     to: view.to,
     bookings: view.bookings.map((booking) => toCalendarBookingDto(booking, view.timeZone)),
+    isTruncated: view.isTruncated,
     resources: view.resources.map(({ id, name, type, locationId }) => ({
       id,
       name,

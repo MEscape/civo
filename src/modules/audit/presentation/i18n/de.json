@@ -14,6 +14,7 @@
       "auth": "Benutzer & Zugriff"
     },
     "filters": {
+      "membersTruncated": "Im Filter wird nur ein Teil der Personen aus diesem Protokoll angeboten.",
       "label": "Protokoll filtern",
       "areas": "Bereiche",
       "areaCount": "{label} ({count})",

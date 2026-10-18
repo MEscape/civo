@@ -50,17 +50,16 @@ export function WebsiteAccessCard({
   const badge = change === 'none' ? null : CHANGE_BADGES[change];
 
   return (
-    <li className="overflow-hidden rounded-token border border-border bg-surface">
+    <li className="overflow-hidden rounded-token border border-border bg-surface shadow-sm">
       <div className="flex items-center justify-between gap-2 border-b border-border bg-canvas px-3 py-2">
         <p className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-medium text-copy">
-          <span className="truncate">{websiteName}</span>
+          <span className={isRemoved ? 'truncate line-through' : 'truncate'}>{websiteName}</span>
           {badge !== null && <Badge variant={badge.variant}>{t(badge.key)}</Badge>}
         </p>
         <Button
           type="button"
-          variant="ghost"
+          variant={isRemoved ? 'ghost' : 'destructive-ghost'}
           size="sm"
-          className={isRemoved ? undefined : 'text-danger hover:text-danger'}
           onClick={onToggleRemoved}
         >
           {isRemoved ? (
@@ -74,21 +73,25 @@ export function WebsiteAccessCard({
           )}
         </Button>
       </div>
-      <fieldset disabled={isRemoved} className="space-y-2.5 p-3 disabled:opacity-50">
+      <fieldset disabled={isRemoved} className="grid gap-2 p-3 disabled:opacity-50 sm:grid-cols-2">
         <legend className="sr-only">
           {t('platformUsers.access.rolesOf', { site: websiteName })}
         </legend>
         {ROLES.map((role) => (
-          <CheckboxField
+          <div
             key={role}
-            id={`${idPrefix}-${role}`}
-            label={t(ROLE_MESSAGE_KEYS[role])}
-            hint={t(ROLE_HINT_KEYS[role])}
-            checked={roles.includes(role)}
-            onChange={(event) => {
-              onToggleRole(role, event.target.checked);
-            }}
-          />
+            className="rounded-token border border-border px-3 py-2 transition-colors has-[:checked]:border-primary/40 has-[:checked]:bg-canvas"
+          >
+            <CheckboxField
+              id={`${idPrefix}-${role}`}
+              label={t(ROLE_MESSAGE_KEYS[role])}
+              hint={t(ROLE_HINT_KEYS[role])}
+              checked={roles.includes(role)}
+              onChange={(event) => {
+                onToggleRole(role, event.target.checked);
+              }}
+            />
+          </div>
         ))}
       </fieldset>
     </li>

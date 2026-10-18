@@ -105,27 +105,29 @@ export async function PlatformUsersTable({
                         {t('platformUsers.table.noAccess')}
                       </span>
                     ) : (
-                      <ul className="space-y-1">
+                      <ul className="max-w-md divide-y divide-border overflow-hidden rounded-token border border-border">
                         {shown.map(({ tenantId, roles }) => (
                           <li
                             key={tenantId}
-                            className="flex flex-wrap items-center gap-1.5 text-sm"
+                            className="flex items-center justify-between gap-3 px-3 py-1.5 text-sm"
                           >
                             <Link
                               href={websiteUsersHref(tenantId)}
-                              className="font-medium text-copy underline-offset-4 hover:underline"
+                              className="min-w-0 truncate font-medium text-copy underline-offset-4 hover:underline"
                             >
                               {nameOf(tenantId)}
                             </Link>
-                            {roles.map((role) => (
-                              <Badge key={role} variant="outline">
-                                {t(ROLE_MESSAGE_KEYS[role])}
-                              </Badge>
-                            ))}
+                            <span className="flex shrink-0 flex-wrap justify-end gap-1">
+                              {roles.map((role) => (
+                                <Badge key={role} variant="outline">
+                                  {t(ROLE_MESSAGE_KEYS[role])}
+                                </Badge>
+                              ))}
+                            </span>
                           </li>
                         ))}
                         {hidden > 0 && (
-                          <li className="text-xs text-copy-muted">
+                          <li className="bg-canvas px-3 py-1.5 text-xs text-copy-muted">
                             {t('platformUsers.table.more', { count: hidden })}
                           </li>
                         )}

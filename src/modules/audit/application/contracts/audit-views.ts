@@ -83,6 +83,8 @@ export interface AuditTrailView {
   readonly types: readonly AuditTypeCountView[];
   /** Everyone who appears in the trail, for the "who" filter. */
   readonly memberIds: readonly string[];
+  /** There are more people in the trail than the filter offers. */
+  readonly isMembersTruncated: boolean;
   /** When the trail was read: what "5 minutes ago" and "today" are measured from. */
   readonly readAt: Date;
 }

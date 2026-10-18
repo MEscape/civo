@@ -137,7 +137,10 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
   listMemberIds(
     websiteId: WebsiteId | null,
     limit: number,
-  ): AppResultAsync<readonly ActorId[], InfrastructureAppError> {
+  ): AppResultAsync<
+    { readonly items: readonly ActorId[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  > {
     return fromThrowableAsync(
       async () =>
         db.orm.public.AuditEntry.where({
@@ -146,10 +149,15 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
         })
           .groupBy('actorId')
           .orderBy((entry) => entry.actorId.asc())
-          .limit(limit)
+          .limit(limit + 1)
           .aggregate((aggregate) => ({ count: aggregate.count() })),
       failures.infraOnly('listMemberIds'),
-    ).map((rows) => rows.flatMap(({ actorId }) => (actorId === null ? [] : [toActorId(actorId)])));
+    ).map((rows) => ({
+      items: rows
+        .slice(0, limit)
+        .flatMap(({ actorId }) => (actorId === null ? [] : [toActorId(actorId)])),
+      isTruncated: rows.length > limit,
+    }));
   }
 
   countPerDay(

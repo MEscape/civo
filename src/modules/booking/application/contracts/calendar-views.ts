@@ -37,6 +37,8 @@ export interface OperationsCalendarView {
   readonly from: string;
   readonly to: string;
   readonly bookings: readonly CalendarBookingView[];
+  /** The range holds more bookings than are shown. */
+  readonly isTruncated: boolean;
   readonly resources: readonly CalendarResourceView[];
 }
 

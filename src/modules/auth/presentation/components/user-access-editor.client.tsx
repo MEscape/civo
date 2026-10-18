@@ -216,7 +216,7 @@ export function UserAccessEditor({
             ))}
           </ul>
 
-          <div className="border-t border-border pt-4">
+          <div className="rounded-token border border-dashed border-border bg-canvas p-3">
             {addable.length === 0 ? (
               <p className="text-sm text-copy-muted">{t('platformUsers.access.nothingToAdd')}</p>
             ) : (

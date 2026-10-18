@@ -35,7 +35,7 @@ function store(options: { readonly failAppend?: boolean } = {}) {
       return okAsync(toPage([], 0, page));
     },
     countByType: () => okAsync([{ source: 'booking', type: 'booking.confirmed', count: 2 }]),
-    listMemberIds: () => okAsync([]),
+    listMemberIds: () => okAsync({ items: [], isTruncated: false }),
     countPerDay: () => okAsync([{ day: '2026-10-15', total: 4, warnings: 1 }]),
     deleteOlderThan: (cutoff) => {
       cutoffs.push(cutoff);

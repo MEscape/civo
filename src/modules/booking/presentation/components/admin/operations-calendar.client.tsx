@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { Alert } from '@components/ui/alert';
 import { Button } from '@components/ui/button';
 import { Skeleton } from '@components/ui/skeleton';
 
@@ -57,6 +58,16 @@ function toEvent(booking: CalendarBookingDto): CalendarAdapterEvent {
   };
 }
 
+/** Says when the range holds more bookings than the calendar shows. */
+function TruncatedNote({ isShown }: { readonly isShown: boolean }) {
+  const t = useTranslations('booking');
+  return isShown ? (
+    <Alert variant="warning" role="status">
+      {t('calendar.truncated')}
+    </Alert>
+  ) : null;
+}
+
 /**
  * The operations calendar: every booking of the website over the visible
  * range, filterable by location, service and resource. The calendar widget
@@ -101,6 +112,8 @@ export function OperationsCalendar({ websiteId, options, canManage }: Operations
           </Button>
         </div>
       )}
+
+      <TruncatedNote isShown={shown?.isTruncated === true} />
 
       {options.locations.length === 0 ? (
         <p

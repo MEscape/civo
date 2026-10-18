@@ -1,4 +1,5 @@
 import { ListPagination } from '@components/shared/list-pagination';
+import { Alert } from '@components/ui/alert';
 
 import type { Locale } from '@i18n';
 
@@ -83,15 +84,22 @@ export async function AuditLog({
       websiteAuditHref={websiteAuditHref}
       readAt={trail.readAt}
       toolbar={
-        <AuditFilters
-          locale={locale}
-          pathname={pathname}
-          filter={filter}
-          types={trail.types}
-          eventLabels={eventLabels}
-          members={members}
-          websites={websites}
-        />
+        <>
+          <AuditFilters
+            locale={locale}
+            pathname={pathname}
+            filter={filter}
+            types={trail.types}
+            eventLabels={eventLabels}
+            members={members}
+            websites={websites}
+          />
+          {trail.isMembersTruncated && (
+            <Alert variant="warning" role="status">
+              {t('filters.membersTruncated')}
+            </Alert>
+          )}
+        </>
       }
       pagination={
         entries.pageCount > 1 ? (

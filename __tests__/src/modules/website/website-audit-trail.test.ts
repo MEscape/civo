@@ -44,6 +44,7 @@ function run(actor: Actor, websiteId = 'site-1') {
     entries: toPage([], 0, { page: 1, pageSize: 25 }),
     types: [],
     memberIds: [],
+    isMembersTruncated: false,
     readAt: new Date(0),
   };
   const auditTrail: AuditTrailReader = {

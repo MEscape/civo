@@ -51,11 +51,17 @@ export interface AuditTrailRepository {
     limit: number,
   ): AppResultAsync<readonly AuditTypeCount[], InfrastructureAppError>;
 
-  /** The members who appear in the website's trail (`null`: in any) at all. Bounded by `limit`. */
+  /**
+   * The members who appear in the website's trail (`null`: in any) at all.
+   * Bounded by `limit`; `isTruncated` says there are more.
+   */
   listMemberIds(
     websiteId: WebsiteId | null,
     limit: number,
-  ): AppResultAsync<readonly ActorId[], InfrastructureAppError>;
+  ): AppResultAsync<
+    { readonly items: readonly ActorId[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
 
   /** Entries and warnings per UTC day since an instant; days without an entry are absent. */
   countPerDay(

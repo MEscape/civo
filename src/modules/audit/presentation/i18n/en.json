@@ -14,6 +14,7 @@
       "auth": "Users & access"
     },
     "filters": {
+      "membersTruncated": "Only some of the people in this log are offered in the filter.",
       "label": "Filter the audit log",
       "areas": "Areas",
       "areaCount": "{label} ({count})",

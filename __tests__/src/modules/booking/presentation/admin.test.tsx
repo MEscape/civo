@@ -95,6 +95,7 @@ function calendarOf(...bookings: Array<ReturnType<typeof calendarBooking>>) {
       from: '2026-10-12',
       to: '2026-10-18',
       bookings,
+      isTruncated: false,
       resources: [],
     },
   };

@@ -84,7 +84,7 @@ export class GetOperationsCalendar {
               {
                 span,
                 filter,
-                limit: MAX_CALENDAR_BOOKINGS_PER_QUERY,
+                limit: MAX_CALENDAR_BOOKINGS_PER_QUERY + 1,
                 assignedTo: isOwnOnly ? actor.id : undefined,
               },
             )
@@ -107,9 +107,12 @@ export class GetOperationsCalendar {
                       timeZone: chosen.timeZone,
                       from: input.from,
                       to: input.to,
-                      bookings: found.map((booking) =>
-                        toCalendarBookingView(booking, names.get(booking.serviceId) ?? ''),
-                      ),
+                      bookings: found
+                        .slice(0, MAX_CALENDAR_BOOKINGS_PER_QUERY)
+                        .map((booking) =>
+                          toCalendarBookingView(booking, names.get(booking.serviceId) ?? ''),
+                        ),
+                      isTruncated: found.length > MAX_CALENDAR_BOOKINGS_PER_QUERY,
                       resources: storedResources
                         .filter((resource) => resource.isActive)
                         .filter(

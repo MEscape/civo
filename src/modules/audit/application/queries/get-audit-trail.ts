@@ -60,10 +60,11 @@ export class GetAuditTrail {
         ),
         entries.countByType(websiteId, shared, MAX_AUDIT_TYPES),
         entries.listMemberIds(websiteId, MAX_AUDIT_MEMBERS),
-      ] as const).map(([page, types, memberIds]) => ({
+      ] as const).map(([page, types, members]) => ({
         entries: { ...page, items: page.items.map(toAuditEntryView) },
         types,
-        memberIds,
+        memberIds: members.items,
+        isMembersTruncated: members.isTruncated,
         readAt,
       }));
     });
