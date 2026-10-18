@@ -14,6 +14,16 @@ export interface BookableResourceRepository {
     tenantId: TenantId,
   ): AppResultAsync<BookableResource | null, InfrastructureAppError>;
 
+  /** The names of those of `ids` that are resources of the website; nothing else is read. */
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly BookableResourceId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: BookableResourceId; readonly name: string }>,
+    InfrastructureAppError
+  >;
+
   /** Bounded: never more than `limit` items. */
   listByWebsite(
     websiteId: WebsiteId,

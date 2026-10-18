@@ -23,6 +23,8 @@ export interface ManageBookingProps {
   readonly services: readonly PublicServiceDto[];
   /** A booking the visitor just made: they are not asked to look it up again. */
   readonly initial: { readonly booking: BookingDto; readonly email: string } | null;
+  /** The reference from the link in the confirmation e-mail: the visitor only adds their address. */
+  readonly initialReference?: string | undefined;
   readonly readOnly: boolean;
   readonly onBack: () => void;
 }
@@ -56,6 +58,7 @@ export function ManageBooking({
   websiteId,
   services,
   initial,
+  initialReference,
   readOnly,
   onBack,
 }: ManageBookingProps) {
@@ -67,6 +70,7 @@ export function ManageBooking({
     return (
       <BookingLookupForm
         errorCode={errorCode}
+        initialReference={initialReference}
         isPending={isPending}
         onFind={managed.lookUp}
         onBack={onBack}

@@ -1,8 +1,10 @@
 import 'server-only';
+import { withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
 
 import { systemClock } from '@lib/clock';
 import { publicEnv } from '@lib/config';
+import { toLocalizedPath } from '@lib/seo';
 
 import { AcknowledgeManagerChange } from './application/commands/acknowledge-manager-change';
 import { CancelBookingAsStaff } from './application/commands/cancel-booking-as-staff';
@@ -41,13 +43,18 @@ import { GetPublicBooking } from './application/queries/get-public-booking';
 import { GetSetupOverview } from './application/queries/get-setup-overview';
 import { GetTeam } from './application/queries/get-team';
 import { PreviewServiceFeasibility } from './application/queries/preview-service-feasibility';
+import { ResolveBookingNames } from './application/queries/resolve-booking-names';
 import { SearchAddresses } from './application/queries/search-addresses';
 import { SpendRequestBudget } from './application/queries/spend-request-budget';
 import { SuggestAlternativeSlots } from './application/queries/suggest-alternative-slots';
 import { MapboxAddressSearch } from './infrastructure/geocoding/mapbox-address-search';
 import { RandomBookingReferenceGenerator } from './infrastructure/identity/random-booking-reference-generator';
 import { MemoryRequestLimiter } from './infrastructure/limiting/memory-request-limiter';
-import { loggerBookingAuditLog } from './infrastructure/logging/logger-booking-audit-log';
+import {
+  LEVEL_BY_EVENT,
+  TRAIL_BY_EVENT,
+  loggerBookingAuditLog,
+} from './infrastructure/logging/logger-booking-audit-log';
 import { createBookingNotifier } from './infrastructure/mail/create-booking-notifier';
 import { PrismaBookableResourceRepository } from './infrastructure/prisma/prisma-bookable-resource.repository';
 import { PrismaBookableServiceRepository } from './infrastructure/prisma/prisma-bookable-service.repository';
@@ -55,6 +62,7 @@ import { PrismaBookingLocationRepository } from './infrastructure/prisma/prisma-
 import { PrismaBookingRepository } from './infrastructure/prisma/prisma-booking.repository';
 import { PrismaWebsiteBrandRepository } from './infrastructure/prisma/prisma-website-brand.repository';
 import { PrismaWebsiteDirectoryRepository } from './infrastructure/prisma/prisma-website-directory.repository';
+import { bookingRoutes } from './presentation/routes';
 
 import type {
   BookingDependencies,
@@ -80,11 +88,30 @@ const locations = new PrismaBookingLocationRepository(systemClock);
 const resources = new PrismaBookableResourceRepository(systemClock);
 const services = new PrismaBookableServiceRepository(systemClock);
 const bookings = new PrismaBookingRepository();
-const notifier = createBookingNotifier(new PrismaWebsiteBrandRepository());
+const notifier = createBookingNotifier(
+  new PrismaWebsiteBrandRepository(),
+  systemClock,
+  (locale, slug, reference) => {
+    // `manage` opens "my booking" with the reference in, on the page of the website that holds the booking.
+    const link = new URL(
+      toLocalizedPath(locale, bookingRoutes.publicSite(slug)),
+      publicEnv.NEXT_PUBLIC_APP_URL,
+    );
+    link.searchParams.set('manage', reference);
+    return link.toString();
+  },
+);
 const limiter = new MemoryRequestLimiter();
 // The map's public token also serves address suggestions; without it the address field is plain text.
 const geocodingToken = publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 const addresses = geocodingToken === undefined ? null : new MapboxAddressSearch(geocodingToken);
+
+/** The module's audit port: its log lines, and the trail the website's audit page reads. */
+const auditLog = withAuditTrail(loggerBookingAuditLog, {
+  source: 'booking',
+  levels: LEVEL_BY_EVENT,
+  policy: TRAIL_BY_EVENT,
+});
 
 const adminDependencies: BookingDependencies = {
   authorization: getAccessControl(),
@@ -92,7 +119,7 @@ const adminDependencies: BookingDependencies = {
   resources,
   services,
   bookings,
-  audit: loggerBookingAuditLog,
+  audit: auditLog,
   addresses,
   limiter,
   notifier,
@@ -111,7 +138,7 @@ const publicDependencies: PublicBookingDependencies = {
 const flowDependencies: BookingFlowDependencies = {
   ...publicDependencies,
   references: new RandomBookingReferenceGenerator(),
-  audit: loggerBookingAuditLog,
+  audit: auditLog,
   notifier,
 };
 
@@ -168,9 +195,10 @@ export const bookingAdminQueries = {
   searchAddresses: new SearchAddresses(adminDependencies),
 } as const;
 
-/** What other screens may ask of the bookings: a summary, with the same access rule as the calendar. */
+/** What other screens may ask of the bookings: a summary with the calendar's access rule, and names by id. */
 export const bookingQueries = {
   getBookingSummary: bookingAdminQueries.getBookingSummary,
+  resolveBookingNames: new ResolveBookingNames(adminDependencies),
 } as const;
 
 /** One limiter for this server process, shared by every public action (see `MemoryRequestLimiter`). */

@@ -1,4 +1,9 @@
-import { OverviewCard, OverviewRow } from '@components/shared/overview-card';
+import {
+  OverviewCard,
+  OverviewRow,
+  OverviewStat,
+  OverviewStats,
+} from '@components/shared/overview-card';
 
 import type { Locale } from '@i18n';
 
@@ -39,22 +44,13 @@ export async function BookingOverviewCard({
       {hasLocation ? (
         <>
           <OverviewRow>
-            <dl className="grid grid-cols-2 gap-4">
-              <div>
-                <dt className="text-xs font-medium text-copy-muted">{t('overview.today')}</dt>
-                <dd className="mt-0.5 font-heading text-2xl font-semibold text-copy">
-                  {format.number(today)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium text-copy-muted">
-                  {t('overview.upcoming', { days })}
-                </dt>
-                <dd className="mt-0.5 font-heading text-2xl font-semibold text-copy">
-                  {format.number(upcoming)}
-                </dd>
-              </div>
-            </dl>
+            <OverviewStats>
+              <OverviewStat label={t('overview.today')} value={format.number(today)} />
+              <OverviewStat
+                label={t('overview.upcoming', { days })}
+                value={format.number(upcoming)}
+              />
+            </OverviewStats>
           </OverviewRow>
           {next.length === 0 ? (
             <OverviewRow>

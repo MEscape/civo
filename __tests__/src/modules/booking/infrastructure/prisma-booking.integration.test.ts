@@ -225,6 +225,40 @@ describe.skipIf(process.env['BOOKING_TEST_DATABASE_URL'] === undefined)(
     const create = (options: BookingOptions, now: Date = NOW) =>
       bookings.create(aBooking(options), now);
 
+    it('names configuration and bookings by id, only within its own website and tenant', async () => {
+      const websiteId = toWebsiteId(websiteRecordId);
+      const created = (await create({ resources: [deskAt(0)], startMinutes: 600 }))._unsafeUnwrap();
+      const missing = toBookableServiceId('00000000-0000-4000-8000-000000000000');
+
+      const named = (
+        await services.findNames(websiteId, tenantId, [toBookableServiceId(serviceId), missing])
+      )._unsafeUnwrap();
+      expect(named).toEqual([{ id: serviceId, name: expect.any(String) }]);
+      expect(
+        (
+          await services.findNames(websiteId, otherTenantId, [toBookableServiceId(serviceId)])
+        )._unsafeUnwrap(),
+      ).toEqual([]);
+      expect(
+        (
+          await locations.findNames(websiteId, tenantId, [toBookingLocationId(locationId)])
+        )._unsafeUnwrap(),
+      ).toEqual([{ id: locationId, name: 'Town hall' }]);
+      expect(
+        (
+          await resources.findNames(websiteId, tenantId, [toBookableResourceId(deskAt(0))])
+        )._unsafeUnwrap(),
+      ).toHaveLength(1);
+      expect(
+        (await bookings.findReferences({ websiteId, tenantId }, [created.id]))._unsafeUnwrap(),
+      ).toEqual([{ id: created.id, reference: created.reference }]);
+      expect(
+        (
+          await bookings.findReferences({ websiteId, tenantId: otherTenantId }, [created.id])
+        )._unsafeUnwrap(),
+      ).toEqual([]);
+    });
+
     it('stores configuration and finds it again, only for its own tenant', async () => {
       const found = (
         await locations.findById(toBookingLocationId(locationId), tenantId)

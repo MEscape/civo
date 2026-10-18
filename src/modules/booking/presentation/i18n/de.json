@@ -794,6 +794,26 @@
       "empty": "Keine anstehenden Termine.",
       "noLocation": "Legen Sie einen Standort an, um Termine anzunehmen.",
       "noCustomer": "Kein Name angegeben"
+    },
+    "auditEvents": {
+      "booking": {
+        "service_created": "Leistung angelegt",
+        "service_updated": "Leistung geändert",
+        "service_deleted": "Leistung gelöscht",
+        "location_created": "Standort angelegt",
+        "location_updated": "Standort geändert",
+        "location_deleted": "Standort gelöscht",
+        "resource_created": "Ressource angelegt",
+        "resource_updated": "Ressource geändert",
+        "resource_deleted": "Ressource gelöscht",
+        "manager_change_acknowledged": "Kalenderänderung bestätigt",
+        "resources_imported": "Ressourcen importiert",
+        "confirmed": "Termin gebucht",
+        "cancelled": "Termin storniert",
+        "rescheduled": "Termin verschoben",
+        "completed": "Termin abgeschlossen",
+        "no_show": "Als nicht erschienen markiert"
+      }
     }
   }
 }

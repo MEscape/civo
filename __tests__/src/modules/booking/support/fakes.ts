@@ -124,7 +124,9 @@ export class InMemoryWebsiteDirectory implements WebsiteDirectoryRepository {
   }
 }
 
-class InMemoryConfigRepository<T extends { id: string; tenantId: TenantId; websiteId: WebsiteId }> {
+class InMemoryConfigRepository<
+  T extends { id: string; tenantId: TenantId; websiteId: WebsiteId; name: string },
+> {
   protected readonly rows = new Map<string, T>();
   private counter = 0;
 
@@ -159,6 +161,22 @@ class InMemoryConfigRepository<T extends { id: string; tenantId: TenantId; websi
       this.rows.delete(id);
     }
     return okAsync(undefined);
+  }
+
+  /** Only rows of the website and tenant are named, as in the real repositories. */
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: ReadonlyArray<T['id']>,
+  ): AppResultAsync<ReadonlyArray<{ readonly id: T['id']; readonly name: string }>, never> {
+    return okAsync(
+      ids.flatMap((id) => {
+        const row = this.rows.get(id);
+        return row?.websiteId === websiteId && row.tenantId === tenantId
+          ? [{ id: row.id, name: row.name }]
+          : [];
+      }),
+    );
   }
 
   listByWebsite(
@@ -316,6 +334,23 @@ export class InMemoryBookingRepository implements BookingRepository {
   findById(id: string, tenantId: TenantId): AppResultAsync<Booking | null, never> {
     const row = this.rows.get(id);
     return okAsync(row?.tenantId === tenantId ? row : null);
+  }
+
+  findReferences(
+    { websiteId, tenantId }: WebsiteScope,
+    ids: ReadonlyArray<Booking['id']>,
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: Booking['id']; readonly reference: string }>,
+    never
+  > {
+    return okAsync(
+      ids.flatMap((id) => {
+        const row = this.rows.get(id);
+        return row?.websiteId === websiteId && row.tenantId === tenantId
+          ? [{ id: row.id, reference: row.reference }]
+          : [];
+      }),
+    );
   }
 
   findByReference(

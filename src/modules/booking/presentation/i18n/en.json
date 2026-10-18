@@ -794,6 +794,26 @@
       "empty": "No upcoming appointments.",
       "noLocation": "Add a location to start taking appointments.",
       "noCustomer": "No name given"
+    },
+    "auditEvents": {
+      "booking": {
+        "service_created": "Service created",
+        "service_updated": "Service changed",
+        "service_deleted": "Service deleted",
+        "location_created": "Location created",
+        "location_updated": "Location changed",
+        "location_deleted": "Location deleted",
+        "resource_created": "Resource created",
+        "resource_updated": "Resource changed",
+        "resource_deleted": "Resource deleted",
+        "manager_change_acknowledged": "Calendar change acknowledged",
+        "resources_imported": "Resources imported",
+        "confirmed": "Appointment booked",
+        "cancelled": "Appointment cancelled",
+        "rescheduled": "Appointment moved",
+        "completed": "Appointment completed",
+        "no_show": "Marked as no-show"
+      }
     }
   }
 }

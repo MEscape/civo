@@ -12,6 +12,7 @@ import {
   websiteNotFoundForBooking,
 } from '../../domain/errors/booking-errors';
 import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
+import { toBookingLocationId } from '../../domain/models/ids';
 
 import { LOCATION_SELECT, toLocation } from './booking-location-record-mapper';
 import { locationsOf, createInWebsite } from './tenant-ownership';
@@ -59,6 +60,31 @@ export class PrismaBookingLocationRepository implements BookingLocationRepositor
           .first(),
       failures.infraOnly('findById'),
     ).andThen((record) => (record === null ? okAsync(null) : toLocation(record)));
+  }
+
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly BookingLocationId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: BookingLocationId; readonly name: string }>,
+    InfrastructureAppError
+  > {
+    if (ids.length === 0) {
+      return okAsync([]);
+    }
+    return fromThrowableAsync(
+      async () =>
+        locationsOf(tenantId)
+          .where({ websiteId })
+          .where((location) => location.id.in([...ids]))
+          .select('id', 'name')
+          .limit(ids.length)
+          .all(),
+      failures.infraOnly('findNames'),
+    ).map((records) =>
+      records.map((record) => ({ id: toBookingLocationId(record.id), name: record.name })),
+    );
   }
 
   listByWebsite(

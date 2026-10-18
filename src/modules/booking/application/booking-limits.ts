@@ -4,6 +4,9 @@ export const MAX_LOCATIONS_PER_WEBSITE = 100;
 export const MAX_RESOURCES_PER_WEBSITE = 500;
 export const MAX_SERVICES_PER_WEBSITE = 200;
 
+/** Names looked up at once, by id, per kind: a page of the audit log names fewer. */
+export const MAX_RESOLVED_NAMES = 100;
+
 /** Employees whose hours one change may set at once: "the same hours for everyone" in one step. */
 export const MAX_TEAM_HOURS_BATCH = 100;
 

@@ -50,6 +50,7 @@ export class RescheduleBookingAsStaff {
               websiteId: moved.websiteId,
               bookingId: moved.id,
               by: 'staff',
+              actorId: actor.id,
             });
             return toCalendarBookingView(moved, serviceName);
           }),

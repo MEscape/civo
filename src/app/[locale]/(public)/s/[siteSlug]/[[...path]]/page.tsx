@@ -11,13 +11,25 @@ import { releaseQueries } from '@modules/release';
 import { releaseRoutes } from '@modules/release/client';
 import { restoreStoredWebsiteTheme, ThemeProvider, websiteQueries } from '@modules/website';
 
+import { PoweredBy } from '@components/brand/powered-by';
+
+import { redirect, requireLocale } from '@i18n';
+import type { Locale } from '@i18n';
+
+import { getTranslations } from '@i18n/server';
+
 import { buildContentMetadata } from '@lib/seo';
 
+import { findBookingPagePath } from '@/app/_lib/booking-page';
 import { orFail } from '@/app/_lib/or-fail';
 
 interface RouteProps {
-  readonly params: Promise<{ siteSlug: string; path?: string[] }>;
+  readonly params: Promise<{ locale: string; siteSlug: string; path?: string[] }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
+
+/** The parameter the e-mail links carry: the reference of a booking to open (see the booking flow). */
+const MANAGE_PARAM = 'manage';
 
 /**
  * One published page: slug → website → LIVE release → page by path. Drafts are
@@ -60,13 +72,48 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   });
 }
 
-export default async function PublishedSitePage({ params }: RouteProps) {
-  const { siteSlug, path } = await params;
-  const { snapshot, config } = await loadPublishedPage(siteSlug, toPath(path));
+/**
+ * A link from a booking e-mail names the website, not a page: the editor put
+ * the booking wherever they liked. This page, or the one that holds the
+ * booking, answers it; the booking then opens on its own (`manage`).
+ */
+function redirectToBooking(
+  snapshot: Awaited<ReturnType<typeof loadPublishedPage>>['snapshot'],
+  locale: Locale,
+  siteSlug: string,
+  currentPath: string,
+  reference: string,
+): void {
+  const target = findBookingPagePath(snapshot.pages, currentPath);
+  if (target !== null && target !== currentPath) {
+    const href = `${releaseRoutes.publicSite(siteSlug, target)}?${MANAGE_PARAM}=${encodeURIComponent(reference)}#booking`;
+    redirect({ href, locale });
+  }
+}
+
+export default async function PublishedSitePage({ params, searchParams }: RouteProps) {
+  const { siteSlug, path, locale: rawLocale } = await params;
+  const locale = requireLocale(rawLocale);
+  const [{ snapshot, config }, app, query] = await Promise.all([
+    loadPublishedPage(siteSlug, toPath(path)),
+    getTranslations({ locale, namespace: 'app' }),
+    searchParams,
+  ]);
+  const reference = query[MANAGE_PARAM];
+  if (typeof reference === 'string' && reference !== '') {
+    redirectToBooking(snapshot, locale, siteSlug, toPath(path), reference);
+  }
 
   return (
-    <ThemeProvider theme={restoreStoredWebsiteTheme(snapshot.theme)} className="min-h-dvh">
-      {renderPageNodes(config.children, { mode: 'published', websiteId: snapshot.website.id })}
+    <ThemeProvider
+      theme={restoreStoredWebsiteTheme(snapshot.theme)}
+      className="flex min-h-dvh flex-col"
+    >
+      <div className="flex-1">
+        {renderPageNodes(config.children, { mode: 'published', websiteId: snapshot.website.id })}
+      </div>
+      {/* The municipality's own logo is the site's; this is only who built it. */}
+      <PoweredBy label={app('brand.poweredBy')} className="flex justify-center px-4 py-6" />
     </ThemeProvider>
   );
 }

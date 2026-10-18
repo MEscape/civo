@@ -282,6 +282,30 @@ export class PrismaBookingRepository implements BookingRepository {
     ).andThen((record) => (record === null ? okAsync(null) : toBooking(record)));
   }
 
+  findReferences(
+    scope: WebsiteScope,
+    ids: readonly BookingId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: BookingId; readonly reference: string }>,
+    InfrastructureAppError
+  > {
+    if (ids.length === 0) {
+      return okAsync([]);
+    }
+    return fromThrowableAsync(
+      async () =>
+        bookingsOf(scope.tenantId)
+          .where({ websiteId: scope.websiteId })
+          .where((booking) => booking.id.in([...ids]))
+          .select('id', 'reference')
+          .limit(ids.length)
+          .all(),
+      failures.infraOnly('findReferences'),
+    ).map((records) =>
+      records.map((record) => ({ id: toBookingId(record.id), reference: record.reference })),
+    );
+  }
+
   findByReference(
     reference: BookingReference,
     websiteId: WebsiteId,

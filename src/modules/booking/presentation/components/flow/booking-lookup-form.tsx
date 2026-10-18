@@ -10,6 +10,8 @@ import { ErrorNotice } from '../shared/error-notice';
 
 export interface BookingLookupFormProps {
   readonly errorCode: string | null;
+  /** A reference already known, from the link in the confirmation e-mail. */
+  readonly initialReference?: string | undefined;
   readonly isPending: boolean;
   readonly onFind: (reference: string, email: string) => void;
   readonly onBack: () => void;
@@ -18,13 +20,14 @@ export interface BookingLookupFormProps {
 /** Reference and e-mail address: together they prove the booking is the visitor's. */
 export function BookingLookupForm({
   errorCode,
+  initialReference,
   isPending,
   onFind,
   onBack,
 }: BookingLookupFormProps) {
   const t = useTranslations('booking');
   const id = useId();
-  const [reference, setReference] = useState('');
+  const [reference, setReference] = useState(initialReference ?? '');
   const [email, setEmail] = useState('');
   const [touched, setTouched] = useState(false);
 

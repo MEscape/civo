@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { Button } from '@components/ui/button';
 
@@ -16,6 +16,33 @@ import { StepProgress } from './step-progress';
 
 import type { PublicCatalogDto } from '../../dto/catalog-dto';
 import type { FlowStep } from '../../flow/flow-state';
+
+/** The address parameter that opens "my booking"; the e-mail links carry it. */
+const MANAGE_PARAM = 'manage';
+const MAX_LINKED_REFERENCE = 32;
+
+const noSubscription = () => () => undefined;
+
+/**
+ * The reference of the link in the confirmation e-mail (`?manage=`), read from
+ * the address in the browser; `undefined` on the server and for a page without
+ * one. Nothing is read in the editor, where nothing may be looked up.
+ */
+function useLinkedReference(readOnly: boolean): string | undefined {
+  return useSyncExternalStore(
+    noSubscription,
+    () => {
+      const reference = new URLSearchParams(window.location.search).get(MANAGE_PARAM)?.trim();
+      const isUsable =
+        !readOnly &&
+        reference !== undefined &&
+        reference !== '' &&
+        reference.length <= MAX_LINKED_REFERENCE;
+      return isUsable ? reference : undefined;
+    },
+    () => undefined,
+  );
+}
 
 export interface BookingFlowProps {
   readonly websiteId: string;
@@ -44,7 +71,10 @@ export function BookingFlow({
 }: BookingFlowProps) {
   const t = useTranslations('booking');
   const flow = useBookingFlow({ websiteId, catalog, fixedServiceId, readOnly });
-  const [view, setView] = useState<'book' | 'manage'>('book');
+  // `null` follows the link of the confirmation e-mail, if there is one; a choice of the visitor replaces it.
+  const [chosenView, setView] = useState<'book' | 'manage' | null>(null);
+  const linkedReference = useLinkedReference(readOnly);
+  const view = chosenView ?? (linkedReference === undefined ? 'book' : 'manage');
   const headingRef = useRef<HTMLHeadingElement>(null);
   const previousStep = useRef<FlowStep>(flow.state.step);
   const { state } = flow;
@@ -57,6 +87,14 @@ export function BookingFlow({
     }
   }, [state.step]);
 
+  // Arriving from the e-mail, the booking is brought into view and its heading takes focus, wherever on the page it sits.
+  useEffect(() => {
+    if (linkedReference !== undefined) {
+      headingRef.current?.scrollIntoView({ block: 'center' });
+      headingRef.current?.focus({ preventScroll: true });
+    }
+  }, [linkedReference]);
+
   if (view === 'manage') {
     return (
       <FlowFrame heading={heading} headingRef={headingRef} title={t('manage.title')}>
@@ -68,6 +106,7 @@ export function BookingFlow({
               ? null
               : { booking: state.booking, email: state.values['email'] ?? '' }
           }
+          initialReference={linkedReference}
           readOnly={readOnly}
           onBack={() => {
             setView('book');

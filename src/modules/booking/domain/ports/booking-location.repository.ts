@@ -18,6 +18,16 @@ export interface BookingLocationRepository {
     tenantId: TenantId,
   ): AppResultAsync<BookingLocation | null, InfrastructureAppError>;
 
+  /** The names of those of `ids` that are locations of the website; nothing else is read. */
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly BookingLocationId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: BookingLocationId; readonly name: string }>,
+    InfrastructureAppError
+  >;
+
   /** Bounded: never more than `limit` items. */
   listByWebsite(
     websiteId: WebsiteId,

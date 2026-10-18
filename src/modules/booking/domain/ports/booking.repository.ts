@@ -64,6 +64,15 @@ export interface BookingRepository {
     tenantId: TenantId,
   ): AppResultAsync<Booking | null, InfrastructureAppError>;
 
+  /** The references of those of `ids` that are bookings of the website; nothing else is read. */
+  findReferences(
+    scope: WebsiteScope,
+    ids: readonly BookingId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: BookingId; readonly reference: string }>,
+    InfrastructureAppError
+  >;
+
   /** Looks a booking up by the reference the visitor was given. Callers verify the e-mail address. */
   findByReference(
     reference: BookingReference,

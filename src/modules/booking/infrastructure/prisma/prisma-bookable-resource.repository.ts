@@ -12,6 +12,7 @@ import {
   websiteNotFoundForBooking,
 } from '../../domain/errors/booking-errors';
 import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
+import { toBookableResourceId } from '../../domain/models/ids';
 
 import { RESOURCE_SELECT, toResource } from './bookable-resource-record-mapper';
 import { resourcesOf, createInWebsite } from './tenant-ownership';
@@ -67,6 +68,31 @@ export class PrismaBookableResourceRepository implements BookableResourceReposit
           .first(),
       failures.infraOnly('findById'),
     ).andThen((record) => (record === null ? okAsync(null) : toResource(record)));
+  }
+
+  findNames(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly BookableResourceId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: BookableResourceId; readonly name: string }>,
+    InfrastructureAppError
+  > {
+    if (ids.length === 0) {
+      return okAsync([]);
+    }
+    return fromThrowableAsync(
+      async () =>
+        resourcesOf(tenantId)
+          .where({ websiteId })
+          .where((resource) => resource.id.in([...ids]))
+          .select('id', 'name')
+          .limit(ids.length)
+          .all(),
+      failures.infraOnly('findNames'),
+    ).map((records) =>
+      records.map((record) => ({ id: toBookableResourceId(record.id), name: record.name })),
+    );
   }
 
   listByWebsite(

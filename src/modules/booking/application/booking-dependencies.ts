@@ -61,3 +61,9 @@ export interface RequestBudgetDependencies {
   readonly limiter: RequestLimiter;
   readonly clock: Clock;
 }
+
+/** What naming things by id needs: the stores of each kind, and nothing that sends or records. */
+export type NameLookupDependencies = Pick<
+  BookingDependencies,
+  'authorization' | 'services' | 'locations' | 'resources' | 'bookings'
+>;

@@ -14,6 +14,11 @@ interface Scope {
   readonly websiteId: WebsiteId;
 }
 
+/** Who changed a booking: the person who booked, or a member of staff, who is named. */
+type ChangedBy =
+  | { readonly by: Extract<ChangeActor, 'customer'> }
+  | { readonly by: Extract<ChangeActor, 'staff'>; readonly actorId: ActorId };
+
 /**
  * Business facts worth keeping. Free of personal data: ids and counts only,
  * never names, e-mail addresses or the free text a visitor typed. Adding a
@@ -88,16 +93,16 @@ export type BookingEvent =
       readonly bookingId: BookingId;
       readonly serviceId: BookableServiceId;
     })
-  | (Scope & {
-      readonly type: 'booking.cancelled';
-      readonly bookingId: BookingId;
-      readonly by: ChangeActor;
-    })
-  | (Scope & {
-      readonly type: 'booking.rescheduled';
-      readonly bookingId: BookingId;
-      readonly by: ChangeActor;
-    })
+  | (Scope &
+      ChangedBy & {
+        readonly type: 'booking.cancelled';
+        readonly bookingId: BookingId;
+      })
+  | (Scope &
+      ChangedBy & {
+        readonly type: 'booking.rescheduled';
+        readonly bookingId: BookingId;
+      })
   | (Scope & {
       readonly type: 'booking.completed';
       readonly bookingId: BookingId;

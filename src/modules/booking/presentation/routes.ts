@@ -9,4 +9,10 @@ export const bookingRoutes = {
   /** One location's workspace: its hours, services and rooms. */
   location: (websiteId: string, locationId: string) =>
     `/websites/${websiteId}/bookings/locations/${locationId}`,
+  /**
+   * A published website's home, which the emails lead back to. The site is
+   * served by the app under `s/<slug>` (the release module owns that route);
+   * the booking opens on whichever of its pages holds it, see `manage`.
+   */
+  publicSite: (siteSlug: string) => `/s/${siteSlug}`,
 } as const;

@@ -44,6 +44,7 @@ export class CancelBookingAsStaff {
               websiteId: cancelled.websiteId,
               bookingId: cancelled.id,
               by: 'staff',
+              actorId: actor.id,
             });
             return toCalendarBookingView(cancelled, serviceName);
           }),
