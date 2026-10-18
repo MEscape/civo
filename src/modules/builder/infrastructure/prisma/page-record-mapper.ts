@@ -9,7 +9,7 @@ import type { AppResult } from '@lib/result';
 import { toPageId, toWebsiteId } from '../../domain/models/ids';
 import { restorePageConfig } from '../../domain/models/page-config';
 
-import type { Page, PageSummary } from '../../domain/models/page';
+import type { Page, PageListItem, PageSummary } from '../../domain/models/page';
 import type { PageConfig } from '../../domain/models/page-config';
 import type { SavedRevision } from '../../domain/models/page-revision';
 import type { ReleasePage } from '../../domain/models/release-page';
@@ -99,6 +99,13 @@ export function toPage(record: PageRecord): AppResult<Page, UnexpectedAppError> 
     ...toPageSummary(record),
     config,
   }));
+}
+
+/** Lenient: a page whose config cannot be read is still listed, without a config. */
+export function toPageListItem(record: PageRecord): PageListItem {
+  const [latest] = record.configs;
+  const restored = restorePageConfig(latest?.content);
+  return { ...toPageSummary(record), config: restored.isOk() ? restored.value : null };
 }
 
 export function toNullablePage(

@@ -24,6 +24,7 @@
       "contentTooLarge": "The page content is too large.",
       "componentUnknown": "The page contains an unknown component.",
       "nestingNotAllowed": "A component is not allowed at this position.",
+      "singletonExceeded": "Only one of this component fits on a page.",
       "nodeLimit": "A page may contain at most {maxNodes} components.",
       "depthLimit": "Components may be nested at most {maxDepth} levels deep.",
       "titleTooShort": "The title must be at least {titleMin} characters long.",
@@ -142,7 +143,17 @@
         "empty": "No pages yet",
         "emptyDescription": "Create the first page below.",
         "homePage": "Home page",
-        "createTitle": "Create a page"
+        "savedAt": "{when} · version {version}",
+        "createTitle": "Create a page",
+        "pagination": {
+          "nav": "Pages of the page list"
+        },
+        "columns": {
+          "page": "Page",
+          "saved": "Last saved"
+        },
+        "count": "{count, plural, one {# page} other {# pages}}",
+        "edit": "Edit {title}"
       },
       "createForm": {
         "title": "Title",
@@ -159,6 +170,20 @@
       "description": "Your latest changes to this page are not saved. If you leave now, they are lost.",
       "confirm": "Leave and discard changes",
       "stay": "Stay and keep editing"
+    },
+    "auditEvents": {
+      "page": {
+        "created": "Page created",
+        "system_created": "Start page created",
+        "config_saved": "Page draft saved",
+        "edit_scope_violation": "Change beyond editing rights refused"
+      }
+    },
+    "panels": {
+      "label": "Editor areas",
+      "palette": "Add",
+      "canvas": "Page",
+      "properties": "Settings"
     }
   }
 }

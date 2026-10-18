@@ -26,6 +26,8 @@ interface HoveredItem {
 export interface ComponentPaletteProps {
   readonly dnd: CanvasDnd;
   readonly themeStyle: ThemeStyle;
+  /** After a component was added by a tap or Enter: a narrow screen then shows the page it went into. */
+  readonly onInserted?: () => void;
 }
 
 const PALETTE_ITEM_ATTRIBUTE = 'data-palette-item';
@@ -38,7 +40,7 @@ const HEADING = 'text-xs font-semibold uppercase tracking-wide text-copy-muted';
  * component can be dropped straight into a container. The palette is only
  * rendered for sessions that may change the structure.
  */
-export function ComponentPalette({ dnd, themeStyle }: ComponentPaletteProps) {
+export function ComponentPalette({ dnd, themeStyle, onInserted }: ComponentPaletteProps) {
   const t = useTranslations('builder');
   const dispatch = useBuilderDispatch();
   const { catalog } = useBuilderSession();
@@ -75,6 +77,8 @@ export function ComponentPalette({ dnd, themeStyle }: ComponentPaletteProps) {
     // A drag that ends on its own button would still fire a click.
     if (!palette.wasDragged()) {
       dispatch(insertComponent(type));
+      setHovered(null);
+      onInserted?.();
     }
   }
 
@@ -103,7 +107,10 @@ export function ComponentPalette({ dnd, themeStyle }: ComponentPaletteProps) {
                       handleClick(item.type);
                     }}
                     onPointerEnter={(event) => {
-                      showPreview(item.type, event.currentTarget);
+                      // A finger has no hover: a tap adds, it does not preview.
+                      if (event.pointerType !== 'touch') {
+                        showPreview(item.type, event.currentTarget);
+                      }
                     }}
                     onFocus={(event) => {
                       showPreview(item.type, event.currentTarget);
@@ -115,7 +122,7 @@ export function ComponentPalette({ dnd, themeStyle }: ComponentPaletteProps) {
                       hidePreview(event.relatedTarget);
                     }}
                     data-palette-item=""
-                    className="w-full cursor-grab rounded-token-sm px-2.5 py-2 text-left text-sm text-copy hover:bg-canvas focus-visible:outline-2 focus-visible:outline-accent"
+                    className="w-full cursor-grab rounded-token-sm px-2.5 py-3 text-left lg:py-2 text-sm text-copy hover:bg-canvas focus-visible:outline-2 focus-visible:outline-accent"
                   >
                     {text.componentLabel(item.type)}
                   </button>

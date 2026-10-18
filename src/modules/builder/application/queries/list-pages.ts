@@ -1,43 +1,50 @@
 import type { AuthorizationError } from '@modules/auth';
 
 import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
+import { loadClampedPage, resolvePageRequest } from '@lib/pagination';
+import type { Page as Slice } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
-import { clamp, isDefined } from '@lib/utils';
 
 import { parseWebsiteId } from '../../domain/models/ids';
-import { DEFAULT_PAGE_LIST_LIMIT, MAX_PAGE_LIST_LIMIT, MIN_PAGE_LIST_LIMIT } from '../list-limits';
+import { outlineOf } from '../../domain/models/page-outline';
+import { PAGE_LIST_LIMITS } from '../list-limits';
 import { toPageSummaryView } from '../page-view-mappers';
 
-import type { ListPagesInput, PageSummaryView } from '../contracts/page-views';
-import type { PageAccessDependencies } from '../page-dependencies';
+import type { ListPagesInput, PageListItemView } from '../contracts/page-views';
+import type { ListPagesDependencies } from '../page-dependencies';
 
 /**
- * Lists a website's pages within the actor's own tenant. Always bounded.
- * A website of another tenant yields an empty list, the same as a website
- * without pages, so the result discloses nothing about foreign ids.
+ * One page of a website's pages within the actor's own tenant. A website of
+ * another tenant yields an empty list, the same as a website without pages,
+ * so the result discloses nothing about foreign ids. A page past the end
+ * answers the last one.
  */
 export class ListPages {
-  constructor(private readonly deps: PageAccessDependencies) {}
+  constructor(private readonly deps: ListPagesDependencies) {}
 
   execute(
     input: ListPagesInput,
   ): AppResultAsync<
-    readonly PageSummaryView[],
+    Slice<PageListItemView>,
     AuthorizationError | ValidationAppError | InfrastructureAppError
   > {
-    const requested =
-      isDefined(input.limit) && Number.isInteger(input.limit)
-        ? input.limit
-        : DEFAULT_PAGE_LIST_LIMIT;
-    const limit = clamp(requested, MIN_PAGE_LIST_LIMIT, MAX_PAGE_LIST_LIMIT);
+    const requested = resolvePageRequest(input, PAGE_LIST_LIMITS);
 
     return this.deps.authorization
       .requireInTenant('page.read')
       .andThen((actor) =>
         parseWebsiteId(input.websiteId).asyncAndThen((websiteId) =>
-          this.deps.pages.listByWebsite(websiteId, actor.tenantId, limit),
+          loadClampedPage(requested, (request) =>
+            this.deps.pages.listByWebsite(websiteId, actor.tenantId, request),
+          ),
         ),
       )
-      .map((summaries) => summaries.map(toPageSummaryView));
+      .map((found) => ({
+        ...found,
+        items: found.items.map((item) => ({
+          ...toPageSummaryView(item),
+          outline: item.config === null ? null : outlineOf(item.config, this.deps.components),
+        })),
+      }));
   }
 }

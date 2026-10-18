@@ -33,6 +33,11 @@ import { orFail } from '@/app/_lib/or-fail';
 
 interface RouteProps {
   readonly params: Promise<{ locale: string; websiteId: string; pageId: string }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+function firstOf(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 /** Deduplicates the load between `generateMetadata` and the page within one request. */
@@ -56,7 +61,7 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
  * The editor's Client Components read `builder` text and, through `useComponentText`,
  * the platform components' labels (`componentPlatform`); only this subtree receives them.
  */
-async function BuilderContent({ params }: RouteProps) {
+async function BuilderContent({ params, searchParams }: RouteProps) {
   const { locale: rawLocale, websiteId, pageId } = await params;
   const locale = requireLocale(rawLocale);
 
@@ -103,6 +108,7 @@ async function BuilderContent({ params }: RouteProps) {
         session={toEditorSessionDto(sessionView)}
         datasetOptions={datasetOptions}
         categoryOptions={categoryOptions}
+        initialSelection={firstOf((await searchParams)['select'])}
       >
         <BuilderShell
           pageTitle={sessionView.page.title}
@@ -117,10 +123,10 @@ async function BuilderContent({ params }: RouteProps) {
   );
 }
 
-export default function BuilderPage({ params }: RouteProps) {
+export default function BuilderPage(props: RouteProps) {
   return (
     <Suspense fallback={<PageSkeleton />}>
-      <BuilderContent params={params} />
+      <BuilderContent {...props} />
     </Suspense>
   );
 }

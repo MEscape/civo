@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { ReactNode } from 'react';
 
+import { withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
 import { componentPlatformQueries, renderPageNodes } from '@modules/component-platform';
 
@@ -13,14 +14,21 @@ import { CreatePage } from './application/commands/create-page';
 import { CreateSystemPage } from './application/commands/create-system-page';
 import { SavePageConfig } from './application/commands/save-page-config';
 import { GetEditorSession } from './application/queries/get-editor-session';
+import { ListDatasetUsage } from './application/queries/list-dataset-usage';
 import { ListPages } from './application/queries/list-pages';
 import { ListPagesForRelease } from './application/queries/list-pages-for-release';
 import { RenderDraftPage } from './application/queries/render-draft-page';
+import { ResolvePageTitles } from './application/queries/resolve-page-titles';
 import { createComponentCatalog } from './domain/models/component-catalog';
 import { restorePageConfig } from './domain/models/page-config';
+import { datasetUsesOf } from './domain/models/page-dataset-usage';
 import { ComponentPlatformDescriptorProvider } from './infrastructure/component-platform/component-platform-descriptor-provider';
 import { ComponentPlatformDraftRenderer } from './infrastructure/component-platform/component-platform-draft-renderer';
-import { loggerBuilderAuditLog } from './infrastructure/logging/logger-builder-audit-log';
+import {
+  LEVEL_BY_EVENT,
+  TRAIL_BY_EVENT,
+  loggerBuilderAuditLog,
+} from './infrastructure/logging/logger-builder-audit-log';
 import { PrismaPageRepository } from './infrastructure/prisma/prisma-page.repository';
 
 import type { CreateSystemPageError } from './application/commands/create-system-page';
@@ -35,6 +43,7 @@ import type {
 } from './application/contracts/page-views';
 import type { PageDependencies } from './application/page-dependencies';
 import type { ListPagesForReleaseError } from './application/queries/list-pages-for-release';
+import type { DatasetUse } from './domain/models/page-dataset-usage';
 
 /**
  * The module's composition root: the one file that knows both the
@@ -66,11 +75,18 @@ const components = createComponentCatalog(
   ).listDescriptors(),
 );
 
+/** The module's audit port: its log lines, and the trail the website's audit page reads. */
+const auditLog = withAuditTrail(loggerBuilderAuditLog, {
+  source: 'builder',
+  levels: LEVEL_BY_EVENT,
+  policy: TRAIL_BY_EVENT,
+});
+
 const dependencies: PageDependencies = {
   authorization,
   pages,
   components,
-  audit: loggerBuilderAuditLog,
+  audit: auditLog,
 };
 
 export const builderCommands = {
@@ -81,6 +97,8 @@ export const builderCommands = {
 export const builderQueries = {
   getEditorSession: new GetEditorSession(dependencies),
   listPages: new ListPages(dependencies),
+  listDatasetUsage: new ListDatasetUsage(dependencies),
+  resolvePageTitles: new ResolvePageTitles(dependencies),
   renderDraftPage: new RenderDraftPage<ReactNode>({
     authorization,
     pages,
@@ -91,7 +109,7 @@ export const builderQueries = {
 const createSystemPageCommand = new CreateSystemPage({
   pages,
   components,
-  audit: loggerBuilderAuditLog,
+  audit: auditLog,
 });
 const listPagesForReleaseQuery = new ListPagesForRelease({ pages });
 
@@ -126,6 +144,19 @@ export function restoreStoredPageConfig(
   stored: unknown,
 ): AppResult<PageConfigView, UnexpectedAppError> {
   return restorePageConfig(stored);
+}
+
+/**
+ * The components of stored page JSON (a release snapshot's page, say) that
+ * read datasets, found through the builder's own catalog. A tree that cannot
+ * be read reads nothing. Lets another module answer "is this dataset live?"
+ * without its own tree walker.
+ */
+export function datasetUsesInStoredPage(stored: unknown): readonly DatasetUse[] {
+  return restorePageConfig(stored).match(
+    (config) => datasetUsesOf(config, components),
+    () => [],
+  );
 }
 
 /**

@@ -49,7 +49,26 @@ export function checkComposition(
   }
 
   visit(config.children, null, 'children');
+  checkSingletons(config, catalog, bag);
   return bag.hasErrors ? err(bag.toError()) : ok(undefined);
+}
+
+/** A component that may appear once on a page does so: every one after the first is reported, wherever it sits. */
+function checkSingletons(
+  config: PageConfig,
+  catalog: ComponentCatalog,
+  bag: ReturnType<typeof createBuilderErrorBag>,
+): void {
+  const seen = new Set<string>();
+  for (const { node } of flattenNodes(config.children)) {
+    if (catalog.describe(node.type)?.isSingleton !== true) {
+      continue;
+    }
+    if (seen.has(node.type)) {
+      bag.add(fieldPath('nodes', node.id), CODES.singletonExceeded);
+    }
+    seen.add(node.type);
+  }
 }
 
 function hasSameStructure(before: readonly FlatNode[], after: readonly FlatNode[]): boolean {

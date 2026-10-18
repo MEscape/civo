@@ -14,7 +14,8 @@ import { ErrorMessage } from '../feedback/error-message';
 
 import type { SaveStatus } from '../../state/save-reducer';
 
-const MUTED = 'text-xs text-copy-muted';
+/** On a phone the words are read out, not shown: the save button already says what is left to do. */
+const MUTED = 'text-xs text-copy-muted max-sm:sr-only';
 
 interface SaveStatusMessageProps {
   readonly status: SaveStatus;
@@ -49,7 +50,7 @@ function SaveStatusMessage({ status, errorCode, isDirty }: SaveStatusMessageProp
     return <span className={MUTED}>{t('save.saving')}</span>;
   }
   if (isDirty) {
-    return <span className="text-xs text-accent-copy">{t('save.unsaved')}</span>;
+    return <span className="text-xs text-accent-copy max-sm:sr-only">{t('save.unsaved')}</span>;
   }
   if (status === 'saved') {
     return <span className={MUTED}>{t('save.saved')}</span>;

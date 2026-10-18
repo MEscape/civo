@@ -1,5 +1,6 @@
 import type {
   PageConfigView,
+  PageListItemView,
   PageSummaryView,
   PageView,
   SavedRevisionView,
@@ -44,4 +45,12 @@ export function toPageDto(view: PageView): PageDto {
 
 export function toSavedRevisionDto(view: SavedRevisionView): SavedRevisionDto {
   return { version: view.version, savedAt: view.savedAt.toISOString() };
+}
+
+export interface PageListItemDto extends PageSummaryDto {
+  readonly outline: PageListItemView['outline'];
+}
+
+export function toPageListItemDto(view: PageListItemView): PageListItemDto {
+  return { ...toPageSummaryDto(view), outline: view.outline };
 }

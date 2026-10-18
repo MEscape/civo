@@ -46,6 +46,7 @@ function renderPalette() {
           catalog: CATALOG,
           datasetOptions: {},
           categoryOptions: { byDataset: {}, sampleByKind: {} },
+          discard: vi.fn(),
         }}
       >
         <ComponentPalette dnd={DND} themeStyle={{}} />

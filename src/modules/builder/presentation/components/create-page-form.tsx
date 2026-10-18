@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 import { FieldMessage } from '@components/shared/field-message';
+import { FormPanelBody, FormPanelFooter } from '@components/shared/form-panel';
 import { TextField } from '@components/shared/text-field';
 import { Button } from '@components/ui/button';
 
@@ -84,50 +85,49 @@ export function CreatePageForm({ websiteId }: CreatePageFormProps) {
   }
 
   return (
-    <form
-      onSubmit={form.handleSubmit(handleSubmit)}
-      noValidate
-      aria-busy={isPending}
-      className="space-y-6"
-    >
-      <TextField
-        id={titleId}
-        label={t('pages.createForm.title')}
-        placeholder={t('pages.createForm.titlePlaceholder')}
-        autoComplete="off"
-        error={
-          errors.title?.message
-            ? t(messageKeyForCode(errors.title.message), MESSAGE_PARAMS)
-            : undefined
-        }
-        {...form.register('title', { onChange: handleTitleChange })}
-      />
-
-      <TextField
-        id={pathId}
-        label={t('pages.createForm.path')}
-        placeholder={t('pages.createForm.pathPlaceholder')}
-        hint={t('pages.createForm.pathHint')}
-        autoComplete="off"
-        error={
-          errors.path?.message
-            ? t(messageKeyForCode(errors.path.message), MESSAGE_PARAMS)
-            : undefined
-        }
-        {...form.register('path', { onBlur: handlePathBlur })}
-      />
-
-      {formErrorCode !== null && (
-        <FieldMessage
-          id={`${id}-form-error`}
-          message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
-          className="text-sm"
+    <form onSubmit={form.handleSubmit(handleSubmit)} noValidate aria-busy={isPending}>
+      <FormPanelBody className="grid grid-cols-1 items-start gap-6 space-y-0 sm:grid-cols-2">
+        <TextField
+          id={titleId}
+          label={t('pages.createForm.title')}
+          placeholder={t('pages.createForm.titlePlaceholder')}
+          autoComplete="off"
+          error={
+            errors.title?.message
+              ? t(messageKeyForCode(errors.title.message), MESSAGE_PARAMS)
+              : undefined
+          }
+          {...form.register('title', { onChange: handleTitleChange })}
         />
-      )}
 
-      <Button type="submit" disabled={isPending}>
-        {isPending ? t('pages.createForm.submitting') : t('pages.createForm.submit')}
-      </Button>
+        <TextField
+          id={pathId}
+          label={t('pages.createForm.path')}
+          placeholder={t('pages.createForm.pathPlaceholder')}
+          hint={t('pages.createForm.pathHint')}
+          autoComplete="off"
+          error={
+            errors.path?.message
+              ? t(messageKeyForCode(errors.path.message), MESSAGE_PARAMS)
+              : undefined
+          }
+          {...form.register('path', { onBlur: handlePathBlur })}
+        />
+      </FormPanelBody>
+      <FormPanelFooter
+        status={
+          formErrorCode !== null && (
+            <FieldMessage
+              id={`${id}-form-error`}
+              message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
+            />
+          )
+        }
+      >
+        <Button type="submit" disabled={isPending}>
+          {isPending ? t('pages.createForm.submitting') : t('pages.createForm.submit')}
+        </Button>
+      </FormPanelFooter>
     </form>
   );
 }

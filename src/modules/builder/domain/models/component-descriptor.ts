@@ -86,6 +86,8 @@ export interface ComponentDescriptor {
    */
   readonly allowedChildTypes: readonly string[];
   readonly isAllowedAtRoot: boolean;
+  /** At most one on a page: a second is refused when placed and when saved. */
+  readonly isSingleton: boolean;
   readonly fields: readonly PropFieldDescriptor[];
   /**
    * Prop keys a municipality editor may change. Today `municipality` is the

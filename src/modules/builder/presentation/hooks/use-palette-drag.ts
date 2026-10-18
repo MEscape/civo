@@ -17,7 +17,8 @@ export function usePaletteDrag(dnd: PaletteDndApi) {
   const isDraggingRef = useRef(false);
 
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>, componentType: string): void {
-    if (event.button !== 0) {
+    // On a touch screen the list scrolls under the finger and a tap adds: no drag there.
+    if (event.button !== 0 || event.pointerType === 'touch') {
       return;
     }
     const start = { x: event.clientX, y: event.clientY };

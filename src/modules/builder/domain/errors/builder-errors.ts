@@ -57,6 +57,7 @@ export const BUILDER_VALIDATION_CODES = {
   nodeLimitExceeded: 'builder.validation.node_limit_exceeded',
   depthLimitExceeded: 'builder.validation.depth_limit_exceeded',
   nestingNotAllowed: 'builder.validation.nesting_not_allowed',
+  singletonExceeded: 'builder.validation.singleton_exceeded',
   placementInvalid: 'builder.validation.placement_invalid',
   versionInvalid: 'builder.validation.version_invalid',
 } as const;

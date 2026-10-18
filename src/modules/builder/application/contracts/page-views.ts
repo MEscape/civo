@@ -3,6 +3,7 @@ import type { TenantId } from '@modules/auth';
 import type { ComponentDescriptor } from '../../domain/models/component-descriptor';
 import type { PageDraftInput } from '../../domain/models/page';
 import type { PageConfig, PageConfigJson } from '../../domain/models/page-config';
+import type { OutlineBlock } from '../../domain/models/page-outline';
 
 /** The page content as consumers see it. Plain, serializable, fully validated. */
 export type PageConfigView = PageConfig;
@@ -17,6 +18,41 @@ export interface PageSummaryView {
   readonly version: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+}
+
+/** A page's title by id, for a screen that keeps only the id (the audit log). */
+export interface PageTitleView {
+  readonly id: string;
+  readonly title: string;
+}
+
+/** One page that reads a dataset, with the components on it that do. */
+export interface DatasetPageUseView {
+  readonly pageId: string;
+  readonly title: string;
+  readonly components: ReadonlyArray<{ readonly nodeId: string; readonly type: string }>;
+}
+
+/** A component still showing sample data: its dataset field has nothing chosen. */
+export interface ComponentAwaitingDataView {
+  readonly pageId: string;
+  readonly title: string;
+  readonly nodeId: string;
+  readonly type: string;
+  /** The content kind its dataset field asks for. */
+  readonly kind: string;
+}
+
+export interface DatasetUsageView {
+  /** The pages that read each dataset, by dataset id; a dataset no page reads is absent. */
+  readonly byDataset: Readonly<Record<string, readonly DatasetPageUseView[]>>;
+  /** Where data could go next, in page order. */
+  readonly awaiting: readonly ComponentAwaitingDataView[];
+}
+
+/** A page in the page list: a sketch of its top-level blocks, `null` when its config cannot be read. */
+export interface PageListItemView extends PageSummaryView {
+  readonly outline: readonly OutlineBlock[] | null;
 }
 
 export interface PageView extends PageSummaryView {
@@ -103,5 +139,7 @@ export interface RenderDraftPageInput {
 
 export interface ListPagesInput {
   readonly websiteId: string;
-  readonly limit?: number;
+  /** The page asked for, as the address carries it: untrusted text, resolved by the query. */
+  readonly page?: unknown;
+  readonly pageSize?: unknown;
 }

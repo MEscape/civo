@@ -24,6 +24,7 @@
       "contentTooLarge": "Der Seiteninhalt ist zu groß.",
       "componentUnknown": "Die Seite enthält eine unbekannte Komponente.",
       "nestingNotAllowed": "Eine Komponente ist an dieser Stelle nicht erlaubt.",
+      "singletonExceeded": "Diese Komponente passt nur einmal auf eine Seite.",
       "nodeLimit": "Eine Seite darf höchstens {maxNodes} Komponenten enthalten.",
       "depthLimit": "Komponenten dürfen höchstens {maxDepth} Ebenen tief verschachtelt sein.",
       "titleTooShort": "Der Titel muss mindestens {titleMin} Zeichen lang sein.",
@@ -142,7 +143,17 @@
         "empty": "Noch keine Seiten",
         "emptyDescription": "Legen Sie unten die erste Seite an.",
         "homePage": "Startseite",
-        "createTitle": "Seite anlegen"
+        "savedAt": "{when} · Version {version}",
+        "createTitle": "Seite anlegen",
+        "pagination": {
+          "nav": "Seiten der Seitenliste"
+        },
+        "columns": {
+          "page": "Seite",
+          "saved": "Zuletzt gespeichert"
+        },
+        "count": "{count, plural, one {# Seite} other {# Seiten}}",
+        "edit": "{title} bearbeiten"
       },
       "createForm": {
         "title": "Titel",
@@ -159,6 +170,20 @@
       "description": "Ihre letzten Änderungen an dieser Seite sind nicht gespeichert. Wenn Sie jetzt gehen, gehen sie verloren.",
       "confirm": "Verlassen und Änderungen verwerfen",
       "stay": "Bleiben und weiter bearbeiten"
+    },
+    "auditEvents": {
+      "page": {
+        "created": "Seite erstellt",
+        "system_created": "Startseite angelegt",
+        "config_saved": "Seitenentwurf gespeichert",
+        "edit_scope_violation": "Änderung außerhalb der Bearbeitungsrechte abgelehnt"
+      }
+    },
+    "panels": {
+      "label": "Bereiche des Editors",
+      "palette": "Hinzufügen",
+      "canvas": "Seite",
+      "properties": "Einstellungen"
     }
   }
 }

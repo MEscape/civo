@@ -57,6 +57,7 @@ const SESSION: BuilderSession = {
     byDataset: { 'ds-1': ['Nord'], 'ds-2': ['Süd', 'Mitte'] },
     sampleByKind: { WasteCollectionEntry: ['Bezirk A'] },
   },
+  discard: vi.fn(),
 };
 
 function renderControl(ui: ReactElement) {

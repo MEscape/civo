@@ -276,6 +276,13 @@ export function insertNewComponent(input: {
   if (descriptor === null) {
     return err(fieldValidationFailed('type', CODES.nodeTypeUnknown));
   }
+  // A component that may appear once on a page is not added a second time, by click or by drag.
+  if (
+    descriptor.isSingleton &&
+    flattenNodes(nodes).some((entry) => entry.node.type === componentType)
+  ) {
+    return err(fieldValidationFailed('type', CODES.singletonExceeded));
+  }
   return createNodeFromBlueprint(descriptor.blueprint, idSeed).andThen(
     (node): AppResult<InsertedComponent, NodeOperationError> =>
       insertNode(nodes, { node, placement }, catalog).map((tree) => ({

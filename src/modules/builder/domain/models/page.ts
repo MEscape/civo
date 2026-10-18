@@ -56,6 +56,11 @@ export interface Page extends PageSummary {
   readonly config: PageConfig;
 }
 
+/** A page as the page list reads it: its latest config, or `null` when that cannot be read. */
+export interface PageListItem extends PageSummary {
+  readonly config: PageConfig | null;
+}
+
 /** The validated, normalized fields every new page starts from. */
 export interface PageFields {
   readonly websiteId: WebsiteId;

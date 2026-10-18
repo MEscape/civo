@@ -62,6 +62,7 @@ function toDescriptor(
       .filter((child) => canNest(entry.type, child.type))
       .map((child) => child.type),
     isAllowedAtRoot: canNest(null, entry.type),
+    isSingleton: entry.isSingleton,
     fields: entry.fields.map(toFieldDescriptor),
     municipalPropKeys: [...entry.municipalFields],
     blueprint: toBlueprint(entry),

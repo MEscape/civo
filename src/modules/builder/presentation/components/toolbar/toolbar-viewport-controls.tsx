@@ -34,7 +34,7 @@ export function ToolbarViewportControls() {
     <div
       role="group"
       aria-label={t('toolbar.viewports')}
-      className="flex items-center gap-1 rounded-token border border-border p-0.5"
+      className="hidden items-center gap-1 rounded-token border border-border p-0.5 md:flex"
     >
       {VIEWPORTS.map((candidate) => (
         <ToolbarIconButton

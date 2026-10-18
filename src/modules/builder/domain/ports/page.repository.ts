@@ -6,10 +6,11 @@ import type {
   NotFoundAppError,
   UnexpectedAppError,
 } from '@lib/errors';
+import type { Page as Slice, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import type { PageId, WebsiteId } from '../models/ids';
-import type { Page, PageDraft, PageSummary } from '../models/page';
+import type { Page, PageDraft, PageListItem, PageSummary } from '../models/page';
 import type { PageConfig } from '../models/page-config';
 import type { SavedRevision } from '../models/page-revision';
 import type { ReleasePage } from '../models/release-page';
@@ -58,12 +59,25 @@ export interface PageRepository {
     tenantId: TenantId,
   ): AppResultAsync<PageSummary | null, InfrastructureAppError>;
 
-  /** Bounded: never returns more than `limit` items (performance.md). */
+  /** The titles of those of `ids` that are pages of the website; nothing else is read. */
+  findTitles(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    ids: readonly PageId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: PageId; readonly title: string }>,
+    InfrastructureAppError
+  >;
+
+  /**
+   * One slice of a website's pages, oldest first, with the total and each
+   * page's latest config read leniently (performance.md).
+   */
   listByWebsite(
     websiteId: WebsiteId,
     tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly PageSummary[], InfrastructureAppError>;
+    page: PageRequest,
+  ): AppResultAsync<Slice<PageListItem>, InfrastructureAppError>;
 
   /**
    * Every page of a website with its latest configuration, restored

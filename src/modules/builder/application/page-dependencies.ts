@@ -21,6 +21,12 @@ export interface PageDependencies extends PageAccessDependencies {
   readonly audit: BuilderAuditLog;
 }
 
+/** The page list reads pages and sketches them from the catalog. */
+export type ListPagesDependencies = Pick<
+  PageDependencies,
+  'authorization' | 'pages' | 'components'
+>;
+
 export interface RenderDraftPageDependencies<TOutput> extends PageAccessDependencies {
   readonly renderer: DraftPageRenderer<TOutput>;
 }

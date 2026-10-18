@@ -60,6 +60,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.nodeLimitExceeded]: fieldPath('validation', 'nodeLimit'),
   [VALIDATION.depthLimitExceeded]: fieldPath('validation', 'depthLimit'),
   [VALIDATION.nestingNotAllowed]: fieldPath('validation', 'nestingNotAllowed'),
+  [VALIDATION.singletonExceeded]: fieldPath('validation', 'singletonExceeded'),
 } as const satisfies Record<BuilderCode, ValidKeys>;
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');

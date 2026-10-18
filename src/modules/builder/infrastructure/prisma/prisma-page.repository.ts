@@ -9,6 +9,8 @@ import type {
   UnexpectedAppError,
 } from '@lib/errors';
 import { logger } from '@lib/logger';
+import { offsetOf, toPage } from '@lib/pagination';
+import type { Page as Slice, PageRequest } from '@lib/pagination';
 import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
@@ -19,6 +21,7 @@ import {
   pageVersionConflict,
   websiteNotFound,
 } from '../../domain/errors/builder-errors';
+import { toPageId } from '../../domain/models/ids';
 import { INITIAL_PAGE_VERSION, PAGE_REVISION_LIMIT } from '../../domain/models/page';
 import { serializePageConfig } from '../../domain/models/page-config';
 
@@ -29,6 +32,7 @@ import {
   SAVED_REVISION_SELECT,
   toCreatedPage,
   toNullablePage,
+  toPageListItem,
   toPageSummary,
   toReleasePage,
   toSavedRevision,
@@ -36,7 +40,7 @@ import {
 
 import type { PageRecord } from './page-record-mapper';
 import type { PageId, WebsiteId } from '../../domain/models/ids';
-import type { Page, PageSummary } from '../../domain/models/page';
+import type { Page, PageListItem, PageSummary } from '../../domain/models/page';
 import type { SavedRevision } from '../../domain/models/page-revision';
 import type { ReleasePage } from '../../domain/models/release-page';
 import type {
@@ -135,21 +139,48 @@ export class PrismaPageRepository implements PageRepository {
     ).map((record) => record && toPageSummary(record));
   }
 
-  listByWebsite(
+  findTitles(
     websiteId: WebsiteId,
     tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly PageSummary[], InfrastructureAppError> {
+    ids: readonly PageId[],
+  ): AppResultAsync<
+    ReadonlyArray<{ readonly id: PageId; readonly title: string }>,
+    InfrastructureAppError
+  > {
+    if (ids.length === 0) {
+      return okAsync([]);
+    }
     return fromThrowableAsync(
       async () =>
         db.orm.public.Page.where({ websiteId, tenantId })
-          .select(...PAGE_SUMMARY_SELECT)
-          // `id` breaks ties so the order is stable between requests.
-          .orderBy([(page) => page.createdAt.asc(), (page) => page.id.asc()])
-          .limit(limit)
+          .where((page) => page.id.in([...ids]))
+          .select('id', 'title')
+          .limit(ids.length)
           .all(),
-      failures.infraOnly('listByWebsite'),
-    ).map((records) => records.map(toPageSummary));
+      failures.infraOnly('findTitles'),
+    ).map((records) => records.map((record) => ({ id: toPageId(record.id), title: record.title })));
+  }
+
+  listByWebsite(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+    request: PageRequest,
+  ): AppResultAsync<Slice<PageListItem>, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      const total = await db.orm.public.Page.where({ websiteId, tenantId }).aggregate(
+        (aggregate) => ({ total: aggregate.count() }),
+      );
+      const records = await pagesWithLatestConfig()
+        .where({ websiteId, tenantId })
+        // `id` breaks ties so the order is stable between requests.
+        .orderBy([(page) => page.createdAt.asc(), (page) => page.id.asc()])
+        .limit(request.pageSize)
+        .offset(offsetOf(request))
+        .all();
+      return { records, total: total.total };
+    }, failures.infraOnly('listByWebsite')).map(({ records, total }) =>
+      toPage(records.map(toPageListItem), total, request),
+    );
   }
 
   listReleasePages(

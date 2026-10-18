@@ -10,6 +10,8 @@ export interface BuilderSession {
   readonly catalog: ComponentCatalog;
   readonly datasetOptions: DatasetOptionsByKind;
   readonly categoryOptions: CategoryOptionsDto;
+  /** Drops unsaved edits: the session starts again from the last saved revision. */
+  readonly discard: () => void;
 }
 
 export const BuilderSessionContext = createContext<BuilderSession | null>(null);

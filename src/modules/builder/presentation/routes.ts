@@ -13,4 +13,7 @@ export const builderRoutes = {
   websiteLayout: '/websites/[websiteId]',
   pages: (websiteId: string) => `/websites/${websiteId}/builder`,
   editor: (websiteId: string, pageId: string) => `/websites/${websiteId}/builder/${pageId}`,
+  /** The editor with one component selected and scrolled to, e.g. from "used on" links. */
+  component: (websiteId: string, pageId: string, nodeId: string) =>
+    `/websites/${websiteId}/builder/${pageId}?select=${encodeURIComponent(nodeId)}`,
 } as const;

@@ -12,13 +12,14 @@ export { builderQueries } from './composition';
 export {
   createSystemPage,
   listPagesForRelease,
+  datasetUsesInStoredPage,
   restoreStoredPageConfig,
   savePageDraft,
 } from './composition';
 
 export { CreatePageForm } from './presentation/components/create-page-form';
 export { PageList } from './presentation/components/page-list';
-export { toPageSummaryDto } from './presentation/dto/page-dto';
+export { toPageListItemDto, toPageSummaryDto } from './presentation/dto/page-dto';
 export { BuilderSessionProvider } from './presentation/components/builder-session-provider';
 export { BuilderShell } from './presentation/components/builder-shell';
 export { toEditorSessionDto } from './presentation/dto/editor-session-dto';
