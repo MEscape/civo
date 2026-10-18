@@ -99,7 +99,7 @@ function RequirementRow({
         />
       </div>
       {isRemovable && (
-        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+        <Button type="button" variant="destructive-ghost" size="sm" onClick={onRemove}>
           {t('services.removeRequirement')}
         </Button>
       )}

@@ -184,7 +184,7 @@ export function DatasetManagementItem({
             <Pencil className="size-3.5" aria-hidden="true" />
           </Button>
           <Button
-            variant="ghost"
+            variant="destructive-ghost"
             size="sm"
             aria-label={t('datasets.deleteLabel', { name: dataset.name })}
             onClick={onDelete}

@@ -14,6 +14,7 @@ import { cn } from '@lib/utils';
  *   outline     → transparent with border, fills on hover
  *   ghost       → no border or fill, canvas on hover
  *   destructive → danger semantic tokens (soft, not alarming by default)
+ *   destructive-ghost → the trigger of any delete/remove/withdraw (red text, no fill)
  *   link        → inline text link style using primary-copy for readability
  *
  * Size map uses Tailwind scale utilities only — no arbitrary px/rem values.
@@ -61,6 +62,16 @@ const buttonVariants = cva(
         destructive: [
           'bg-danger-subtle text-danger border-danger-border',
           'hover:bg-danger-subtle/80',
+          'focus-visible:border-danger/40 focus-visible:ring-danger/20',
+        ],
+        /**
+         * The trigger of a delete, remove or withdraw: red text on no fill, a
+         * soft red wash on hover. The one look every such trigger has, so
+         * "this takes something away" reads the same everywhere. It asks
+         * first (`ConfirmDialog`, whose confirm is `destructive`).
+         */
+        'destructive-ghost': [
+          'text-danger hover:bg-danger-subtle hover:text-danger',
           'focus-visible:border-danger/40 focus-visible:ring-danger/20',
         ],
         /**

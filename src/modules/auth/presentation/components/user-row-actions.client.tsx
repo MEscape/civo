@@ -120,9 +120,8 @@ export function UserRowActions({ user }: UserRowActionsProps) {
           <Button
             type="button"
             size="sm"
-            variant="ghost"
+            variant="destructive-ghost"
             disabled={isPending}
-            className="text-danger hover:text-danger"
             onClick={() => {
               setIsConfirmingRemove(true);
             }}

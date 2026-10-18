@@ -216,7 +216,7 @@ export function WorkspaceServices({
             {canConfigure && entry.service.locationIds.length > 1 && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="destructive-ghost"
                 size="sm"
                 disabled={isPending}
                 onClick={() => {

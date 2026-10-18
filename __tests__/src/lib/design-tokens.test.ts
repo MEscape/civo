@@ -208,4 +208,18 @@ describe('app identity colours', () => {
     expect(APP_IDENTITY.themeColor).toBe(token('--civo-color-primary'));
     expect(APP_IDENTITY.backgroundColor).toBe(token('--civo-color-background'));
   });
+
+  it('no delete trigger coloured by a class: use <Button variant="destructive-ghost">', () => {
+    // A button that is red by `className` drifts from every other one (hover, focus, contrast).
+    const coloured = /<Button\b[^>]*\btext-danger\b[^>]*>/gs;
+    const violations = sourceFiles(SRC)
+      .filter((file) => file.endsWith('.tsx'))
+      .flatMap((file) =>
+        [...readFileSync(join(SRC, file), 'utf8').matchAll(coloured)].map(
+          (match) => `${file}  ${match[0].slice(0, 80)}`,
+        ),
+      );
+
+    expect(violations).toEqual([]);
+  });
 });

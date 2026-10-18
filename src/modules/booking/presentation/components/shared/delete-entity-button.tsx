@@ -68,8 +68,7 @@ export function DeleteEntityButton({ kind, name, onDelete, onDeleted }: DeleteEn
     <div className="space-y-2">
       <Button
         type="button"
-        variant="ghost"
-        className="text-danger hover:bg-danger-subtle hover:text-danger"
+        variant="destructive-ghost"
         disabled={isPending}
         onClick={() => {
           setRefusal(null);

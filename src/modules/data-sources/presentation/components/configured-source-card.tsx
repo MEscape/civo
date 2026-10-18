@@ -181,7 +181,7 @@ export function ConfiguredSourceCard({
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="destructive-ghost"
             size="sm"
             onClick={() => {
               setIsConfirmingDelete(true);

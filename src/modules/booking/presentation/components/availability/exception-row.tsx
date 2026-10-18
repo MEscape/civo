@@ -170,7 +170,13 @@ export function ExceptionRow({
         >
           {isPreviewOpen ? t('exceptions.hidePreview') : t('exceptions.preview')}
         </Button>
-        <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={onRemove}>
+        <Button
+          type="button"
+          variant="destructive-ghost"
+          size="sm"
+          disabled={disabled}
+          onClick={onRemove}
+        >
           {t('availability.removeException')}
         </Button>
       </div>

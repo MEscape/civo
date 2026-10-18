@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 
 import { Button } from '@components/ui/button';
+import { Trash2 } from '@components/ui/icons';
 
 import { useTranslations } from '@i18n/client';
 
@@ -25,7 +26,7 @@ export function RevokeInvitationButton({ invitationId, email }: RevokeInvitation
       <Button
         type="button"
         size="sm"
-        variant="ghost"
+        variant="destructive-ghost"
         disabled={isPending}
         onClick={() => {
           setErrorCode(null);
@@ -37,6 +38,7 @@ export function RevokeInvitationButton({ invitationId, email }: RevokeInvitation
           });
         }}
       >
+        <Trash2 className="size-3.5" aria-hidden="true" />
         <span aria-hidden="true">{t('users.invitations.withdraw')}</span>
         <span className="sr-only">{t('users.invitations.revoke', { email })}</span>
       </Button>

@@ -74,10 +74,10 @@ export function PlatformAdminsPanel({ admins, selfId }: PlatformAdminsPanelProps
               {admin.id !== selfId && (
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="destructive-ghost"
                   size="sm"
                   disabled={isPending}
-                  className="shrink-0 text-danger hover:text-danger"
+                  className="shrink-0"
                   onClick={() => {
                     setLeaving(admin);
                   }}

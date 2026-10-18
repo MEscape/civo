@@ -63,7 +63,7 @@ export function ExceptionGroup({
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="destructive-ghost"
             size="sm"
             disabled={disabled}
             onClick={onRemoveGroup}
