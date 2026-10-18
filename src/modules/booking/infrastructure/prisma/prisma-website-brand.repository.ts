@@ -16,7 +16,7 @@ const failures = createPersistenceFailures({
   subject: 'WebsiteTheme',
 });
 
-/** Reads the primary colour of a website's stored theme: the one column of it a booking message uses. */
+/** Reads the primary colour of a website's stored theme and its slug: all of a website a booking message uses. */
 export class PrismaWebsiteBrandRepository implements WebsiteBrandRepository {
   findPrimaryColorOf(websiteId: WebsiteId): AppResultAsync<string | null, InfrastructureAppError> {
     return fromThrowableAsync(
@@ -26,5 +26,12 @@ export class PrismaWebsiteBrandRepository implements WebsiteBrandRepository {
           .first(),
       failures.infraOnly('findPrimaryColorOf'),
     ).map(toPrimaryColor);
+  }
+
+  findSlugOf(websiteId: WebsiteId): AppResultAsync<string | null, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () => db.orm.public.Website.where({ id: websiteId }).select('slug').first(),
+      failures.infraOnly('findSlugOf'),
+    ).map((record) => record?.slug ?? null);
   }
 }

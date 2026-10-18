@@ -77,7 +77,7 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
       sendResetPassword: async ({ user, url }) => {
         const locale = await resolveMailLocale();
         return deliverAuthEmail(
-          deps.mailer.sendPasswordReset({ to: user.email, url, locale }),
+          deps.mailer.sendPasswordReset({ to: user.email, url, locale, name: user.name }),
           'password_reset',
         );
       },
@@ -108,7 +108,7 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
       sendVerificationEmail: async ({ user, url }) => {
         const locale = await resolveMailLocale();
         return deliverAuthEmail(
-          deps.mailer.sendVerification({ to: user.email, url, locale }),
+          deps.mailer.sendVerification({ to: user.email, url, locale, name: user.name }),
           'verification',
         );
       },

@@ -16,10 +16,17 @@ export interface BookingNotice {
   readonly websiteId: WebsiteId;
   /** The address the visitor gave. Never log it. */
   readonly to: string;
+  /** The first name the visitor gave, to greet them by; `null` when they gave none. Never log it. */
+  readonly recipientName: string | null;
   readonly reference: string;
   readonly serviceName: string;
   readonly locationName: string;
   readonly locationAddress: string | null;
+  /** When it starts and ends, as instants: what a calendar entry needs, whatever zone the reader is in. */
+  readonly startsAt: Date;
+  readonly endsAt: Date;
+  /** How often the booking was moved: a calendar replaces an entry only for a higher number. */
+  readonly sequence: number;
   /** `YYYY-MM-DD` at the location. */
   readonly localDate: string;
   /** `HH:mm` at the location. */

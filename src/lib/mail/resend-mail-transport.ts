@@ -40,6 +40,12 @@ export class ResendMailTransport implements MailTransport {
             subject: mail.subject,
             text: mail.text,
             html: mail.html,
+            // Resend takes attachments as base64 text.
+            attachments: mail.attachments?.map(({ filename, content, contentType }) => ({
+              filename,
+              content: Buffer.from(content, 'utf8').toString('base64'),
+              content_type: contentType,
+            })),
           }),
           signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         }),

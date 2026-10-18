@@ -55,6 +55,11 @@ export class SmtpMailTransport implements MailTransport {
         subject: mail.subject,
         text: mail.text,
         html: mail.html,
+        attachments: mail.attachments?.map(({ filename, content, contentType }) => ({
+          filename,
+          content,
+          contentType,
+        })),
       });
     }, mailDeliveryFailed).andThen(() => okAsync(undefined));
   }

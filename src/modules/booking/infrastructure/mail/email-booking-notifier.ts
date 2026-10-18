@@ -1,11 +1,14 @@
+import type { Locale } from '@i18n';
+
+import type { Clock } from '@lib/clock';
 import { logger } from '@lib/logger';
 import { PLATFORM_EMAIL_BRAND, createEmailBrand } from '@lib/mail';
-import type { EmailBrand, MailTransport } from '@lib/mail';
+import type { EmailBrand, MailAttachment, MailTransport } from '@lib/mail';
 import { resolveMailLocale } from '@lib/mail/server';
 import { ResultAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { renderBookingEmail } from './booking-email-templates';
+import { renderBookingCalendar, renderBookingEmail } from './booking-email-templates';
 
 import type { WebsiteId } from '../../domain/models/ids';
 import type { BookingNotice, BookingNotifier } from '../../domain/ports/booking-notifier.port';
@@ -24,19 +27,51 @@ export class EmailBookingNotifier implements BookingNotifier {
   constructor(
     private readonly transport: MailTransport,
     private readonly brands: WebsiteBrandRepository,
+    private readonly clock: Clock,
+    /** The address that opens the website's booking with this reference, in the person's language. */
+    private readonly manageLink: (locale: Locale, slug: string, reference: string) => string,
   ) {}
 
   notify(notice: BookingNotice): AppResultAsync<void, never> {
     return ResultAsync.fromSafePromise(
-      Promise.all([resolveMailLocale(), this.brandOf(notice.websiteId)]),
+      Promise.all([
+        resolveMailLocale(),
+        this.brandOf(notice.websiteId),
+        this.slugOf(notice.websiteId),
+      ]),
     )
-      .andThen(([locale, brand]) =>
-        this.transport.send({ to: notice.to, ...renderBookingEmail(notice, locale, brand) }),
+      .andThen(([locale, brand, slug]) =>
+        this.transport.send({
+          to: notice.to,
+          ...renderBookingEmail(
+            notice,
+            locale,
+            brand,
+            slug === null ? null : this.manageLink(locale, slug, notice.reference),
+          ),
+          attachments: this.calendarOf(notice, locale),
+        }),
       )
       .orElse((error) => {
         mailLogger.error('booking.email_delivery_failed', { kind: notice.kind, err: error });
         return okAsync(undefined);
       });
+  }
+
+  private calendarOf(notice: BookingNotice, locale: Locale): readonly MailAttachment[] {
+    const file = renderBookingCalendar(notice, locale, this.clock.now());
+    return file === null ? [] : [file];
+  }
+
+  /** Where the website lives; without it the message simply has no link to it. */
+  private slugOf(websiteId: WebsiteId): Promise<string | null> {
+    return this.brands.findSlugOf(websiteId).match(
+      (slug) => slug,
+      (error) => {
+        mailLogger.warn('booking.slug_unreadable', { err: error });
+        return null;
+      },
+    );
   }
 
   /** A website whose theme cannot be read gets the platform's look: a confirmation is never held back for its colours. */

@@ -20,6 +20,8 @@ export interface AuthLinkMessage {
   readonly url: string;
   /** Runtime-resolved from request headers; falls back to i18n default. */
   readonly locale: MailLocale;
+  /** The name on the account, to greet the person by. Absent when the message is not for an account holder. */
+  readonly name?: string | undefined;
 }
 
 /**
