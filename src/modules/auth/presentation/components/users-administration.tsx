@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
 
 import { I18nProvider } from '@components/providers/i18n-provider';
-import { Pagination } from '@components/shared/pagination';
+import { DataPanel } from '@components/shared/data-panel';
+import { ListPagination } from '@components/shared/list-pagination';
+import { Alert } from '@components/ui/alert';
 
 import type { Locale } from '@i18n';
 
@@ -94,60 +96,53 @@ export async function UsersAdministration({
       field,
       direction: sort.field === field && sort.direction === 'asc' ? 'desc' : 'asc',
     });
-  const first = users.total === 0 ? 0 : (users.page - 1) * users.pageSize + 1;
-  const last = (users.page - 1) * users.pageSize + users.items.length;
 
   return (
     <I18nProvider locale={locale} namespaces={['auth']}>
-      <div className="space-y-10">
-        {canManage && (
-          <section aria-labelledby="invite-heading" className="space-y-4">
-            <h2 id="invite-heading" className="text-lg font-semibold text-copy">
-              {t('users.invite.title')}
-            </h2>
-            <p className="text-sm text-copy-muted">{t('users.invite.description')}</p>
-            <InviteUserForm initialRole={params.invite} />
-          </section>
+      <div className="space-y-6">
+        {isTruncated && (
+          <Alert variant="warning" role="status">
+            {t('users.table.truncated')}
+          </Alert>
         )}
+        <UsersTable
+          users={users.items}
+          selfId={selfId}
+          canManage={canManage}
+          sort={sort}
+          sortHref={sortHref}
+          total={users.total}
+          toolbar={
+            <UsersFilters
+              pathname={pathname}
+              text={text}
+              role={role}
+              pageSize={page.pageSize}
+              sort={formatSort(sort)}
+              isFiltered={text !== null || role !== null}
+            />
+          }
+          pagination={
+            users.pageCount > 1 ? (
+              <ListPagination
+                locale={locale}
+                slice={users}
+                hrefFor={hrefFor}
+                label={t('users.pagination.nav')}
+              />
+            ) : undefined
+          }
+        />
 
-        <section aria-labelledby="members-heading" className="space-y-4">
-          <h2 id="members-heading" className="text-lg font-semibold text-copy">
-            {t('users.table.title')}
-          </h2>
-          <UsersFilters
-            pathname={pathname}
-            text={text}
-            role={role}
-            pageSize={page.pageSize}
-            sort={formatSort(sort)}
-          />
-          {isTruncated && (
-            <p role="status" className="text-sm text-warning">
-              {t('users.table.truncated')}
-            </p>
-          )}
-          <UsersTable
-            users={users.items}
-            selfId={selfId}
-            canManage={canManage}
-            sort={sort}
-            sortHref={sortHref}
-          />
-          <Pagination
-            page={users.page}
-            pageCount={users.pageCount}
-            hrefFor={hrefFor}
-            labels={{
-              nav: t('users.pagination.nav'),
-              previous: t('users.pagination.previous'),
-              next: t('users.pagination.next'),
-              summary: t('users.pagination.summary', { first, last, total: users.total }),
-              pageLabel: (target) => t('users.pagination.page', { page: target }),
-            }}
-          />
-        </section>
-
-        {canManage && <OpenInvitations invitations={invitations.value.items} />}
+        {canManage && (
+          // Inviting and the invitations it leaves open sit side by side: one answers the other.
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+            <DataPanel title={t('users.invite.title')} description={t('users.invite.description')}>
+              <InviteUserForm initialRole={params.invite} />
+            </DataPanel>
+            <OpenInvitations invitations={invitations.value.items} />
+          </div>
+        )}
       </div>
     </I18nProvider>
   );

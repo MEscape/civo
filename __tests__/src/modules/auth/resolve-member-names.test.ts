@@ -13,6 +13,7 @@ const TENANT = toTenantId('default');
 const ANNA = toActorId('anna');
 const BEN = toActorId('ben');
 const STRANGER = toActorId('stranger');
+const ADMIN = toActorId('admin');
 
 function world(role: Role = 'viewer') {
   const searched: Array<readonly string[]> = [];
@@ -33,11 +34,16 @@ function world(role: Role = 'viewer') {
           ]),
           isTruncated: false,
         }),
+      listPlatformAdmins: () => okAsync([ADMIN]),
     },
     directory: {
       search: (query: { ids: readonly string[]; page: { page: number; pageSize: number } }) => {
         searched.push(query.ids);
-        const names: Record<string, string> = { anna: 'Anna Müller', ben: 'Ben Koch' };
+        const names: Record<string, string> = {
+          anna: 'Anna Müller',
+          ben: 'Ben Koch',
+          admin: 'Pia Platform',
+        };
         const items = query.ids.map((id) => ({
           id: toActorId(id),
           email: `${id}@example.org`,
@@ -74,6 +80,17 @@ describe('resolving the names of members', () => {
 
     expect(w.searched).toEqual([['anna']]);
     expect(result.map((entry) => entry.id)).toEqual(['anna']);
+  });
+
+  it('names a platform administrator, who acts in every website without being its member', async () => {
+    const w = world();
+
+    const result = (await run(w, ['anna', ADMIN]))._unsafeUnwrap();
+
+    expect(result).toEqual([
+      { id: 'anna', name: 'Anna Müller' },
+      { id: 'admin', name: 'Pia Platform' },
+    ]);
   });
 
   it('asks nothing of the directory when nobody asked for a name or nobody is a member', async () => {

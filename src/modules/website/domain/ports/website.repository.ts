@@ -47,6 +47,15 @@ export interface WebsiteRepository {
     InfrastructureAppError
   >;
 
+  /** Every website's id and name, by name, for choosing one. Bounded by `limit`; `isTruncated` says there are more. */
+  listOptions(limit: number): AppResultAsync<
+    {
+      readonly items: ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>;
+      readonly isTruncated: boolean;
+    },
+    InfrastructureAppError
+  >;
+
   /**
    * Stores the website as its own tenant: a tenant is its website, so the
    * store gives the website one id and uses it as the tenant too.

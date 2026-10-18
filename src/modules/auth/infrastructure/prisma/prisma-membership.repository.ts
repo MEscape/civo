@@ -1,7 +1,7 @@
 import { createPersistenceFailures, db } from '@lib/db';
 import type { InfrastructureAppError } from '@lib/errors';
 import { logger } from '@lib/logger';
-import { fromThrowableAsync } from '@lib/result';
+import { fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { AUTH_ERROR_CODES } from '../../domain/errors/auth-errors';
@@ -14,9 +14,17 @@ import { MAX_MEMBERSHIP_ROWS, MEMBERSHIP_SELECT, toRoles } from './membership-re
 
 import type { ActorId, TenantId } from '../../domain/models/ids';
 import type { TenantRole } from '../../domain/models/role';
-import type { MemberRoster, MembershipRepository } from '../../domain/ports/membership.repository';
+import type {
+  MemberCounts,
+  MemberRoster,
+  MembershipRepository,
+  TenantMembership,
+} from '../../domain/ports/membership.repository';
 
 const ADMINISTRATOR: TenantRole = 'admin';
+
+/** A person is in few websites; this bounds the one read that gives a whole page of people their memberships. */
+const MEMBERSHIP_ROWS_PER_PERSON = 50;
 
 const membershipLogger = logger.withContext({ module: 'auth.membership' });
 
@@ -179,6 +187,97 @@ export class PrismaMembershipRepository implements MembershipRepository {
         });
       }
       return roles;
+    });
+  }
+
+  countMembers(tenantId: TenantId): AppResultAsync<MemberCounts, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      // A person holding two roles has two rows, so the people are counted distinct in the database.
+      const distinctMembers = db.raw
+        .sql`SELECT count(DISTINCT "actorId")::int AS members FROM "Membership" WHERE "tenantId" = ${tenantId}`
+        .returnsRow({ members: { codecId: 'pg/int4@1', nullable: false } })
+        .build();
+      const [people, roles] = await Promise.all([
+        db.runtime().query(distinctMembers).firstOrThrow(),
+        db.orm.public.Membership.where({ tenantId })
+          .groupBy('role')
+          .aggregate((aggregate) => ({ count: aggregate.count() })),
+      ]);
+      return { members: people.members, roles };
+    }, failures.infraOnly('countMembers')).map(({ members, roles }) => ({
+      members,
+      byRole: new Map(
+        roles.flatMap(({ role, count }) => (isRole(role) ? [[role, count] as const] : [])),
+      ),
+    }));
+  }
+
+  findMemberIds(
+    filter: { readonly tenantId: TenantId | null; readonly role: TenantRole | null },
+    limit: number,
+  ): AppResultAsync<
+    { readonly ids: readonly ActorId[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  > {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Membership.where({
+          ...(filter.tenantId === null ? {} : { tenantId: filter.tenantId }),
+          ...(filter.role === null ? {} : { role: filter.role }),
+        })
+          .groupBy('actorId', 'tenantId')
+          .orderBy([(membership) => membership.actorId.asc()])
+          // One row per (person, tenant); the platform scope is dropped below, so leave room for it.
+          .limit(limit * 2 + 1)
+          .aggregate((aggregate) => ({ count: aggregate.count() })),
+      failures.infraOnly('findMemberIds'),
+    ).map((rows) => {
+      const ids = [
+        ...new Set(
+          rows
+            .filter((row) => row.tenantId !== PLATFORM_TENANT_ID)
+            .map((row) => toActorId(row.actorId)),
+        ),
+      ];
+      return { ids: ids.slice(0, limit), isTruncated: ids.length > limit };
+    });
+  }
+
+  listMembershipsOf(
+    actorIds: readonly ActorId[],
+  ): AppResultAsync<ReadonlyMap<ActorId, readonly TenantMembership[]>, InfrastructureAppError> {
+    if (actorIds.length === 0) {
+      return okAsync(new Map());
+    }
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Membership.where((membership) => membership.actorId.in([...actorIds]))
+          .select('actorId', 'tenantId', 'role')
+          .orderBy([
+            (membership) => membership.createdAt.asc(),
+            (membership) => membership.role.asc(),
+          ])
+          .limit(actorIds.length * MEMBERSHIP_ROWS_PER_PERSON)
+          .all(),
+      failures.infraOnly('listMembershipsOf'),
+    ).map((records) => {
+      const byActor = new Map<ActorId, Map<TenantId, TenantRole[]>>();
+      for (const record of records) {
+        if (!isRole(record.role) || record.tenantId === PLATFORM_TENANT_ID) {
+          continue;
+        }
+        const actorId = toActorId(record.actorId);
+        const tenants = byActor.get(actorId) ?? new Map<TenantId, TenantRole[]>();
+        const tenantId = toTenantId(record.tenantId);
+        tenants.set(tenantId, [...(tenants.get(tenantId) ?? []), record.role]);
+        byActor.set(actorId, tenants);
+      }
+      return new Map(
+        [...byActor].map(([actorId, tenants]) => [
+          actorId,
+          [...tenants].map(([tenantId, roles]): TenantMembership => ({ tenantId, roles })),
+        ]),
+      );
     });
   }
 

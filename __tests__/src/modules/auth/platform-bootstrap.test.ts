@@ -66,6 +66,13 @@ function world(
       return okAsync(true);
     },
     release: () => okAsync(undefined),
+    countOpen: (tenantId: TenantId, now) =>
+      okAsync(
+        [...stored.values()].filter(
+          (entry) =>
+            entry.tenantId === tenantId && entry.acceptedAt === null && entry.expiresAt > now,
+        ).length,
+      ),
     listOpen: (tenantId: TenantId, _now, page) => {
       const open = [...stored.values()].filter(
         (entry) =>

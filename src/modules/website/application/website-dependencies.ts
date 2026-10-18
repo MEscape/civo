@@ -1,5 +1,6 @@
 import type { AuthorizationService } from '@modules/auth';
 
+import type { AuditTrailReader } from '../domain/ports/audit-trail-reader.port';
 import type { HomePageProvisioner } from '../domain/ports/home-page-provisioner.port';
 import type { WebsiteAuditLog } from '../domain/ports/website-audit-log.port';
 import type { WebsiteRepository } from '../domain/ports/website.repository';
@@ -13,6 +14,11 @@ export interface WebsiteDependencies {
 
 export interface CreateWebsiteDependencies extends WebsiteDependencies {
   readonly homePages: HomePageProvisioner;
+}
+
+/** Reading a website's audit trail: the website is authorized here, the trail is read from the audit module. */
+export interface WebsiteAuditDependencies extends WebsiteDependencies {
+  readonly auditTrail: AuditTrailReader;
 }
 
 /** The public site has no actor, so it gets no authorization service. */

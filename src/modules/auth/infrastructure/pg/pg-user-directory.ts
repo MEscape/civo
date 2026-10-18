@@ -57,7 +57,7 @@ export class PgUserDirectory implements UserDirectory {
   constructor(private readonly getPool: () => Pool) {}
 
   search(query: UserSearch): AppResultAsync<Page<DirectoryUser>, InfrastructureAppError> {
-    if (query.ids.length === 0) {
+    if (query.ids !== null && query.ids.length === 0) {
       return fromThrowableAsync(
         () => Promise.resolve(toPage<DirectoryUser>([], 0, query.page)),
         directoryFailed,
@@ -70,12 +70,12 @@ export class PgUserDirectory implements UserDirectory {
       const result = await this.getPool().query<UserRow>(
         `SELECT "id", "email", "name", "emailVerified", "createdAt", COUNT(*) OVER() AS "total"
            FROM "user"
-          WHERE "id" = ANY($1::text[])
+          WHERE ($1::text[] IS NULL OR "id" = ANY($1::text[]))
             AND ($2::text IS NULL OR "name" ILIKE $2 OR "email" ILIKE $2)
           ORDER BY ${order}
           LIMIT $3 OFFSET $4`,
         [
-          [...query.ids],
+          query.ids === null ? null : [...query.ids],
           query.text === null ? null : likePattern(query.text),
           query.page.pageSize,
           offsetOf(query.page),

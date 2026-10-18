@@ -93,6 +93,29 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     );
   }
 
+  listOptions(limit: number): AppResultAsync<
+    {
+      readonly items: ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>;
+      readonly isTruncated: boolean;
+    },
+    InfrastructureAppError
+  > {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.Website.select('id', 'name')
+          .orderBy([(website) => website.name.asc(), (website) => website.id.asc()])
+          // One more than asked, to know whether there are more.
+          .limit(limit + 1)
+          .all(),
+      failures.infraOnly('listOptions'),
+    ).map((records) => ({
+      items: records
+        .slice(0, limit)
+        .map((record) => ({ id: toWebsiteId(record.id), name: record.name })),
+      isTruncated: records.length > limit,
+    }));
+  }
+
   list(page: PageRequest): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
       const total = await db.orm.public.Website.aggregate((aggregate) => ({

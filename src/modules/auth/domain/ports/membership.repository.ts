@@ -50,6 +50,29 @@ export interface MembershipRepository {
   ): AppResultAsync<MemberRoster, InfrastructureAppError>;
 
   /**
+   * The people holding a role in `tenantId` (any tenant: `null`) and, if given, `role`:
+   * the ids a platform-wide listing narrows to. Bounded by `limit`; `isTruncated` says there are more.
+   * The platform scope is not a tenant here.
+   */
+  findMemberIds(
+    filter: { readonly tenantId: TenantId | null; readonly role: TenantRole | null },
+    limit: number,
+  ): AppResultAsync<
+    { readonly ids: readonly ActorId[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
+  /**
+   * Where each of these people holds roles, in one read for all of them: the
+   * tenants, oldest membership first, with their roles. People without a
+   * membership are absent. The platform scope is not a tenant here.
+   */
+  listMembershipsOf(
+    actorIds: readonly ActorId[],
+  ): AppResultAsync<ReadonlyMap<ActorId, readonly TenantMembership[]>, InfrastructureAppError>;
+  /** How many people hold a role in the tenant, and how many hold each role (a person may hold several). */
+  countMembers(tenantId: TenantId): AppResultAsync<MemberCounts, InfrastructureAppError>;
+
+  /**
    * Makes `roles` the member's complete set in the tenant. Roles are added
    * before the others are removed, so a failure part-way never leaves a
    * member with none.
@@ -80,10 +103,22 @@ export interface MembershipRepository {
   ): AppResultAsync<boolean, InfrastructureAppError>;
 }
 
+/** One person's roles in one tenant. */
+export interface TenantMembership {
+  readonly tenantId: TenantId;
+  readonly roles: readonly TenantRole[];
+}
+
 /** The members of a tenant: actor id to roles, in a stable order. */
 export interface MemberRoster {
   readonly members: ReadonlyMap<ActorId, readonly TenantRole[]>;
   readonly isTruncated: boolean;
+}
+
+/** The size of a tenant's membership. Roles nobody holds are absent from `byRole`. */
+export interface MemberCounts {
+  readonly members: number;
+  readonly byRole: ReadonlyMap<TenantRole, number>;
 }
 
 /** Most members of one tenant the roster reads (see `listMembers`). */

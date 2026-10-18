@@ -8,6 +8,7 @@ import type { CurrentActorProvider } from '../domain/ports/current-actor-provide
 import type { InvitationRepository } from '../domain/ports/invitation.repository';
 import type { MembershipRepository } from '../domain/ports/membership.repository';
 import type { SecurityAuditLog } from '../domain/ports/security-audit-log.port';
+import type { TenantRepository } from '../domain/ports/tenant.repository';
 import type { TokenGenerator } from '../domain/ports/token-generator.port';
 import type { UserDirectory } from '../domain/ports/user-directory.port';
 
@@ -48,6 +49,21 @@ export interface UserAdministrationDependencies {
   readonly clock: Clock;
 }
 
+/** What the platform-wide user listing is built from: who may ask, and the stores it reads. */
+export type PlatformUserListDependencies = Pick<
+  UserAdministrationDependencies,
+  'authorization' | 'members' | 'directory'
+>;
+
+/** What changing a person's access to a website from outside it is built from: also whether the website exists. */
+export interface PlatformAccessDependencies extends Pick<
+  UserAdministrationDependencies,
+  'authorization' | 'members' | 'directory'
+> {
+  readonly tenants: TenantRepository;
+  readonly audit: SecurityAuditLog;
+}
+
 /** What accepting an invitation is built from: the unauthenticated flows plus the invitation and membership stores. */
 export interface AcceptInvitationDependencies
   extends
@@ -56,3 +72,9 @@ export interface AcceptInvitationDependencies
       UserAdministrationDependencies,
       'invitations' | 'tokens' | 'members' | 'directory' | 'clock'
     > {}
+
+/** What looking at an invitation needs: the invitations, the way a token is hashed, and the time. */
+export type PreviewInvitationDependencies = Pick<
+  UserAdministrationDependencies,
+  'invitations' | 'tokens' | 'clock'
+>;

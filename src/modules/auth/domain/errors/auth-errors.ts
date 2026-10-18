@@ -64,6 +64,7 @@ export const AUTH_VALIDATION_CODES = {
   nameTooLong: 'auth.validation.name_too_long',
   tokenInvalid: 'auth.validation.token_invalid',
   roleInvalid: 'auth.validation.role_invalid',
+  tenantInvalid: 'auth.validation.tenant_invalid',
   rolesRequired: 'auth.validation.roles_required',
 } as const;
 
@@ -193,6 +194,13 @@ export function lastAdmin(): ConflictAppError {
     AUTH_ERROR_CODES.lastAdmin,
     'The tenant must keep at least one administrator, and you cannot remove your own access.',
   );
+}
+
+/** The website an access change names does not exist. */
+export function tenantInvalid(): ValidationAppError {
+  const bag = createAuthErrorBag();
+  bag.add('tenantId', AUTH_VALIDATION_CODES.tenantInvalid);
+  return bag.toError();
 }
 
 /** Also covers a user of another tenant: one outcome for both, so ids reveal nothing. */

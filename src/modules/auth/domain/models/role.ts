@@ -55,6 +55,7 @@ const ROLE_PERMISSIONS = {
     'booking.manage',
     'user.read',
     'user.manage',
+    'audit.read',
   ],
   editor: [
     'website.read',

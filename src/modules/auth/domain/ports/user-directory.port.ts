@@ -16,8 +16,8 @@ export const USER_SORT_FIELDS = ['name', 'email', 'createdAt'] as const;
 export type UserSortField = (typeof USER_SORT_FIELDS)[number];
 
 export interface UserSearch {
-  /** Only these users: the members of the tenant. The directory itself knows no tenants. */
-  readonly ids: readonly ActorId[];
+  /** Only these users: the members of the tenant. The directory itself knows no tenants. `null`: every account. */
+  readonly ids: readonly ActorId[] | null;
   /** Matches name or email, case-insensitively; `null`: no text filter. */
   readonly text: string | null;
   readonly sort: SortSpec<UserSortField>;
