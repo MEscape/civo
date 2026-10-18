@@ -46,6 +46,97 @@ function linkedMap(ids: readonly string[], hrefOf: (id: string) => string): Subj
   );
 }
 
+type Access = Awaited<ReturnType<typeof getWebsiteAccess>>;
+type IdsOf = (kind: AuditSubjectKind) => readonly string[];
+
+/** What every lookup below needs: the website, what the reader may see, and the ids on screen per kind. */
+interface Scope {
+  readonly websiteId: string;
+  readonly access: Access;
+  readonly idsOf: IdsOf;
+}
+
+/** The names of the pages, data and bookings asked for; a kind the reader may not read, or that does not appear, stays `null`. */
+function lookUpNames({ websiteId, access, idsOf }: Scope) {
+  const asks = (...kinds: AuditSubjectKind[]) => kinds.some((kind) => idsOf(kind).length > 0);
+  return Promise.all([
+    access.may('page.read') && asks('page')
+      ? orNull(builderQueries.resolvePageTitles.execute(websiteId, [...idsOf('page')]))
+      : null,
+    access.may('datasource.read') && asks('dataSource', 'dataset')
+      ? orNull(
+          dataSourceQueries.resolveDataNames.execute(websiteId, {
+            dataSourceIds: [...idsOf('dataSource')],
+            datasetIds: [...idsOf('dataset')],
+          }),
+        )
+      : null,
+    access.may('booking.read') && asks('service', 'location', 'resource', 'booking')
+      ? orNull(
+          bookingQueries.resolveBookingNames.execute(websiteId, {
+            serviceIds: [...idsOf('service')],
+            locationIds: [...idsOf('location')],
+            resourceIds: [...idsOf('resource')],
+            bookingIds: [...idsOf('booking')],
+          }),
+        )
+      : null,
+  ]);
+}
+
+type Names = Awaited<ReturnType<typeof lookUpNames>>;
+
+function pageSubjects({ websiteId, access, idsOf }: Scope, pages: Names[0]): AuditSubjects {
+  if (pages === null) {
+    return {};
+  }
+  const mayOpen = access.maySection('builder');
+  return {
+    page: subjectMap(
+      idsOf('page'),
+      pages.map(({ id, title }) => ({ id, name: title })),
+      (id) => (mayOpen ? builderRoutes.editor(websiteId, id) : null),
+    ),
+  };
+}
+
+function dataSubjects({ websiteId, access, idsOf }: Scope, data: Names[1]): AuditSubjects {
+  if (data === null) {
+    return {};
+  }
+  const hrefOf = access.maySection('data') ? () => dataSourceRoutes.sources(websiteId) : () => null;
+  return {
+    dataSource: subjectMap(idsOf('dataSource'), data.dataSources, hrefOf),
+    dataset: subjectMap(idsOf('dataset'), data.datasets, hrefOf),
+  };
+}
+
+function bookingSubjects({ websiteId, access, idsOf }: Scope, booking: Names[2]): AuditSubjects {
+  if (booking === null) {
+    return {};
+  }
+  const mayOpen = access.maySection('bookings');
+  const hrefOf = mayOpen ? () => bookingRoutes.admin(websiteId) : () => null;
+  return {
+    service: subjectMap(idsOf('service'), booking.services, hrefOf),
+    location: subjectMap(idsOf('location'), booking.locations, (id) =>
+      mayOpen ? bookingRoutes.location(websiteId, id) : null,
+    ),
+    resource: subjectMap(idsOf('resource'), booking.resources, hrefOf),
+    booking: subjectMap(idsOf('booking'), booking.bookings, hrefOf),
+  };
+}
+
+function releaseSubjects({ websiteId, access, idsOf }: Scope): AuditSubjects {
+  if (!access.maySection('releases')) {
+    return {};
+  }
+  return {
+    release: linkedMap(idsOf('release'), (id) => releaseRoutes.preview(websiteId, id)),
+    migration: linkedMap(idsOf('migration'), () => releaseRoutes.updates(websiteId)),
+  };
+}
+
 /**
  * Names the pages, data, releases and bookings the shown entries refer to,
  * each with the screen that manages it. Only the ids on screen are looked up,
@@ -59,74 +150,15 @@ export async function loadAuditSubjects(
   entries: readonly AuditEntryView[],
 ): Promise<AuditSubjects> {
   const ids = subjectIdsOf(entries);
-  const idsOf = (kind: AuditSubjectKind) => ids.get(kind) ?? [];
-  const asks = (...kinds: AuditSubjectKind[]) => kinds.some((kind) => idsOf(kind).length > 0);
+  const idsOf: IdsOf = (kind) => ids.get(kind) ?? [];
   const access = await getWebsiteAccess();
-
-  const [pages, data, booking] = await Promise.all([
-    access.may('page.read') && asks('page')
-      ? orNull(builderQueries.resolvePageTitles.execute(websiteId, idsOf('page')))
-      : null,
-    access.may('datasource.read') && asks('dataSource', 'dataset')
-      ? orNull(
-          dataSourceQueries.resolveDataNames.execute(websiteId, {
-            dataSourceIds: idsOf('dataSource'),
-            datasetIds: idsOf('dataset'),
-          }),
-        )
-      : null,
-    access.may('booking.read') && asks('service', 'location', 'resource', 'booking')
-      ? orNull(
-          bookingQueries.resolveBookingNames.execute(websiteId, {
-            serviceIds: idsOf('service'),
-            locationIds: idsOf('location'),
-            resourceIds: idsOf('resource'),
-            bookingIds: idsOf('booking'),
-          }),
-        )
-      : null,
-  ]);
-
-  const mayOpen = {
-    builder: access.maySection('builder'),
-    data: access.maySection('data'),
-    bookings: access.maySection('bookings'),
-    releases: access.maySection('releases'),
-  };
-  const bookingsHref = mayOpen.bookings ? () => bookingRoutes.admin(websiteId) : () => null;
-  const dataHref = mayOpen.data ? () => dataSourceRoutes.sources(websiteId) : () => null;
+  const scope: Scope = { websiteId, access, idsOf };
+  const [pages, data, booking] = await lookUpNames(scope);
 
   return {
-    ...(pages === null
-      ? {}
-      : {
-          page: subjectMap(
-            idsOf('page'),
-            pages.map(({ id, title }) => ({ id, name: title })),
-            (id) => (mayOpen.builder ? builderRoutes.editor(websiteId, id) : null),
-          ),
-        }),
-    ...(data === null
-      ? {}
-      : {
-          dataSource: subjectMap(idsOf('dataSource'), data.dataSources, dataHref),
-          dataset: subjectMap(idsOf('dataset'), data.datasets, dataHref),
-        }),
-    ...(booking === null
-      ? {}
-      : {
-          service: subjectMap(idsOf('service'), booking.services, bookingsHref),
-          location: subjectMap(idsOf('location'), booking.locations, (id) =>
-            mayOpen.bookings ? bookingRoutes.location(websiteId, id) : null,
-          ),
-          resource: subjectMap(idsOf('resource'), booking.resources, bookingsHref),
-          booking: subjectMap(idsOf('booking'), booking.bookings, bookingsHref),
-        }),
-    ...(mayOpen.releases
-      ? {
-          release: linkedMap(idsOf('release'), (id) => releaseRoutes.preview(websiteId, id)),
-          migration: linkedMap(idsOf('migration'), () => releaseRoutes.updates(websiteId)),
-        }
-      : {}),
+    ...pageSubjects(scope, pages),
+    ...dataSubjects(scope, data),
+    ...bookingSubjects(scope, booking),
+    ...releaseSubjects(scope),
   };
 }

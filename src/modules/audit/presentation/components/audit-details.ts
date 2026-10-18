@@ -124,47 +124,61 @@ const CODE_FIELDS: ReadonlySet<string> = new Set([
   'templateKey',
 ]);
 
+type DetailValue = NonNullable<AuditDetails[string]>;
+
+/** A text value: a word the screen translates when it knows the field's vocabulary, else the text as it is. */
+function textFact(field: string, label: DetailFieldKey | null, value: string): AuditFact {
+  const words = lookup<Readonly<Record<string, ValueWord>>>(DETAIL_VALUE_KEYS, field);
+  const known = words === null ? null : lookup(words, value);
+  return known === null
+    ? { field, label, kind: CODE_FIELDS.has(field) ? 'code' : 'text', value }
+    : { field, label, kind: 'value', value: known.key, tone: known.tone };
+}
+
+/** One recorded field as a line to show. */
+function factOf(
+  field: string,
+  value: DetailValue,
+  { subjects, releaseNumber }: { subjects: AuditSubjects; releaseNumber: number | null },
+): AuditFact {
+  const label = lookup<DetailFieldKey>(DETAIL_FIELD_KEYS, field);
+  const subject = subjectKindOf(field);
+  if (subject !== null && typeof value === 'string') {
+    return {
+      field,
+      label,
+      kind: 'subject',
+      subject,
+      id: value,
+      view: subjects[subject]?.[value] ?? null,
+      number: field === 'releaseId' ? releaseNumber : null,
+    };
+  }
+  if (typeof value === 'string') {
+    return textFact(field, label, value);
+  }
+  if (typeof value === 'number') {
+    return { field, label, kind: 'number', value };
+  }
+  if (typeof value === 'boolean') {
+    return { field, label, kind: 'boolean', value };
+  }
+  return { field, label, kind: 'changed', names: value };
+}
+
 /**
  * An entry's details as lines to show, in the order they were recorded:
  * what it names (with the name the reader may see), then its values, each
  * with its name. Empty values (an error code of a success) are left out.
  */
 export function factsOf(details: AuditDetails, subjects: AuditSubjects): readonly AuditFact[] {
-  const number = typeof details['releaseNumber'] === 'number' ? details['releaseNumber'] : null;
-  const facts: AuditFact[] = [];
-  for (const [field, value] of Object.entries(details)) {
-    if (value === null || value === '' || FOLDED_FIELDS.has(field)) {
-      continue;
-    }
-    const label = lookup<DetailFieldKey>(DETAIL_FIELD_KEYS, field);
-    const subject = subjectKindOf(field);
-    if (subject !== null && typeof value === 'string') {
-      facts.push({
-        field,
-        label,
-        kind: 'subject',
-        subject,
-        id: value,
-        view: subjects[subject]?.[value] ?? null,
-        number: field === 'releaseId' ? number : null,
-      });
-    } else if (typeof value === 'string') {
-      const words = lookup<Readonly<Record<string, ValueWord>>>(DETAIL_VALUE_KEYS, field);
-      const known = words === null ? null : lookup(words, value);
-      facts.push(
-        known === null
-          ? { field, label, kind: CODE_FIELDS.has(field) ? 'code' : 'text', value }
-          : { field, label, kind: 'value', value: known.key, tone: known.tone },
-      );
-    } else if (typeof value === 'number') {
-      facts.push({ field, label, kind: 'number', value });
-    } else if (typeof value === 'boolean') {
-      facts.push({ field, label, kind: 'boolean', value });
-    } else {
-      facts.push({ field, label, kind: 'changed', names: value });
-    }
-  }
-  return facts;
+  const releaseNumber =
+    typeof details['releaseNumber'] === 'number' ? details['releaseNumber'] : null;
+  return Object.entries(details).flatMap(([field, value]) =>
+    value === null || value === '' || FOLDED_FIELDS.has(field)
+      ? []
+      : [factOf(field, value, { subjects, releaseNumber })],
+  );
 }
 
 /** The thing an entry is mainly about, for its one-line summary: the first it names that has a name. */

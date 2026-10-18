@@ -11,7 +11,7 @@ import type { Locale } from '@i18n';
 
 import { getAppFormatters, getTranslations } from '@i18n/server';
 
-import { buildQueryString, cn } from '@lib/utils';
+import { MS_PER_DAY, buildQueryString, cn } from '@lib/utils';
 
 import { auditParamsOf } from '../schemas/audit-filter-schema';
 
@@ -56,8 +56,6 @@ export interface AuditEntryListProps {
   /** The page links, drawn in the panel's footer. */
   readonly pagination?: ReactNode;
 }
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * How serious an entry is, as a small tinted icon ahead of its name: an
@@ -246,7 +244,7 @@ export async function AuditEntryList({
     websites === undefined ? null : (websites.find((website) => website.id === id)?.name ?? id);
   const dayOf = (date: Date) => format.date(date);
   const today = dayOf(readAt);
-  const yesterday = dayOf(new Date(readAt.getTime() - DAY_MS));
+  const yesterday = dayOf(new Date(readAt.getTime() - MS_PER_DAY));
   const dayLabel = (day: string) => {
     if (day === today) {
       return t('details.today');
