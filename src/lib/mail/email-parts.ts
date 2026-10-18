@@ -42,7 +42,8 @@ const PREHEADER_STYLE =
   'display: none; max-height: 0; overflow: hidden; opacity: 0; mso-hide: all; font-size: 1px; line-height: 1px; color: transparent;';
 const PREHEADER_LENGTH = 110;
 /** Pushes the body's own text out of the preview line that follows the hidden one. */
-const PREHEADER_FILL = '&zwnj;&nbsp;'.repeat(40);
+const PREHEADER_FILL_REPEATS = 40;
+const PREHEADER_FILL = '&zwnj;&nbsp;'.repeat(PREHEADER_FILL_REPEATS);
 
 export function renderPreheader(text: string): string {
   return `<div style="${PREHEADER_STYLE}">${escapeHtml(text.slice(0, PREHEADER_LENGTH))}${PREHEADER_FILL}</div>`;

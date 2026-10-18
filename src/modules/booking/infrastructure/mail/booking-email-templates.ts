@@ -181,35 +181,21 @@ function oneLine(text: string): string {
 /** Renders the message for one change to a booking, in the recipient's language and the website's look. */
 export function renderBookingEmail(
   notice: BookingNotice,
-  locale: Locale,
-  brand: EmailBrand,
-  /** The address of the booking on the website; `null` when it is not known. */
-  manageUrl: string | null = null,
+  {
+    locale,
+    brand,
+    manageUrl = null,
+  }: {
+    locale: Locale;
+    brand: EmailBrand;
+    /** The address of the booking on the website; `null` when it is not known. */
+    manageUrl?: string | null;
+  },
 ): RenderedEmail {
   const copy = COPY[locale];
-  const { shared } = copy;
   const { title, subject, intro, outro } = copy.notice[notice.kind];
   const name = notice.recipientName?.trim() ?? '';
-
-  const facts = [
-    { label: shared.when, value: formatWhen(notice, locale, shared.zoneNote) },
-    {
-      label: shared.where,
-      value: [notice.locationName, notice.locationAddress]
-        .filter((part) => part !== null)
-        .join(', '),
-    },
-    { label: shared.reference, value: notice.reference, style: 'code' as const },
-    notice.participants > 1
-      ? { label: shared.participants, value: String(notice.participants) }
-      : null,
-    notice.kind !== 'cancelled' && notice.requiredDocuments.length > 0
-      ? { label: shared.documents, value: notice.requiredDocuments.join(', ') }
-      : null,
-    notice.kind !== 'cancelled' && notice.instructions !== null
-      ? { label: shared.instructions, value: notice.instructions }
-      : null,
-  ].filter((fact) => fact !== null);
+  const facts = factsOf(notice, locale);
 
   return renderEmail(
     {
@@ -233,6 +219,31 @@ export function renderBookingEmail(
   );
 }
 
+/** The details table of the message; a cancelled booking leaves out what only helps to attend. */
+function factsOf(notice: BookingNotice, locale: Locale) {
+  const { shared } = COPY[locale];
+  const isCancelled = notice.kind === 'cancelled';
+  return [
+    { label: shared.when, value: formatWhen(notice, locale, shared.zoneNote) },
+    {
+      label: shared.where,
+      value: [notice.locationName, notice.locationAddress]
+        .filter((part) => part !== null)
+        .join(', '),
+    },
+    { label: shared.reference, value: notice.reference, style: 'code' as const },
+    notice.participants > 1
+      ? { label: shared.participants, value: String(notice.participants) }
+      : null,
+    !isCancelled && notice.requiredDocuments.length > 0
+      ? { label: shared.documents, value: notice.requiredDocuments.join(', ') }
+      : null,
+    !isCancelled && notice.instructions !== null
+      ? { label: shared.instructions, value: notice.instructions }
+      : null,
+  ].filter((fact) => fact !== null);
+}
+
 /** A cancelled appointment has nothing to put in a calendar: the entry made earlier is the person's to remove. */
 function hasCalendarFile(notice: BookingNotice): boolean {
   return notice.kind !== 'cancelled';
@@ -245,6 +256,10 @@ export function renderBookingCalendar(
   now: Date,
 ): CalendarFile | null {
   return hasCalendarFile(notice)
-    ? renderBookingCalendarFile(notice, COPY[locale].calendar, oneLine(notice.serviceName), now)
+    ? renderBookingCalendarFile(notice, {
+        copy: COPY[locale].calendar,
+        summary: oneLine(notice.serviceName),
+        now,
+      })
     : null;
 }

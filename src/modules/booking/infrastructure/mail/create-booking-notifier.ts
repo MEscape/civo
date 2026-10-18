@@ -18,5 +18,5 @@ export function createBookingNotifier(
   const transport = getMailTransport();
   return transport === null
     ? new SkippedBookingNotifier()
-    : new EmailBookingNotifier(transport, brands, clock, manageLink);
+    : new EmailBookingNotifier(transport, brands, { clock, manageLink });
 }

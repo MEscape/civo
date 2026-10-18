@@ -69,7 +69,7 @@ const NOTICE: BookingNotice = {
 
 describe('the booking e-mail', () => {
   it('states when and where, as the clock at the location shows it', () => {
-    const mail = renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND);
+    const mail = renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND });
 
     expect(mail.text).toContain('Tuesday, January 5, 2027');
     expect(mail.text).toContain('10:00 AM');
@@ -79,7 +79,7 @@ describe('the booking e-mail', () => {
   });
 
   it('is written in the language it is sent in', () => {
-    const mail = renderBookingEmail(NOTICE, 'de', PLATFORM_EMAIL_BRAND);
+    const mail = renderBookingEmail(NOTICE, { locale: 'de', brand: PLATFORM_EMAIL_BRAND });
 
     expect(mail.subject).toBe('Termin bestätigt: Passport <b>renewal</b>, Di., 5. Jan.');
     expect(mail.html).toContain('Ihr Termin ist bestätigt');
@@ -89,7 +89,8 @@ describe('the booking e-mail', () => {
 
   it('names the appointment in the subject, so the inbox says which one changed', () => {
     const subjectOf = (kind: BookingNotice['kind']) =>
-      renderBookingEmail({ ...NOTICE, kind }, 'en', PLATFORM_EMAIL_BRAND).subject;
+      renderBookingEmail({ ...NOTICE, kind }, { locale: 'en', brand: PLATFORM_EMAIL_BRAND })
+        .subject;
 
     expect(subjectOf('confirmed')).toBe(
       'Appointment confirmed: Passport <b>renewal</b>, Tue, Jan 5',
@@ -101,54 +102,73 @@ describe('the booking e-mail', () => {
   it('keeps the subject to one line, whatever a service is called', () => {
     const mail = renderBookingEmail(
       { ...NOTICE, serviceName: 'Passport\r\nBcc: x@example.org' },
-      'en',
-      PLATFORM_EMAIL_BRAND,
+      { locale: 'en', brand: PLATFORM_EMAIL_BRAND },
     );
 
     expect(mail.subject).not.toMatch(/[\r\n]/u);
   });
 
   it('sets the reference apart, in a fixed-width face', () => {
-    const html = renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND).html;
+    const html = renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND }).html;
 
     expect(html).toMatch(/font-family: ui-monospace[^"]*">ABCDE23456</u);
   });
 
   it('escapes what the service administrator typed', () => {
-    const mail = renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND);
+    const mail = renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND });
 
     expect(mail.html).not.toContain('<b>renewal</b>');
     expect(mail.html).toContain('&lt;b&gt;renewal&lt;/b&gt;');
   });
 
   it('asks to bring documents only for an appointment that still stands', () => {
-    expect(renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND).text).toContain('Old passport');
     expect(
-      renderBookingEmail({ ...NOTICE, kind: 'cancelled' }, 'en', PLATFORM_EMAIL_BRAND).text,
+      renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND }).text,
+    ).toContain('Old passport');
+    expect(
+      renderBookingEmail(
+        { ...NOTICE, kind: 'cancelled' },
+        { locale: 'en', brand: PLATFORM_EMAIL_BRAND },
+      ).text,
     ).not.toContain('Old passport');
   });
 
   it('takes the colours and corners of the website it was booked on', () => {
-    const mail = renderBookingEmail({ ...NOTICE, kind: 'confirmed' }, 'en', WEBSITE_BRAND);
+    const mail = renderBookingEmail(
+      { ...NOTICE, kind: 'confirmed' },
+      { locale: 'en', brand: WEBSITE_BRAND },
+    );
 
     expect(mail.html).toContain('border-radius: 12px');
     expect(mail.html).not.toContain(PLATFORM_EMAIL_BRAND.primary);
   });
 
   it('names the number of people only when there is more than one', () => {
-    expect(renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND).text).not.toContain('People');
     expect(
-      renderBookingEmail({ ...NOTICE, participants: 3 }, 'en', PLATFORM_EMAIL_BRAND).text,
+      renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND }).text,
+    ).not.toContain('People');
+    expect(
+      renderBookingEmail(
+        { ...NOTICE, participants: 3 },
+        { locale: 'en', brand: PLATFORM_EMAIL_BRAND },
+      ).text,
     ).toContain('People: 3');
   });
 });
 
 describe('the greeting and the calendar file of the booking e-mail', () => {
   it('greets the visitor by the first name they gave, and not at all when they gave none', () => {
-    expect(renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND).text).toMatch(/^Hello Ada,/u);
-    expect(renderBookingEmail(NOTICE, 'de', PLATFORM_EMAIL_BRAND).text).toMatch(/^Hallo Ada,/u);
+    expect(renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND }).text).toMatch(
+      /^Hello Ada,/u,
+    );
+    expect(renderBookingEmail(NOTICE, { locale: 'de', brand: PLATFORM_EMAIL_BRAND }).text).toMatch(
+      /^Hallo Ada,/u,
+    );
     expect(
-      renderBookingEmail({ ...NOTICE, recipientName: null }, 'en', PLATFORM_EMAIL_BRAND).text,
+      renderBookingEmail(
+        { ...NOTICE, recipientName: null },
+        { locale: 'en', brand: PLATFORM_EMAIL_BRAND },
+      ).text,
     ).not.toMatch(/^Hello/u);
   });
 
@@ -193,9 +213,14 @@ describe('the greeting and the calendar file of the booking e-mail', () => {
       'termin.ics',
     );
     expect(renderBookingCalendar({ ...NOTICE, kind: 'cancelled' }, 'en', now)).toBeNull();
-    expect(renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND).text).toContain('calendar file');
     expect(
-      renderBookingEmail({ ...NOTICE, kind: 'cancelled' }, 'en', PLATFORM_EMAIL_BRAND).text,
+      renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND }).text,
+    ).toContain('calendar file');
+    expect(
+      renderBookingEmail(
+        { ...NOTICE, kind: 'cancelled' },
+        { locale: 'en', brand: PLATFORM_EMAIL_BRAND },
+      ).text,
     ).not.toContain('calendar file');
   });
 });
@@ -205,7 +230,10 @@ describe('the link to the booking in the e-mail', () => {
 
   it('leads a confirmation or a move back to the booking, with the reference in the address', () => {
     for (const kind of ['confirmed', 'rescheduled'] as const) {
-      const mail = renderBookingEmail({ ...NOTICE, kind }, 'en', PLATFORM_EMAIL_BRAND, URL);
+      const mail = renderBookingEmail(
+        { ...NOTICE, kind },
+        { locale: 'en', brand: PLATFORM_EMAIL_BRAND, manageUrl: URL },
+      );
 
       expect(mail.html).toContain(`href="${URL}"`);
       expect(mail.text).toContain(`View or change appointment: ${URL}`);
@@ -214,9 +242,14 @@ describe('the link to the booking in the e-mail', () => {
 
   it('has no link for a cancellation, or when the website cannot be found', () => {
     expect(
-      renderBookingEmail({ ...NOTICE, kind: 'cancelled' }, 'en', PLATFORM_EMAIL_BRAND, URL).html,
+      renderBookingEmail(
+        { ...NOTICE, kind: 'cancelled' },
+        { locale: 'en', brand: PLATFORM_EMAIL_BRAND, manageUrl: URL },
+      ).html,
     ).not.toContain('<a ');
-    expect(renderBookingEmail(NOTICE, 'en', PLATFORM_EMAIL_BRAND).html).not.toContain('<a ');
+    expect(
+      renderBookingEmail(NOTICE, { locale: 'en', brand: PLATFORM_EMAIL_BRAND }).html,
+    ).not.toContain('<a ');
   });
 
   it('builds the link from the website slug, and sends the message without one when the slug cannot be read', async () => {
@@ -228,10 +261,14 @@ describe('the link to the booking in the e-mail', () => {
       },
     };
 
-    await new EmailBookingNotifier(transport, brandStore(), CLOCK, LINK).notify(NOTICE);
-    await new EmailBookingNotifier(transport, brandStore({ isDown: true }), CLOCK, LINK).notify(
-      NOTICE,
-    );
+    await new EmailBookingNotifier(transport, brandStore(), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify(NOTICE);
+    await new EmailBookingNotifier(transport, brandStore({ isDown: true }), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify(NOTICE);
 
     expect(sent[0]?.text).toContain('https://civo.example/de/s/wuerzburg?manage=ABCDE23456');
     expect(sent[1]?.text).not.toContain('civo.example');
@@ -253,9 +290,10 @@ describe('sending the booking e-mail', () => {
       },
     };
 
-    const result = await new EmailBookingNotifier(transport, brandStore(), CLOCK, LINK).notify(
-      NOTICE,
-    );
+    const result = await new EmailBookingNotifier(transport, brandStore(), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify(NOTICE);
 
     expect(result.isOk()).toBe(true);
     expect(sent).toHaveLength(1);
@@ -271,7 +309,10 @@ describe('sending the booking e-mail', () => {
         return okAsync(undefined);
       },
     };
-    const notifier = new EmailBookingNotifier(transport, brandStore(), CLOCK, LINK);
+    const notifier = new EmailBookingNotifier(transport, brandStore(), {
+      clock: CLOCK,
+      manageLink: LINK,
+    });
 
     await notifier.notify(NOTICE);
     await notifier.notify({ ...NOTICE, kind: 'cancelled' });
@@ -290,14 +331,21 @@ describe('sending the booking e-mail', () => {
       },
     };
 
-    await new EmailBookingNotifier(transport, brandStore(), CLOCK, LINK).notify(NOTICE);
-    await new EmailBookingNotifier(transport, brandStore(), CLOCK, LINK).notify({
+    await new EmailBookingNotifier(transport, brandStore(), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify(NOTICE);
+    await new EmailBookingNotifier(transport, brandStore(), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify({
       ...NOTICE,
       websiteId: toWebsiteId('no-theme'),
     });
-    await new EmailBookingNotifier(transport, brandStore({ isDown: true }), CLOCK, LINK).notify(
-      NOTICE,
-    );
+    await new EmailBookingNotifier(transport, brandStore({ isDown: true }), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify(NOTICE);
 
     expect(sent[0]?.html).toContain(WEBSITE_BRAND.primary);
     expect(sent[1]?.html).toContain(PLATFORM_EMAIL_BRAND.primary);
@@ -309,9 +357,10 @@ describe('sending the booking e-mail', () => {
       send: () => errAsync(infrastructureError('mail.delivery_failed', 'down')),
     };
 
-    const result = await new EmailBookingNotifier(transport, brandStore(), CLOCK, LINK).notify(
-      NOTICE,
-    );
+    const result = await new EmailBookingNotifier(transport, brandStore(), {
+      clock: CLOCK,
+      manageLink: LINK,
+    }).notify(NOTICE);
 
     expect(result.isOk()).toBe(true);
     expect(errorLog).toHaveBeenCalledTimes(1);

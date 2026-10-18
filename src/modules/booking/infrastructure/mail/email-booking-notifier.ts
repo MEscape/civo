@@ -27,9 +27,11 @@ export class EmailBookingNotifier implements BookingNotifier {
   constructor(
     private readonly transport: MailTransport,
     private readonly brands: WebsiteBrandRepository,
-    private readonly clock: Clock,
-    /** The address that opens the website's booking with this reference, in the person's language. */
-    private readonly manageLink: (locale: Locale, slug: string, reference: string) => string,
+    private readonly options: {
+      readonly clock: Clock;
+      /** The address that opens the website's booking with this reference, in the person's language. */
+      readonly manageLink: (locale: Locale, slug: string, reference: string) => string;
+    },
   ) {}
 
   notify(notice: BookingNotice): AppResultAsync<void, never> {
@@ -43,12 +45,12 @@ export class EmailBookingNotifier implements BookingNotifier {
       .andThen(([locale, brand, slug]) =>
         this.transport.send({
           to: notice.to,
-          ...renderBookingEmail(
-            notice,
+          ...renderBookingEmail(notice, {
             locale,
             brand,
-            slug === null ? null : this.manageLink(locale, slug, notice.reference),
-          ),
+            manageUrl:
+              slug === null ? null : this.options.manageLink(locale, slug, notice.reference),
+          }),
           attachments: this.calendarOf(notice, locale),
         }),
       )
@@ -59,7 +61,7 @@ export class EmailBookingNotifier implements BookingNotifier {
   }
 
   private calendarOf(notice: BookingNotice, locale: Locale): readonly MailAttachment[] {
-    const file = renderBookingCalendar(notice, locale, this.clock.now());
+    const file = renderBookingCalendar(notice, locale, this.options.clock.now());
     return file === null ? [] : [file];
   }
 

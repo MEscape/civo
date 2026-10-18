@@ -72,9 +72,7 @@ function fold(line: string): string {
  */
 export function renderBookingCalendarFile(
   notice: BookingNotice,
-  copy: CalendarCopy,
-  summary: string,
-  now: Date,
+  { copy, summary, now }: { copy: CalendarCopy; summary: string; now: Date },
 ): CalendarFile {
   const where = [notice.locationName, notice.locationAddress].filter((part) => part !== null);
   const description = [
