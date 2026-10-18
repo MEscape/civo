@@ -31,6 +31,7 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run i18n:check
+      - run: npm run components:lock
 
   typecheck:
     name: Typecheck
@@ -103,9 +104,6 @@ jobs:
             exit 1
           fi
 
-      - name: Check migration files
-        run: npm run db:migrate:check
-
       # Application database.
       - name: Apply application migrations
         run: |
@@ -120,7 +118,7 @@ jobs:
         run: npm run db:verify
 
   test:
-    name: Unit & integration tests
+    name: Unit, integration & architecture tests
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -161,17 +159,18 @@ jobs:
             -d app_ci \
             -c 'CREATE DATABASE app_ci_auth'
 
-      # Application database.
-      - name: Migrate application database
-        run: |
-          npm run db:migrate:app
+      # Application & Auth databases.
+      - name: Migrate databases
+        run: npm run db:migrate
 
-      # Auth database.
-      - name: Migrate auth database
-        run: npm run db:migrate:auth
+      - name: Run unit tests
+        run: npm test
 
-      - run: npm test
-      - run: npm run test:architecture
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Run architecture tests
+        run: npm run test:architecture
 
   license:
     name: License compliance
@@ -215,6 +214,7 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
+      - run: npm run db:generate
       - run: npm run build
 
   docker:
@@ -228,11 +228,16 @@ jobs:
         with:
           persist-credentials: false
 
+      # Setup Node & cached dependencies on the host so we can run migrations
+      # without polluting the standalone production container.
+      - uses: ./.github/actions/setup
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/build-push-action@v6
         with:
           context: .
+          target: runner
           push: false
           load: true
           tags: civo:ci
@@ -253,6 +258,7 @@ jobs:
           docker run -d \
             --name civo-postgres-ci \
             --network civo-ci \
+            -p 127.0.0.1:5432:5432 \
             -e POSTGRES_USER=ci \
             -e POSTGRES_PASSWORD=ci_password \
             -e POSTGRES_DB=civo \
@@ -268,12 +274,21 @@ jobs:
             psql -U ci -d civo \
             -c 'CREATE DATABASE civo_auth'
 
+      - name: Generate contract & migrate databases
+        env:
+          DATABASE_URL: postgresql://ci:ci_password@127.0.0.1:5432/civo
+          AUTH_DATABASE_URL: postgresql://ci:ci_password@127.0.0.1:5432/civo_auth
+          AUTH_DATABASE_NAME: civo_auth
+        run: |
+          npm run db:generate
+          npm run db:migrate
+
       - name: Start MailHog
         run: |
           docker run -d \
             --name civo-mailhog-ci \
             --network civo-ci \
-            mailhog/mailhog:latest
+            mailhog/mailhog:v1.0.1
 
       - name: Container boots and answers /api/health
         run: |
