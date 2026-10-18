@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Civo
 
-## Getting Started
+A multi-tenant platform on which **municipalities build, publish and run their own websites**. Staff assemble pages from civic, content and smart-city components, connect live data (events, news, sensors, geodata), take bookings, and release changes to the public site, each municipality in its own isolated website.
 
-First, run the development server:
+Built with Next.js (App Router, React 19, Cache Components), TypeScript, PostgreSQL via Prisma, Better Auth, next-intl (English and German), Tailwind CSS and shadcn/ui.
+
+## Core features
+
+| Area             | What it does                                                                                                                                                                                              |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Websites**     | A platform administrator creates a website from a template (municipal, citizen services, smart city, tourism, association), sets its name, slug and theme.                                                |
+| **Page builder** | Drag-and-drop editor with a component catalog, properties panel, undo/redo, unsaved-change guard and a restricted mode for staff who may only edit content.                                               |
+| **Releases**     | Editing only writes drafts. A release is an immutable snapshot: preview it, publish it, roll back. Component versions are pinned; updates are proposed as migrations with conflict resolution.            |
+| **Data sources** | Connect REST/JSON APIs, discover their structure, map fields to canonical kinds (events, news, services, geo features, smart-city metrics) and bind datasets to components. Credentials stay server-side. |
+| **Smart-city**   | Map (Mapbox) with filters and legend, KPI grid, charts (trend, comparison, donut, gauge, table) and a dashboard grid, all fed by datasets.                                                                |
+| **Booking**      | Appointments and resource booking: services, resources, locations, working hours, a public booking flow, manage-by-reference, e-mails with a calendar file.                                               |
+| **Access**       | Roles (`platform_admin`, `admin`, `editor`, `contributor`, `viewer`, `employee`), single-use invitations, closed sign-up. Every use case authorizes; the UI only hides what a role cannot use.            |
+| **Audit trail**  | A durable, retention-bound log of who did what in a website; platform-wide view for platform administrators.                                                                                              |
+
+Published sites are served at `/<locale>/s/<site-slug>`. The admin area is at `/<locale>/websites`. There is deliberately no landing page at `/`.
+
+## Quick start
+
+You need **Node.js 24** (see `.nvmrc`), npm, and Docker for PostgreSQL and a local mail catcher.
 
 ```bash
+npm ci
+cp .env.example .env                 # then edit DATABASE_URL (below)
+cp .env.docker.example .env.docker   # database credentials for Docker Compose
+docker compose up -d postgres mailhog
+npm run db:migrate                   # app schema (Prisma) + auth tables (SQL)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+With the Compose defaults, set in `.env`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+DATABASE_URL=postgresql://civo:change-me@localhost:5432/civo
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open <http://localhost:3000/en/websites>. `.env.example` ships with `AUTH_ENABLED=false`, so there is no sign-in: you act as a platform administrator (`AUTH_DEV_ACTOR_ROLE`). Create a website, open its builder, add components, publish a release, then view the site at `/en/s/<slug>`. This mode is refused in production.
 
-## Learn More
+Every environment variable is validated at startup; a missing or malformed one stops the app with a message naming it. [`.env.example`](./.env.example) documents all of them.
 
-To learn more about Next.js, take a look at the following resources:
+### With sign-in enabled
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In `.env` set `AUTH_ENABLED=true`, `AUTH_SECRET` (32+ random characters), `AUTH_DATABASE_URL` (the `civo_auth` database Compose creates), `AUTH_PLATFORM_ADMIN_EMAILS=you@example.org`, `MAIL_PROVIDER=smtp`, `MAIL_SMTP_HOST=localhost`, `MAIL_SMTP_PORT=1025` and `MAIL_FROM`. On start the app mails each listed address a single-use link to create its account; read it in MailHog at <http://localhost:8025>.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Optional
 
-## Deploy on Vercel
+- **Map:** set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to a Mapbox _public_ token. Without it the map degrades to a list.
+- **Database tools:** `npm run db:studio` (Prisma Studio), `npm run db:migrate:status`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Commands
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command                       | Does                                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------- |
+| `npm run dev`                 | Development server                                                                      |
+| `npm run check`               | Everything CI checks: typecheck, lint, format, i18n catalogs, unit + architecture tests |
+| `npm test`                    | Unit tests (`__tests__/src`)                                                            |
+| `npm run test:architecture`   | Architecture and lint-rule policy tests                                                 |
+| `npm run test:integration`    | Integration tests against a real database                                               |
+| `npm run lint:fix` / `format` | Fix what the tools own                                                                  |
+| `npm run db:migrate`          | Apply Prisma and auth migrations                                                        |
+| `npm run build` / `start`     | Production build and server                                                             |
+
+## How the code is organized
+
+```text
+src/
+├── app/          routes only: [locale]/(auth | protected | public), api/auth, api/health
+├── modules/      one folder per business capability
+│   ├── audit  auth  booking  builder  component-platform
+│   └── data-sources  map  release  website
+├── lib/          shared infrastructure (config, db, result, errors, logger, mail, security, seo…)
+├── components/   shared UI (ui primitives, layout, shared composites, brand)
+├── hooks/  i18n/ shared client hooks and locale plumbing
+└── proxy.ts      locale routing and the website an admin address names
+prisma/           schema and migrations      migrations/auth/   SQL for the Better Auth tables
+eslint/           lint config, architecture policy and custom rules (see eslint/README.md)   __tests__/         unit, architecture and lint-rule tests
+```
+
+Each module has `domain` (models, errors, ports), `application` (commands and queries returning `Result`), `infrastructure` (Prisma, mail, HTTP adapters) and `presentation` (actions, DTOs, components), wired together in its `composition.ts`. Dependencies point inward and are enforced by lint, so a wrong import fails `npm run check` rather than review.
+
+A website _is_ a tenant: every row below a website carries the pair `(websiteId, tenantId)`, and an actor's tenant comes from their memberships, never from the request.
+
+## Documentation
+
+| Read                                                                                                               | When                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| [`docs/rules/`](./docs/rules/README.md)                                                                            | What is allowed. Mandatory.                                                                                 |
+| [`docs/conventions/`](./docs/conventions/README.md)                                                                | Step-by-step checklists: add a module, use case, migration, translation, component…                         |
+| [`docs/architecture/`](./docs/architecture/)                                                                       | How a subsystem works: audit, booking, component platform, i18n, map, pagination, release, route protection |
+| [`src/lib/README.md`](./src/lib/README.md), [`src/components/README.md`](./src/components/README.md)               | Index of shared code. Check before writing a utility or component.                                          |
+| [`docs/agents/`](./docs/agents/README.md)                                                                          | Specifications for review agents                                                                            |
+| [`BACKLOG.md`](./BACKLOG.md), [`TODO.md`](./TODO.md)                                                               | Planned features; small fixes and findings                                                                  |
+| [`AGENTS.md`](./AGENTS.md), [`CLAUDE.md`](./CLAUDE.md), [`GEMINI.md`](./GEMINI.md), [`AI_RULES.md`](./AI_RULES.md) | Instructions for AI assistants                                                                              |
+
+## Deployment
+
+Production runs on Vercel, deployed by GitHub Actions (`.github/workflows/production.yml`): CI on the exact commit, then database migrations, then deploy. Pull requests get a preview deployment. The `Dockerfile` is used to validate the build in CI and for non-Vercel targets; the `app` service in `docker-compose.yml` (`--profile production`) is a local demo with throwaway secrets, not a production configuration. `GET /api/health` is the liveness probe.
+
+## Contributing
+
+1. Read the [rules](./docs/rules/README.md) and the [convention](./docs/conventions/README.md) for your task.
+2. Make the change; a bug fix ships with a test that fails without it, and a rule change updates its rule file in the same change.
+3. Run `npm run check`.
+4. Commit with a Conventional Commit message (`feat(auth): …`, `fix(booking): …`).
