@@ -1,0 +1,171 @@
+{
+  "audit": {
+    "page": {
+      "title": "Protokoll",
+      "description": "Alles, was auf dieser Website festgehalten wurde: was Mitglieder geändert haben, was Besucher gebucht haben und wem der Zugriff verweigert wurde."
+    },
+    "sources": {
+      "all": "Alle Bereiche",
+      "website": "Website",
+      "builder": "Seiten",
+      "release": "Releases",
+      "booking": "Buchungen",
+      "dataSources": "Datenquellen",
+      "auth": "Benutzer & Zugriff"
+    },
+    "filters": {
+      "label": "Protokoll filtern",
+      "areas": "Bereiche",
+      "areaCount": "{label} ({count})",
+      "event": "Ereignis",
+      "anyEvent": "Alle Ereignisse",
+      "eventOption": "{label} ({count})",
+      "eventInArea": "{area} · {label} ({count})",
+      "who": "Wer",
+      "anyone": "Alle Personen",
+      "visitors": "Besucher",
+      "system": "System",
+      "period": "Zeitraum",
+      "onlyWarnings": "Nur Warnungen",
+      "apply": "Anwenden",
+      "reset": "Filter zurücksetzen",
+      "website": "Website",
+      "anyWebsite": "Alle Websites"
+    },
+    "periods": {
+      "24h": "Letzte 24 Stunden",
+      "7d": "Letzte 7 Tage",
+      "30d": "Letzte 30 Tage",
+      "90d": "Letzte 90 Tage",
+      "all": "Gesamter Zeitraum"
+    },
+    "actors": {
+      "visitor": "Besucher",
+      "system": "System",
+      "formerMember": "Ehemaliges Mitglied",
+      "member": "Mitglied"
+    },
+    "list": {
+      "title": "Einträge",
+      "label": "Protokolleinträge",
+      "count": "{count, plural, one {# Eintrag} other {# Einträge}}",
+      "empty": "Bisher wurde nichts festgehalten.",
+      "noMatch": "Keine Einträge passen zu diesen Filtern.",
+      "warning": "Warnung",
+      "details": "Details",
+      "byActor": "Alles von {name}",
+      "byEvent": "Alle „{label}“",
+      "severity": {
+        "info": "Information",
+        "warn": "Warnung"
+      },
+      "inWebsite": "Im Protokoll der Website"
+    },
+    "details": {
+      "when": "Zeitpunkt",
+      "who": "Von",
+      "gone": "Existiert nicht mehr",
+      "hidden": "Für Sie nicht sichtbar",
+      "view": "Ansehen",
+      "release": "Release #{number}",
+      "today": "Heute",
+      "yesterday": "Gestern",
+      "yes": "Ja",
+      "no": "Nein",
+      "fields": {
+        "pageId": "Seite",
+        "dataSourceId": "Datenquelle",
+        "datasetId": "Datensatz",
+        "releaseId": "Release",
+        "previousReleaseId": "Vorheriges Release",
+        "sourceReleaseId": "Wiederhergestellt aus",
+        "migrationId": "Komponenten-Update",
+        "serviceId": "Leistung",
+        "locationId": "Standort",
+        "resourceId": "Ressource",
+        "bookingId": "Buchung",
+        "subjectId": "Betrifft",
+        "version": "Version",
+        "nodeCount": "Komponenten",
+        "canonicalKind": "Datenart",
+        "kind": "Verbindung",
+        "outcome": "Ergebnis",
+        "errorCode": "Fehlercode",
+        "changedFields": "Geändert",
+        "fields": "Felder",
+        "releaseNumber": "Release",
+        "writtenPageCount": "Seiten geschrieben",
+        "unresolvableCount": "Nicht auflösbar",
+        "skippedNodeCount": "Komponenten übersprungen",
+        "needsReviewCount": "Zu prüfen",
+        "failedPageCount": "Seiten fehlgeschlagen",
+        "divergedPageCount": "Seiten zwischenzeitlich geändert",
+        "templateKey": "Vorlage",
+        "retentionDays": "Aufbewahrt (Tage)",
+        "deletedCount": "Einträge gelöscht",
+        "by": "Geändert von",
+        "stage": "Schritt",
+        "skipped": "Übersprungen",
+        "created": "Angelegt",
+        "count": "Anzahl",
+        "reason": "Grund",
+        "permission": "Berechtigung",
+        "action": "Aktion"
+      },
+      "values": {
+        "outcome": {
+          "ok": "Erfolgreich",
+          "error": "Fehlgeschlagen"
+        },
+        "by": {
+          "customer": "Die buchende Person",
+          "staff": "Mitarbeitende"
+        },
+        "stage": {
+          "hold": "Reservieren",
+          "confirm": "Bestätigen",
+          "reschedule": "Verschieben"
+        },
+        "reason": {
+          "tenantMismatch": "Andere Organisation",
+          "permissionMissing": "Fehlende Berechtigung"
+        }
+      },
+      "changed": {
+        "name": "Name",
+        "description": "Beschreibung",
+        "slug": "Adresse",
+        "path": "Pfad"
+      },
+      "website": "Website"
+    },
+    "pagination": {
+      "nav": "Seiten des Protokolls"
+    },
+    "overview": {
+      "title": "Aktivität",
+      "link": "Protokoll",
+      "total": "Einträge, letzte 30 Tage",
+      "warnings": "Warnungen",
+      "empty": "Bisher wurde nichts festgehalten.",
+      "others": "Einträge",
+      "warningSeries": "Warnungen",
+      "daySummary": "{date}: {total, plural, one {# Eintrag} other {# Einträge}}, {warnings, plural, one {# Warnung} other {# Warnungen}}",
+      "tableCaption": "Einträge pro Tag, letzte 30 Tage",
+      "day": "Tag",
+      "latest": "Neueste Einträge"
+    },
+    "errors": {
+      "validation": "Das Protokoll konnte mit diesen Angaben nicht gelesen werden.",
+      "infrastructure": "Das Protokoll ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.",
+      "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    },
+    "validation": {
+      "idInvalid": "Diese Kennung ist ungültig."
+    },
+    "platform": {
+      "title": "Protokoll",
+      "description": "Alles, was auf allen Websites festgehalten wurde: was Mitglieder geändert, was Besucher gebucht und wem der Zugriff verweigert wurde. Mit dem Filter auf eine Website eingrenzen."
+    }
+  }
+}

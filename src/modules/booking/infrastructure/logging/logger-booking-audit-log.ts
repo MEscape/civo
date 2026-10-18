@@ -1,3 +1,5 @@
+import type { AuditTrailPolicy } from '@modules/audit';
+
 import { createAuditLog } from '@lib/logger';
 
 import type { BookingAuditLog, BookingEvent } from '../../domain/ports/booking-audit-log.port';
@@ -7,7 +9,7 @@ import type { BookingAuditLog, BookingEvent } from '../../domain/ports/booking-a
  * outcome of concurrent use, but one operations want to see climbing, so it
  * is a warning. Exhaustive per event type.
  */
-const LEVEL_BY_EVENT = {
+export const LEVEL_BY_EVENT = {
   'booking.service_created': 'info',
   'booking.service_updated': 'info',
   'booking.service_deleted': 'info',
@@ -35,3 +37,27 @@ export const loggerBookingAuditLog: BookingAuditLog = createAuditLog(
   'booking.audit',
   LEVEL_BY_EVENT,
 );
+
+/** Configuration and every outcome of an appointment are kept; a visitor's booking, cancellation and move as the visitor's (staff changes name their member). A hold is only a visitor looking at a time, released or expired by the thousands, and a lost race is a metric: those stay in the logs. Exhaustive per event type. */
+export const TRAIL_BY_EVENT = {
+  'booking.service_created': 'member',
+  'booking.service_updated': 'member',
+  'booking.service_deleted': 'member',
+  'booking.location_created': 'member',
+  'booking.location_updated': 'member',
+  'booking.location_deleted': 'member',
+  'booking.resource_created': 'member',
+  'booking.resource_updated': 'member',
+  'booking.resource_deleted': 'member',
+  'booking.manager_change_acknowledged': 'member',
+  'booking.resources_imported': 'member',
+  'booking.held': false,
+  'booking.hold_released': false,
+  'booking.holds_expired': false,
+  'booking.confirmed': 'visitor',
+  'booking.cancelled': 'visitor',
+  'booking.rescheduled': 'visitor',
+  'booking.completed': 'member',
+  'booking.no_show': 'member',
+  'booking.conflict_detected': false,
+} as const satisfies AuditTrailPolicy<BookingEvent['type']>;

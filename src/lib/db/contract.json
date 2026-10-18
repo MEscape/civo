@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "AuditEntry": {
+      "model": "AuditEntry",
+      "namespace": "public"
+    },
     "BookableResource": {
       "model": "BookableResource",
       "namespace": "public"
@@ -69,6 +73,36 @@
     "namespaces": {
       "public": {
         "enum": {
+          "AuditActorKind": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "MEMBER",
+                "value": "MEMBER"
+              },
+              {
+                "name": "VISITOR",
+                "value": "VISITOR"
+              },
+              {
+                "name": "SYSTEM",
+                "value": "SYSTEM"
+              }
+            ]
+          },
+          "AuditSeverity": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "INFO",
+                "value": "INFO"
+              },
+              {
+                "name": "WARN",
+                "value": "WARN"
+              }
+            ]
+          },
           "BookingStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -194,6 +228,136 @@
           }
         },
         "models": {
+          "AuditEntry": {
+            "fields": {
+              "actorId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "actorKind": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AuditActorKind",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "details": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/json@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "occurredAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "severity": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AuditSeverity",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "source": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "website": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Website",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "actorId": {
+                  "column": "actorId"
+                },
+                "actorKind": {
+                  "column": "actorKind"
+                },
+                "details": {
+                  "column": "details"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "occurredAt": {
+                  "column": "occurredAt"
+                },
+                "severity": {
+                  "column": "severity"
+                },
+                "source": {
+                  "column": "source"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AuditEntry"
+            }
+          },
           "BookableResource": {
             "fields": {
               "assignedActorId": {
@@ -2024,6 +2188,21 @@
               }
             },
             "relations": {
+              "auditEntries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "AuditEntry",
+                  "namespace": "public"
+                }
+              },
               "bookableResources": {
                 "cardinality": "1:N",
                 "on": {
@@ -2672,6 +2851,156 @@
       "public": {
         "entries": {
           "table": {
+            "AuditEntry": {
+              "checks": [
+                {
+                  "expression": "\"actorKind\" IN ('MEMBER', 'VISITOR', 'SYSTEM')",
+                  "name": "AuditEntry_actorKind_check_eb9fa190",
+                  "prefix": "AuditEntry_actorKind_check"
+                },
+                {
+                  "expression": "(\"actorKind\" = 'MEMBER') = (\"actorId\" IS NOT NULL)",
+                  "name": "AuditEntry_member_actor_check_98aa2b3c",
+                  "prefix": "AuditEntry_member_actor_check"
+                },
+                {
+                  "expression": "\"severity\" IN ('INFO', 'WARN')",
+                  "name": "AuditEntry_severity_check_f199a339",
+                  "prefix": "AuditEntry_severity_check"
+                }
+              ],
+              "columns": {
+                "actorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "actorKind": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AuditActorKind",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "details": {
+                  "codecId": "pg/json@1",
+                  "nativeType": "json",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "occurredAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "severity": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AuditSeverity",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "source": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AuditEntry"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Website"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "occurredAt"
+                  ],
+                  "name": "AuditEntry_occurredAt_idx_c6b89167",
+                  "prefix": "AuditEntry_occurredAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "actorId",
+                    "occurredAt"
+                  ],
+                  "name": "AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64",
+                  "prefix": "AuditEntry_websiteId_actorId_occurredAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId"
+                  ],
+                  "name": "AuditEntry_websiteId_idx_aa7167ce",
+                  "prefix": "AuditEntry_websiteId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "occurredAt"
+                  ],
+                  "name": "AuditEntry_websiteId_occurredAt_idx_0705c2f4",
+                  "prefix": "AuditEntry_websiteId_occurredAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "source",
+                    "occurredAt"
+                  ],
+                  "name": "AuditEntry_websiteId_source_occurredAt_idx_6b615d77",
+                  "prefix": "AuditEntry_websiteId_source_occurredAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "BookableResource": {
               "columns": {
                 "assignedActorId": {
@@ -4622,6 +4951,21 @@
             }
           },
           "valueSet": {
+            "AuditActorKind": {
+              "kind": "valueSet",
+              "values": [
+                "MEMBER",
+                "VISITOR",
+                "SYSTEM"
+              ]
+            },
+            "AuditSeverity": {
+              "kind": "valueSet",
+              "values": [
+                "INFO",
+                "WARN"
+              ]
+            },
             "BookingStatus": {
               "kind": "valueSet",
               "values": [
@@ -4685,12 +5029,23 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e864e7176ac498f5e5140d09507b1a1a130f54b9a7ee0d1103b38d8748a919a3"
+    "storageHash": "4a9e0b19c375ac44aa27a65b2da7e733b8638bbfce76777a43cdc0ea5e840621"
   },
   "execution": {
-    "executionHash": "66b28dc7c1c3496def0cd411814fa6f32251d215ca7bdedfd9fc5d28c3f01145",
+    "executionHash": "a372b913a1bd7abd2b3acd28399d86aa7476f99ec19c36253b900ecd58811c39",
     "mutations": {
       "defaults": [
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "AuditEntry"
+          }
+        },
         {
           "onCreate": {
             "id": "uuidv4",

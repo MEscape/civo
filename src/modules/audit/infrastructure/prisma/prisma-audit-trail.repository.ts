@@ -1,0 +1,188 @@
+import { createPersistenceFailures, dateToInstant, db, toJsonValue } from '@lib/db';
+import type { InfrastructureAppError } from '@lib/errors';
+import { offsetOf, toPage } from '@lib/pagination';
+import type { Page, PageRequest } from '@lib/pagination';
+import { fromThrowableAsync } from '@lib/result';
+import type { AppResultAsync } from '@lib/result';
+import { literalGuard } from '@lib/utils';
+
+import { AUDIT_ERROR_CODES } from '../../domain/errors/audit-errors';
+import { AUDIT_SOURCES } from '../../domain/models/audit-entry';
+import { toActorId } from '../../domain/models/ids';
+
+import {
+  ACTOR_KIND_RECORD,
+  AUDIT_ENTRY_SELECT,
+  SEVERITY_RECORD,
+  toAuditEntry,
+} from './audit-trail-record-mapper';
+
+import type { AuditActor, AuditEntry, NewAuditEntry } from '../../domain/models/audit-entry';
+import type { ActorId, WebsiteId } from '../../domain/models/ids';
+import type {
+  AuditDayCount,
+  AuditCriteria,
+  AuditTrailRepository,
+  AuditTypeCount,
+} from '../../domain/ports/audit-trail.repository';
+
+const failures = createPersistenceFailures({
+  module: 'audit.persistence',
+  code: AUDIT_ERROR_CODES.persistenceFailed,
+  subject: 'AuditEntry',
+});
+
+const isSource = literalGuard(AUDIT_SOURCES);
+
+/** The equality part of a filter on the actor. */
+function actorWhere(actor: AuditActor | null) {
+  if (actor === null) {
+    return {};
+  }
+  return actor.kind === 'member'
+    ? { actorKind: ACTOR_KIND_RECORD.member, actorId: actor.id }
+    : { actorKind: ACTOR_KIND_RECORD[actor.kind] };
+}
+
+/** The entries of one website (`null`: of every website) that match the criteria; every part maps onto an index's leading columns. */
+function matching(
+  websiteId: WebsiteId | null,
+  criteria: Omit<AuditCriteria, 'source' | 'type'> &
+    Partial<Pick<AuditCriteria, 'source' | 'type'>>,
+) {
+  const equal = db.orm.public.AuditEntry.where({
+    ...(websiteId === null ? {} : { websiteId }),
+    ...(criteria.source === undefined || criteria.source === null
+      ? {}
+      : { source: criteria.source }),
+    ...(criteria.type === undefined || criteria.type === null ? {} : { type: criteria.type }),
+    ...(criteria.onlyWarnings ? { severity: SEVERITY_RECORD.warn } : {}),
+    ...actorWhere(criteria.actor),
+  });
+  const { since } = criteria;
+  return since === null
+    ? equal
+    : equal.where((entry) => entry.occurredAt.gte(dateToInstant(since)));
+}
+
+/**
+ * Prisma-backed trail, the only place that touches `db` for it. Every read
+ * is scoped to one website and bounded; failures are infrastructure only and
+ * logged once, here.
+ */
+export class PrismaAuditTrailRepository implements AuditTrailRepository {
+  append(entry: NewAuditEntry): AppResultAsync<void, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.AuditEntry.select('id').create({
+          websiteId: entry.websiteId,
+          source: entry.source,
+          type: entry.type,
+          severity: SEVERITY_RECORD[entry.severity],
+          actorKind: ACTOR_KIND_RECORD[entry.actor.kind],
+          actorId: entry.actor.kind === 'member' ? entry.actor.id : null,
+          details: toJsonValue(entry.details),
+          occurredAt: dateToInstant(entry.occurredAt),
+        }),
+      failures.infraOnly('append'),
+    ).map(() => undefined);
+  }
+
+  list(
+    websiteId: WebsiteId | null,
+    criteria: AuditCriteria,
+    page: PageRequest,
+  ): AppResultAsync<Page<AuditEntry>, InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      const total = await matching(websiteId, criteria).aggregate((aggregate) => ({
+        total: aggregate.count(),
+      }));
+      const records = await matching(websiteId, criteria)
+        .select(...AUDIT_ENTRY_SELECT)
+        // `id` breaks ties so the order is stable between requests.
+        .orderBy([(entry) => entry.occurredAt.desc(), (entry) => entry.id.desc()])
+        .limit(page.pageSize)
+        .offset(offsetOf(page))
+        .all();
+      return { records, total: total.total };
+    }, failures.infraOnly('list')).map(({ records, total }) =>
+      toPage(
+        records.map(toAuditEntry).filter((entry): entry is AuditEntry => entry !== null),
+        total,
+        page,
+      ),
+    );
+  }
+
+  countByType(
+    websiteId: WebsiteId | null,
+    criteria: Omit<AuditCriteria, 'source' | 'type'>,
+    limit: number,
+  ): AppResultAsync<readonly AuditTypeCount[], InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        matching(websiteId, criteria)
+          .groupBy('source', 'type')
+          .orderBy([(entry) => entry.source.asc(), (entry) => entry.type.asc()])
+          .limit(limit)
+          .aggregate((aggregate) => ({ count: aggregate.count() })),
+      failures.infraOnly('countByType'),
+    ).map((rows) =>
+      rows.flatMap(({ source, type, count }) =>
+        isSource(source) ? [{ source, type, count }] : [],
+      ),
+    );
+  }
+
+  listMemberIds(
+    websiteId: WebsiteId | null,
+    limit: number,
+  ): AppResultAsync<readonly ActorId[], InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.AuditEntry.where({
+          ...(websiteId === null ? {} : { websiteId }),
+          actorKind: ACTOR_KIND_RECORD.member,
+        })
+          .groupBy('actorId')
+          .orderBy((entry) => entry.actorId.asc())
+          .limit(limit)
+          .aggregate((aggregate) => ({ count: aggregate.count() })),
+      failures.infraOnly('listMemberIds'),
+    ).map((rows) => rows.flatMap(({ actorId }) => (actorId === null ? [] : [toActorId(actorId)])));
+  }
+
+  countPerDay(
+    websiteId: WebsiteId,
+    since: Date,
+  ): AppResultAsync<readonly AuditDayCount[], InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      // Grouping by a computed day is beyond the ORM's groupBy; the plan stays parameterized and index-served.
+      const perDay = db.raw.sql`
+        SELECT to_char("occurredAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day,
+               count(*)::int AS total,
+               count(*) FILTER (WHERE "severity" = ${SEVERITY_RECORD.warn})::int AS warnings
+          FROM "AuditEntry"
+         WHERE "websiteId" = ${websiteId} AND "occurredAt" >= ${since.toISOString()}::timestamptz
+         GROUP BY 1
+         ORDER BY 1`
+        .returnsRow({
+          day: { codecId: 'pg/text@1', nullable: false },
+          total: { codecId: 'pg/int4@1', nullable: false },
+          warnings: { codecId: 'pg/int4@1', nullable: false },
+        })
+        .build();
+      return db.runtime().query(perDay);
+    }, failures.infraOnly('countPerDay'));
+  }
+
+  deleteOlderThan(cutoff: Date): AppResultAsync<number, InfrastructureAppError> {
+    return fromThrowableAsync(
+      async () =>
+        db.orm.public.AuditEntry.where((entry) =>
+          entry.occurredAt.lt(dateToInstant(cutoff)),
+        ).deleteAndCount(),
+      failures.infraOnly('deleteOlderThan'),
+    );
+  }
+}

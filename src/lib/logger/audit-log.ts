@@ -3,6 +3,20 @@ import { logger } from './logger';
 /** Failures and denials are `warn` so alerting can key on them; ordinary lifecycle events are `info`. */
 export type AuditLevel = 'info' | 'warn';
 
+/**
+ * The level of one event: the one its module chose for the type, raised to
+ * `warn` when the event carries an error code, since an event that names an
+ * error reports a failure (a connection test that failed) even when its type
+ * also covers success.
+ */
+export function auditLevelOf<T extends string>(
+  levels: Readonly<Record<T, AuditLevel>>,
+  event: { readonly type: T },
+): AuditLevel {
+  const { errorCode } = event as { readonly errorCode?: unknown };
+  return typeof errorCode === 'string' && errorCode !== '' ? 'warn' : levels[event.type];
+}
+
 /** Satisfies any module's audit port whose events have one of the types `T`. */
 export interface AuditRecorder<T extends string> {
   record(event: { readonly type: T }): void;
@@ -24,7 +38,7 @@ export function createAuditLog<T extends string>(
     record(event) {
       const { type, ...details } = event;
       try {
-        auditLogger[levels[type]](type, details);
+        auditLogger[auditLevelOf(levels, event)](type, details);
       } catch {
         // Contained on purpose, see above.
       }

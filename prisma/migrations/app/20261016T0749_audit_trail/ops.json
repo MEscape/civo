@@ -1,0 +1,239 @@
+[
+  {
+    "id": "table.AuditEntry",
+    "label": "Create table \"AuditEntry\"",
+    "summary": "Creates table \"AuditEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "AuditEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"AuditEntry\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"AuditEntry\"",
+        "sql": "CREATE TABLE \"public\".\"AuditEntry\" (\n  \"actorId\" text,\n  \"actorKind\" text NOT NULL,\n  \"details\" json NOT NULL,\n  \"id\" text NOT NULL,\n  \"occurredAt\" timestamptz NOT NULL,\n  \"severity\" text NOT NULL,\n  \"source\" text NOT NULL,\n  \"type\" text NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"AuditEntry_actorKind_check_eb9fa190\" CHECK (\"actorKind\" IN ('MEMBER', 'VISITOR', 'SYSTEM')),\n  CONSTRAINT \"AuditEntry_member_actor_check_98aa2b3c\" CHECK ((\"actorKind\" = 'MEMBER') = (\"actorId\" IS NOT NULL)),\n  CONSTRAINT \"AuditEntry_severity_check_f199a339\" CHECK (\"severity\" IN ('INFO', 'WARN'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"AuditEntry\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.AuditEntry.AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64",
+    "label": "Create index \"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\" on \"AuditEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64",
+        "table": "AuditEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\"",
+        "sql": "CREATE INDEX \"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\" ON \"public\".\"AuditEntry\" (\"websiteId\", \"actorId\", \"occurredAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.AuditEntry.AuditEntry_websiteId_idx_aa7167ce",
+    "label": "Create index \"AuditEntry_websiteId_idx_aa7167ce\" on \"AuditEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "AuditEntry_websiteId_idx_aa7167ce",
+        "table": "AuditEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"AuditEntry_websiteId_idx_aa7167ce\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"AuditEntry_websiteId_idx_aa7167ce\"",
+        "sql": "CREATE INDEX \"AuditEntry_websiteId_idx_aa7167ce\" ON \"public\".\"AuditEntry\" (\"websiteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"AuditEntry_websiteId_idx_aa7167ce\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_idx_aa7167ce\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.AuditEntry.AuditEntry_websiteId_occurredAt_idx_0705c2f4",
+    "label": "Create index \"AuditEntry_websiteId_occurredAt_idx_0705c2f4\" on \"AuditEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "AuditEntry_websiteId_occurredAt_idx_0705c2f4",
+        "table": "AuditEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"AuditEntry_websiteId_occurredAt_idx_0705c2f4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_occurredAt_idx_0705c2f4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"AuditEntry_websiteId_occurredAt_idx_0705c2f4\"",
+        "sql": "CREATE INDEX \"AuditEntry_websiteId_occurredAt_idx_0705c2f4\" ON \"public\".\"AuditEntry\" (\"websiteId\", \"occurredAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"AuditEntry_websiteId_occurredAt_idx_0705c2f4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_occurredAt_idx_0705c2f4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.AuditEntry.AuditEntry_websiteId_source_occurredAt_idx_6b615d77",
+    "label": "Create index \"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\" on \"AuditEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "AuditEntry_websiteId_source_occurredAt_idx_6b615d77",
+        "table": "AuditEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\"",
+        "sql": "CREATE INDEX \"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\" ON \"public\".\"AuditEntry\" (\"websiteId\", \"source\", \"occurredAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AuditEntry_websiteId_source_occurredAt_idx_6b615d77\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.AuditEntry.AuditEntry_websiteId_fkey",
+    "label": "Add foreign key \"AuditEntry_websiteId_fkey\" on \"AuditEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "AuditEntry_websiteId_fkey",
+        "table": "AuditEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"AuditEntry_websiteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "AuditEntry_websiteId_fkey",
+          "public",
+          "\"public\".\"AuditEntry\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"AuditEntry_websiteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"AuditEntry\"\nADD CONSTRAINT \"AuditEntry_websiteId_fkey\"\nFOREIGN KEY (\"websiteId\")\nREFERENCES \"public\".\"Website\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"AuditEntry_websiteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "AuditEntry_websiteId_fkey",
+          "public",
+          "\"public\".\"AuditEntry\""
+        ]
+      }
+    ]
+  }
+]

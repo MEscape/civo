@@ -31,6 +31,19 @@ describe('createAuditLog', () => {
     expect(warn).toHaveBeenCalledWith('shop.failed', { reason: 'boom' });
   });
 
+  it('raises an event that carries an error code to a warning, whatever its type', () => {
+    const info = vi.fn();
+    const warn = vi.fn();
+    vi.spyOn(logger, 'withContext').mockReturnValue({ debug: vi.fn(), info, warn, error: vi.fn() });
+    const audit = createAuditLog<'shop.tested'>('shop.audit', { 'shop.tested': 'info' });
+
+    audit.record({ type: 'shop.tested', errorCode: null } as { readonly type: 'shop.tested' });
+    audit.record({ type: 'shop.tested', errorCode: 'shop.down' } as { readonly type: 'shop.tested' });
+
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith('shop.tested', { errorCode: 'shop.down' });
+  });
+
   it('never fails the request it describes', () => {
     const failing = () => {
       throw new Error('sink down');

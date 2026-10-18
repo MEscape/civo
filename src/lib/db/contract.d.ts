@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e864e7176ac498f5e5140d09507b1a1a130f54b9a7ee0d1103b38d8748a919a3'>;
+  StorageHashBase<'4a9e0b19c375ac44aa27a65b2da7e733b8638bbfce76777a43cdc0ea5e840621'>;
 export type ExecutionHash =
-  ExecutionHashBase<'66b28dc7c1c3496def0cd411814fa6f32251d215ca7bdedfd9fc5d28c3f01145'>;
+  ExecutionHashBase<'a372b913a1bd7abd2b3acd28399d86aa7476f99ec19c36253b900ecd58811c39'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -250,6 +250,17 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly AuditEntry: {
+      readonly actorId: CodecTypes['pg/text@1']['output'] | null;
+      readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
+      readonly details: CodecTypes['pg/json@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly severity: 'INFO' | 'WARN';
+      readonly source: CodecTypes['pg/text@1']['output'];
+      readonly type: CodecTypes['pg/text@1']['output'];
+      readonly websiteId: CodecTypes['pg/text@1']['output'];
+    };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['output'] | null;
       readonly availability: CodecTypes['pg/json@1']['output'] | null;
@@ -451,6 +462,17 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly AuditEntry: {
+      readonly actorId: CodecTypes['pg/text@1']['input'] | null;
+      readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
+      readonly details: CodecTypes['pg/json@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly severity: 'INFO' | 'WARN';
+      readonly source: CodecTypes['pg/text@1']['input'];
+      readonly type: CodecTypes['pg/text@1']['input'];
+      readonly websiteId: CodecTypes['pg/text@1']['input'];
+    };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['input'] | null;
       readonly availability: CodecTypes['pg/json@1']['input'] | null;
@@ -652,6 +674,17 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly AuditEntry: {
+      readonly actorId: CodecTypes['pg/text@1']['output'] | null;
+      readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
+      readonly details: CodecTypes['pg/json@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly severity: 'INFO' | 'WARN';
+      readonly source: CodecTypes['pg/text@1']['output'];
+      readonly type: CodecTypes['pg/text@1']['output'];
+      readonly websiteId: CodecTypes['pg/text@1']['output'];
+    };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['output'] | null;
       readonly availability: CodecTypes['pg/json@1']['output'] | null;
@@ -853,6 +886,17 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly AuditEntry: {
+      readonly actorId: CodecTypes['pg/text@1']['input'] | null;
+      readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
+      readonly details: CodecTypes['pg/json@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly severity: 'INFO' | 'WARN';
+      readonly source: CodecTypes['pg/text@1']['input'];
+      readonly type: CodecTypes['pg/text@1']['input'];
+      readonly websiteId: CodecTypes['pg/text@1']['input'];
+    };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['input'] | null;
       readonly availability: CodecTypes['pg/json@1']['input'] | null;
@@ -1054,6 +1098,19 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_AuditEntry = {
+    actorId: CodecTypes['pg/text@1']['output'] | null;
+    actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
+    details: CodecTypes['pg/json@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    occurredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    severity: 'INFO' | 'WARN';
+    source: CodecTypes['pg/text@1']['output'];
+    type: CodecTypes['pg/text@1']['output'];
+    websiteId: CodecTypes['pg/text@1']['output'];
+    website: public_Website;
+    readonly [RelationKeys]?: 'website';
+  };
   export type public_BookableResource = {
     assignedActorId: CodecTypes['pg/text@1']['output'] | null;
     availability: CodecTypes['pg/json@1']['output'] | null;
@@ -1245,6 +1302,7 @@ export namespace Models {
     templateKey: CodecTypes['pg/text@1']['output'];
     tenantId: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    auditEntries: public_AuditEntry[];
     bookableResources: public_BookableResource[];
     bookableServices: public_BookableService[];
     bookingLocations: public_BookingLocation[];
@@ -1256,6 +1314,7 @@ export namespace Models {
     releases: public_WebsiteRelease[];
     theme: public_WebsiteTheme | null;
     readonly [RelationKeys]?:
+      | 'auditEntries'
       | 'bookableResources'
       | 'bookableServices'
       | 'bookingLocations'
@@ -1316,6 +1375,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AuditEntry: Models.public_AuditEntry;
     BookableResource: Models.public_BookableResource;
     BookableService: Models.public_BookableService;
     Booking: Models.public_Booking;
@@ -1352,6 +1412,103 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly AuditEntry: {
+              columns: {
+                readonly actorId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly actorKind: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly details: {
+                  readonly nativeType: 'json';
+                  readonly codecId: 'pg/json@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly occurredAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly severity: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly source: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly type: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly websiteId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'AuditEntry_occurredAt_idx_c6b89167';
+                  readonly prefix: 'AuditEntry_occurredAt_idx';
+                  readonly columns: readonly ['occurredAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AuditEntry_websiteId_actorId_occurredAt_idx_05ff4b64';
+                  readonly prefix: 'AuditEntry_websiteId_actorId_occurredAt_idx';
+                  readonly columns: readonly ['websiteId', 'actorId', 'occurredAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AuditEntry_websiteId_idx_aa7167ce';
+                  readonly prefix: 'AuditEntry_websiteId_idx';
+                  readonly columns: readonly ['websiteId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AuditEntry_websiteId_occurredAt_idx_0705c2f4';
+                  readonly prefix: 'AuditEntry_websiteId_occurredAt_idx';
+                  readonly columns: readonly ['websiteId', 'occurredAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AuditEntry_websiteId_source_occurredAt_idx_6b615d77';
+                  readonly prefix: 'AuditEntry_websiteId_source_occurredAt_idx';
+                  readonly columns: readonly ['websiteId', 'source', 'occurredAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'AuditEntry';
+                    readonly columns: readonly ['websiteId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Website';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly BookableResource: {
               columns: {
                 readonly assignedActorId: {
@@ -2830,6 +2987,14 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly AuditActorKind: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['MEMBER', 'VISITOR', 'SYSTEM'];
+            };
+            readonly AuditSeverity: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['INFO', 'WARN'];
+            };
             readonly BookingStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly [
@@ -2876,6 +3041,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly AuditEntry: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AuditEntry';
+    };
     readonly BookableResource: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BookableResource';
@@ -2929,6 +3098,78 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AuditEntry: {
+            readonly fields: {
+              readonly actorId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorKind: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly details: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly occurredAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly severity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly source: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly type: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly websiteId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly website: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Website';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['websiteId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'AuditEntry';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly actorId: { readonly column: 'actorId' };
+                readonly actorKind: { readonly column: 'actorKind' };
+                readonly details: { readonly column: 'details' };
+                readonly id: { readonly column: 'id' };
+                readonly occurredAt: { readonly column: 'occurredAt' };
+                readonly severity: { readonly column: 'severity' };
+                readonly source: { readonly column: 'source' };
+                readonly type: { readonly column: 'type' };
+                readonly websiteId: { readonly column: 'websiteId' };
+              };
+            };
+          };
           readonly BookableResource: {
             readonly fields: {
               readonly assignedActorId: {
@@ -4065,6 +4306,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly auditEntries: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AuditEntry';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['websiteId'];
+                };
+              };
               readonly bookableResources: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -4461,6 +4713,21 @@ type ContractBase = Omit<
           };
         };
         readonly enum: {
+          readonly AuditActorKind: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'MEMBER'; readonly value: 'MEMBER' },
+              { readonly name: 'VISITOR'; readonly value: 'VISITOR' },
+              { readonly name: 'SYSTEM'; readonly value: 'SYSTEM' },
+            ];
+          };
+          readonly AuditSeverity: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'INFO'; readonly value: 'INFO' },
+              { readonly name: 'WARN'; readonly value: 'WARN' },
+            ];
+          };
           readonly BookingStatus: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -4547,6 +4814,14 @@ type ContractBase = Omit<
     readonly executionHash: ExecutionHash;
     readonly mutations: {
       readonly defaults: readonly [
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly column: 'id';
+            readonly namespace: 'public';
+            readonly table: 'AuditEntry';
+          };
+        },
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {

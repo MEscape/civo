@@ -1,0 +1,171 @@
+{
+  "audit": {
+    "page": {
+      "title": "Audit log",
+      "description": "Everything recorded on this website: what members changed, what visitors booked, and who was refused access."
+    },
+    "sources": {
+      "all": "All areas",
+      "website": "Website",
+      "builder": "Pages",
+      "release": "Releases",
+      "booking": "Bookings",
+      "dataSources": "Data sources",
+      "auth": "Users & access"
+    },
+    "filters": {
+      "label": "Filter the audit log",
+      "areas": "Areas",
+      "areaCount": "{label} ({count})",
+      "event": "Event",
+      "anyEvent": "All events",
+      "eventOption": "{label} ({count})",
+      "eventInArea": "{area} · {label} ({count})",
+      "who": "Who",
+      "anyone": "Anyone",
+      "visitors": "Visitors",
+      "system": "System",
+      "period": "Period",
+      "onlyWarnings": "Only warnings",
+      "apply": "Apply",
+      "reset": "Reset filters",
+      "website": "Website",
+      "anyWebsite": "All websites"
+    },
+    "periods": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days",
+      "all": "All time"
+    },
+    "actors": {
+      "visitor": "Visitor",
+      "system": "System",
+      "formerMember": "Former member",
+      "member": "Member"
+    },
+    "list": {
+      "title": "Entries",
+      "label": "Audit log entries",
+      "count": "{count, plural, one {# entry} other {# entries}}",
+      "empty": "Nothing has been recorded yet.",
+      "noMatch": "No entries match these filters.",
+      "warning": "Warning",
+      "details": "Details",
+      "byActor": "Everything by {name}",
+      "byEvent": "Every “{label}”",
+      "severity": {
+        "info": "Information",
+        "warn": "Warning"
+      },
+      "inWebsite": "In the website's log"
+    },
+    "details": {
+      "when": "Time",
+      "who": "By",
+      "gone": "No longer exists",
+      "hidden": "Not visible to you",
+      "view": "View",
+      "release": "Release #{number}",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "yes": "Yes",
+      "no": "No",
+      "fields": {
+        "pageId": "Page",
+        "dataSourceId": "Data source",
+        "datasetId": "Dataset",
+        "releaseId": "Release",
+        "previousReleaseId": "Previous release",
+        "sourceReleaseId": "Restored from",
+        "migrationId": "Component update",
+        "serviceId": "Service",
+        "locationId": "Location",
+        "resourceId": "Resource",
+        "bookingId": "Booking",
+        "subjectId": "Concerns",
+        "version": "Version",
+        "nodeCount": "Components",
+        "canonicalKind": "Kind of data",
+        "kind": "Connection",
+        "outcome": "Result",
+        "errorCode": "Error code",
+        "changedFields": "Changed",
+        "fields": "Fields",
+        "releaseNumber": "Release",
+        "writtenPageCount": "Pages written",
+        "unresolvableCount": "Not resolvable",
+        "skippedNodeCount": "Components skipped",
+        "needsReviewCount": "Need review",
+        "failedPageCount": "Pages failed",
+        "divergedPageCount": "Pages changed meanwhile",
+        "templateKey": "Template",
+        "retentionDays": "Kept for (days)",
+        "deletedCount": "Entries deleted",
+        "by": "Changed by",
+        "stage": "Step",
+        "skipped": "Skipped",
+        "created": "Created",
+        "count": "Count",
+        "reason": "Reason",
+        "permission": "Permission",
+        "action": "Action"
+      },
+      "values": {
+        "outcome": {
+          "ok": "Succeeded",
+          "error": "Failed"
+        },
+        "by": {
+          "customer": "The person who booked",
+          "staff": "Staff"
+        },
+        "stage": {
+          "hold": "Reserving",
+          "confirm": "Confirming",
+          "reschedule": "Rescheduling"
+        },
+        "reason": {
+          "tenantMismatch": "Other organisation",
+          "permissionMissing": "Missing permission"
+        }
+      },
+      "changed": {
+        "name": "Name",
+        "description": "Description",
+        "slug": "Address",
+        "path": "Path"
+      },
+      "website": "Website"
+    },
+    "pagination": {
+      "nav": "Audit log pages"
+    },
+    "overview": {
+      "title": "Activity",
+      "link": "Audit log",
+      "total": "Entries, last 30 days",
+      "warnings": "Warnings",
+      "empty": "Nothing has been recorded yet.",
+      "others": "Entries",
+      "warningSeries": "Warnings",
+      "daySummary": "{date}: {total, plural, one {# entry} other {# entries}}, {warnings, plural, one {# warning} other {# warnings}}",
+      "tableCaption": "Entries per day, last 30 days",
+      "day": "Day",
+      "latest": "Latest entries"
+    },
+    "errors": {
+      "validation": "The audit log could not be read with these values.",
+      "infrastructure": "The audit log is unavailable right now. Please try again.",
+      "unexpected": "Something went wrong. Please try again."
+    },
+    "validation": {
+      "idInvalid": "This id is not valid."
+    },
+    "platform": {
+      "title": "Audit log",
+      "description": "Everything recorded on every website: what members changed, what visitors booked, and who was refused access. Narrow it to one website with the filter."
+    }
+  }
+}

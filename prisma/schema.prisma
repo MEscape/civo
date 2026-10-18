@@ -50,6 +50,19 @@ enum BookingStatus {
   EXPIRED
 }
 
+/// How serious a recorded audit event is: `WARN` marks failures, denials and security signals.
+enum AuditSeverity {
+  INFO
+  WARN
+}
+
+/// Who caused a recorded audit event: a signed-in member, an anonymous visitor of the public site, or the system itself.
+enum AuditActorKind {
+  MEMBER
+  VISITOR
+  SYSTEM
+}
+
 /// Root aggregate representing a municipal or organizational website.
 model Website {
   id          String   @id @default(uuid())
@@ -71,6 +84,7 @@ model Website {
   bookableResources BookableResource[]
   bookableServices  BookableService[]
   bookings          Booking[]
+  auditEntries      AuditEntry[]
   publishedRelease WebsiteRelease? @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
 
   @@unique([id, tenantId])
@@ -378,4 +392,31 @@ model BookingResource {
   @@id([bookingId, resourceId])
   @@index([resourceId, occupiedStart])
   @@check(expression: "\"occupiedStart\" < \"occupiedEnd\"", name: "BookingResource_span_check")
+}
+
+/// One recorded audit event of a website: what happened, who caused it and when. Ids, counts and codes only, never
+/// content or personal data. Append-only; the rows go with the website.
+model AuditEntry {
+  id         String         @id @default(uuid())
+  websiteId  String
+  /// The module that recorded the event (`booking`, `release`, ...).
+  source     String
+  /// The event type, e.g. `booking.confirmed`.
+  type       String
+  severity   AuditSeverity
+  actorKind  AuditActorKind
+  /// Set for `MEMBER` only: an actor id, named where it is shown so a name is never stale.
+  actorId    String?
+  details    Json
+  occurredAt DateTime
+
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@index([websiteId, occurredAt])
+  @@index([websiteId, source, occurredAt])
+  @@index([websiteId, actorId, occurredAt])
+  /// Serves the daily retention delete, which spans every website.
+  @@index([occurredAt])
+  // Exactly the entries of a member name one; a visitor or the system has no actor id.
+  @@check(expression: "(\"actorKind\" = 'MEMBER') = (\"actorId\" IS NOT NULL)", name: "AuditEntry_member_actor_check")
 }

@@ -160,11 +160,32 @@ function log(level: LogLevel, message: string, context?: LogContext): void {
  * forwards it to a user-facing surface — that boundary is enforced in
  * lib/errors, not here.
  */
+/**
+ * An `Error` keeps its stack. An `AppError` is a plain object: its kind and
+ * code name it (its `String()` would be "[object Object]"), and an `Error`
+ * cause lends its stack.
+ */
+function normalizeError(error: unknown): {
+  name: string;
+  message: string;
+  stack?: string | undefined;
+} {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack };
+  }
+  if (typeof error === 'object' && error !== null && 'kind' in error && 'code' in error) {
+    const { kind, code, cause } = error as { kind: unknown; code: unknown; cause?: unknown };
+    return {
+      name: String(kind),
+      message: String(code),
+      ...(cause instanceof Error ? { stack: cause.stack } : {}),
+    };
+  }
+  return { name: 'UnknownError', message: String(error) };
+}
+
 function logError(message: string, error: unknown, context?: LogContext): void {
-  const normalized =
-    error instanceof Error
-      ? { name: error.name, message: error.message, stack: error.stack }
-      : { name: 'UnknownError', message: String(error) };
+  const normalized = normalizeError(error);
 
   write({
     level: 'error',

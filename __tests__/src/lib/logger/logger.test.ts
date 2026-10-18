@@ -54,6 +54,23 @@ describe('logger', () => {
       expect(parsed.error.stack).toBeDefined();
     });
 
+    it('names an AppError by its kind and code instead of "[object Object]"', () => {
+      const cause = new Error('socket hang up');
+      logger.error('Dataset source failed', {
+        kind: 'infrastructure',
+        code: 'data_source.connection_failed',
+        message: 'internal',
+        cause,
+      });
+
+      const parsed = getParsedLog(console.error);
+      expect(parsed.error).toEqual({
+        name: 'infrastructure',
+        message: 'data_source.connection_failed',
+        stack: cause.stack,
+      });
+    });
+
     it('gracefully handles non-Error objects thrown into logger.error', () => {
       logger.error('Something weird happened', 'just a string');
 
