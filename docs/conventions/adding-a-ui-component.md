@@ -15,6 +15,12 @@ Owning rules: [`react.md`](../rules/react.md), [`styling.md`](../rules/styling.m
 9. Handle loading, empty, and error states.
 10. Test through user interaction, querying by role and accessible name.
 
+## Scaffolding
+
+`npm run gen -- component <name> [-m <module>] [--client]` creates the component with a render
+test in the right place. The markup is a placeholder: compose primitives, use tokens and
+translations as described above. See [`scripts/README.md`](../../scripts/README.md).
+
 ## Done when
 
 - [ ] No hard-coded user-facing string

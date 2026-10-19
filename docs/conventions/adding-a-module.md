@@ -32,6 +32,13 @@ modules/<module>/
 └── index.ts
 ```
 
+## Scaffolding
+
+`npm run gen -- module <name> --fields "<fields>"` creates the layout above, registers the i18n
+namespace and adds a domain test. It prints the steps it cannot do for you: the Prisma model and
+migration, the permissions, the UI and the business rules. See
+[`scripts/README.md`](../../scripts/README.md).
+
 ## Done when
 
 - [ ] Lint and type-check pass

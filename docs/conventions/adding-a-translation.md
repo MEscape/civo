@@ -14,6 +14,12 @@ Owning rules: [`i18n.md`](../rules/i18n.md), [`naming.md`](../rules/naming.md), 
 8. Check that accessible names (labels, alt text, aria-label) are translated too. See [`accessibility.md`](../rules/accessibility.md).
 9. Run `npm run i18n:check`.
 
+## Scaffolding
+
+`npm run gen -- translation <key> "<text>" [-m <module>] [--de "<text>"]` adds the key to every
+locale in one change. A locale without `--<locale>` gets a marked placeholder that you must
+replace. See [`scripts/README.md`](../../scripts/README.md).
+
 ## Done when
 
 - [ ] Every locale has the key (`npm run i18n:check` passes)

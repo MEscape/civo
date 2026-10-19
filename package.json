@@ -17,17 +17,19 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "test:architecture": "vitest run __tests__/architecture __tests__/eslint",
+    "test:scripts": "vitest run __tests__/scripts",
     "db:generate": "prisma contract emit",
     "db:migrate:check": "prisma migration check",
     "db:migrate:app": "prisma db migrate",
     "db:migrate:status": "prisma migration status",
-    "db:migrate:auth": "tsx scripts/apply-auth-migration.ts",
+    "db:migrate:auth": "tsx migrations/apply-auth-migration.ts",
     "db:migrate": "npm run db:migrate:app && npm run db:migrate:auth",
     "db:verify": "prisma db verify --strict",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "i18n:check": "vitest run __tests__/architecture/i18n-catalogs.test.ts",
-    "components:lock": "tsx scripts/component-version-lock.ts"
+    "components:lock": "tsx scripts/gen.ts component-lock",
+    "gen": "tsx scripts/gen.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "6.1.21",

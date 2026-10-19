@@ -6,11 +6,17 @@ Owning rules: [`configuration.md`](../rules/configuration.md), [`security.md`](.
 
 1. Decide server-only or public. Secrets are always server-only. Use `NEXT_PUBLIC_*` only for values that are safe to ship to the browser.
 2. Name it in `UPPER_SNAKE_CASE`. See [`naming.md`](../rules/naming.md).
-3. Add it to the Zod schema of the right entry point (`public-env-schema.ts` for `NEXT_PUBLIC_*`, `env-schema.ts` or `auth-env-schema.ts` for the server) and, for a public variable, name it literally in `public-env.ts` so the bundler can inline it. Use a default only when a default is safe. A variable needed only when a feature is on gets a requirement tied to that feature's flag, not a global one.
-4. Read it only through `@lib/config` (public) or `@lib/config/server` (server). Never use `process.env` elsewhere, and never import `@lib/config/server` from a Client Component.
+3. Add it to the Zod schema of the typed configuration module, with the right type and a default only when a default is safe.
+4. Read it only through the typed configuration module. Never use `process.env` elsewhere.
 5. Add it to `.env.example` with a placeholder value and a one-line description. Never commit a real value.
 6. Confirm the app fails fast at startup when it is missing or malformed.
 7. Set it in each deployment environment before merging.
+
+## Scaffolding
+
+`npm run gen -- env <NAME> [--public]` adds the entry to the right section of `.env.example` and
+prints the schema line and default constant to add to `src/lib/config/env-schema.ts`. See
+[`scripts/README.md`](../../scripts/README.md).
 
 ## Done when
 
