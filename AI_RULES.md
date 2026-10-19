@@ -162,7 +162,7 @@ Allowed direction:
 - Map application `Result` values into HTTP responses at the boundary.
 - A failed `Result` becomes a specific HTTP status code, not a generic 500.
 - Never expose domain or persistence objects directly; return explicit response DTOs.
-- Use consistent HTTP status semantics and a consistent error response shape.
+- Use consistent HTTP status semantics and a consistent error response shape. A rate-limited `Result` becomes `429` with a `Retry-After` header.
 - Do not expose internal exception messages.
 - Version public APIs; do not make breaking changes to a published contract.
 - Make non-idempotent operations safe to retry where clients may retry.
@@ -204,6 +204,7 @@ Allowed direction:
 - Application errors must describe actionable failure cases.
 - Infrastructure errors must be mapped before crossing the infrastructure boundary.
 - Do not expose infrastructure error details to users.
+- A caller who used an operation too often gets the `rate_limited` kind with `retryAfterSeconds`: it is neither an infrastructure failure nor a permission problem, and waiting is the remedy.
 - Presentation layers map error codes to UI or HTTP responses.
 - Do not catch an error unless the layer can meaningfully handle or translate it.
 - Preserve the original error as a cause when translating unexpected failures.
@@ -264,6 +265,10 @@ Allowed direction:
 - Derive authenticated identity from the server-side authentication context.
 - Enforce tenant isolation at the application/data-access boundary.
 - Rate-limit and bound the size of externally reachable inputs, including webhooks and public API routes.
+- A rate limit is a policy, declared as plain data in the module's `application/rate-limits.ts` and spent by a use case through the shared `RateLimiter` port; actions, route handlers and adapters never call it. A public use case spends a budget or states why it need not (`@rate-limit none <reason>`).
+- A budget counts the authorized actor, the caller's address from trusted request metadata, or a normalised account identifier, never a raw request value; counters hold only keyed hashes.
+- A policy states how it fails when the limiter's store is down: operations that send mail, call external systems, change what is live or sign people in deny; allowing is a reviewed exception.
+- Counters live in a shared store (Redis over HTTP) in production; the in-memory store is for development and tests only. Lint and the architecture tests enforce all of this.
 - Validate webhook authenticity, including signature and replay protection, before processing.
 - Protect state-changing requests against CSRF.
 - Use secure, `HttpOnly`, `SameSite` cookies for sessions.
@@ -279,7 +284,7 @@ Allowed direction:
 - Environment variables are infrastructure/configuration concerns.
 - Validate environment variables at startup.
 - Separate server-only and public configuration: `@lib/config/server` imports `server-only` and holds everything secret; `@lib/config` holds only values safe for the browser.
-- A subsystem's variables are required only while that subsystem is on (authentication variables only when `AUTH_ENABLED=true`). Database configuration is always required. Production never allows authentication to be off.
+- A subsystem's variables are required only while that subsystem is on (authentication variables only when `AUTH_ENABLED=true`). Database configuration is always required. Production never allows authentication to be off. Production requires a shared rate-limit store (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) and a secret of at least 32 characters for it; the in-memory store is refused there.
 - Use `NEXT_PUBLIC_*` only for intentionally public values; secrets must never use this prefix.
 - Do not access `process.env` throughout application code.
 - Centralize environment access behind typed configuration.
@@ -546,6 +551,7 @@ docs/conventions/
 ├── adding-a-shared-utility.md
 ├── adding-a-ui-component.md
 ├── adding-a-platform-component.md
+├── adding-a-rate-limit.md
 ├── adding-an-environment-variable.md
 ├── adding-a-database-migration.md
 ├── adding-a-translation.md
@@ -554,7 +560,7 @@ docs/conventions/
 
 Other documentation:
 
-- `docs/architecture/`: how the larger subsystems work (audit, booking, component platform, i18n, map, pagination, release, route protection).
+- `docs/architecture/`: how the larger subsystems work (audit, booking, component platform, i18n, map, pagination, rate limiting, release, route protection).
 - `docs/agents/`: review-agent specifications.
 - `src/lib/README.md` and `src/components/README.md`: indexes of the shared code.
 

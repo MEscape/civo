@@ -49,6 +49,7 @@ In `.env` set `AUTH_ENABLED=true`, `AUTH_SECRET` (32+ random characters), `AUTH_
 ### Optional
 
 - **Map:** set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to a Mapbox _public_ token. Without it the map degrades to a list.
+- **Rate limits against Redis:** in development the limits count in process memory. To try the production path, run `docker compose up -d redis redis-rest` and set `RATE_LIMIT_BACKEND=upstash`, `UPSTASH_REDIS_REST_URL=http://localhost:8079` and `UPSTASH_REDIS_REST_TOKEN` (the token is in `docker-compose.yml`). Production uses an Upstash database; see [`docs/architecture/rate-limiting.md`](./docs/architecture/rate-limiting.md).
 - **Database tools:** `npm run db:studio` (Prisma Studio), `npm run db:migrate:status`.
 
 ## Commands
@@ -86,15 +87,15 @@ A website _is_ a tenant: every row below a website carries the pair `(websiteId,
 
 ## Documentation
 
-| Read                                                                                                               | When                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| [`docs/rules/`](./docs/rules/README.md)                                                                            | What is allowed. Mandatory.                                                                                 |
-| [`docs/conventions/`](./docs/conventions/README.md)                                                                | Step-by-step checklists: add a module, use case, migration, translation, component…                         |
-| [`docs/architecture/`](./docs/architecture/)                                                                       | How a subsystem works: audit, booking, component platform, i18n, map, pagination, release, route protection |
-| [`src/lib/README.md`](./src/lib/README.md), [`src/components/README.md`](./src/components/README.md)               | Index of shared code. Check before writing a utility or component.                                          |
-| [`docs/agents/`](./docs/agents/README.md)                                                                          | Specifications for review agents                                                                            |
-| [`BACKLOG.md`](./BACKLOG.md), [`TODO.md`](./TODO.md)                                                               | Planned features; small fixes and findings                                                                  |
-| [`AGENTS.md`](./AGENTS.md), [`CLAUDE.md`](./CLAUDE.md), [`GEMINI.md`](./GEMINI.md), [`AI_RULES.md`](./AI_RULES.md) | Instructions for AI assistants                                                                              |
+| Read                                                                                                               | When                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| [`docs/rules/`](./docs/rules/README.md)                                                                            | What is allowed. Mandatory.                                                                                                |
+| [`docs/conventions/`](./docs/conventions/README.md)                                                                | Step-by-step checklists: add a module, use case, migration, translation, component…                                        |
+| [`docs/architecture/`](./docs/architecture/)                                                                       | How a subsystem works: audit, booking, component platform, i18n, map, pagination, rate limiting, release, route protection |
+| [`src/lib/README.md`](./src/lib/README.md), [`src/components/README.md`](./src/components/README.md)               | Index of shared code. Check before writing a utility or component.                                                         |
+| [`docs/agents/`](./docs/agents/README.md)                                                                          | Specifications for review agents                                                                                           |
+| [`BACKLOG.md`](./BACKLOG.md), [`TODO.md`](./TODO.md)                                                               | Planned features; small fixes and findings                                                                                 |
+| [`AGENTS.md`](./AGENTS.md), [`CLAUDE.md`](./CLAUDE.md), [`GEMINI.md`](./GEMINI.md), [`AI_RULES.md`](./AI_RULES.md) | Instructions for AI assistants                                                                                             |
 
 ## Deployment
 
