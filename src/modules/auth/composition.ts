@@ -237,7 +237,7 @@ function buildCurrentActorProvider(): CurrentActorProvider {
     );
   }
   return new BetterAuthCurrentActorProvider({
-    sessions: sessionSourceFrom(getAuth()),
+    sessions: sessionSourceFrom(getAuth),
     memberships: getMemberships(),
     getHeaders: () => headers(),
     sessionMaxLifetimeMs: serverEnv.AUTH_SESSION_MAX_LIFETIME_SECONDS * MILLISECONDS_PER_SECOND,

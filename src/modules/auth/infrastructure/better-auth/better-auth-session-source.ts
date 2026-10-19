@@ -16,11 +16,16 @@ export interface SessionSource {
   getSession(input: { headers: Headers }): Promise<SessionSnapshot | null>;
 }
 
-/** Adapts a Better Auth instance to the narrow `SessionSource`. */
-export function sessionSourceFrom(instance: BetterAuthInstance): SessionSource {
+/**
+ * Adapts Better Auth to the narrow `SessionSource`. The instance is asked for
+ * at the first lookup, not when the source is built: other modules wire the
+ * actor provider while they are imported, and `next build` imports them with
+ * no database to check Better Auth's schema against.
+ */
+export function sessionSourceFrom(getInstance: () => BetterAuthInstance): SessionSource {
   return {
     async getSession(input) {
-      const result = await instance.api.getSession(input);
+      const result = await getInstance().api.getSession(input);
       if (result === null) {
         return null;
       }
