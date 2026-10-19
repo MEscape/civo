@@ -88,7 +88,7 @@ async function writeRoles(
  *   value (`false`), not an error.
  *
  * `actorId` has no foreign key to Better Auth's user table: the two live in
- * different databases/roles by design. See migrations/app/0001_membership.sql.
+ * different databases/roles by design. See the Membership model in prisma/schema.prisma.
  */
 /** More platform administrators than this is a data error, not a case to serve. */
 const MAX_PLATFORM_ADMINS = 100;
@@ -133,7 +133,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
     actorId: ActorId,
     isAdministrator: boolean,
   ): AppResultAsync<void, InfrastructureAppError> {
-    const scope = { actorId, tenantId: PLATFORM_TENANT_ID, role: PLATFORM_ADMIN_ROLE };
+    const scope = { actorId, tenantId: PLATFORM_TENANT_ID, role: PLATFORM_ADMIN_ROLE } as const;
     return fromThrowableAsync(async () => {
       if (isAdministrator) {
         await db.orm.public.Membership.select('role').upsert({

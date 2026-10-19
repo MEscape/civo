@@ -73,6 +73,35 @@
     "namespaces": {
       "public": {
         "enum": {
+          "ActorRole": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "admin",
+                "value": "admin"
+              },
+              {
+                "name": "editor",
+                "value": "editor"
+              },
+              {
+                "name": "contributor",
+                "value": "contributor"
+              },
+              {
+                "name": "viewer",
+                "value": "viewer"
+              },
+              {
+                "name": "employee",
+                "value": "employee"
+              },
+              {
+                "name": "platform_admin",
+                "value": "platform_admin"
+              }
+            ]
+          },
           "AuditActorKind": {
             "codecId": "pg/text@1",
             "members": [
@@ -225,6 +254,55 @@
                 "value": "ROLLED_BACK"
               }
             ]
+          },
+          "ResourceType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "employee",
+                "value": "employee"
+              },
+              {
+                "name": "room",
+                "value": "room"
+              },
+              {
+                "name": "office",
+                "value": "office"
+              },
+              {
+                "name": "service_desk",
+                "value": "service-desk"
+              },
+              {
+                "name": "sports_field",
+                "value": "sports-field"
+              },
+              {
+                "name": "meeting_room",
+                "value": "meeting-room"
+              },
+              {
+                "name": "vehicle",
+                "value": "vehicle"
+              },
+              {
+                "name": "equipment",
+                "value": "equipment"
+              },
+              {
+                "name": "facility",
+                "value": "facility"
+              },
+              {
+                "name": "workstation",
+                "value": "workstation"
+              },
+              {
+                "name": "other",
+                "value": "other"
+              }
+            ]
           }
         },
         "models": {
@@ -253,7 +331,7 @@
               "details": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -370,7 +448,7 @@
               "availability": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -412,7 +490,7 @@
               "managerChange": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -426,7 +504,7 @@
               "skills": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -442,6 +520,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ResourceType",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "updatedAt": {
@@ -464,10 +548,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "resourceId"
+                    "resourceId",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -480,10 +566,12 @@
                 "nullable": true,
                 "on": {
                   "localFields": [
-                    "locationId"
+                    "locationId",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -564,14 +652,14 @@
               "availability": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
               "cancellation": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -627,7 +715,7 @@
               "information": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -648,7 +736,7 @@
               "locationIds": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -690,21 +778,21 @@
               "requiredDocuments": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
               "requirements": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
               "rescheduling": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -742,10 +830,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "serviceId"
+                    "serviceId",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -880,7 +970,7 @@
               "customer": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -1022,10 +1112,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "bookingId"
+                    "bookingId",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1038,10 +1130,12 @@
                 "nullable": false,
                 "on": {
                   "localFields": [
-                    "locationId"
+                    "locationId",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1054,10 +1148,12 @@
                 "nullable": false,
                 "on": {
                   "localFields": [
-                    "serviceId"
+                    "serviceId",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1197,14 +1293,14 @@
               "openingHours": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
               "staffHours": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -1242,10 +1338,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "locationId"
+                    "locationId",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1257,10 +1355,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "locationId"
+                    "locationId",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1370,6 +1470,13 @@
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
@@ -1378,10 +1485,12 @@
                 "nullable": false,
                 "on": {
                   "localFields": [
-                    "bookingId"
+                    "bookingId",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1394,10 +1503,12 @@
                 "nullable": false,
                 "on": {
                   "localFields": [
-                    "resourceId"
+                    "resourceId",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -1425,6 +1536,9 @@
                 },
                 "sessionKey": {
                   "column": "sessionKey"
+                },
+                "websiteId": {
+                  "column": "websiteId"
                 }
               },
               "namespaceId": "public",
@@ -1436,7 +1550,7 @@
               "config": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -1626,7 +1740,7 @@
               "mapping": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -1779,6 +1893,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ActorRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "tenantId": {
@@ -1859,6 +1979,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ActorRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "tenantId": {
@@ -2022,7 +2148,7 @@
               "content": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -2323,10 +2449,12 @@
                 "nullable": true,
                 "on": {
                   "localFields": [
-                    "publishedReleaseId"
+                    "publishedReleaseId",
+                    "id"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -2433,7 +2561,7 @@
               "plan": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -2447,7 +2575,7 @@
               "resolutions": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -2485,10 +2613,12 @@
                 "nullable": false,
                 "on": {
                   "localFields": [
-                    "sourceReleaseId"
+                    "sourceReleaseId",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -2555,7 +2685,7 @@
               "changes": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -2604,7 +2734,7 @@
               "snapshot": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -2641,10 +2771,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "publishedReleaseId"
+                    "publishedReleaseId",
+                    "id"
                   ]
                 },
                 "to": {
@@ -2656,10 +2788,12 @@
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "id"
+                    "id",
+                    "websiteId"
                   ],
                   "targetFields": [
-                    "sourceReleaseId"
+                    "sourceReleaseId",
+                    "websiteId"
                   ]
                 },
                 "to": {
@@ -2859,6 +2993,16 @@
                   "prefix": "AuditEntry_actorKind_check"
                 },
                 {
+                  "expression": "jsonb_typeof(\"details\") = 'object'",
+                  "name": "AuditEntry_details_rule_e50db189",
+                  "prefix": "AuditEntry_details_rule"
+                },
+                {
+                  "expression": "char_length(\"source\") BETWEEN 1 AND 64 AND char_length(\"type\") BETWEEN 1 AND 128",
+                  "name": "AuditEntry_label_rule_678d1d4c",
+                  "prefix": "AuditEntry_label_rule"
+                },
+                {
                   "expression": "(\"actorKind\" = 'MEMBER') = (\"actorId\" IS NOT NULL)",
                   "name": "AuditEntry_member_actor_check_98aa2b3c",
                   "prefix": "AuditEntry_member_actor_check"
@@ -2887,8 +3031,8 @@
                   }
                 },
                 "details": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "id": {
@@ -2968,14 +3112,6 @@
                 },
                 {
                   "columns": [
-                    "websiteId"
-                  ],
-                  "name": "AuditEntry_websiteId_idx_aa7167ce",
-                  "prefix": "AuditEntry_websiteId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "websiteId",
                     "occurredAt"
                   ],
@@ -3002,6 +3138,33 @@
               "uniques": []
             },
             "BookableResource": {
+              "checks": [
+                {
+                  "expression": "\"assignedActorId\" IS NULL OR char_length(\"assignedActorId\") BETWEEN 1 AND 128",
+                  "name": "BookableResource_actor_rule_e8fa4523",
+                  "prefix": "BookableResource_actor_rule"
+                },
+                {
+                  "expression": "\"capacity\" IS NULL OR \"capacity\" BETWEEN 1 AND 10000",
+                  "name": "BookableResource_capacity_rule_d4b0b053",
+                  "prefix": "BookableResource_capacity_rule"
+                },
+                {
+                  "expression": "char_length(\"name\") BETWEEN 1 AND 120",
+                  "name": "BookableResource_name_rule_38e74a36",
+                  "prefix": "BookableResource_name_rule"
+                },
+                {
+                  "expression": "jsonb_typeof(\"skills\") = 'array'",
+                  "name": "BookableResource_skills_rule_581142a0",
+                  "prefix": "BookableResource_skills_rule"
+                },
+                {
+                  "expression": "\"type\" IN ('employee', 'room', 'office', 'service-desk', 'sports-field', 'meeting-room', 'vehicle', 'equipment', 'facility', 'workstation', 'other')",
+                  "name": "BookableResource_type_check_8d6e2feb",
+                  "prefix": "BookableResource_type_check"
+                }
+              ],
               "columns": {
                 "assignedActorId": {
                   "codecId": "pg/text@1",
@@ -3009,8 +3172,8 @@
                   "nullable": true
                 },
                 "availability": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "capacity": {
@@ -3047,8 +3210,8 @@
                   "nullable": true
                 },
                 "managerChange": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "name": {
@@ -3057,8 +3220,8 @@
                   "nullable": false
                 },
                 "skills": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "tenantId": {
@@ -3069,7 +3232,13 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ResourceType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -3110,14 +3279,16 @@
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
-                      "locationId"
+                      "locationId",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookableResource"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookingLocation"
@@ -3127,27 +3298,21 @@
               "indexes": [
                 {
                   "columns": [
-                    "locationId"
-                  ],
-                  "name": "BookableResource_locationId_idx_7aae3038",
-                  "prefix": "BookableResource_locationId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "tenantId",
                     "assignedActorId"
                   ],
-                  "name": "BookableResource_tenantId_assignedActorId_idx_3b737228",
-                  "prefix": "BookableResource_tenantId_assignedActorId_idx",
-                  "unique": false
+                  "name": "BookableResource_assignee_idx_796b7750",
+                  "prefix": "BookableResource_assignee_idx",
+                  "unique": false,
+                  "where": "\"assignedActorId\" IS NOT NULL"
                 },
                 {
                   "columns": [
+                    "locationId",
                     "websiteId"
                   ],
-                  "name": "BookableResource_websiteId_idx_aa7167ce",
-                  "prefix": "BookableResource_websiteId_idx",
+                  "name": "BookableResource_locationId_websiteId_idx_3128d57b",
+                  "prefix": "BookableResource_locationId_websiteId_idx",
                   "unique": false
                 },
                 {
@@ -3165,18 +3330,77 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "id",
+                    "websiteId"
+                  ]
+                }
+              ]
             },
             "BookableService": {
+              "checks": [
+                {
+                  "expression": "\"preparationMinutes\" BETWEEN 0 AND 240 AND \"cleanupMinutes\" BETWEEN 0 AND 240",
+                  "name": "BookableService_buffers_rule_53109094",
+                  "prefix": "BookableService_buffers_rule"
+                },
+                {
+                  "expression": "\"category\" IS NULL OR char_length(\"category\") <= 64",
+                  "name": "BookableService_category_rule_e6f05208",
+                  "prefix": "BookableService_category_rule"
+                },
+                {
+                  "expression": "\"description\" IS NULL OR char_length(\"description\") <= 2000",
+                  "name": "BookableService_description_rule_c341d9ba",
+                  "prefix": "BookableService_description_rule"
+                },
+                {
+                  "expression": "\"instructions\" IS NULL OR char_length(\"instructions\") <= 2000",
+                  "name": "BookableService_instructions_rule_7941d6d7",
+                  "prefix": "BookableService_instructions_rule"
+                },
+                {
+                  "expression": "jsonb_typeof(\"locationIds\") = 'array' AND jsonb_typeof(\"requirements\") = 'array' AND jsonb_typeof(\"information\") = 'array' AND jsonb_typeof(\"requiredDocuments\") = 'array'",
+                  "name": "BookableService_lists_rule_8a614c43",
+                  "prefix": "BookableService_lists_rule"
+                },
+                {
+                  "expression": "char_length(\"name\") BETWEEN 1 AND 120",
+                  "name": "BookableService_name_rule_38e74a36",
+                  "prefix": "BookableService_name_rule"
+                },
+                {
+                  "expression": "\"participantsPerBooking\" BETWEEN 1 AND 500 AND \"participantsPerSession\" BETWEEN \"participantsPerBooking\" AND 500",
+                  "name": "BookableService_participants_rule_e342c26a",
+                  "prefix": "BookableService_participants_rule"
+                },
+                {
+                  "expression": "jsonb_typeof(\"cancellation\") = 'object' AND jsonb_typeof(\"rescheduling\") = 'object'",
+                  "name": "BookableService_rules_rule_68aba18c",
+                  "prefix": "BookableService_rules_rule"
+                },
+                {
+                  "expression": "\"durationMinutes\" BETWEEN 5 AND 1440 AND \"slotIntervalMinutes\" BETWEEN 5 AND 240",
+                  "name": "BookableService_timing_rule_998915e5",
+                  "prefix": "BookableService_timing_rule"
+                },
+                {
+                  "expression": "\"noticeMinutes\" BETWEEN 0 AND 525600 AND \"horizonDays\" BETWEEN 1 AND 730",
+                  "name": "BookableService_window_rule_0c76c76e",
+                  "prefix": "BookableService_window_rule"
+                }
+              ],
               "columns": {
                 "availability": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "cancellation": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "category": {
@@ -3223,8 +3447,8 @@
                   "nullable": false
                 },
                 "information": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "instructions": {
@@ -3242,8 +3466,8 @@
                   "nullable": false
                 },
                 "locationIds": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "name": {
@@ -3288,18 +3512,18 @@
                   "nullable": false
                 },
                 "requiredDocuments": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "requirements": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "rescheduling": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "slotIntervalMinutes": {
@@ -3351,14 +3575,6 @@
               "indexes": [
                 {
                   "columns": [
-                    "websiteId"
-                  ],
-                  "name": "BookableService_websiteId_idx_aa7167ce",
-                  "prefix": "BookableService_websiteId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "websiteId",
                     "tenantId"
                   ],
@@ -3372,14 +3588,46 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "id",
+                    "websiteId"
+                  ]
+                }
+              ]
             },
             "Booking": {
               "checks": [
                 {
+                  "expression": "(\"status\" = 'CANCELLED') = (\"cancelledAt\" IS NOT NULL AND \"cancelledBy\" IS NOT NULL)",
+                  "name": "Booking_cancelled_rule_2f2cfb7b",
+                  "prefix": "Booking_cancelled_rule"
+                },
+                {
+                  "expression": "\"status\" NOT IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW') OR \"customer\" IS NOT NULL",
+                  "name": "Booking_customer_known_rule_47752ebc",
+                  "prefix": "Booking_customer_known_rule"
+                },
+                {
+                  "expression": "\"customer\" IS NULL OR jsonb_typeof(\"customer\") = 'object'",
+                  "name": "Booking_customer_rule_4b39e918",
+                  "prefix": "Booking_customer_rule"
+                },
+                {
                   "expression": "\"participants\" >= 1 AND \"participants\" <= \"sessionCapacity\"",
                   "name": "Booking_group_size_rule_69eea88d",
                   "prefix": "Booking_group_size_rule"
+                },
+                {
+                  "expression": "\"reference\" ~ '^[0-9A-HJKMNP-TV-Z]{10}$'",
+                  "name": "Booking_reference_rule_1ba81916",
+                  "prefix": "Booking_reference_rule"
+                },
+                {
+                  "expression": "\"rescheduleCount\" >= 0",
+                  "name": "Booking_reschedules_rule_e98165eb",
+                  "prefix": "Booking_reschedules_rule"
                 },
                 {
                   "expression": "\"start\" < \"end\" AND \"occupiedStart\" <= \"start\" AND \"end\" <= \"occupiedEnd\"",
@@ -3413,8 +3661,8 @@
                   "nullable": false
                 },
                 "customer": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "customerEmail": {
@@ -3546,14 +3794,16 @@
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
-                      "serviceId"
+                      "serviceId",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "Booking"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookableService"
@@ -3563,14 +3813,16 @@
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
-                      "locationId"
+                      "locationId",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "Booking"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookingLocation"
@@ -3580,26 +3832,30 @@
               "indexes": [
                 {
                   "columns": [
-                    "customerEmail"
+                    "websiteId",
+                    "holdExpiresAt"
                   ],
-                  "name": "Booking_customerEmail_idx_7ee6d307",
-                  "prefix": "Booking_customerEmail_idx",
+                  "name": "Booking_held_idx_f16041d9",
+                  "prefix": "Booking_held_idx",
+                  "unique": false,
+                  "where": "\"status\" = 'HELD'"
+                },
+                {
+                  "columns": [
+                    "locationId",
+                    "websiteId"
+                  ],
+                  "name": "Booking_locationId_websiteId_idx_3128d57b",
+                  "prefix": "Booking_locationId_websiteId_idx",
                   "unique": false
                 },
                 {
                   "columns": [
-                    "locationId"
+                    "serviceId",
+                    "websiteId"
                   ],
-                  "name": "Booking_locationId_idx_7aae3038",
-                  "prefix": "Booking_locationId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "serviceId"
-                  ],
-                  "name": "Booking_serviceId_idx_b5d9acbf",
-                  "prefix": "Booking_serviceId_idx",
+                  "name": "Booking_serviceId_websiteId_idx_dff1d9a6",
+                  "prefix": "Booking_serviceId_websiteId_idx",
                   "unique": false
                 },
                 {
@@ -3612,11 +3868,20 @@
                 },
                 {
                   "columns": [
-                    "status",
-                    "holdExpiresAt"
+                    "websiteId",
+                    "customerEmail"
                   ],
-                  "name": "Booking_status_holdExpiresAt_idx_b5009e9f",
-                  "prefix": "Booking_status_holdExpiresAt_idx",
+                  "name": "Booking_websiteId_customerEmail_idx_b6a5d348",
+                  "prefix": "Booking_websiteId_customerEmail_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "occupiedStart"
+                  ],
+                  "name": "Booking_websiteId_occupiedStart_idx_69c19ff2",
+                  "prefix": "Booking_websiteId_occupiedStart_idx",
                   "unique": false
                 },
                 {
@@ -3626,15 +3891,6 @@
                   ],
                   "name": "Booking_websiteId_start_idx_96c4ebf4",
                   "prefix": "Booking_websiteId_start_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "websiteId",
-                    "tenantId"
-                  ],
-                  "name": "Booking_websiteId_tenantId_idx_ac8953f0",
-                  "prefix": "Booking_websiteId_tenantId_idx",
                   "unique": false
                 }
               ],
@@ -3648,10 +3904,38 @@
                   "columns": [
                     "reference"
                   ]
+                },
+                {
+                  "columns": [
+                    "id",
+                    "websiteId"
+                  ]
                 }
               ]
             },
             "BookingLocation": {
+              "checks": [
+                {
+                  "expression": "\"address\" IS NULL OR char_length(\"address\") <= 300",
+                  "name": "BookingLocation_address_rule_1bffa6f4",
+                  "prefix": "BookingLocation_address_rule"
+                },
+                {
+                  "expression": "jsonb_typeof(\"openingHours\") = 'object' AND (\"staffHours\" IS NULL OR jsonb_typeof(\"staffHours\") = 'object')",
+                  "name": "BookingLocation_hours_rule_14882546",
+                  "prefix": "BookingLocation_hours_rule"
+                },
+                {
+                  "expression": "char_length(\"name\") BETWEEN 1 AND 120",
+                  "name": "BookingLocation_name_rule_38e74a36",
+                  "prefix": "BookingLocation_name_rule"
+                },
+                {
+                  "expression": "char_length(\"timeZone\") BETWEEN 1 AND 64",
+                  "name": "BookingLocation_zone_rule_9089714f",
+                  "prefix": "BookingLocation_zone_rule"
+                }
+              ],
               "columns": {
                 "address": {
                   "codecId": "pg/text@1",
@@ -3687,13 +3971,13 @@
                   "nullable": false
                 },
                 "openingHours": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "staffHours": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "tenantId": {
@@ -3745,14 +4029,6 @@
               "indexes": [
                 {
                   "columns": [
-                    "websiteId"
-                  ],
-                  "name": "BookingLocation_websiteId_idx_aa7167ce",
-                  "prefix": "BookingLocation_websiteId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "websiteId",
                     "tenantId"
                   ],
@@ -3766,7 +4042,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "id",
+                    "websiteId"
+                  ]
+                }
+              ]
             },
             "BookingResource": {
               "checks": [
@@ -3806,6 +4089,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 }
               },
               "foreignKeys": [
@@ -3813,14 +4101,16 @@
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
-                      "bookingId"
+                      "bookingId",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookingResource"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "Booking"
@@ -3830,14 +4120,16 @@
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
-                      "resourceId"
+                      "resourceId",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookingResource"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "BookableResource"
@@ -3847,18 +4139,11 @@
               "indexes": [
                 {
                   "columns": [
-                    "bookingId"
+                    "bookingId",
+                    "websiteId"
                   ],
-                  "name": "BookingResource_bookingId_idx_17848f4a",
-                  "prefix": "BookingResource_bookingId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "resourceId"
-                  ],
-                  "name": "BookingResource_resourceId_idx_72964925",
-                  "prefix": "BookingResource_resourceId_idx",
+                  "name": "BookingResource_bookingId_websiteId_idx_1ccc460f",
+                  "prefix": "BookingResource_bookingId_websiteId_idx",
                   "unique": false
                 },
                 {
@@ -3887,6 +4172,11 @@
                   "prefix": "DataSource_kind_check"
                 },
                 {
+                  "expression": "char_length(\"name\") BETWEEN 2 AND 100",
+                  "name": "DataSource_name_rule_ec45dfca",
+                  "prefix": "DataSource_name_rule"
+                },
+                {
                   "expression": "\"status\" IN ('UNKNOWN', 'OK', 'ERROR')",
                   "name": "DataSource_status_check_ff3434bd",
                   "prefix": "DataSource_status_check"
@@ -3894,8 +4184,8 @@
               ],
               "columns": {
                 "config": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "createdAt": {
@@ -4007,6 +4297,26 @@
             "Dataset": {
               "checks": [
                 {
+                  "expression": "char_length(\"canonicalKind\") BETWEEN 1 AND 64",
+                  "name": "Dataset_kind_rule_50c206e9",
+                  "prefix": "Dataset_kind_rule"
+                },
+                {
+                  "expression": "char_length(\"name\") BETWEEN 2 AND 100",
+                  "name": "Dataset_name_rule_ec45dfca",
+                  "prefix": "Dataset_name_rule"
+                },
+                {
+                  "expression": "\"path\" IS NULL OR (\"path\" LIKE '/%' AND \"path\" NOT LIKE '//%' AND char_length(\"path\") <= 500)",
+                  "name": "Dataset_path_rule_784264d8",
+                  "prefix": "Dataset_path_rule"
+                },
+                {
+                  "expression": "\"slug\" ~ '^[a-z0-9-]+$' AND char_length(\"slug\") <= 50",
+                  "name": "Dataset_slug_rule_5079bb33",
+                  "prefix": "Dataset_slug_rule"
+                },
+                {
                   "expression": "\"status\" IN ('UNKNOWN', 'OK', 'ERROR')",
                   "name": "Dataset_status_check_ff3434bd",
                   "prefix": "Dataset_status_check"
@@ -4043,8 +4353,8 @@
                   "nullable": true
                 },
                 "mapping": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "name": {
@@ -4106,16 +4416,7 @@
                   }
                 }
               ],
-              "indexes": [
-                {
-                  "columns": [
-                    "dataSourceId"
-                  ],
-                  "name": "Dataset_dataSourceId_idx_536a4d74",
-                  "prefix": "Dataset_dataSourceId_idx",
-                  "unique": false
-                }
-              ],
+              "indexes": [],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -4131,6 +4432,33 @@
               ]
             },
             "Invitation": {
+              "checks": [
+                {
+                  "expression": "char_length(\"email\") BETWEEN 3 AND 254",
+                  "name": "Invitation_email_rule_b834da03",
+                  "prefix": "Invitation_email_rule"
+                },
+                {
+                  "expression": "(\"role\" = 'platform_admin') = (\"tenantId\" = 'platform')",
+                  "name": "Invitation_platform_rule_ff43ec02",
+                  "prefix": "Invitation_platform_rule"
+                },
+                {
+                  "expression": "\"role\" IN ('admin', 'editor', 'contributor', 'viewer', 'employee', 'platform_admin')",
+                  "name": "Invitation_role_check_62bd3a39",
+                  "prefix": "Invitation_role_check"
+                },
+                {
+                  "expression": "\"tenantId\" ~ '^[A-Za-z0-9_-]{1,64}$'",
+                  "name": "Invitation_tenant_rule_0516ac63",
+                  "prefix": "Invitation_tenant_rule"
+                },
+                {
+                  "expression": "\"tokenHash\" ~ '^[0-9a-f]{64}$'",
+                  "name": "Invitation_token_rule_eadbb071",
+                  "prefix": "Invitation_token_rule"
+                }
+              ],
               "columns": {
                 "acceptedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4169,7 +4497,13 @@
                 "role": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ActorRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
@@ -4184,6 +4518,16 @@
               },
               "foreignKeys": [],
               "indexes": [
+                {
+                  "columns": [
+                    "tenantId",
+                    "createdAt"
+                  ],
+                  "name": "Invitation_open_idx_8f1ab84a",
+                  "prefix": "Invitation_open_idx",
+                  "unique": false,
+                  "where": "\"acceptedAt\" IS NULL"
+                },
                 {
                   "columns": [
                     "tenantId",
@@ -4208,6 +4552,28 @@
               ]
             },
             "Membership": {
+              "checks": [
+                {
+                  "expression": "char_length(\"actorId\") BETWEEN 1 AND 128",
+                  "name": "Membership_actor_rule_98c52012",
+                  "prefix": "Membership_actor_rule"
+                },
+                {
+                  "expression": "(\"role\" = 'platform_admin') = (\"tenantId\" = 'platform')",
+                  "name": "Membership_platform_rule_ff43ec02",
+                  "prefix": "Membership_platform_rule"
+                },
+                {
+                  "expression": "\"role\" IN ('admin', 'editor', 'contributor', 'viewer', 'employee', 'platform_admin')",
+                  "name": "Membership_role_check_62bd3a39",
+                  "prefix": "Membership_role_check"
+                },
+                {
+                  "expression": "\"tenantId\" ~ '^[A-Za-z0-9_-]{1,64}$'",
+                  "name": "Membership_tenant_rule_0516ac63",
+                  "prefix": "Membership_tenant_rule"
+                }
+              ],
               "columns": {
                 "actorId": {
                   "codecId": "pg/text@1",
@@ -4231,7 +4597,13 @@
                 "role": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ActorRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
@@ -4240,7 +4612,17 @@
                 }
               },
               "foreignKeys": [],
-              "indexes": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "tenantId",
+                    "role"
+                  ],
+                  "name": "Membership_tenantId_role_idx_c3ec5d48",
+                  "prefix": "Membership_tenantId_role_idx",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -4257,6 +4639,23 @@
               ]
             },
             "Page": {
+              "checks": [
+                {
+                  "expression": "(\"path\" = '' OR \"path\" ~ '^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$') AND char_length(\"path\") <= 200",
+                  "name": "Page_path_rule_8813a6c7",
+                  "prefix": "Page_path_rule"
+                },
+                {
+                  "expression": "char_length(\"title\") BETWEEN 2 AND 120",
+                  "name": "Page_title_rule_9831bb81",
+                  "prefix": "Page_title_rule"
+                },
+                {
+                  "expression": "\"version\" >= 1",
+                  "name": "Page_version_rule_efd86c31",
+                  "prefix": "Page_version_rule"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4332,17 +4731,7 @@
                   }
                 }
               ],
-              "indexes": [
-                {
-                  "columns": [
-                    "websiteId",
-                    "tenantId"
-                  ],
-                  "name": "Page_websiteId_tenantId_idx_ac8953f0",
-                  "prefix": "Page_websiteId_tenantId_idx",
-                  "unique": false
-                }
-              ],
+              "indexes": [],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -4363,12 +4752,17 @@
                   "expression": "\"status\" IN ('DRAFT', 'PUBLISHED')",
                   "name": "PageConfig_status_check_1b4a7b6b",
                   "prefix": "PageConfig_status_check"
+                },
+                {
+                  "expression": "\"version\" >= 1",
+                  "name": "PageConfig_version_rule_efd86c31",
+                  "prefix": "PageConfig_version_rule"
                 }
               ],
               "columns": {
                 "content": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "createdAt": {
@@ -4443,16 +4837,7 @@
                   }
                 }
               ],
-              "indexes": [
-                {
-                  "columns": [
-                    "pageId"
-                  ],
-                  "name": "PageConfig_pageId_idx_8caaba4f",
-                  "prefix": "PageConfig_pageId_idx",
-                  "unique": false
-                }
-              ],
+              "indexes": [],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -4469,6 +4854,26 @@
             },
             "Website": {
               "checks": [
+                {
+                  "expression": "\"description\" IS NULL OR char_length(\"description\") <= 500",
+                  "name": "Website_description_rule_e354da0e",
+                  "prefix": "Website_description_rule"
+                },
+                {
+                  "expression": "char_length(\"name\") BETWEEN 2 AND 120",
+                  "name": "Website_name_rule_ccdd0785",
+                  "prefix": "Website_name_rule"
+                },
+                {
+                  "expression": "\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND char_length(\"slug\") <= 80",
+                  "name": "Website_slug_rule_ead2f3ca",
+                  "prefix": "Website_slug_rule"
+                },
+                {
+                  "expression": "char_length(\"templateKey\") BETWEEN 1 AND 64",
+                  "name": "Website_template_rule_3c5a908f",
+                  "prefix": "Website_template_rule"
+                },
                 {
                   "expression": "\"id\" = \"tenantId\"",
                   "name": "Website_tenant_is_website_check_34a4fea9",
@@ -4535,14 +4940,16 @@
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
-                      "publishedReleaseId"
+                      "publishedReleaseId",
+                      "id"
                     ],
                     "namespaceId": "public",
                     "tableName": "Website"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "WebsiteRelease"
@@ -4577,6 +4984,11 @@
             "WebsiteMigration": {
               "checks": [
                 {
+                  "expression": "(\"status\" = 'APPLIED') = (\"appliedAt\" IS NOT NULL)",
+                  "name": "WebsiteMigration_applied_rule_bd7c0272",
+                  "prefix": "WebsiteMigration_applied_rule"
+                },
+                {
                   "expression": "\"status\" IN ('PROPOSED', 'APPLIED')",
                   "name": "WebsiteMigration_status_check_953d0064",
                   "prefix": "WebsiteMigration_status_check"
@@ -4608,8 +5020,8 @@
                   "nullable": false
                 },
                 "plan": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "proposedBy": {
@@ -4618,8 +5030,8 @@
                   "nullable": false
                 },
                 "resolutions": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "sourceReleaseId": {
@@ -4670,14 +5082,16 @@
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
-                      "sourceReleaseId"
+                      "sourceReleaseId",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "WebsiteMigration"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "id",
+                      "websiteId"
                     ],
                     "namespaceId": "public",
                     "tableName": "WebsiteRelease"
@@ -4687,10 +5101,11 @@
               "indexes": [
                 {
                   "columns": [
-                    "sourceReleaseId"
+                    "sourceReleaseId",
+                    "websiteId"
                   ],
-                  "name": "WebsiteMigration_sourceReleaseId_idx_7dff7977",
-                  "prefix": "WebsiteMigration_sourceReleaseId_idx",
+                  "name": "WebsiteMigration_sourceReleaseId_websiteId_idx_7795b2f9",
+                  "prefix": "WebsiteMigration_sourceReleaseId_websiteId_idx",
                   "unique": false
                 },
                 {
@@ -4700,14 +5115,6 @@
                   ],
                   "name": "WebsiteMigration_websiteId_createdAt_idx_5579a8b3",
                   "prefix": "WebsiteMigration_websiteId_createdAt_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "websiteId"
-                  ],
-                  "name": "WebsiteMigration_websiteId_idx_aa7167ce",
-                  "prefix": "WebsiteMigration_websiteId_idx",
                   "unique": false
                 }
               ],
@@ -4721,6 +5128,26 @@
             "WebsiteRelease": {
               "checks": [
                 {
+                  "expression": "\"snapshotHash\" ~ '^[0-9a-f]{64}$'",
+                  "name": "WebsiteRelease_hash_rule_962e3d92",
+                  "prefix": "WebsiteRelease_hash_rule"
+                },
+                {
+                  "expression": "\"note\" IS NULL OR char_length(\"note\") <= 200",
+                  "name": "WebsiteRelease_note_rule_f768e023",
+                  "prefix": "WebsiteRelease_note_rule"
+                },
+                {
+                  "expression": "\"releaseNumber\" >= 1",
+                  "name": "WebsiteRelease_number_rule_d77b088c",
+                  "prefix": "WebsiteRelease_number_rule"
+                },
+                {
+                  "expression": "(\"status\" IN ('PUBLISHED', 'ROLLED_BACK')) = (\"publishedAt\" IS NOT NULL)",
+                  "name": "WebsiteRelease_published_rule_d776d660",
+                  "prefix": "WebsiteRelease_published_rule"
+                },
+                {
                   "expression": "\"status\" IN ('DRAFT', 'PUBLISHED', 'FAILED', 'ROLLED_BACK')",
                   "name": "WebsiteRelease_status_check_4475a53d",
                   "prefix": "WebsiteRelease_status_check"
@@ -4728,8 +5155,8 @@
               ],
               "columns": {
                 "changes": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": true
                 },
                 "createdAt": {
@@ -4767,8 +5194,8 @@
                   "nullable": false
                 },
                 "snapshot": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "snapshotHash": {
@@ -4816,16 +5243,7 @@
                   }
                 }
               ],
-              "indexes": [
-                {
-                  "columns": [
-                    "websiteId"
-                  ],
-                  "name": "WebsiteRelease_websiteId_idx_aa7167ce",
-                  "prefix": "WebsiteRelease_websiteId_idx",
-                  "unique": false
-                }
-              ],
+              "indexes": [],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -4837,10 +5255,23 @@
                     "websiteId",
                     "releaseNumber"
                   ]
+                },
+                {
+                  "columns": [
+                    "id",
+                    "websiteId"
+                  ]
                 }
               ]
             },
             "WebsiteTheme": {
+              "checks": [
+                {
+                  "expression": "\"primaryColor\" ~ '^#[0-9a-fA-F]{6}$' AND \"secondaryColor\" ~ '^#[0-9a-fA-F]{6}$' AND \"accentColor\" ~ '^#[0-9a-fA-F]{6}$'",
+                  "name": "WebsiteTheme_colors_rule_d76d4915",
+                  "prefix": "WebsiteTheme_colors_rule"
+                }
+              ],
               "columns": {
                 "accentColor": {
                   "codecId": "pg/text@1",
@@ -4951,6 +5382,17 @@
             }
           },
           "valueSet": {
+            "ActorRole": {
+              "kind": "valueSet",
+              "values": [
+                "admin",
+                "editor",
+                "contributor",
+                "viewer",
+                "employee",
+                "platform_admin"
+              ]
+            },
             "AuditActorKind": {
               "kind": "valueSet",
               "values": [
@@ -5022,6 +5464,22 @@
                 "FAILED",
                 "ROLLED_BACK"
               ]
+            },
+            "ResourceType": {
+              "kind": "valueSet",
+              "values": [
+                "employee",
+                "room",
+                "office",
+                "service-desk",
+                "sports-field",
+                "meeting-room",
+                "vehicle",
+                "equipment",
+                "facility",
+                "workstation",
+                "other"
+              ]
             }
           }
         },
@@ -5029,7 +5487,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4a9e0b19c375ac44aa27a65b2da7e733b8638bbfce76777a43cdc0ea5e840621"
+    "storageHash": "02d2cc979bf21c8eff202f310eca267162b4257d8328d4d16022d5fc7d2ec69d"
   },
   "execution": {
     "executionHash": "a372b913a1bd7abd2b3acd28399d86aa7476f99ec19c36253b900ecd58811c39",

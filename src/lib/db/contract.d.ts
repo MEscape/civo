@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4a9e0b19c375ac44aa27a65b2da7e733b8638bbfce76777a43cdc0ea5e840621'>;
+  StorageHashBase<'02d2cc979bf21c8eff202f310eca267162b4257d8328d4d16022d5fc7d2ec69d'>;
 export type ExecutionHash =
   ExecutionHashBase<'a372b913a1bd7abd2b3acd28399d86aa7476f99ec19c36253b900ecd58811c39'>;
 export type ProfileHash =
@@ -253,7 +253,7 @@ export type FieldOutputTypes = {
     readonly AuditEntry: {
       readonly actorId: CodecTypes['pg/text@1']['output'] | null;
       readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
-      readonly details: CodecTypes['pg/json@1']['output'];
+      readonly details: CodecTypes['pg/jsonb@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly severity: 'INFO' | 'WARN';
@@ -263,23 +263,34 @@ export type FieldOutputTypes = {
     };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['output'] | null;
-      readonly availability: CodecTypes['pg/json@1']['output'] | null;
+      readonly availability: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly locationId: CodecTypes['pg/text@1']['output'] | null;
-      readonly managerChange: CodecTypes['pg/json@1']['output'] | null;
+      readonly managerChange: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly skills: CodecTypes['pg/json@1']['output'];
+      readonly skills: CodecTypes['pg/jsonb@1']['output'];
       readonly tenantId: CodecTypes['pg/text@1']['output'];
-      readonly type: CodecTypes['pg/text@1']['output'];
+      readonly type:
+        | 'employee'
+        | 'room'
+        | 'office'
+        | 'service-desk'
+        | 'sports-field'
+        | 'meeting-room'
+        | 'vehicle'
+        | 'equipment'
+        | 'facility'
+        | 'workstation'
+        | 'other';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly BookableService: {
-      readonly availability: CodecTypes['pg/json@1']['output'] | null;
-      readonly cancellation: CodecTypes['pg/json@1']['output'];
+      readonly availability: CodecTypes['pg/jsonb@1']['output'] | null;
+      readonly cancellation: CodecTypes['pg/jsonb@1']['output'];
       readonly category: CodecTypes['pg/text@1']['output'] | null;
       readonly cleanupMinutes: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -287,18 +298,18 @@ export type FieldOutputTypes = {
       readonly durationMinutes: CodecTypes['pg/int4@1']['output'];
       readonly horizonDays: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly information: CodecTypes['pg/json@1']['output'];
+      readonly information: CodecTypes['pg/jsonb@1']['output'];
       readonly instructions: CodecTypes['pg/text@1']['output'] | null;
       readonly isActive: CodecTypes['pg/bool@1']['output'];
-      readonly locationIds: CodecTypes['pg/json@1']['output'];
+      readonly locationIds: CodecTypes['pg/jsonb@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly noticeMinutes: CodecTypes['pg/int4@1']['output'];
       readonly participantsPerBooking: CodecTypes['pg/int4@1']['output'];
       readonly participantsPerSession: CodecTypes['pg/int4@1']['output'];
       readonly preparationMinutes: CodecTypes['pg/int4@1']['output'];
-      readonly requiredDocuments: CodecTypes['pg/json@1']['output'];
-      readonly requirements: CodecTypes['pg/json@1']['output'];
-      readonly rescheduling: CodecTypes['pg/json@1']['output'];
+      readonly requiredDocuments: CodecTypes['pg/jsonb@1']['output'];
+      readonly requirements: CodecTypes['pg/jsonb@1']['output'];
+      readonly rescheduling: CodecTypes['pg/jsonb@1']['output'];
       readonly slotIntervalMinutes: CodecTypes['pg/int4@1']['output'];
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -308,7 +319,7 @@ export type FieldOutputTypes = {
       readonly cancelledAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly cancelledBy: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly customer: CodecTypes['pg/json@1']['output'] | null;
+      readonly customer: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly customerEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly end: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -334,8 +345,8 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly openingHours: CodecTypes['pg/json@1']['output'];
-      readonly staffHours: CodecTypes['pg/json@1']['output'] | null;
+      readonly openingHours: CodecTypes['pg/jsonb@1']['output'];
+      readonly staffHours: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly timeZone: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -348,6 +359,7 @@ export type FieldOutputTypes = {
       readonly occupiedStart: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly resourceId: CodecTypes['pg/text@1']['output'];
       readonly sessionKey: CodecTypes['pg/text@1']['output'];
+      readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly Dataset: {
       readonly canonicalKind: CodecTypes['pg/text@1']['output'];
@@ -355,7 +367,7 @@ export type FieldOutputTypes = {
       readonly dataSourceId: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly lastFetchedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly mapping: CodecTypes['pg/json@1']['output'] | null;
+      readonly mapping: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly path: CodecTypes['pg/text@1']['output'] | null;
       readonly slug: CodecTypes['pg/text@1']['output'];
@@ -363,7 +375,7 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly DataSource: {
-      readonly config: CodecTypes['pg/json@1']['output'];
+      readonly config: CodecTypes['pg/jsonb@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly kind: 'MOCK' | 'REST';
@@ -381,7 +393,7 @@ export type FieldOutputTypes = {
       readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly invitedBy: CodecTypes['pg/text@1']['output'];
-      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly tokenHash: CodecTypes['pg/text@1']['output'];
     };
@@ -389,7 +401,7 @@ export type FieldOutputTypes = {
       readonly actorId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['output'];
     };
     readonly Page: {
@@ -403,7 +415,7 @@ export type FieldOutputTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly PageConfig: {
-      readonly content: CodecTypes['pg/json@1']['output'];
+      readonly content: CodecTypes['pg/jsonb@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly pageId: CodecTypes['pg/text@1']['output'];
@@ -427,22 +439,22 @@ export type FieldOutputTypes = {
       readonly appliedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly plan: CodecTypes['pg/json@1']['output'];
+      readonly plan: CodecTypes['pg/jsonb@1']['output'];
       readonly proposedBy: CodecTypes['pg/text@1']['output'];
-      readonly resolutions: CodecTypes['pg/json@1']['output'] | null;
+      readonly resolutions: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly sourceReleaseId: CodecTypes['pg/text@1']['output'];
       readonly status: 'PROPOSED' | 'APPLIED';
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly WebsiteRelease: {
-      readonly changes: CodecTypes['pg/json@1']['output'] | null;
+      readonly changes: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly note: CodecTypes['pg/text@1']['output'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly publishedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['output'];
-      readonly snapshot: CodecTypes['pg/json@1']['output'];
+      readonly snapshot: CodecTypes['pg/jsonb@1']['output'];
       readonly snapshotHash: CodecTypes['pg/text@1']['output'];
       readonly status: 'DRAFT' | 'PUBLISHED' | 'FAILED' | 'ROLLED_BACK';
       readonly websiteId: CodecTypes['pg/text@1']['output'];
@@ -465,7 +477,7 @@ export type FieldInputTypes = {
     readonly AuditEntry: {
       readonly actorId: CodecTypes['pg/text@1']['input'] | null;
       readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
-      readonly details: CodecTypes['pg/json@1']['input'];
+      readonly details: CodecTypes['pg/jsonb@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly severity: 'INFO' | 'WARN';
@@ -475,23 +487,34 @@ export type FieldInputTypes = {
     };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['input'] | null;
-      readonly availability: CodecTypes['pg/json@1']['input'] | null;
+      readonly availability: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly locationId: CodecTypes['pg/text@1']['input'] | null;
-      readonly managerChange: CodecTypes['pg/json@1']['input'] | null;
+      readonly managerChange: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly skills: CodecTypes['pg/json@1']['input'];
+      readonly skills: CodecTypes['pg/jsonb@1']['input'];
       readonly tenantId: CodecTypes['pg/text@1']['input'];
-      readonly type: CodecTypes['pg/text@1']['input'];
+      readonly type:
+        | 'employee'
+        | 'room'
+        | 'office'
+        | 'service-desk'
+        | 'sports-field'
+        | 'meeting-room'
+        | 'vehicle'
+        | 'equipment'
+        | 'facility'
+        | 'workstation'
+        | 'other';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly BookableService: {
-      readonly availability: CodecTypes['pg/json@1']['input'] | null;
-      readonly cancellation: CodecTypes['pg/json@1']['input'];
+      readonly availability: CodecTypes['pg/jsonb@1']['input'] | null;
+      readonly cancellation: CodecTypes['pg/jsonb@1']['input'];
       readonly category: CodecTypes['pg/text@1']['input'] | null;
       readonly cleanupMinutes: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -499,18 +522,18 @@ export type FieldInputTypes = {
       readonly durationMinutes: CodecTypes['pg/int4@1']['input'];
       readonly horizonDays: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly information: CodecTypes['pg/json@1']['input'];
+      readonly information: CodecTypes['pg/jsonb@1']['input'];
       readonly instructions: CodecTypes['pg/text@1']['input'] | null;
       readonly isActive: CodecTypes['pg/bool@1']['input'];
-      readonly locationIds: CodecTypes['pg/json@1']['input'];
+      readonly locationIds: CodecTypes['pg/jsonb@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly noticeMinutes: CodecTypes['pg/int4@1']['input'];
       readonly participantsPerBooking: CodecTypes['pg/int4@1']['input'];
       readonly participantsPerSession: CodecTypes['pg/int4@1']['input'];
       readonly preparationMinutes: CodecTypes['pg/int4@1']['input'];
-      readonly requiredDocuments: CodecTypes['pg/json@1']['input'];
-      readonly requirements: CodecTypes['pg/json@1']['input'];
-      readonly rescheduling: CodecTypes['pg/json@1']['input'];
+      readonly requiredDocuments: CodecTypes['pg/jsonb@1']['input'];
+      readonly requirements: CodecTypes['pg/jsonb@1']['input'];
+      readonly rescheduling: CodecTypes['pg/jsonb@1']['input'];
       readonly slotIntervalMinutes: CodecTypes['pg/int4@1']['input'];
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -520,7 +543,7 @@ export type FieldInputTypes = {
       readonly cancelledAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly cancelledBy: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly customer: CodecTypes['pg/json@1']['input'] | null;
+      readonly customer: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly customerEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly end: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -546,8 +569,8 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly openingHours: CodecTypes['pg/json@1']['input'];
-      readonly staffHours: CodecTypes['pg/json@1']['input'] | null;
+      readonly openingHours: CodecTypes['pg/jsonb@1']['input'];
+      readonly staffHours: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly timeZone: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -560,6 +583,7 @@ export type FieldInputTypes = {
       readonly occupiedStart: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly resourceId: CodecTypes['pg/text@1']['input'];
       readonly sessionKey: CodecTypes['pg/text@1']['input'];
+      readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly Dataset: {
       readonly canonicalKind: CodecTypes['pg/text@1']['input'];
@@ -567,7 +591,7 @@ export type FieldInputTypes = {
       readonly dataSourceId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly lastFetchedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly mapping: CodecTypes['pg/json@1']['input'] | null;
+      readonly mapping: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly path: CodecTypes['pg/text@1']['input'] | null;
       readonly slug: CodecTypes['pg/text@1']['input'];
@@ -575,7 +599,7 @@ export type FieldInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly DataSource: {
-      readonly config: CodecTypes['pg/json@1']['input'];
+      readonly config: CodecTypes['pg/jsonb@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly kind: 'MOCK' | 'REST';
@@ -593,7 +617,7 @@ export type FieldInputTypes = {
       readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly invitedBy: CodecTypes['pg/text@1']['input'];
-      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly tokenHash: CodecTypes['pg/text@1']['input'];
     };
@@ -601,7 +625,7 @@ export type FieldInputTypes = {
       readonly actorId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['input'];
     };
     readonly Page: {
@@ -615,7 +639,7 @@ export type FieldInputTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly PageConfig: {
-      readonly content: CodecTypes['pg/json@1']['input'];
+      readonly content: CodecTypes['pg/jsonb@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly pageId: CodecTypes['pg/text@1']['input'];
@@ -639,22 +663,22 @@ export type FieldInputTypes = {
       readonly appliedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly plan: CodecTypes['pg/json@1']['input'];
+      readonly plan: CodecTypes['pg/jsonb@1']['input'];
       readonly proposedBy: CodecTypes['pg/text@1']['input'];
-      readonly resolutions: CodecTypes['pg/json@1']['input'] | null;
+      readonly resolutions: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly sourceReleaseId: CodecTypes['pg/text@1']['input'];
       readonly status: 'PROPOSED' | 'APPLIED';
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly WebsiteRelease: {
-      readonly changes: CodecTypes['pg/json@1']['input'] | null;
+      readonly changes: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly note: CodecTypes['pg/text@1']['input'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly publishedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['input'];
-      readonly snapshot: CodecTypes['pg/json@1']['input'];
+      readonly snapshot: CodecTypes['pg/jsonb@1']['input'];
       readonly snapshotHash: CodecTypes['pg/text@1']['input'];
       readonly status: 'DRAFT' | 'PUBLISHED' | 'FAILED' | 'ROLLED_BACK';
       readonly websiteId: CodecTypes['pg/text@1']['input'];
@@ -677,7 +701,7 @@ export type StorageColumnTypes = {
     readonly AuditEntry: {
       readonly actorId: CodecTypes['pg/text@1']['output'] | null;
       readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
-      readonly details: CodecTypes['pg/json@1']['output'];
+      readonly details: CodecTypes['pg/jsonb@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly severity: 'INFO' | 'WARN';
@@ -687,23 +711,34 @@ export type StorageColumnTypes = {
     };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['output'] | null;
-      readonly availability: CodecTypes['pg/json@1']['output'] | null;
+      readonly availability: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly locationId: CodecTypes['pg/text@1']['output'] | null;
-      readonly managerChange: CodecTypes['pg/json@1']['output'] | null;
+      readonly managerChange: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly skills: CodecTypes['pg/json@1']['output'];
+      readonly skills: CodecTypes['pg/jsonb@1']['output'];
       readonly tenantId: CodecTypes['pg/text@1']['output'];
-      readonly type: CodecTypes['pg/text@1']['output'];
+      readonly type:
+        | 'employee'
+        | 'room'
+        | 'office'
+        | 'service-desk'
+        | 'sports-field'
+        | 'meeting-room'
+        | 'vehicle'
+        | 'equipment'
+        | 'facility'
+        | 'workstation'
+        | 'other';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly BookableService: {
-      readonly availability: CodecTypes['pg/json@1']['output'] | null;
-      readonly cancellation: CodecTypes['pg/json@1']['output'];
+      readonly availability: CodecTypes['pg/jsonb@1']['output'] | null;
+      readonly cancellation: CodecTypes['pg/jsonb@1']['output'];
       readonly category: CodecTypes['pg/text@1']['output'] | null;
       readonly cleanupMinutes: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -711,18 +746,18 @@ export type StorageColumnTypes = {
       readonly durationMinutes: CodecTypes['pg/int4@1']['output'];
       readonly horizonDays: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly information: CodecTypes['pg/json@1']['output'];
+      readonly information: CodecTypes['pg/jsonb@1']['output'];
       readonly instructions: CodecTypes['pg/text@1']['output'] | null;
       readonly isActive: CodecTypes['pg/bool@1']['output'];
-      readonly locationIds: CodecTypes['pg/json@1']['output'];
+      readonly locationIds: CodecTypes['pg/jsonb@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly noticeMinutes: CodecTypes['pg/int4@1']['output'];
       readonly participantsPerBooking: CodecTypes['pg/int4@1']['output'];
       readonly participantsPerSession: CodecTypes['pg/int4@1']['output'];
       readonly preparationMinutes: CodecTypes['pg/int4@1']['output'];
-      readonly requiredDocuments: CodecTypes['pg/json@1']['output'];
-      readonly requirements: CodecTypes['pg/json@1']['output'];
-      readonly rescheduling: CodecTypes['pg/json@1']['output'];
+      readonly requiredDocuments: CodecTypes['pg/jsonb@1']['output'];
+      readonly requirements: CodecTypes['pg/jsonb@1']['output'];
+      readonly rescheduling: CodecTypes['pg/jsonb@1']['output'];
       readonly slotIntervalMinutes: CodecTypes['pg/int4@1']['output'];
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -732,7 +767,7 @@ export type StorageColumnTypes = {
       readonly cancelledAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly cancelledBy: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly customer: CodecTypes['pg/json@1']['output'] | null;
+      readonly customer: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly customerEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly end: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -758,8 +793,8 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly openingHours: CodecTypes['pg/json@1']['output'];
-      readonly staffHours: CodecTypes['pg/json@1']['output'] | null;
+      readonly openingHours: CodecTypes['pg/jsonb@1']['output'];
+      readonly staffHours: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly timeZone: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -772,6 +807,7 @@ export type StorageColumnTypes = {
       readonly occupiedStart: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly resourceId: CodecTypes['pg/text@1']['output'];
       readonly sessionKey: CodecTypes['pg/text@1']['output'];
+      readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly Dataset: {
       readonly canonicalKind: CodecTypes['pg/text@1']['output'];
@@ -779,7 +815,7 @@ export type StorageColumnTypes = {
       readonly dataSourceId: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly lastFetchedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly mapping: CodecTypes['pg/json@1']['output'] | null;
+      readonly mapping: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly path: CodecTypes['pg/text@1']['output'] | null;
       readonly slug: CodecTypes['pg/text@1']['output'];
@@ -787,7 +823,7 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly DataSource: {
-      readonly config: CodecTypes['pg/json@1']['output'];
+      readonly config: CodecTypes['pg/jsonb@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly kind: 'MOCK' | 'REST';
@@ -805,7 +841,7 @@ export type StorageColumnTypes = {
       readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly invitedBy: CodecTypes['pg/text@1']['output'];
-      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['output'];
       readonly tokenHash: CodecTypes['pg/text@1']['output'];
     };
@@ -813,7 +849,7 @@ export type StorageColumnTypes = {
       readonly actorId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['output'];
     };
     readonly Page: {
@@ -827,7 +863,7 @@ export type StorageColumnTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly PageConfig: {
-      readonly content: CodecTypes['pg/json@1']['output'];
+      readonly content: CodecTypes['pg/jsonb@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly pageId: CodecTypes['pg/text@1']['output'];
@@ -851,22 +887,22 @@ export type StorageColumnTypes = {
       readonly appliedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly plan: CodecTypes['pg/json@1']['output'];
+      readonly plan: CodecTypes['pg/jsonb@1']['output'];
       readonly proposedBy: CodecTypes['pg/text@1']['output'];
-      readonly resolutions: CodecTypes['pg/json@1']['output'] | null;
+      readonly resolutions: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly sourceReleaseId: CodecTypes['pg/text@1']['output'];
       readonly status: 'PROPOSED' | 'APPLIED';
       readonly websiteId: CodecTypes['pg/text@1']['output'];
     };
     readonly WebsiteRelease: {
-      readonly changes: CodecTypes['pg/json@1']['output'] | null;
+      readonly changes: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly note: CodecTypes['pg/text@1']['output'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly publishedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['output'];
-      readonly snapshot: CodecTypes['pg/json@1']['output'];
+      readonly snapshot: CodecTypes['pg/jsonb@1']['output'];
       readonly snapshotHash: CodecTypes['pg/text@1']['output'];
       readonly status: 'DRAFT' | 'PUBLISHED' | 'FAILED' | 'ROLLED_BACK';
       readonly websiteId: CodecTypes['pg/text@1']['output'];
@@ -889,7 +925,7 @@ export type StorageColumnInputTypes = {
     readonly AuditEntry: {
       readonly actorId: CodecTypes['pg/text@1']['input'] | null;
       readonly actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
-      readonly details: CodecTypes['pg/json@1']['input'];
+      readonly details: CodecTypes['pg/jsonb@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly occurredAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly severity: 'INFO' | 'WARN';
@@ -899,23 +935,34 @@ export type StorageColumnInputTypes = {
     };
     readonly BookableResource: {
       readonly assignedActorId: CodecTypes['pg/text@1']['input'] | null;
-      readonly availability: CodecTypes['pg/json@1']['input'] | null;
+      readonly availability: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly capacity: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly locationId: CodecTypes['pg/text@1']['input'] | null;
-      readonly managerChange: CodecTypes['pg/json@1']['input'] | null;
+      readonly managerChange: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly skills: CodecTypes['pg/json@1']['input'];
+      readonly skills: CodecTypes['pg/jsonb@1']['input'];
       readonly tenantId: CodecTypes['pg/text@1']['input'];
-      readonly type: CodecTypes['pg/text@1']['input'];
+      readonly type:
+        | 'employee'
+        | 'room'
+        | 'office'
+        | 'service-desk'
+        | 'sports-field'
+        | 'meeting-room'
+        | 'vehicle'
+        | 'equipment'
+        | 'facility'
+        | 'workstation'
+        | 'other';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly BookableService: {
-      readonly availability: CodecTypes['pg/json@1']['input'] | null;
-      readonly cancellation: CodecTypes['pg/json@1']['input'];
+      readonly availability: CodecTypes['pg/jsonb@1']['input'] | null;
+      readonly cancellation: CodecTypes['pg/jsonb@1']['input'];
       readonly category: CodecTypes['pg/text@1']['input'] | null;
       readonly cleanupMinutes: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -923,18 +970,18 @@ export type StorageColumnInputTypes = {
       readonly durationMinutes: CodecTypes['pg/int4@1']['input'];
       readonly horizonDays: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly information: CodecTypes['pg/json@1']['input'];
+      readonly information: CodecTypes['pg/jsonb@1']['input'];
       readonly instructions: CodecTypes['pg/text@1']['input'] | null;
       readonly isActive: CodecTypes['pg/bool@1']['input'];
-      readonly locationIds: CodecTypes['pg/json@1']['input'];
+      readonly locationIds: CodecTypes['pg/jsonb@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly noticeMinutes: CodecTypes['pg/int4@1']['input'];
       readonly participantsPerBooking: CodecTypes['pg/int4@1']['input'];
       readonly participantsPerSession: CodecTypes['pg/int4@1']['input'];
       readonly preparationMinutes: CodecTypes['pg/int4@1']['input'];
-      readonly requiredDocuments: CodecTypes['pg/json@1']['input'];
-      readonly requirements: CodecTypes['pg/json@1']['input'];
-      readonly rescheduling: CodecTypes['pg/json@1']['input'];
+      readonly requiredDocuments: CodecTypes['pg/jsonb@1']['input'];
+      readonly requirements: CodecTypes['pg/jsonb@1']['input'];
+      readonly rescheduling: CodecTypes['pg/jsonb@1']['input'];
       readonly slotIntervalMinutes: CodecTypes['pg/int4@1']['input'];
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -944,7 +991,7 @@ export type StorageColumnInputTypes = {
       readonly cancelledAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly cancelledBy: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly customer: CodecTypes['pg/json@1']['input'] | null;
+      readonly customer: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly customerEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly end: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -970,8 +1017,8 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly openingHours: CodecTypes['pg/json@1']['input'];
-      readonly staffHours: CodecTypes['pg/json@1']['input'] | null;
+      readonly openingHours: CodecTypes['pg/jsonb@1']['input'];
+      readonly staffHours: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly timeZone: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -984,6 +1031,7 @@ export type StorageColumnInputTypes = {
       readonly occupiedStart: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly resourceId: CodecTypes['pg/text@1']['input'];
       readonly sessionKey: CodecTypes['pg/text@1']['input'];
+      readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly Dataset: {
       readonly canonicalKind: CodecTypes['pg/text@1']['input'];
@@ -991,7 +1039,7 @@ export type StorageColumnInputTypes = {
       readonly dataSourceId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly lastFetchedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly mapping: CodecTypes['pg/json@1']['input'] | null;
+      readonly mapping: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly path: CodecTypes['pg/text@1']['input'] | null;
       readonly slug: CodecTypes['pg/text@1']['input'];
@@ -999,7 +1047,7 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly DataSource: {
-      readonly config: CodecTypes['pg/json@1']['input'];
+      readonly config: CodecTypes['pg/jsonb@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly kind: 'MOCK' | 'REST';
@@ -1017,7 +1065,7 @@ export type StorageColumnInputTypes = {
       readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly invitedBy: CodecTypes['pg/text@1']['input'];
-      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['input'];
       readonly tokenHash: CodecTypes['pg/text@1']['input'];
     };
@@ -1025,7 +1073,7 @@ export type StorageColumnInputTypes = {
       readonly actorId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
       readonly tenantId: CodecTypes['pg/text@1']['input'];
     };
     readonly Page: {
@@ -1039,7 +1087,7 @@ export type StorageColumnInputTypes = {
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly PageConfig: {
-      readonly content: CodecTypes['pg/json@1']['input'];
+      readonly content: CodecTypes['pg/jsonb@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly pageId: CodecTypes['pg/text@1']['input'];
@@ -1063,22 +1111,22 @@ export type StorageColumnInputTypes = {
       readonly appliedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly plan: CodecTypes['pg/json@1']['input'];
+      readonly plan: CodecTypes['pg/jsonb@1']['input'];
       readonly proposedBy: CodecTypes['pg/text@1']['input'];
-      readonly resolutions: CodecTypes['pg/json@1']['input'] | null;
+      readonly resolutions: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly sourceReleaseId: CodecTypes['pg/text@1']['input'];
       readonly status: 'PROPOSED' | 'APPLIED';
       readonly websiteId: CodecTypes['pg/text@1']['input'];
     };
     readonly WebsiteRelease: {
-      readonly changes: CodecTypes['pg/json@1']['input'] | null;
+      readonly changes: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly note: CodecTypes['pg/text@1']['input'] | null;
       readonly publishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly publishedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly releaseNumber: CodecTypes['pg/int4@1']['input'];
-      readonly snapshot: CodecTypes['pg/json@1']['input'];
+      readonly snapshot: CodecTypes['pg/jsonb@1']['input'];
       readonly snapshotHash: CodecTypes['pg/text@1']['input'];
       readonly status: 'DRAFT' | 'PUBLISHED' | 'FAILED' | 'ROLLED_BACK';
       readonly websiteId: CodecTypes['pg/text@1']['input'];
@@ -1101,7 +1149,7 @@ export namespace Models {
   export type public_AuditEntry = {
     actorId: CodecTypes['pg/text@1']['output'] | null;
     actorKind: 'MEMBER' | 'VISITOR' | 'SYSTEM';
-    details: CodecTypes['pg/json@1']['output'];
+    details: CodecTypes['pg/jsonb@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     occurredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     severity: 'INFO' | 'WARN';
@@ -1113,17 +1161,28 @@ export namespace Models {
   };
   export type public_BookableResource = {
     assignedActorId: CodecTypes['pg/text@1']['output'] | null;
-    availability: CodecTypes['pg/json@1']['output'] | null;
+    availability: CodecTypes['pg/jsonb@1']['output'] | null;
     capacity: CodecTypes['pg/int4@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     isActive: CodecTypes['pg/bool@1']['output'];
     locationId: CodecTypes['pg/text@1']['output'] | null;
-    managerChange: CodecTypes['pg/json@1']['output'] | null;
+    managerChange: CodecTypes['pg/jsonb@1']['output'] | null;
     name: CodecTypes['pg/text@1']['output'];
-    skills: CodecTypes['pg/json@1']['output'];
+    skills: CodecTypes['pg/jsonb@1']['output'];
     tenantId: CodecTypes['pg/text@1']['output'];
-    type: CodecTypes['pg/text@1']['output'];
+    type:
+      | 'employee'
+      | 'room'
+      | 'office'
+      | 'service-desk'
+      | 'sports-field'
+      | 'meeting-room'
+      | 'vehicle'
+      | 'equipment'
+      | 'facility'
+      | 'workstation'
+      | 'other';
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     websiteId: CodecTypes['pg/text@1']['output'];
     holds: public_BookingResource[];
@@ -1132,8 +1191,8 @@ export namespace Models {
     readonly [RelationKeys]?: 'holds' | 'location' | 'website';
   };
   export type public_BookableService = {
-    availability: CodecTypes['pg/json@1']['output'] | null;
-    cancellation: CodecTypes['pg/json@1']['output'];
+    availability: CodecTypes['pg/jsonb@1']['output'] | null;
+    cancellation: CodecTypes['pg/jsonb@1']['output'];
     category: CodecTypes['pg/text@1']['output'] | null;
     cleanupMinutes: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1141,18 +1200,18 @@ export namespace Models {
     durationMinutes: CodecTypes['pg/int4@1']['output'];
     horizonDays: CodecTypes['pg/int4@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
-    information: CodecTypes['pg/json@1']['output'];
+    information: CodecTypes['pg/jsonb@1']['output'];
     instructions: CodecTypes['pg/text@1']['output'] | null;
     isActive: CodecTypes['pg/bool@1']['output'];
-    locationIds: CodecTypes['pg/json@1']['output'];
+    locationIds: CodecTypes['pg/jsonb@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     noticeMinutes: CodecTypes['pg/int4@1']['output'];
     participantsPerBooking: CodecTypes['pg/int4@1']['output'];
     participantsPerSession: CodecTypes['pg/int4@1']['output'];
     preparationMinutes: CodecTypes['pg/int4@1']['output'];
-    requiredDocuments: CodecTypes['pg/json@1']['output'];
-    requirements: CodecTypes['pg/json@1']['output'];
-    rescheduling: CodecTypes['pg/json@1']['output'];
+    requiredDocuments: CodecTypes['pg/jsonb@1']['output'];
+    requirements: CodecTypes['pg/jsonb@1']['output'];
+    rescheduling: CodecTypes['pg/jsonb@1']['output'];
     slotIntervalMinutes: CodecTypes['pg/int4@1']['output'];
     tenantId: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1165,7 +1224,7 @@ export namespace Models {
     cancelledAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     cancelledBy: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    customer: CodecTypes['pg/json@1']['output'] | null;
+    customer: CodecTypes['pg/jsonb@1']['output'] | null;
     customerEmail: CodecTypes['pg/text@1']['output'] | null;
     end: CodecTypes['pg/timestamptz-temporal@1']['output'];
     holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -1196,8 +1255,8 @@ export namespace Models {
     id: CodecTypes['pg/text@1']['output'];
     isActive: CodecTypes['pg/bool@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
-    openingHours: CodecTypes['pg/json@1']['output'];
-    staffHours: CodecTypes['pg/json@1']['output'] | null;
+    openingHours: CodecTypes['pg/jsonb@1']['output'];
+    staffHours: CodecTypes['pg/jsonb@1']['output'] | null;
     tenantId: CodecTypes['pg/text@1']['output'];
     timeZone: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1214,12 +1273,13 @@ export namespace Models {
     occupiedStart: CodecTypes['pg/timestamptz-temporal@1']['output'];
     resourceId: CodecTypes['pg/text@1']['output'];
     sessionKey: CodecTypes['pg/text@1']['output'];
+    websiteId: CodecTypes['pg/text@1']['output'];
     booking: public_Booking;
     resource: public_BookableResource;
     readonly [RelationKeys]?: 'booking' | 'resource';
   };
   export type public_DataSource = {
-    config: CodecTypes['pg/json@1']['output'];
+    config: CodecTypes['pg/jsonb@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     kind: 'MOCK' | 'REST';
@@ -1239,7 +1299,7 @@ export namespace Models {
     dataSourceId: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     lastFetchedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-    mapping: CodecTypes['pg/json@1']['output'] | null;
+    mapping: CodecTypes['pg/jsonb@1']['output'] | null;
     name: CodecTypes['pg/text@1']['output'];
     path: CodecTypes['pg/text@1']['output'] | null;
     slug: CodecTypes['pg/text@1']['output'];
@@ -1255,7 +1315,7 @@ export namespace Models {
     expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     invitedBy: CodecTypes['pg/text@1']['output'];
-    role: CodecTypes['pg/text@1']['output'];
+    role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
     tenantId: CodecTypes['pg/text@1']['output'];
     tokenHash: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
@@ -1264,7 +1324,7 @@ export namespace Models {
     actorId: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
-    role: CodecTypes['pg/text@1']['output'];
+    role: 'admin' | 'editor' | 'contributor' | 'viewer' | 'employee' | 'platform_admin';
     tenantId: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
@@ -1282,7 +1342,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'configs' | 'website';
   };
   export type public_PageConfig = {
-    content: CodecTypes['pg/json@1']['output'];
+    content: CodecTypes['pg/jsonb@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     pageId: CodecTypes['pg/text@1']['output'];
@@ -1331,9 +1391,9 @@ export namespace Models {
     appliedBy: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
-    plan: CodecTypes['pg/json@1']['output'];
+    plan: CodecTypes['pg/jsonb@1']['output'];
     proposedBy: CodecTypes['pg/text@1']['output'];
-    resolutions: CodecTypes['pg/json@1']['output'] | null;
+    resolutions: CodecTypes['pg/jsonb@1']['output'] | null;
     sourceReleaseId: CodecTypes['pg/text@1']['output'];
     status: 'PROPOSED' | 'APPLIED';
     websiteId: CodecTypes['pg/text@1']['output'];
@@ -1342,14 +1402,14 @@ export namespace Models {
     readonly [RelationKeys]?: 'sourceRelease' | 'website';
   };
   export type public_WebsiteRelease = {
-    changes: CodecTypes['pg/json@1']['output'] | null;
+    changes: CodecTypes['pg/jsonb@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     note: CodecTypes['pg/text@1']['output'] | null;
     publishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     publishedBy: CodecTypes['pg/text@1']['output'] | null;
     releaseNumber: CodecTypes['pg/int4@1']['output'];
-    snapshot: CodecTypes['pg/json@1']['output'];
+    snapshot: CodecTypes['pg/jsonb@1']['output'];
     snapshotHash: CodecTypes['pg/text@1']['output'];
     status: 'DRAFT' | 'PUBLISHED' | 'FAILED' | 'ROLLED_BACK';
     websiteId: CodecTypes['pg/text@1']['output'];
@@ -1425,8 +1485,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly details: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly id: {
@@ -1476,12 +1536,6 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'AuditEntry_websiteId_idx_aa7167ce';
-                  readonly prefix: 'AuditEntry_websiteId_idx';
-                  readonly columns: readonly ['websiteId'];
-                  readonly unique: false;
-                },
-                {
                   readonly name: 'AuditEntry_websiteId_occurredAt_idx_0705c2f4';
                   readonly prefix: 'AuditEntry_websiteId_occurredAt_idx';
                   readonly columns: readonly ['websiteId', 'occurredAt'];
@@ -1517,8 +1571,8 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly availability: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly capacity: {
@@ -1552,8 +1606,8 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly managerChange: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly name: {
@@ -1562,8 +1616,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly skills: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly tenantId: {
@@ -1589,24 +1643,19 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['id', 'websiteId'] }];
               indexes: readonly [
                 {
-                  readonly name: 'BookableResource_locationId_idx_7aae3038';
-                  readonly prefix: 'BookableResource_locationId_idx';
-                  readonly columns: readonly ['locationId'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'BookableResource_tenantId_assignedActorId_idx_3b737228';
-                  readonly prefix: 'BookableResource_tenantId_assignedActorId_idx';
+                  readonly name: 'BookableResource_assignee_idx_796b7750';
+                  readonly prefix: 'BookableResource_assignee_idx';
                   readonly columns: readonly ['tenantId', 'assignedActorId'];
+                  readonly where: '"assignedActorId" IS NOT NULL';
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'BookableResource_websiteId_idx_aa7167ce';
-                  readonly prefix: 'BookableResource_websiteId_idx';
-                  readonly columns: readonly ['websiteId'];
+                  readonly name: 'BookableResource_locationId_websiteId_idx_3128d57b';
+                  readonly prefix: 'BookableResource_locationId_websiteId_idx';
+                  readonly columns: readonly ['locationId', 'websiteId'];
                   readonly unique: false;
                 },
                 {
@@ -1633,12 +1682,12 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookableResource';
-                    readonly columns: readonly ['locationId'];
+                    readonly columns: readonly ['locationId', 'websiteId'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookingLocation';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
               ];
@@ -1646,13 +1695,13 @@ type ContractBase = Omit<
             readonly BookableService: {
               columns: {
                 readonly availability: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly cancellation: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly category: {
@@ -1696,8 +1745,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly information: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly instructions: {
@@ -1715,8 +1764,8 @@ type ContractBase = Omit<
                   };
                 };
                 readonly locationIds: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly name: {
@@ -1761,18 +1810,18 @@ type ContractBase = Omit<
                   };
                 };
                 readonly requiredDocuments: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly requirements: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly rescheduling: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly slotIntervalMinutes: {
@@ -1798,14 +1847,8 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['id', 'websiteId'] }];
               indexes: readonly [
-                {
-                  readonly name: 'BookableService_websiteId_idx_aa7167ce';
-                  readonly prefix: 'BookableService_websiteId_idx';
-                  readonly columns: readonly ['websiteId'];
-                  readonly unique: false;
-                },
                 {
                   readonly name: 'BookableService_websiteId_tenantId_idx_ac8953f0';
                   readonly prefix: 'BookableService_websiteId_tenantId_idx';
@@ -1847,8 +1890,8 @@ type ContractBase = Omit<
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
                 readonly customer: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly customerEmail: {
@@ -1948,24 +1991,28 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['reference'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['reference'] },
+                { readonly columns: readonly ['id', 'websiteId'] },
+              ];
               indexes: readonly [
                 {
-                  readonly name: 'Booking_customerEmail_idx_7ee6d307';
-                  readonly prefix: 'Booking_customerEmail_idx';
-                  readonly columns: readonly ['customerEmail'];
+                  readonly name: 'Booking_held_idx_f16041d9';
+                  readonly prefix: 'Booking_held_idx';
+                  readonly columns: readonly ['websiteId', 'holdExpiresAt'];
+                  readonly where: '"status" = \'HELD\'';
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'Booking_locationId_idx_7aae3038';
-                  readonly prefix: 'Booking_locationId_idx';
-                  readonly columns: readonly ['locationId'];
+                  readonly name: 'Booking_locationId_websiteId_idx_3128d57b';
+                  readonly prefix: 'Booking_locationId_websiteId_idx';
+                  readonly columns: readonly ['locationId', 'websiteId'];
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'Booking_serviceId_idx_b5d9acbf';
-                  readonly prefix: 'Booking_serviceId_idx';
-                  readonly columns: readonly ['serviceId'];
+                  readonly name: 'Booking_serviceId_websiteId_idx_dff1d9a6';
+                  readonly prefix: 'Booking_serviceId_websiteId_idx';
+                  readonly columns: readonly ['serviceId', 'websiteId'];
                   readonly unique: false;
                 },
                 {
@@ -1975,21 +2022,21 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'Booking_status_holdExpiresAt_idx_b5009e9f';
-                  readonly prefix: 'Booking_status_holdExpiresAt_idx';
-                  readonly columns: readonly ['status', 'holdExpiresAt'];
+                  readonly name: 'Booking_websiteId_customerEmail_idx_b6a5d348';
+                  readonly prefix: 'Booking_websiteId_customerEmail_idx';
+                  readonly columns: readonly ['websiteId', 'customerEmail'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'Booking_websiteId_occupiedStart_idx_69c19ff2';
+                  readonly prefix: 'Booking_websiteId_occupiedStart_idx';
+                  readonly columns: readonly ['websiteId', 'occupiedStart'];
                   readonly unique: false;
                 },
                 {
                   readonly name: 'Booking_websiteId_start_idx_96c4ebf4';
                   readonly prefix: 'Booking_websiteId_start_idx';
                   readonly columns: readonly ['websiteId', 'start'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'Booking_websiteId_tenantId_idx_ac8953f0';
-                  readonly prefix: 'Booking_websiteId_tenantId_idx';
-                  readonly columns: readonly ['websiteId', 'tenantId'];
                   readonly unique: false;
                 },
               ];
@@ -2010,24 +2057,24 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Booking';
-                    readonly columns: readonly ['serviceId'];
+                    readonly columns: readonly ['serviceId', 'websiteId'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookableService';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
                 {
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Booking';
-                    readonly columns: readonly ['locationId'];
+                    readonly columns: readonly ['locationId', 'websiteId'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookingLocation';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
               ];
@@ -2065,13 +2112,13 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly openingHours: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly staffHours: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly tenantId: {
@@ -2097,14 +2144,8 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['id', 'websiteId'] }];
               indexes: readonly [
-                {
-                  readonly name: 'BookingLocation_websiteId_idx_aa7167ce';
-                  readonly prefix: 'BookingLocation_websiteId_idx';
-                  readonly columns: readonly ['websiteId'];
-                  readonly unique: false;
-                },
                 {
                   readonly name: 'BookingLocation_websiteId_tenantId_idx_ac8953f0';
                   readonly prefix: 'BookingLocation_websiteId_tenantId_idx';
@@ -2159,20 +2200,19 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly websiteId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
               };
               primaryKey: { readonly columns: readonly ['bookingId', 'resourceId'] };
               uniques: readonly [];
               indexes: readonly [
                 {
-                  readonly name: 'BookingResource_bookingId_idx_17848f4a';
-                  readonly prefix: 'BookingResource_bookingId_idx';
-                  readonly columns: readonly ['bookingId'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'BookingResource_resourceId_idx_72964925';
-                  readonly prefix: 'BookingResource_resourceId_idx';
-                  readonly columns: readonly ['resourceId'];
+                  readonly name: 'BookingResource_bookingId_websiteId_idx_1ccc460f';
+                  readonly prefix: 'BookingResource_bookingId_websiteId_idx';
+                  readonly columns: readonly ['bookingId', 'websiteId'];
                   readonly unique: false;
                 },
                 {
@@ -2187,24 +2227,24 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookingResource';
-                    readonly columns: readonly ['bookingId'];
+                    readonly columns: readonly ['bookingId', 'websiteId'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Booking';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
                 {
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookingResource';
-                    readonly columns: readonly ['resourceId'];
+                    readonly columns: readonly ['resourceId', 'websiteId'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BookableResource';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
               ];
@@ -2238,8 +2278,8 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly mapping: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly name: {
@@ -2275,14 +2315,7 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['dataSourceId', 'slug'] }];
-              indexes: readonly [
-                {
-                  readonly name: 'Dataset_dataSourceId_idx_536a4d74';
-                  readonly prefix: 'Dataset_dataSourceId_idx';
-                  readonly columns: readonly ['dataSourceId'];
-                  readonly unique: false;
-                },
-              ];
+              indexes: readonly [];
               foreignKeys: readonly [
                 {
                   readonly source: {
@@ -2301,8 +2334,8 @@ type ContractBase = Omit<
             readonly DataSource: {
               columns: {
                 readonly config: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly createdAt: {
@@ -2435,6 +2468,13 @@ type ContractBase = Omit<
               uniques: readonly [{ readonly columns: readonly ['tokenHash'] }];
               indexes: readonly [
                 {
+                  readonly name: 'Invitation_open_idx_8f1ab84a';
+                  readonly prefix: 'Invitation_open_idx';
+                  readonly columns: readonly ['tenantId', 'createdAt'];
+                  readonly where: '"acceptedAt" IS NULL';
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'Invitation_tenantId_email_idx_88e149c0';
                   readonly prefix: 'Invitation_tenantId_email_idx';
                   readonly columns: readonly ['tenantId', 'email'];
@@ -2474,7 +2514,14 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['actorId', 'tenantId', 'role'] }];
-              indexes: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'Membership_tenantId_role_idx_c3ec5d48';
+                  readonly prefix: 'Membership_tenantId_role_idx';
+                  readonly columns: readonly ['tenantId', 'role'];
+                  readonly unique: false;
+                },
+              ];
               foreignKeys: readonly [];
             };
             readonly Page: {
@@ -2528,14 +2575,7 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['websiteId', 'path'] }];
-              indexes: readonly [
-                {
-                  readonly name: 'Page_websiteId_tenantId_idx_ac8953f0';
-                  readonly prefix: 'Page_websiteId_tenantId_idx';
-                  readonly columns: readonly ['websiteId', 'tenantId'];
-                  readonly unique: false;
-                },
-              ];
+              indexes: readonly [];
               foreignKeys: readonly [
                 {
                   readonly source: {
@@ -2554,8 +2594,8 @@ type ContractBase = Omit<
             readonly PageConfig: {
               columns: {
                 readonly content: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly createdAt: {
@@ -2601,14 +2641,7 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['pageId', 'version'] }];
-              indexes: readonly [
-                {
-                  readonly name: 'PageConfig_pageId_idx_8caaba4f';
-                  readonly prefix: 'PageConfig_pageId_idx';
-                  readonly columns: readonly ['pageId'];
-                  readonly unique: false;
-                },
-              ];
+              indexes: readonly [];
               foreignKeys: readonly [
                 {
                   readonly source: {
@@ -2686,12 +2719,12 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Website';
-                    readonly columns: readonly ['publishedReleaseId'];
+                    readonly columns: readonly ['publishedReleaseId', 'id'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'WebsiteRelease';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
               ];
@@ -2720,8 +2753,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly plan: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly proposedBy: {
@@ -2730,8 +2763,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly resolutions: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly sourceReleaseId: {
@@ -2758,21 +2791,15 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [
                 {
-                  readonly name: 'WebsiteMigration_sourceReleaseId_idx_7dff7977';
-                  readonly prefix: 'WebsiteMigration_sourceReleaseId_idx';
-                  readonly columns: readonly ['sourceReleaseId'];
+                  readonly name: 'WebsiteMigration_sourceReleaseId_websiteId_idx_7795b2f9';
+                  readonly prefix: 'WebsiteMigration_sourceReleaseId_websiteId_idx';
+                  readonly columns: readonly ['sourceReleaseId', 'websiteId'];
                   readonly unique: false;
                 },
                 {
                   readonly name: 'WebsiteMigration_websiteId_createdAt_idx_5579a8b3';
                   readonly prefix: 'WebsiteMigration_websiteId_createdAt_idx';
                   readonly columns: readonly ['websiteId', 'createdAt'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'WebsiteMigration_websiteId_idx_aa7167ce';
-                  readonly prefix: 'WebsiteMigration_websiteId_idx';
-                  readonly columns: readonly ['websiteId'];
                   readonly unique: false;
                 },
               ];
@@ -2793,12 +2820,12 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'WebsiteMigration';
-                    readonly columns: readonly ['sourceReleaseId'];
+                    readonly columns: readonly ['sourceReleaseId', 'websiteId'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'WebsiteRelease';
-                    readonly columns: readonly ['id'];
+                    readonly columns: readonly ['id', 'websiteId'];
                   };
                 },
               ];
@@ -2806,8 +2833,8 @@ type ContractBase = Omit<
             readonly WebsiteRelease: {
               columns: {
                 readonly changes: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: true;
                 };
                 readonly createdAt: {
@@ -2842,8 +2869,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly snapshot: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                 };
                 readonly snapshotHash: {
@@ -2867,15 +2894,11 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['websiteId', 'releaseNumber'] }];
-              indexes: readonly [
-                {
-                  readonly name: 'WebsiteRelease_websiteId_idx_aa7167ce';
-                  readonly prefix: 'WebsiteRelease_websiteId_idx';
-                  readonly columns: readonly ['websiteId'];
-                  readonly unique: false;
-                },
+              uniques: readonly [
+                { readonly columns: readonly ['websiteId', 'releaseNumber'] },
+                { readonly columns: readonly ['id', 'websiteId'] },
               ];
+              indexes: readonly [];
               foreignKeys: readonly [
                 {
                   readonly source: {
@@ -2987,6 +3010,17 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly ActorRole: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'admin',
+                'editor',
+                'contributor',
+                'viewer',
+                'employee',
+                'platform_admin',
+              ];
+            };
             readonly AuditActorKind: {
               readonly kind: 'valueSet';
               readonly values: readonly ['MEMBER', 'VISITOR', 'SYSTEM'];
@@ -3029,6 +3063,22 @@ type ContractBase = Omit<
             readonly ReleaseStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['DRAFT', 'PUBLISHED', 'FAILED', 'ROLLED_BACK'];
+            };
+            readonly ResourceType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'employee',
+                'room',
+                'office',
+                'service-desk',
+                'sports-field',
+                'meeting-room',
+                'vehicle',
+                'equipment',
+                'facility',
+                'workstation',
+                'other',
+              ];
             };
           };
         };
@@ -3110,7 +3160,7 @@ type ContractBase = Omit<
               };
               readonly details: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly id: {
                 readonly nullable: false;
@@ -3178,7 +3228,7 @@ type ContractBase = Omit<
               };
               readonly availability: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly capacity: {
                 readonly nullable: true;
@@ -3205,7 +3255,7 @@ type ContractBase = Omit<
               };
               readonly managerChange: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly name: {
                 readonly nullable: false;
@@ -3213,7 +3263,7 @@ type ContractBase = Omit<
               };
               readonly skills: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly tenantId: {
                 readonly nullable: false;
@@ -3243,8 +3293,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['resourceId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['resourceId', 'websiteId'];
                 };
               };
               readonly location: {
@@ -3255,8 +3305,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: true;
                 readonly on: {
-                  readonly localFields: readonly ['locationId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['locationId', 'websiteId'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
               readonly website: {
@@ -3297,11 +3347,11 @@ type ContractBase = Omit<
             readonly fields: {
               readonly availability: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly cancellation: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly category: {
                 readonly nullable: true;
@@ -3336,7 +3386,7 @@ type ContractBase = Omit<
               };
               readonly information: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly instructions: {
                 readonly nullable: true;
@@ -3348,7 +3398,7 @@ type ContractBase = Omit<
               };
               readonly locationIds: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly name: {
                 readonly nullable: false;
@@ -3372,15 +3422,15 @@ type ContractBase = Omit<
               };
               readonly requiredDocuments: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly requirements: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly rescheduling: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly slotIntervalMinutes: {
                 readonly nullable: false;
@@ -3410,8 +3460,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['serviceId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['serviceId', 'websiteId'];
                 };
               };
               readonly website: {
@@ -3481,7 +3531,7 @@ type ContractBase = Omit<
               };
               readonly customer: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly customerEmail: {
                 readonly nullable: true;
@@ -3582,8 +3632,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['bookingId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['bookingId', 'websiteId'];
                 };
               };
               readonly location: {
@@ -3594,8 +3644,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: false;
                 readonly on: {
-                  readonly localFields: readonly ['locationId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['locationId', 'websiteId'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
               readonly service: {
@@ -3606,8 +3656,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: false;
                 readonly on: {
-                  readonly localFields: readonly ['serviceId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['serviceId', 'websiteId'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
               readonly website: {
@@ -3679,11 +3729,11 @@ type ContractBase = Omit<
               };
               readonly openingHours: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly staffHours: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly tenantId: {
                 readonly nullable: false;
@@ -3713,8 +3763,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['locationId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['locationId', 'websiteId'];
                 };
               };
               readonly resources: {
@@ -3724,8 +3774,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['locationId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['locationId', 'websiteId'];
                 };
               };
               readonly website: {
@@ -3791,6 +3841,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly websiteId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
             };
             readonly relations: {
               readonly booking: {
@@ -3801,8 +3855,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: false;
                 readonly on: {
-                  readonly localFields: readonly ['bookingId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['bookingId', 'websiteId'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
               readonly resource: {
@@ -3813,8 +3867,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: false;
                 readonly on: {
-                  readonly localFields: readonly ['resourceId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['resourceId', 'websiteId'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
             };
@@ -3828,6 +3882,7 @@ type ContractBase = Omit<
                 readonly occupiedStart: { readonly column: 'occupiedStart' };
                 readonly resourceId: { readonly column: 'resourceId' };
                 readonly sessionKey: { readonly column: 'sessionKey' };
+                readonly websiteId: { readonly column: 'websiteId' };
               };
             };
           };
@@ -3861,7 +3916,7 @@ type ContractBase = Omit<
               };
               readonly mapping: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly name: {
                 readonly nullable: false;
@@ -3923,7 +3978,7 @@ type ContractBase = Omit<
             readonly fields: {
               readonly config: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -4202,7 +4257,7 @@ type ContractBase = Omit<
             readonly fields: {
               readonly content: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -4399,8 +4454,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: true;
                 readonly on: {
-                  readonly localFields: readonly ['publishedReleaseId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['publishedReleaseId', 'id'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
               readonly releases: {
@@ -4469,7 +4524,7 @@ type ContractBase = Omit<
               };
               readonly plan: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly proposedBy: {
                 readonly nullable: false;
@@ -4477,7 +4532,7 @@ type ContractBase = Omit<
               };
               readonly resolutions: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly sourceReleaseId: {
                 readonly nullable: false;
@@ -4501,8 +4556,8 @@ type ContractBase = Omit<
                 readonly cardinality: 'N:1';
                 readonly nullable: false;
                 readonly on: {
-                  readonly localFields: readonly ['sourceReleaseId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['sourceReleaseId', 'websiteId'];
+                  readonly targetFields: readonly ['id', 'websiteId'];
                 };
               };
               readonly website: {
@@ -4539,7 +4594,7 @@ type ContractBase = Omit<
             readonly fields: {
               readonly changes: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -4573,7 +4628,7 @@ type ContractBase = Omit<
               };
               readonly snapshot: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly snapshotHash: {
                 readonly nullable: false;
@@ -4596,8 +4651,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['publishedReleaseId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['publishedReleaseId', 'id'];
                 };
               };
               readonly migrations: {
@@ -4607,8 +4662,8 @@ type ContractBase = Omit<
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['sourceReleaseId'];
+                  readonly localFields: readonly ['id', 'websiteId'];
+                  readonly targetFields: readonly ['sourceReleaseId', 'websiteId'];
                 };
               };
               readonly website: {
@@ -4713,6 +4768,17 @@ type ContractBase = Omit<
           };
         };
         readonly enum: {
+          readonly ActorRole: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'admin'; readonly value: 'admin' },
+              { readonly name: 'editor'; readonly value: 'editor' },
+              { readonly name: 'contributor'; readonly value: 'contributor' },
+              { readonly name: 'viewer'; readonly value: 'viewer' },
+              { readonly name: 'employee'; readonly value: 'employee' },
+              { readonly name: 'platform_admin'; readonly value: 'platform_admin' },
+            ];
+          };
           readonly AuditActorKind: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -4783,6 +4849,22 @@ type ContractBase = Omit<
               { readonly name: 'PUBLISHED'; readonly value: 'PUBLISHED' },
               { readonly name: 'FAILED'; readonly value: 'FAILED' },
               { readonly name: 'ROLLED_BACK'; readonly value: 'ROLLED_BACK' },
+            ];
+          };
+          readonly ResourceType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'employee'; readonly value: 'employee' },
+              { readonly name: 'room'; readonly value: 'room' },
+              { readonly name: 'office'; readonly value: 'office' },
+              { readonly name: 'service_desk'; readonly value: 'service-desk' },
+              { readonly name: 'sports_field'; readonly value: 'sports-field' },
+              { readonly name: 'meeting_room'; readonly value: 'meeting-room' },
+              { readonly name: 'vehicle'; readonly value: 'vehicle' },
+              { readonly name: 'equipment'; readonly value: 'equipment' },
+              { readonly name: 'facility'; readonly value: 'facility' },
+              { readonly name: 'workstation'; readonly value: 'workstation' },
+              { readonly name: 'other'; readonly value: 'other' },
             ];
           };
         };

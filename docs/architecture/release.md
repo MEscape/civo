@@ -1,6 +1,6 @@
 # Releases and the website overview
 
-A **release** is an immutable copy of a website's pages and settings that the public site serves. Editing a page only ever writes a draft; publishing is the one action that makes drafts public ([`publish-release.ts`](../../src/modules/release/application/commands/publish-release.ts)).
+A **release** is an immutable copy of a website's pages and settings that the public site serves (a trigger refuses any change to a stored release except its status, and the live-release pointer must name a release of the same website). Editing a page only ever writes a draft; publishing is the one action that makes drafts public ([`publish-release.ts`](../../src/modules/release/application/commands/publish-release.ts)).
 
 ## What a release keeps
 

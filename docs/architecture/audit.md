@@ -22,7 +22,7 @@ website: GetWebsiteAuditTrail / GetWebsiteAuditDigest (audit.read) ──┘
 
 ## Data
 
-`AuditEntry` holds the website, the source module, the event type, `INFO`/`WARN`, the actor kind (`MEMBER`/`VISITOR`/`SYSTEM`; a member's id only, checked by a constraint), the details as JSON (plain values only), and when it happened. Rows are removed with their website. Every read is scoped to one website, bounded, and served by an index that starts with `websiteId`.
+`AuditEntry` holds the website, the source module, the event type, `INFO`/`WARN`, the actor kind (`MEMBER`/`VISITOR`/`SYSTEM`; a member's id only, checked by a constraint; a trigger refuses any update of a row), the details as JSON (plain values only), and when it happened. Rows are removed with their website. Every read is scoped to one website, bounded, and served by an index that starts with `websiteId`.
 
 ## Retention
 

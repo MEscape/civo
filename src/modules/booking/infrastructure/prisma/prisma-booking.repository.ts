@@ -230,6 +230,7 @@ function holdRows(booking: NewBooking | Booking, bookingId: string) {
   return ordered(booking.resourceIds).map((resourceId) => ({
     bookingId,
     resourceId,
+    websiteId: booking.websiteId,
     occupiedStart: dateToInstant(booking.occupiedStart),
     occupiedEnd: dateToInstant(booking.occupiedEnd),
     sessionKey: booking.sessionKey,

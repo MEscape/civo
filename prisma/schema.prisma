@@ -1,5 +1,16 @@
 // use prisma-8
 
+// ── Conventions ─────────────────────────────────────────────────────────────
+// Ids are text: the application generates them and the tests use readable ones.
+// `updatedAt` has no `@updatedAt` in PSL: a trigger (see the migration) stamps rows whose
+// writer did not, and writers that do (pages, bookings) keep their own value.
+// Every table below a website carries its `websiteId` (and `tenantId` where the application
+// scopes by tenant) and points at its parents by `(parentId, websiteId)`, so the database
+// itself refuses a row that joins two websites. The `*_check` constraints repeat the
+// domain limits for writers that are not this application.
+
+// ── Enums ───────────────────────────────────────────────────────────────────
+
 /// Lifecycle status of a page revision.
 enum PageConfigStatus {
   DRAFT
@@ -63,65 +74,65 @@ enum AuditActorKind {
   SYSTEM
 }
 
+/// What an actor may do inside a tenant. `platform_admin` is the one role that is not tenant-scoped.
+enum ActorRole {
+  admin
+  editor
+  contributor
+  viewer
+  employee
+  platform_admin
+}
+
+/// What a bookable resource is; decides which requirement of a service it can satisfy.
+enum ResourceType {
+  employee
+  room
+  office
+  service_desk = "service-desk"
+  sports_field = "sports-field"
+  meeting_room = "meeting-room"
+  vehicle
+  equipment
+  facility
+  workstation
+  other
+}
+
+// ── Website ─────────────────────────────────────────────────────────────────
+
 /// Root aggregate representing a municipal or organizational website.
 model Website {
-  id          String   @id @default(uuid())
-  tenantId    String
-  name        String
-  slug        String   @unique
-  description String?
-  templateKey String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-  publishedReleaseId String? @unique
+  id                 String             @id @default(uuid())
+  tenantId           String
+  name               String
+  slug               String             @unique
+  description        String?
+  templateKey        String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @default(now())
+  /// The live release. The pair with `id` makes the database refuse a release of another website.
+  publishedReleaseId String?            @unique
 
-  pages       Page[]
-  theme       WebsiteTheme?
-  releases    WebsiteRelease[]
-  migrations  WebsiteMigration[]
-  dataSources DataSource[]
-  bookingLocations  BookingLocation[]
-  bookableResources BookableResource[]
-  bookableServices  BookableService[]
-  bookings          Booking[]
-  auditEntries      AuditEntry[]
-  publishedRelease WebsiteRelease? @relation("PublishedRelease", fields: [publishedReleaseId], references: [id], onDelete: Restrict)
+  pages              Page[]
+  theme              WebsiteTheme?
+  releases           WebsiteRelease[]   @relation("WebsiteReleases")
+  migrations         WebsiteMigration[]
+  dataSources        DataSource[]
+  bookingLocations   BookingLocation[]
+  bookableResources  BookableResource[]
+  bookableServices   BookableService[]
+  bookings           Booking[]
+  auditEntries       AuditEntry[]
+  publishedRelease   WebsiteRelease?    @relation("PublishedRelease", fields:[publishedReleaseId, id], references:[id, websiteId], index: false, onDelete: Restrict)
 
   @@unique([id, tenantId])
   // A tenant is its website: the one id serves as both, and every table below it points at the pair.
   @@check(expression: "\"id\" = \"tenantId\"", name: "Website_tenant_is_website_check")
-}
-
-/// A routed page belonging to a website.
-model Page {
-  id        String   @id @default(uuid())
-  tenantId  String
-  websiteId String
-  website   Website  @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  path      String
-  title     String
-
-  version   Int      @default(1)
-  configs   PageConfig[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  @@unique([websiteId, path])
-}
-
-/// Versioned component tree snapshot of a page's content.
-model PageConfig {
-  id        String           @id @default(uuid())
-  pageId    String
-  content   Json
-  status    PageConfigStatus @default(DRAFT)
-  version   Int              @default(1)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @default(now())
-
-  page      Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
-
-  @@unique([pageId, version])
+  @@check(expression: "\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND char_length(\"slug\") <= 80", name: "Website_slug_rule")
+  @@check(expression: "char_length(\"name\") BETWEEN 2 AND 120", name: "Website_name_rule")
+  @@check(expression: "\"description\" IS NULL OR char_length(\"description\") <= 500", name: "Website_description_rule")
+  @@check(expression: "char_length(\"templateKey\") BETWEEN 1 AND 64", name: "Website_template_rule")
 }
 
 /// Visual styling parameters and typography tokens for a website.
@@ -136,31 +147,80 @@ model WebsiteTheme {
   radius         String  @default("md")
   spacingScale   String  @default("comfortable")
 
-  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  website        Website @relation(fields:[websiteId], references:[id], onDelete: Cascade)
+
+  @@check(expression: "\"primaryColor\" ~ '^#[0-9a-fA-F]{6}$' AND \"secondaryColor\" ~ '^#[0-9a-fA-F]{6}$' AND \"accentColor\" ~ '^#[0-9a-fA-F]{6}$'", name: "WebsiteTheme_colors_rule")
 }
+
+// ── Pages ───────────────────────────────────────────────────────────────────
+
+/// A routed page belonging to a website. The root page has an empty path.
+model Page {
+  id        String       @id @default(uuid())
+  tenantId  String
+  websiteId String
+  path      String
+  title     String
+  version   Int          @default(1)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now())
+
+  website   Website      @relation(fields:[websiteId, tenantId], references:[id, tenantId], index: false, onDelete: Cascade)
+  configs   PageConfig[]
+
+  @@unique([websiteId, path])
+  @@check(expression: "(\"path\" = '' OR \"path\" ~ '^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$') AND char_length(\"path\") <= 200", name: "Page_path_rule")
+  @@check(expression: "char_length(\"title\") BETWEEN 2 AND 120", name: "Page_title_rule")
+  @@check(expression: "\"version\" >= 1", name: "Page_version_rule")
+}
+
+/// Versioned component tree snapshot of a page's content.
+model PageConfig {
+  id        String           @id @default(uuid())
+  pageId    String
+  content   Jsonb
+  status    PageConfigStatus @default(DRAFT)
+  version   Int              @default(1)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @default(now())
+
+  page      Page             @relation(fields:[pageId], references:[id], index: false, onDelete: Cascade)
+
+  @@unique([pageId, version])
+  @@check(expression: "\"version\" >= 1", name: "PageConfig_version_rule")
+}
+
+// ── Releases ────────────────────────────────────────────────────────────────
 
 /// An immutable published snapshot of a website's pages and component pins.
 model WebsiteRelease {
-  id            String   @id @default(uuid())
-  websiteId     String
-  releaseNumber Int
-  status        ReleaseStatus @default(DRAFT)
-  snapshot      Json
-  snapshotHash  String
+  id             String             @id @default(uuid())
+  websiteId      String
+  releaseNumber  Int
+  status         ReleaseStatus      @default(DRAFT)
+  snapshot       Jsonb
+  /// SHA-256 of the canonical snapshot, lowercase hex.
+  snapshotHash   String
   /// What the editor wrote when publishing; shown in the history. Null for releases made before notes existed.
-  note          String?
+  note           String?
   /// What this release changed against the one live before it, frozen at publish time. Null for earlier releases.
-  changes       Json?
+  changes        Jsonb?
   /// Who published it (an actor id; the name is looked up where it is shown, so it is never stale). Null for earlier releases.
-  publishedBy   String?
-  publishedAt   DateTime?
-  createdAt     DateTime @default(now())
+  publishedBy    String?
+  publishedAt    DateTime?
+  createdAt      DateTime           @default(now())
 
-  website       Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  activeWebsites Website[] @relation("PublishedRelease")
-  migrations    WebsiteMigration[]
+  website        Website            @relation("WebsiteReleases", fields:[websiteId], references:[id], index: false, onDelete: Cascade)
+  activeWebsites Website[]          @relation("PublishedRelease")
+  migrations     WebsiteMigration[]
 
   @@unique([websiteId, releaseNumber])
+  @@unique([id, websiteId])
+  @@check(expression: "\"releaseNumber\" >= 1", name: "WebsiteRelease_number_rule")
+  @@check(expression: "\"snapshotHash\" ~ '^[0-9a-f]{64}$'", name: "WebsiteRelease_hash_rule")
+  @@check(expression: "\"note\" IS NULL OR char_length(\"note\") <= 200", name: "WebsiteRelease_note_rule")
+  // A release that has been live has a publication time; a draft or failed one never had.
+  @@check(expression: "(\"status\" IN ('PUBLISHED', 'ROLLED_BACK')) = (\"publishedAt\" IS NOT NULL)", name: "WebsiteRelease_published_rule")
 }
 
 /// Component version migration audit record and proposed changes.
@@ -169,74 +229,92 @@ model WebsiteMigration {
   websiteId       String
   sourceReleaseId String
   status          MigrationStatus @default(PROPOSED)
-  plan            Json
-  resolutions     Json?
+  plan            Jsonb
+  resolutions     Jsonb?
   proposedBy      String
   appliedBy       String?
   createdAt       DateTime        @default(now())
   appliedAt       DateTime?
 
-  website       Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  sourceRelease WebsiteRelease @relation(fields: [sourceReleaseId], references: [id], onDelete: Cascade)
+  website         Website         @relation(fields:[websiteId], references:[id], index: false, onDelete: Cascade)
+  sourceRelease   WebsiteRelease  @relation(fields:[sourceReleaseId, websiteId], references:[id, websiteId], onDelete: Cascade)
 
   @@index([websiteId, createdAt])
+  @@check(expression: "(\"status\" = 'APPLIED') = (\"appliedAt\" IS NOT NULL)", name: "WebsiteMigration_applied_rule")
 }
+
+// ── Data sources ────────────────────────────────────────────────────────────
 
 /// External integration endpoint providing data for datasets.
 model DataSource {
-  id            String    @id @default(uuid())
+  id            String           @id @default(uuid())
   websiteId     String
   name          String
   kind          DataSourceKind
-  config        Json
+  config        Jsonb
   status        DataSourceStatus @default(UNKNOWN)
   lastCheckedAt DateTime?
   lastError     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @default(now())
 
-  website       Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  website       Website          @relation(fields:[websiteId], references:[id], onDelete: Cascade)
   datasets      Dataset[]
+
+  @@check(expression: "char_length(\"name\") BETWEEN 2 AND 100", name: "DataSource_name_rule")
 }
 
 /// A structured collection of content items retrieved from a data source.
 model Dataset {
-  id            String    @id @default(uuid())
+  id            String        @id @default(uuid())
   dataSourceId  String
   name          String
   slug          String
   canonicalKind String
+  /// The request path on the source, starting with a single `/`. Null: the source's own URL.
   path          String?
-  mapping       Json?
+  mapping       Jsonb?
   status        DatasetStatus @default(UNKNOWN)
   lastFetchedAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now())
 
-  dataSource    DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+  dataSource    DataSource    @relation(fields:[dataSourceId], references:[id], index: false, onDelete: Cascade)
 
   @@unique([dataSourceId, slug])
+  @@check(expression: "char_length(\"name\") BETWEEN 2 AND 100", name: "Dataset_name_rule")
+  @@check(expression: "\"slug\" ~ '^[a-z0-9-]+$' AND char_length(\"slug\") <= 50", name: "Dataset_slug_rule")
+  @@check(expression: "char_length(\"canonicalKind\") BETWEEN 1 AND 64", name: "Dataset_kind_rule")
+  @@check(expression: "\"path\" IS NULL OR (\"path\" LIKE '/%' AND \"path\" NOT LIKE '//%' AND char_length(\"path\") <= 500)", name: "Dataset_path_rule")
 }
 
-/// Association between an authenticated actor and a tenant with an assigned role.
+// ── Access ──────────────────────────────────────────────────────────────────
+
+/// Association between an authenticated actor and a tenant with an assigned role. No foreign key
+/// on either side: actors live in the authentication database, and `platform` is a tenant
+/// without a website.
 model Membership {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   actorId   String
   tenantId  String
-  role      String
-  createdAt DateTime @default(now())
+  role      ActorRole
+  createdAt DateTime  @default(now())
 
   @@unique([actorId, tenantId, role])
+  @@index([tenantId, role])
+  @@check(expression: "char_length(\"actorId\") BETWEEN 1 AND 128", name: "Membership_actor_rule")
+  @@check(expression: "\"tenantId\" ~ '^[A-Za-z0-9_-]{1,64}$'", name: "Membership_tenant_rule")
+  // The platform administrator is the one role of the `platform` tenant, and that tenant has no other.
+  @@check(expression: "(\"role\" = 'platform_admin') = (\"tenantId\" = 'platform')", name: "Membership_platform_rule")
 }
 
-// A pending, single-use offer to join a tenant with a role. Only the SHA-256 hash of the emailed
-// token is stored, so a database read cannot be turned into a working link.
-/// Cryptographic single-use token inviting a user to join a tenant.
+/// Cryptographic single-use token inviting a user to join a tenant. Only the SHA-256 hash of the
+/// emailed token is stored, so a database read cannot be turned into a working link.
 model Invitation {
   id         String    @id @default(uuid())
   tenantId   String
   email      String
-  role       String
+  role       ActorRole
   tokenHash  String    @unique
   invitedBy  String
   expiresAt  DateTime
@@ -244,106 +322,128 @@ model Invitation {
   createdAt  DateTime  @default(now())
 
   @@index([tenantId, email])
+  /// Serves the list of open invitations.
+  @@index([tenantId, createdAt], where: "\"acceptedAt\" IS NULL", name: "Invitation_open_idx")
+  @@check(expression: "\"tokenHash\" ~ '^[0-9a-f]{64}$'", name: "Invitation_token_rule")
+  @@check(expression: "char_length(\"email\") BETWEEN 3 AND 254", name: "Invitation_email_rule")
+  @@check(expression: "\"tenantId\" ~ '^[A-Za-z0-9_-]{1,64}$'", name: "Invitation_tenant_rule")
+  @@check(expression: "(\"role\" = 'platform_admin') = (\"tenantId\" = 'platform')", name: "Invitation_platform_rule")
 }
 
 // ── Booking & scheduling ────────────────────────────────────────────────────
-// Every booking table carries (websiteId, tenantId) and references the website
-// by that pair, like Page: the database itself refuses a row whose tenant is
-// not the website's tenant.
 
 /// Municipal venue, building, or branch where appointments and bookable services take place.
 model BookingLocation {
-  id           String   @id @default(uuid())
+  id           String             @id @default(uuid())
   tenantId     String
   websiteId    String
   name         String
   address      String?
   timeZone     String
-  openingHours Json
-  // The week in which employees may work here. NULL: the opening hours.
-  staffHours   Json?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
+  openingHours Jsonb
+  /// The week in which employees may work here. NULL: the opening hours.
+  staffHours   Jsonb?
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @default(now())
 
-  website   Website            @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  resources BookableResource[]
-  bookings  Booking[]
+  website      Website            @relation(fields:[websiteId, tenantId], references:[id, tenantId], onDelete: Cascade)
+  resources    BookableResource[]
+  bookings     Booking[]
 
-  @@index([websiteId])
+  @@unique([id, websiteId])
+  @@check(expression: "char_length(\"name\") BETWEEN 1 AND 120", name: "BookingLocation_name_rule")
+  @@check(expression: "\"address\" IS NULL OR char_length(\"address\") <= 300", name: "BookingLocation_address_rule")
+  @@check(expression: "char_length(\"timeZone\") BETWEEN 1 AND 64", name: "BookingLocation_zone_rule")
+  @@check(expression: "jsonb_typeof(\"openingHours\") = 'object' AND (\"staffHours\" IS NULL OR jsonb_typeof(\"staffHours\") = 'object')", name: "BookingLocation_hours_rule")
 }
 
 /// Physical resource, room, equipment, or staff calendar required to fulfill a booking.
 model BookableResource {
-  id           String   @id @default(uuid())
-  tenantId     String
-  websiteId    String
-  locationId   String?
-  name         String
-  type         String
-  skills       Json
-  capacity     Int?
-  availability Json?
-  isActive     Boolean  @default(true)
-  // The employee (a Membership actor of this tenant) whose calendar this resource is. No foreign
-  // key: actors live in the authentication database. NULL: not a person's calendar.
-  assignedActorId        String?
-  // What somebody else changed on this calendar since the employee last looked: who, when, which
-  // parts. NULL: nothing to tell. The employee clears it by acknowledging or by saving.
-  managerChange Json?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
+  id              String            @id @default(uuid())
+  tenantId        String
+  websiteId       String
+  locationId      String?
+  name            String
+  type            ResourceType
+  skills          Jsonb
+  capacity        Int?
+  availability    Jsonb?
+  isActive        Boolean           @default(true)
+  /// The employee (a Membership actor of this tenant) whose calendar this resource is. No foreign
+  /// key: actors live in the authentication database. NULL: not a person's calendar.
+  assignedActorId String?
+  /// What somebody else changed on this calendar since the employee last looked: who, when, which
+  /// parts. NULL: nothing to tell. The employee clears it by acknowledging or by saving.
+  managerChange   Jsonb?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now())
 
-  website  Website          @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  location BookingLocation? @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  holds    BookingResource[]
+  website         Website           @relation(fields:[websiteId, tenantId], references:[id, tenantId], onDelete: Cascade)
+  location        BookingLocation?  @relation(fields:[locationId, websiteId], references:[id, websiteId], onDelete: Restrict)
+  holds           BookingResource[]
 
-  @@index([websiteId])
-  @@index([tenantId, assignedActorId])
+  @@unique([id, websiteId])
+  @@index([tenantId, assignedActorId], where: "\"assignedActorId\" IS NOT NULL", name: "BookableResource_assignee_idx")
+  @@check(expression: "char_length(\"name\") BETWEEN 1 AND 120", name: "BookableResource_name_rule")
+  @@check(expression: "\"capacity\" IS NULL OR \"capacity\" BETWEEN 1 AND 10000", name: "BookableResource_capacity_rule")
+  @@check(expression: "jsonb_typeof(\"skills\") = 'array'", name: "BookableResource_skills_rule")
+  @@check(expression: "\"assignedActorId\" IS NULL OR char_length(\"assignedActorId\") BETWEEN 1 AND 128", name: "BookableResource_actor_rule")
 }
 
 /// Administrative service offered to the public with configurable duration and booking rules.
 model BookableService {
-  id                     String   @id @default(uuid())
+  id                     String    @id @default(uuid())
   tenantId               String
   websiteId              String
   name                   String
   description            String?
   category               String?
-  isActive               Boolean  @default(true)
+  isActive               Boolean   @default(true)
   durationMinutes        Int
-  preparationMinutes     Int      @default(0)
-  cleanupMinutes         Int      @default(0)
+  preparationMinutes     Int       @default(0)
+  cleanupMinutes         Int       @default(0)
   slotIntervalMinutes    Int
-  locationIds            Json
-  requirements           Json
-  participantsPerBooking Int      @default(1)
-  participantsPerSession Int      @default(1)
-  noticeMinutes          Int      @default(0)
+  locationIds            Jsonb
+  requirements           Jsonb
+  participantsPerBooking Int       @default(1)
+  participantsPerSession Int       @default(1)
+  noticeMinutes          Int       @default(0)
   horizonDays            Int
-  availability           Json?
-  cancellation           Json
-  rescheduling           Json
-  information            Json
-  requiredDocuments      Json
+  availability           Jsonb?
+  cancellation           Jsonb
+  rescheduling           Jsonb
+  information            Jsonb
+  requiredDocuments      Jsonb
   instructions           String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @default(now())
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @default(now())
 
-  website  Website   @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  bookings Booking[]
+  website                Website   @relation(fields:[websiteId, tenantId], references:[id, tenantId], onDelete: Cascade)
+  bookings               Booking[]
 
-  @@index([websiteId])
+  @@unique([id, websiteId])
+  @@check(expression: "char_length(\"name\") BETWEEN 1 AND 120", name: "BookableService_name_rule")
+  @@check(expression: "\"description\" IS NULL OR char_length(\"description\") <= 2000", name: "BookableService_description_rule")
+  @@check(expression: "\"category\" IS NULL OR char_length(\"category\") <= 64", name: "BookableService_category_rule")
+  @@check(expression: "\"instructions\" IS NULL OR char_length(\"instructions\") <= 2000", name: "BookableService_instructions_rule")
+  @@check(expression: "\"durationMinutes\" BETWEEN 5 AND 1440 AND \"slotIntervalMinutes\" BETWEEN 5 AND 240", name: "BookableService_timing_rule")
+  @@check(expression: "\"preparationMinutes\" BETWEEN 0 AND 240 AND \"cleanupMinutes\" BETWEEN 0 AND 240", name: "BookableService_buffers_rule")
+  @@check(expression: "\"noticeMinutes\" BETWEEN 0 AND 525600 AND \"horizonDays\" BETWEEN 1 AND 730", name: "BookableService_window_rule")
+  @@check(expression: "\"participantsPerBooking\" BETWEEN 1 AND 500 AND \"participantsPerSession\" BETWEEN \"participantsPerBooking\" AND 500", name: "BookableService_participants_rule")
+  @@check(expression: "jsonb_typeof(\"locationIds\") = 'array' AND jsonb_typeof(\"requirements\") = 'array' AND jsonb_typeof(\"information\") = 'array' AND jsonb_typeof(\"requiredDocuments\") = 'array'", name: "BookableService_lists_rule")
+  @@check(expression: "jsonb_typeof(\"cancellation\") = 'object' AND jsonb_typeof(\"rescheduling\") = 'object'", name: "BookableService_rules_rule")
 }
 
 /// An appointment reservation made by a citizen with occupied timespan and status tracking.
 model Booking {
-  id              String        @id @default(uuid())
+  id              String            @id @default(uuid())
   tenantId        String
   websiteId       String
   serviceId       String
   locationId      String
-  reference       String        @unique
+  /// The code the citizen quotes: ten Crockford base-32 characters.
+  reference       String            @unique
   status          BookingStatus
   start           DateTime
   end             DateTime
@@ -352,50 +452,63 @@ model Booking {
   participants    Int
   sessionKey      String
   sessionCapacity Int
-  customer        Json?
+  customer        Jsonb?
   customerEmail   String?
   holdExpiresAt   DateTime?
-  rescheduleCount Int           @default(0)
+  rescheduleCount Int               @default(0)
   cancelledAt     DateTime?
   cancelledBy     String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @default(now())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now())
 
-  website  Website           @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  service  BookableService   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
-  location BookingLocation   @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  holds    BookingResource[]
+  website         Website           @relation(fields:[websiteId, tenantId], references:[id, tenantId], index: false, onDelete: Cascade)
+  service         BookableService   @relation(fields:[serviceId, websiteId], references:[id, websiteId], onDelete: Restrict)
+  location        BookingLocation   @relation(fields:[locationId, websiteId], references:[id, websiteId], onDelete: Restrict)
+  holds           BookingResource[]
 
+  @@unique([id, websiteId])
   @@index([websiteId, start])
+  @@index([websiteId, occupiedStart])
   @@index([sessionKey])
-  @@index([customerEmail])
-  @@index([status, holdExpiresAt])
+  @@index([websiteId, customerEmail])
+  /// Serves the sweep of holds that ran out.
+  @@index([websiteId, holdExpiresAt], where: "\"status\" = 'HELD'", name: "Booking_held_idx")
   @@check(expression: "\"start\" < \"end\" AND \"occupiedStart\" <= \"start\" AND \"end\" <= \"occupiedEnd\"", name: "Booking_span_check")
   @@check(expression: "\"participants\" >= 1 AND \"participants\" <= \"sessionCapacity\"", name: "Booking_group_size_rule")
+  @@check(expression: "\"reference\" ~ '^[0-9A-HJKMNP-TV-Z]{10}$'", name: "Booking_reference_rule")
+  @@check(expression: "\"rescheduleCount\" >= 0", name: "Booking_reschedules_rule")
+  @@check(expression: "\"customer\" IS NULL OR jsonb_typeof(\"customer\") = 'object'", name: "Booking_customer_rule")
+  // A confirmed booking, and every state after it, knows who booked.
+  @@check(expression: "\"status\" NOT IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW') OR \"customer\" IS NOT NULL", name: "Booking_customer_known_rule")
+  // Exactly the cancelled bookings say when and by whom.
+  @@check(expression: "(\"status\" = 'CANCELLED') = (\"cancelledAt\" IS NOT NULL AND \"cancelledBy\" IS NOT NULL)", name: "Booking_cancelled_rule")
 }
 
-// One row per resource a booking holds. It repeats the booking's occupied span,
-// session key and liveness so a single table can carry the exclusion
-// constraint that makes double booking impossible (see the migration).
-/// Specific resource reservation holding a capacity slot during an appointment.
+/// One row per resource a booking holds. It repeats the booking's occupied span, session key and
+/// liveness so a single table can carry the exclusion constraint that makes double booking
+/// impossible (see the migration).
 model BookingResource {
   bookingId     String
   resourceId    String
+  websiteId     String
   occupiedStart DateTime
   occupiedEnd   DateTime
   sessionKey    String
   isActive      Boolean
 
-  booking  Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  resource BookableResource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  booking       Booking          @relation(fields:[bookingId, websiteId], references:[id, websiteId], onDelete: Cascade)
+  resource      BookableResource @relation(fields:[resourceId, websiteId], references:[id, websiteId], index: false, onDelete: Restrict)
 
   @@id([bookingId, resourceId])
   @@index([resourceId, occupiedStart])
   @@check(expression: "\"occupiedStart\" < \"occupiedEnd\"", name: "BookingResource_span_check")
 }
 
-/// One recorded audit event of a website: what happened, who caused it and when. Ids, counts and codes only, never
-/// content or personal data. Append-only; the rows go with the website.
+// ── Audit ───────────────────────────────────────────────────────────────────
+
+/// One recorded audit event of a website: what happened, who caused it and when. Ids, counts and
+/// codes only, never content or personal data. Append-only (a trigger refuses updates); the rows
+/// go with the website.
 model AuditEntry {
   id         String         @id @default(uuid())
   websiteId  String
@@ -407,10 +520,10 @@ model AuditEntry {
   actorKind  AuditActorKind
   /// Set for `MEMBER` only: an actor id, named where it is shown so a name is never stale.
   actorId    String?
-  details    Json
+  details    Jsonb
   occurredAt DateTime
 
-  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  website    Website        @relation(fields:[websiteId], references:[id], index: false, onDelete: Cascade)
 
   @@index([websiteId, occurredAt])
   @@index([websiteId, source, occurredAt])
@@ -419,4 +532,6 @@ model AuditEntry {
   @@index([occurredAt])
   // Exactly the entries of a member name one; a visitor or the system has no actor id.
   @@check(expression: "(\"actorKind\" = 'MEMBER') = (\"actorId\" IS NOT NULL)", name: "AuditEntry_member_actor_check")
+  @@check(expression: "char_length(\"source\") BETWEEN 1 AND 64 AND char_length(\"type\") BETWEEN 1 AND 128", name: "AuditEntry_label_rule")
+  @@check(expression: "jsonb_typeof(\"details\") = 'object'", name: "AuditEntry_details_rule")
 }
