@@ -1,6 +1,7 @@
 import type { AuthorizationService } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
+import type { RateLimiter } from '@lib/rate-limit';
 
 import type { ComponentCatalog } from '../domain/ports/component-catalog.port';
 import type { DataSourcePort } from '../domain/ports/data-source.port';
@@ -10,9 +11,13 @@ import type { ReleaseAuditLog } from '../domain/ports/release-audit-log.port';
 import type { ReleaseRepository } from '../domain/ports/release.repository';
 import type { WebsiteSource } from '../domain/ports/website-source.port';
 
-/** What every protected release use case is built from. */
+/**
+ * What every protected release use case is built from. The commands that change the live website
+ * or remove its data spend a budget per person; the queries ignore it.
+ */
 export interface ReleaseDependencies {
   readonly authorization: AuthorizationService;
+  readonly rateLimiter: RateLimiter;
   readonly websites: WebsiteSource;
   readonly releases: ReleaseRepository;
   readonly audit: ReleaseAuditLog;

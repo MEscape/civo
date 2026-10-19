@@ -18,6 +18,7 @@ import type { PublicReleaseDependencies } from '../release-dependencies';
  * published": the public surface does not explain its own id format.
  *
  * @authorization public Serves the published site, which anyone may read; it resolves only the live release.
+ * @rate-limit none Serves the published site, which is cached per release; a per-visitor budget would make every page dynamic.
  */
 export class GetPublishedSnapshot {
   constructor(private readonly deps: PublicReleaseDependencies) {}

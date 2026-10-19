@@ -8,6 +8,7 @@ import { componentPlatformQueries, renderPageNodes } from '@modules/component-pl
 
 import { systemClock } from '@lib/clock';
 import type { UnexpectedAppError } from '@lib/errors';
+import { getRateLimiter } from '@lib/rate-limit';
 import type { AppResult, AppResultAsync } from '@lib/result';
 
 import { CreatePage } from './application/commands/create-page';
@@ -57,6 +58,7 @@ import type { DatasetUse } from './domain/models/page-dataset-usage';
  * platform's descriptors, so use cases never touch the registry.
  */
 const authorization = getAccessControl();
+const rateLimiter = getRateLimiter();
 const pages = new PrismaPageRepository(systemClock);
 /*
  * Both platform queries are infallible (`AppResult<_, never>`), so the error
@@ -91,7 +93,7 @@ const dependencies: PageDependencies = {
 
 export const builderCommands = {
   createPage: new CreatePage(dependencies),
-  savePageConfig: new SavePageConfig(dependencies),
+  savePageConfig: new SavePageConfig({ ...dependencies, rateLimiter }),
 } as const;
 
 export const builderQueries = {
@@ -101,6 +103,7 @@ export const builderQueries = {
   resolvePageTitles: new ResolvePageTitles(dependencies),
   renderDraftPage: new RenderDraftPage<ReactNode>({
     authorization,
+    rateLimiter,
     pages,
     renderer: new ComponentPlatformDraftRenderer(renderPageNodes),
   }),

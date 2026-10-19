@@ -4,10 +4,12 @@ import type { AppResultAsync } from '@lib/result';
 
 import { cancelBooking } from '../../domain/lifecycle/booking-lifecycle';
 import { parseBookingId } from '../../domain/models/ids';
-import { resolvePublicScope } from '../services/public-scope';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
+import { resolveScopeWithinBudget } from '../services/limit-visitor';
 
 import type { BookingFlowDependencies } from '../booking-dependencies';
 import type { ReleaseHoldInput } from '../contracts/booking-inputs';
+import type { VisitorLimitError } from '../services/limit-visitor';
 import type { PublicScopeError } from '../services/public-scope';
 
 export interface ReleaseHoldResult {
@@ -29,12 +31,20 @@ export class ReleaseHold {
     input: ReleaseHoldInput,
   ): AppResultAsync<
     ReleaseHoldResult,
-    PublicScopeError | ConflictAppError | NotFoundAppError | InfrastructureAppError
+    | PublicScopeError
+    | VisitorLimitError
+    | ConflictAppError
+    | NotFoundAppError
+    | InfrastructureAppError
   > {
     const { bookings, audit, clock } = this.deps;
     const now = clock.now();
 
-    return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
+    return resolveScopeWithinBudget(
+      this.deps,
+      BOOKING_RATE_LIMITS.changeClient,
+      input.websiteId,
+    ).andThen((scope) =>
       parseBookingId(input.holdId)
         .asyncAndThen((id) => bookings.findById(id, scope.tenantId))
         .andThen((hold) => {

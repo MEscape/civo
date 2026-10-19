@@ -1,12 +1,14 @@
 import type { AppResultAsync } from '@lib/result';
 
 import { toBookingView } from '../booking-view-mappers';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
+import { resolveScopeWithinBudget } from '../services/limit-visitor';
 import { loadOwnBooking } from '../services/own-booking';
-import { resolvePublicScope } from '../services/public-scope';
 
 import type { PublicBookingDependencies } from '../booking-dependencies';
 import type { BookingAccessInput } from '../contracts/booking-inputs';
 import type { BookingView } from '../contracts/booking-views';
+import type { VisitorLimitError } from '../services/limit-visitor';
 import type { OwnBookingError } from '../services/own-booking';
 import type { PublicScopeError } from '../services/public-scope';
 
@@ -22,8 +24,12 @@ export class GetPublicBooking {
 
   execute(
     input: BookingAccessInput,
-  ): AppResultAsync<BookingView, PublicScopeError | OwnBookingError> {
-    return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
+  ): AppResultAsync<BookingView, PublicScopeError | VisitorLimitError | OwnBookingError> {
+    return resolveScopeWithinBudget(
+      this.deps,
+      BOOKING_RATE_LIMITS.lookupClient,
+      input.websiteId,
+    ).andThen((scope) =>
       loadOwnBooking(this.deps, scope, input).map((parts) =>
         toBookingView(parts, this.deps.clock.now()),
       ),

@@ -1,33 +1,49 @@
-import type { ForbiddenAppError, InfrastructureAppError } from '@lib/errors';
-import { errAsync, okAsync } from '@lib/result';
+import type { InfrastructureAppError, RateLimitedAppError } from '@lib/errors';
+import type { RateLimitPolicy, RateLimitRequest, ClientSubject } from '@lib/rate-limit';
+import { ResultAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { rateLimited } from '../../domain/errors/auth-errors';
-import { AUTH_RATE_LIMITS } from '../auth-limits';
+import { fromRateLimitFailure } from '../../domain/errors/auth-errors';
 
-import type { AuthRateLimitAction } from '../../domain/models/rate-limit';
 import type { AuthenticationDependencies } from '../auth-dependencies';
 
-export type RateLimitError = ForbiddenAppError | InfrastructureAppError;
+export type RateLimitError = RateLimitedAppError | InfrastructureAppError;
+
+type RateLimitDependencies = Pick<AuthenticationDependencies, 'rateLimiter' | 'clientAddress'>;
+
+function enforce(
+  deps: RateLimitDependencies,
+  requestsFor: (client: ClientSubject) => readonly RateLimitRequest[],
+): AppResultAsync<void, RateLimitError> {
+  return ResultAsync.fromSafePromise(deps.clientAddress.current())
+    .andThen((client) => deps.rateLimiter.enforceAll(requestsFor(client)))
+    .map(() => undefined)
+    .mapErr(fromRateLimitFailure);
+}
 
 /**
- * Counts one attempt and refuses it when the window is used up. Fails
- * closed: if the limiter itself is down the attempt is refused rather than
- * waved through. The refusal is audited; the caller only sees `rateLimited`.
+ * Counts one attempt against the caller's address and refuses it when that budget is used up.
+ * Fails closed or open as the policy says; a refusal is the module's own `rateLimited` error.
  */
-export function enforceRateLimit(
-  deps: Pick<AuthenticationDependencies, 'rateLimiter' | 'audit'>,
-  action: AuthRateLimitAction,
-  subject: string,
+export function enforceClientLimit(
+  deps: RateLimitDependencies,
+  policy: RateLimitPolicy,
 ): AppResultAsync<void, RateLimitError> {
-  return deps.rateLimiter
-    .consume({ action, subject, ...AUTH_RATE_LIMITS[action] })
-    .andThen((decision): AppResultAsync<void, ForbiddenAppError> => {
-      if (decision.isAllowed) {
-        return okAsync(undefined);
-      }
+  return enforce(deps, (client) => [{ policy, subject: client }]);
+}
 
-      deps.audit.record({ type: 'authentication.rate_limited', action });
-      return errAsync(rateLimited());
-    });
+/**
+ * Counts one attempt against the caller's address and then against the account it names (a
+ * normalised email). The address comes first, so one client cannot use up more of a victim's
+ * account budget than its own address budget allows.
+ */
+export function enforceClientAndAccountLimits(
+  deps: RateLimitDependencies,
+  policies: { readonly client: RateLimitPolicy; readonly account: RateLimitPolicy },
+  email: string,
+): AppResultAsync<void, RateLimitError> {
+  return enforce(deps, (client) => [
+    { policy: policies.client, subject: client },
+    { policy: policies.account, subject: { kind: 'identifier', value: email } },
+  ]);
 }

@@ -7,8 +7,10 @@ import type { AppResultAsync } from '@lib/result';
 import { releaseNotPublished } from '../../domain/errors/release-errors';
 import { isUpToDate } from '../../domain/models/migration-plan';
 import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
+import { RELEASE_RATE_LIMITS } from '../rate-limits';
 import { toMigrationProposalView } from '../release-view-mappers';
 import { planLiveRelease } from '../services/live-release-plan';
+import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { WebsiteId } from '../../domain/models/ids';
 import type { Release } from '../../domain/models/release';
@@ -17,8 +19,10 @@ import type { MigrationProposalView, ProposeMigrationInput } from '../contracts/
 import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
 import type { ProposeMigrationDependencies } from '../release-dependencies';
 import type { LiveReleasePlan } from '../services/live-release-plan';
+import type { ActorLimitError } from '../services/within-actor-limit';
 
-export type ProposeMigrationError = LoadReleaseWebsiteError | ReleaseReadError | UnexpectedAppError;
+export type ProposeMigrationError =
+  LoadReleaseWebsiteError | ReleaseReadError | UnexpectedAppError | ActorLimitError;
 
 function requirePublished(release: Release | null): AppResultAsync<Release, NotFoundAppError> {
   return release === null ? errAsync(releaseNotPublished()) : okAsync(release);
@@ -41,8 +45,9 @@ export class ProposeMigration {
   ): AppResultAsync<MigrationProposalView, ProposeMigrationError> {
     const { releases } = this.deps;
 
-    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish').andThen(
-      ({ actor, website }) =>
+    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish')
+      .andThen(withinActorLimit(this.deps, RELEASE_RATE_LIMITS.proposeMigration))
+      .andThen(({ actor, website }) =>
         releases
           .findPublished(website.id)
           .andThen(requirePublished)
@@ -52,7 +57,7 @@ export class ProposeMigration {
           .andThen(({ source, plan }) =>
             this.record({ actor, websiteId: website.id, source, plan }),
           ),
-    );
+      );
   }
 
   private record({

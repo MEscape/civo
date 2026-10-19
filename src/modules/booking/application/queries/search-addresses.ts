@@ -1,15 +1,16 @@
 import type { AuthorizationError } from '@modules/auth';
 
-import type { ConflictAppError, InfrastructureAppError, ValidationAppError } from '@lib/errors';
+import type { InfrastructureAppError, RateLimitedAppError, ValidationAppError } from '@lib/errors';
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
   BOOKING_VALIDATION_CODES,
   fieldValidationFailed,
-  rateLimited,
+  fromRateLimitFailure,
 } from '../../domain/errors/booking-errors';
 import { ADDRESS_SEARCH_LIMITS } from '../booking-limits';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
 
 import type { BookingDependencies } from '../booking-dependencies';
 import type { SearchAddressesInput } from '../contracts/booking-inputs';
@@ -29,9 +30,9 @@ export class SearchAddresses {
     input: SearchAddressesInput,
   ): AppResultAsync<
     readonly AddressSuggestionView[],
-    AuthorizationError | ValidationAppError | ConflictAppError | InfrastructureAppError
+    AuthorizationError | ValidationAppError | RateLimitedAppError | InfrastructureAppError
   > {
-    const { authorization, addresses, limiter, clock } = this.deps;
+    const { authorization, addresses, rateLimiter } = this.deps;
 
     return authorization.requireInTenant('booking.configure').andThen((actor) => {
       const query = input.query.trim();
@@ -44,14 +45,19 @@ export class SearchAddresses {
       if (addresses === null) {
         return okAsync([]);
       }
-      if (!limiter.allow(`${actor.tenantId}:${actor.id}`, 'address', clock.now())) {
-        return errAsync(rateLimited());
-      }
-      return addresses.search({
-        query,
-        language: input.language,
-        limit: ADDRESS_SEARCH_LIMITS.suggestions,
-      });
+      return rateLimiter
+        .enforce({
+          policy: BOOKING_RATE_LIMITS.searchAddress,
+          subject: { kind: 'actor', tenantId: actor.tenantId, actorId: actor.id },
+        })
+        .mapErr(fromRateLimitFailure)
+        .andThen(() =>
+          addresses.search({
+            query,
+            language: input.language,
+            limit: ADDRESS_SEARCH_LIMITS.suggestions,
+          }),
+        );
     });
   }
 }

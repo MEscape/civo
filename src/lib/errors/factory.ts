@@ -4,6 +4,7 @@ import type {
   ForbiddenAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   UnauthorizedAppError,
   UnexpectedAppError,
   ValidationAppError,
@@ -39,6 +40,20 @@ export function unauthorizedError(code: string, message: string): UnauthorizedAp
 
 export function forbiddenError(code: string, message: string): ForbiddenAppError {
   return { kind: 'forbidden', code, message };
+}
+
+/** `retryAfterSeconds` is rounded up to a whole second and is never below 1. */
+export function rateLimitedError(
+  code: string,
+  message: string,
+  retryAfterSeconds: number,
+): RateLimitedAppError {
+  return {
+    kind: 'rate_limited',
+    code,
+    message,
+    retryAfterSeconds: Math.max(1, Math.ceil(retryAfterSeconds)),
+  };
 }
 
 /**

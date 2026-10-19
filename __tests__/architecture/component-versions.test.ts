@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { COMPONENT_LOCK_PATH, currentComponentLock } from '../../scripts/component-version-lock';
+import { COMPONENT_LOCK_PATH, currentComponentLock } from '../../scripts/commands/component-lock';
 
-import type { ComponentLock } from '../../scripts/component-version-lock';
+import type { ComponentLock } from '../../scripts/commands/component-lock';
 
-const UPDATE_HINT = 'Run `npm run components:lock` to record it.';
+const UPDATE_HINT =
+  'Run `npm run components:lock` (or `npm run gen -- component-lock`) to record it.';
 
 function readLock(): ComponentLock {
   return JSON.parse(readFileSync(COMPONENT_LOCK_PATH, 'utf8')) as ComponentLock;

@@ -1,8 +1,8 @@
 import type { Clock } from '@lib/clock';
+import type { ClientAddressProvider, RateLimiter } from '@lib/rate-limit';
 
 import type { AuthorizationService } from './authorization-service';
 import type { AuthMailer } from '../domain/ports/auth-mailer.port';
-import type { AuthRateLimiter } from '../domain/ports/auth-rate-limiter.port';
 import type { Authenticator } from '../domain/ports/authenticator.port';
 import type { CurrentActorProvider } from '../domain/ports/current-actor-provider.port';
 import type { InvitationRepository } from '../domain/ports/invitation.repository';
@@ -15,11 +15,13 @@ import type { UserDirectory } from '../domain/ports/user-directory.port';
 /**
  * What every unauthenticated flow (sign-in, accepting an invitation, password reset) is
  * built from. They have no actor, so there is no authorization service;
- * the rate limiter takes its place as the gate.
+ * the rate limiter, counting against the caller's address and the account
+ * the flow names, takes its place as the gate.
  */
 export interface AuthenticationDependencies {
   readonly authenticator: Authenticator;
-  readonly rateLimiter: AuthRateLimiter;
+  readonly rateLimiter: RateLimiter;
+  readonly clientAddress: ClientAddressProvider;
   readonly audit: SecurityAuditLog;
 }
 
@@ -47,6 +49,11 @@ export interface UserAdministrationDependencies {
   readonly mailer: AuthMailer;
   readonly audit: SecurityAuditLog;
   readonly clock: Clock;
+}
+
+/** What inviting a person is built from: administration, plus a budget for the mail it sends. */
+export interface InviteUserDependencies extends UserAdministrationDependencies {
+  readonly rateLimiter: RateLimiter;
 }
 
 /** What the platform-wide user listing is built from: who may ask, and the stores it reads. */

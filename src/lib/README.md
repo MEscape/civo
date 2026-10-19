@@ -11,7 +11,7 @@ This directory contains the core shared infrastructure and utilities for the app
 Centralized environment validation via Zod. Do not use `process.env` directly in the application. Each entry point validates once, when first imported.
 
 - `publicEnv` (`@lib/config`): Validated `NEXT_PUBLIC_*` variables. Safe in any bundle.
-- `serverEnv` (`@lib/config/server`): Validated server variables, including secrets. The module imports `server-only`, so importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. Authentication variables (`AUTH_SECRET`, `AUTH_DATABASE_URL`) are required only while `AUTH_ENABLED=true`; mail settings (`MAIL_*`) are required as soon as a provider is chosen, and production needs `MAIL_PROVIDER=smtp` or `resend` (`resend` is refused outside production; SMTP credentials `MAIL_SMTP_USER`/`MAIL_SMTP_PASSWORD` are set together or not at all); `DATABASE_URL` is always required. Production refuses `AUTH_ENABLED=false`.
+- `serverEnv` (`@lib/config/server`): Validated server variables, including secrets. The module imports `server-only`, so importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. Authentication variables (`AUTH_SECRET`, `AUTH_DATABASE_URL`) are required only while `AUTH_ENABLED=true`; mail settings (`MAIL_*`) are required as soon as a provider is chosen, and production needs `MAIL_PROVIDER=smtp` or `resend` (`resend` is refused outside production; SMTP credentials `MAIL_SMTP_USER`/`MAIL_SMTP_PASSWORD` are set together or not at all); `DATABASE_URL` is always required. Production refuses `AUTH_ENABLED=false`. The rate limiter needs `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in production (see `@lib/rate-limit`), and `resolveRateLimitSettings(serverEnv)` (`@lib/config/server`) turns the validated variables into the limiter's settings.
 - `APP_IDENTITY`: The product's name and the literal theme/background colours browsers need (`theme-color`, manifest). Not translated; colours are pinned to the `globals.css` tokens by a test.
 - **Types**: `ServerEnv`, `PublicEnv`.
 
@@ -29,6 +29,18 @@ The `Clock` port every module shares. Domain and application code import it with
 
 - **Types**: `Clock` (`now(): Date`).
 - `systemClock`: The real clock.
+
+### `@lib/rate-limit` (Rate Limiting)
+
+Budgets for operations anyone can repeat or that cost something per run. Counters live in Redis, reached over HTTP with the platform `fetch` (Upstash), or in process memory for development and tests. How it fits together: [`docs/architecture/rate-limiting.md`](../../docs/architecture/rate-limiting.md); procedure: [`docs/conventions/adding-a-rate-limit.md`](../../docs/conventions/adding-a-rate-limit.md).
+
+Like `Clock`, it is a port every module shares: domain, application and presentation code `import type` from it and are handed an instance; only `composition.ts` files call the runtime functions.
+
+- **Types**: `RateLimiter` (`enforce(request)`, `enforceAll(requests)`: the first refusal wins and later budgets are not counted), `RateLimitPolicy` (`id`, `limit`, `windowSeconds`, `onBackendFailure`, `onUnresolvedClient`), `RateLimitSubject` (`actor`, `client`, `identifier`, `global`), `RateLimitFailure` (a `rate_limited` or an `infrastructure` error), `ClientAddressProvider` / `ClientSubject`, `RateLimitStore`.
+- `getRateLimiter()`: The application's limiter, built on the first `enforce` from validated configuration; a build failure refuses the attempt instead of throwing.
+- `getClientAddressProvider(() => headers())`: Who is calling by network address, from `x-vercel-forwarded-for` or the trusted-proxy chain of `x-forwarded-for`; an address that cannot be trusted is `unresolved-client`, never a guess.
+- `createRateLimiter(deps)`, `InMemoryRateLimitStore`: For tests, with a store you control. `UpstashRateLimitStore` is the production store (one `EVAL` per attempt).
+- `policyProblem(policy)`, `buildBucketKey(policyId, subject, secret)`: The validator behind the policy checks, and the keyed hash every counter is stored under.
 
 ### `@lib/db` (Database Access)
 

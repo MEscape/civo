@@ -3,7 +3,7 @@
 - Environment variables are infrastructure/configuration concerns.
 - Validate environment variables at startup. See [`validation.md`](validation.md).
 - Separate server-only and public configuration: `@lib/config/server` imports `server-only` and holds everything secret; `@lib/config` holds only values safe for the browser.
-- A subsystem's variables are required only while that subsystem is on (authentication variables only when `AUTH_ENABLED=true`). Database configuration is always required. Production never allows authentication to be off.
+- A subsystem's variables are required only while that subsystem is on (authentication variables only when `AUTH_ENABLED=true`). Database configuration is always required. Production never allows authentication to be off. Production requires a shared rate-limit store (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) and a secret of at least 32 characters for it; the in-memory store is refused there.
 - Use `NEXT_PUBLIC_*` only for intentionally public values; secrets must never use this prefix. See [`security.md`](security.md).
 - Do not access `process.env` throughout application code.
 - Centralize environment access behind typed configuration.

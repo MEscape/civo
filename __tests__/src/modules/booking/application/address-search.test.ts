@@ -2,12 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { BookingDependencies } from '@modules/booking/application/booking-dependencies';
 import { SearchAddresses } from '@modules/booking/application/queries/search-addresses';
+import { BOOKING_RATE_LIMITS } from '@modules/booking/application/rate-limits';
 import type { AddressSearch } from '@modules/booking/domain/ports/address-search.port';
 import { MapboxAddressSearch } from '@modules/booking/infrastructure/geocoding/mapbox-address-search';
 
 import { okAsync } from '@lib/result';
 
-import { FakeRequestLimiter, actorWithRole } from '../support/fakes';
+import { actorWithRole } from '../support/fakes';
 import { TENANT } from '../support/fixtures';
 import { createWorld } from '../support/world';
 
@@ -72,15 +73,20 @@ describe('searching addresses while editing a location', () => {
 
   it('refuses an editor who has used up their budget, and stops calling the service', async () => {
     const { search, requests } = recordingSearch();
-    const limited = useCase({ addresses: search, limiter: new FakeRequestLimiter(2) });
+    const limited = useCase({ addresses: search });
+    const { limit } = BOOKING_RATE_LIMITS.searchAddress;
 
     const outcomes = [];
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; attempt <= limit; attempt += 1) {
       outcomes.push(await limited.execute({ query: 'Marktplatz', language: 'de' }));
     }
 
-    expect(outcomes.map((outcome) => outcome.isOk())).toEqual([true, true, false]);
-    expect(requests).toHaveLength(2);
+    expect(outcomes.filter((outcome) => outcome.isOk())).toHaveLength(limit);
+    expect(outcomes.at(-1)?._unsafeUnwrapErr()).toMatchObject({
+      kind: 'rate_limited',
+      code: 'booking.rate_limited',
+    });
+    expect(requests).toHaveLength(limit);
   });
 });
 

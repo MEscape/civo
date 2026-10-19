@@ -11,7 +11,7 @@ Owning rules: [`api.md`](../rules/api.md), [`nextjs.md`](../rules/nextjs.md), [`
 5. Call the use case and map the `Result` to a specific status code and the project's error response shape. See [`errors.md`](../rules/errors.md).
 6. Return an explicit response DTO. Never return domain or persistence objects.
 7. For webhooks: verify signature and replay protection before parsing the payload.
-8. Apply rate limiting and a body size limit on public endpoints.
+8. Apply rate limiting on public endpoints through the use case (see [`adding-a-rate-limit.md`](adding-a-rate-limit.md)); answer a refusal with `429` and `Retry-After` (`httpHeadersForError`). Bound the body size.
 9. Make retry-prone operations idempotent.
 10. Test success, invalid input, unauthenticated, unauthorized, and each mapped failure.
 
@@ -19,5 +19,5 @@ Owning rules: [`api.md`](../rules/api.md), [`nextjs.md`](../rules/nextjs.md), [`
 
 - [ ] The handler contains no business logic
 - [ ] Every input source is validated
-- [ ] Status codes are specific, never a blanket 500
+- [ ] Status codes are specific, never a blanket 500 (a rate-limited result is 429 with `Retry-After`)
 - [ ] No internal error message reaches the response

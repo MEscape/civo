@@ -14,6 +14,8 @@ import type { ReleaseRepository } from '@modules/release/domain/ports/release.re
 import { conflictError, forbiddenError } from '@lib/errors';
 import { errAsync, okAsync } from '@lib/result';
 
+import { createTestRateLimiter } from '../../support/rate-limiting';
+
 const authorizationFor = (actor: Actor): AuthorizationService => ({
   requireInTenant: (permission) =>
     actorHasPermission(actor, permission)
@@ -63,6 +65,7 @@ function run(options: {
   } as unknown as ReleaseRepository;
   const command = new DeleteUnusedData({
     authorization: authorizationFor(actorOf(options.role ?? 'admin')),
+    rateLimiter: createTestRateLimiter(),
     websites: {} as never,
     releases,
     audit: { record: () => undefined },

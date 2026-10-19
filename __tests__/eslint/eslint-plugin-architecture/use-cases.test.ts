@@ -450,3 +450,128 @@ export function toActorId(raw: string): ActorId { return raw as ActorId; }`,
     ),
   ],
 });
+
+const PUBLIC_QUERY = 'src/modules/shop/application/queries/get-public-shop.ts';
+const POLICIES = 'src/modules/shop/application/rate-limits.ts';
+
+const POLICIES_FILE = `
+import { SECONDS_PER_MINUTE } from '@lib/utils';
+import type { RateLimitPolicy } from '@lib/rate-limit';
+
+export const SHOP_RATE_LIMITS = {
+  lookup: { id: 'shop.lookup', limit: 10, windowSeconds: SECONDS_PER_MINUTE, onBackendFailure: 'deny' },
+} as const satisfies Record<string, RateLimitPolicy>;`;
+
+const publicUseCase = (comment: string, body: string) => `
+import type { AppResultAsync } from '@lib/result';
+import { SHOP_RATE_LIMITS } from '../rate-limits';
+/**
+${comment}
+ */
+export class GetPublicShop {
+  constructor(private readonly deps: PublicShopDependencies) {}
+  execute(): AppResultAsync<View, Error> { ${body} }
+}`;
+
+ruleTester.run('architecture/rate-limit-usage', rules['rate-limit-usage']!, {
+  valid: [
+    valid(
+      PUBLIC_QUERY,
+      publicUseCase(
+        ' * @authorization public Anyone may look a shop up.',
+        'return limit(this.deps, SHOP_RATE_LIMITS.lookup);',
+      ),
+    ),
+    valid(
+      PUBLIC_QUERY,
+      publicUseCase(
+        ' * @authorization public Anyone may read the catalog.\n * @rate-limit none Cached per website; a budget would make every page dynamic.',
+        'return read();',
+      ),
+    ),
+    // A protected use case may spend a budget (after authorizing) or not: it is a judgment, not a rule.
+    valid(COMMAND, `${GOOD_COMMAND}\nconst budget = SHOP_RATE_LIMITS.create;`),
+    valid(
+      'src/modules/shop/application/services/limit-visitor.ts',
+      'export const f = (deps: D) => deps.rateLimiter.enforce({ policy, subject });',
+    ),
+    valid(POLICIES, POLICIES_FILE),
+    valid(
+      'src/modules/shop/composition.ts',
+      "import { getRateLimiter } from '@lib/rate-limit'; const rateLimiter = getRateLimiter();",
+    ),
+  ],
+  invalid: [
+    invalid(
+      PUBLIC_QUERY,
+      publicUseCase(' * @authorization public Anyone may look a shop up.', 'return read();'),
+      /A public use case runs for anyone, so it spends a budget declared in application\/rate-limits\.ts.*@rate-limit none <reason>/,
+    ),
+    invalid(
+      PUBLIC_QUERY,
+      publicUseCase(
+        ' * @authorization public Anyone may look a shop up.\n * @rate-limit none',
+        'return read();',
+      ),
+      /Write the opt-out as `@rate-limit none <reason>`/,
+    ),
+    invalid(
+      PUBLIC_QUERY,
+      publicUseCase(
+        ' * @authorization public Anyone may look a shop up.\n * @rate-limit none Cached per website.',
+        'return limit(this.deps, SHOP_RATE_LIMITS.lookup);',
+      ),
+      /tagged `@rate-limit none` but spends a budget/,
+    ),
+    invalid(
+      'src/modules/shop/application/services/limit-visitor.ts',
+      "export const f = (deps: D) => deps.rateLimiter.enforce({ policy: { id: 'shop.x', limit: 1 }, subject });",
+      /Pass a policy declared in application\/rate-limits\.ts, not an inline object/,
+    ),
+    invalid(
+      'src/modules/shop/application/services/limit-visitor.ts',
+      "export const f = (deps: D) => deps.rateLimiter.enforceAll([{ policy: { id: 'shop.x' }, subject }]);",
+      /Pass a policy declared in application\/rate-limits\.ts/,
+    ),
+    invalid(
+      'src/modules/shop/presentation/actions/find-shop-action.ts',
+      "'use server'; export async function findShopAction() { return rateLimiter.enforce({ policy, subject }); }",
+      /Only a use case \(application layer\) may call the rate limiter/,
+    ),
+    invalid(
+      'src/modules/shop/infrastructure/prisma/prisma-shop.repository.ts',
+      'export class R { find() { return this.rateLimiter.enforceAll(requests); } }',
+      /Only a use case \(application layer\) may call the rate limiter/,
+    ),
+    invalid(
+      POLICIES,
+      `import { z } from 'zod';\n${POLICIES_FILE}`,
+      /plain data: it may import only @lib\/utils and @lib\/rate-limit, not 'zod'/,
+    ),
+    invalid(
+      POLICIES,
+      POLICIES_FILE.replace('import type { RateLimitPolicy }', 'import { RateLimitPolicy }'),
+      /Import the policy type with `import type`/,
+    ),
+    invalid(
+      POLICIES,
+      POLICIES_FILE.replace('SHOP_RATE_LIMITS', 'shopPolicies'),
+      /Name the export `<NAME>_RATE_LIMITS`/,
+    ),
+    invalid(
+      POLICIES,
+      POLICIES_FILE.replace('as const satisfies Record<string, RateLimitPolicy>', 'as const'),
+      /End the declaration with `satisfies Record<string, RateLimitPolicy>`/,
+    ),
+    invalid(
+      POLICIES,
+      POLICIES_FILE.replace("id: 'shop.lookup'", 'id: LOOKUP_ID'),
+      /Give every policy a literal string `id`/,
+    ),
+    invalid(
+      POLICIES,
+      `${POLICIES_FILE}\nexport function lookupPolicy() {}`,
+      /exports policy data only/,
+    ),
+  ],
+});

@@ -13,6 +13,7 @@ export interface CanNestComponentInput {
  * Whether `childType` may be placed under `parentType`. An unknown type simply cannot be nested.
  *
  * @authorization public A rule of the component catalog, which is code and contains nothing per tenant.
+ * @rate-limit none A pure rule of the component catalog, which is code; it reads no store and runs while the editor renders.
  */
 export class CanNestComponent {
   constructor(private readonly deps: PublicComponentPlatformDependencies) {}

@@ -12,7 +12,6 @@ import type { SecurityAuditLog, SecurityEvent } from '../../domain/ports/securit
 export const LEVEL_BY_EVENT = {
   'authorization.denied': 'warn',
   'authentication.sign_in_failed': 'warn',
-  'authentication.rate_limited': 'warn',
   'authentication.session_created': 'info',
   'authentication.session_revoked': 'info',
   'authentication.account_created': 'info',
@@ -36,7 +35,6 @@ export const loggerSecurityAuditLog: SecurityAuditLog = createAuditLog(
 export const TRAIL_BY_EVENT = {
   'authorization.denied': 'member',
   'authentication.sign_in_failed': false,
-  'authentication.rate_limited': false,
   'authentication.session_created': false,
   'authentication.session_revoked': false,
   'authentication.account_created': false,

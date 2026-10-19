@@ -19,6 +19,7 @@ import {
 import { websiteQueries } from '@modules/website';
 
 import { systemClock } from '@lib/clock';
+import { getRateLimiter } from '@lib/rate-limit';
 
 import { ApplyMigration } from './application/commands/apply-migration';
 import { DeleteUnusedData } from './application/commands/delete-unused-data';
@@ -70,6 +71,7 @@ const auditLog = withAuditTrail(loggerReleaseAuditLog, {
 
 const dependencies = {
   authorization: getAccessControl(),
+  rateLimiter: getRateLimiter(),
   websites: new WebsiteModuleSource((id) => websiteQueries.getWebsiteById.execute(id)),
   releases,
   audit: auditLog,

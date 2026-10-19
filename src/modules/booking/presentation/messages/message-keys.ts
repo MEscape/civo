@@ -56,6 +56,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.tooManyActiveBookings]: fieldPath('errors', 'tooManyActiveBookings'),
   [ERRORS.tooManyActiveHolds]: fieldPath('errors', 'tooManyActiveHolds'),
   [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
+  [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.configurationInvalid]: fieldPath('errors', 'configurationInvalid'),
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
   [ERRORS.hasBookings]: fieldPath('errors', 'hasBookings'),

@@ -10,8 +10,9 @@ import {
   MAX_ALTERNATIVE_COUNT,
 } from '../booking-limits';
 import { toSlotView } from '../booking-view-mappers';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
 import { loadBookableContext } from '../services/bookable-context';
-import { resolvePublicScope } from '../services/public-scope';
+import { resolveScopeWithinBudget } from '../services/limit-visitor';
 import { parseParticipants, parseStart } from '../services/request-parsing';
 import { loadSchedulingIndex } from '../services/scheduling-context';
 
@@ -19,6 +20,7 @@ import type { PublicBookingDependencies } from '../booking-dependencies';
 import type { SuggestAlternativeSlotsInput } from '../contracts/booking-inputs';
 import type { AlternativeSlotsView } from '../contracts/catalog-views';
 import type { BookableContextError } from '../services/bookable-context';
+import type { VisitorLimitError } from '../services/limit-visitor';
 import type { PublicScopeError } from '../services/public-scope';
 
 /**
@@ -33,8 +35,15 @@ export class SuggestAlternativeSlots {
 
   execute(
     input: SuggestAlternativeSlotsInput,
-  ): AppResultAsync<AlternativeSlotsView, PublicScopeError | BookableContextError> {
-    return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
+  ): AppResultAsync<
+    AlternativeSlotsView,
+    PublicScopeError | VisitorLimitError | BookableContextError
+  > {
+    return resolveScopeWithinBudget(
+      this.deps,
+      BOOKING_RATE_LIMITS.searchClient,
+      input.websiteId,
+    ).andThen((scope) =>
       loadBookableContext(this.deps, scope, input).andThen(({ service, location }) =>
         parseStart(input.start)
           .andThen((start) =>

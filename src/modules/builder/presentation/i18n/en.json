@@ -17,6 +17,8 @@
       "pageCorrupted": "The stored page is damaged and cannot be opened.",
       "persistenceFailed": "The page could not be saved. Please try again.",
       "pageLimitExceeded": "This website has more pages than can be processed at once.",
+      "rateLimited": "You are making changes too quickly. Please wait a moment and try again.",
+      "unavailable": "This is not available right now. Please try again later.",
       "unexpected": "An unexpected error occurred."
     },
     "validation": {

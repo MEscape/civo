@@ -17,6 +17,7 @@ import type { PublicWebsiteDependencies } from '../website-dependencies';
  * unpublished sites are introduced, the visibility check belongs here.
  *
  * @authorization public Serves the public site; every website is public by its slug.
+ * @rate-limit none Serves the public site, which is cached; a per-visitor budget would make every page dynamic.
  */
 export class GetPublicWebsiteBySlug {
   constructor(private readonly deps: PublicWebsiteDependencies) {}

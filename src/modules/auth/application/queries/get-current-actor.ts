@@ -12,6 +12,7 @@ import type { ActorView } from '../contracts/auth-views';
  * still be backed by a use case that calls `AuthorizationService`.
  *
  * @authorization public Answers who the caller is; an anonymous caller learns only that it is anonymous.
+ * @rate-limit none A session lookup that runs on every request that renders a signed-in page; limiting it would break navigation, and it reveals nothing about anyone else.
  */
 export class GetCurrentActor {
   constructor(private readonly deps: CurrentActorDependencies) {}

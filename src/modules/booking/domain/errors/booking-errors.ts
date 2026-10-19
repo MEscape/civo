@@ -2,6 +2,7 @@ import {
   conflictError,
   infrastructureError,
   notFoundError,
+  rateLimitedError,
   validationError,
   FieldErrorBag,
 } from '@lib/errors';
@@ -9,8 +10,10 @@ import type {
   ConflictAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes. Presentation maps them to translation keys (i18n.md);
@@ -49,6 +52,7 @@ export const BOOKING_ERROR_CODES = {
   tooManyActiveHolds: 'booking.too_many_active_holds',
   /** The same visitor sent too many requests in a short time. */
   rateLimited: 'booking.rate_limited',
+  rateLimiterFailed: 'booking.rate_limiter_failed',
   configurationInvalid: 'booking.configuration_invalid',
   validationFailed: 'booking.validation_failed',
   /** Bookings, past or future, still refer to it: it can be switched off but not removed. */
@@ -247,8 +251,25 @@ export function tooManyActiveHolds(): ConflictAppError {
   );
 }
 
-export function rateLimited(): ConflictAppError {
-  return conflictError(CODES.rateLimited, 'Too many requests. Please wait a moment and try again.');
+export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    CODES.rateLimited,
+    'Too many requests. Please wait a moment and try again.',
+    retryAfterSeconds,
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : infrastructureError(
+        CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
 }
 
 /** Stored configuration that cannot be scheduled (for example a service whose resource pool is empty by construction). */

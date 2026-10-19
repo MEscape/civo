@@ -17,6 +17,8 @@ import { parseMigrationId } from '../../domain/models/ids';
 import { ensureApplicable, ensureSourceIsLive } from '../../domain/models/migration';
 import { isSuccessfulOutcome, judgeDraft } from '../../domain/models/page-draft';
 import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
+import { RELEASE_RATE_LIMITS } from '../rate-limits';
+import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { AppliedPage } from '../../domain/models/apply-migration';
 import type { ConflictResolutions } from '../../domain/models/conflict-resolution';
@@ -31,6 +33,7 @@ import type { ReleaseReadError } from '../../domain/ports/release.repository';
 import type { ApplyMigrationInput, ApplyMigrationResultView } from '../contracts/release-views';
 import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
 import type { ApplyMigrationDependencies } from '../release-dependencies';
+import type { ActorLimitError } from '../services/within-actor-limit';
 
 export type ApplyMigrationError =
   | LoadReleaseWebsiteError
@@ -38,7 +41,8 @@ export type ApplyMigrationError =
   | ReleaseReadError
   | PageDraftError
   | ConflictAppError
-  | UnexpectedAppError;
+  | UnexpectedAppError
+  | ActorLimitError;
 
 /** Failures that must stop the whole operation instead of being reported per page. */
 type StopError = UnauthorizedAppError | ForbiddenAppError;
@@ -90,10 +94,11 @@ export class ApplyMigration {
   execute(
     input: ApplyMigrationInput,
   ): AppResultAsync<ApplyMigrationResultView, ApplyMigrationError | StopError> {
-    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish').andThen(
-      ({ actor, website }) =>
+    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish')
+      .andThen(withinActorLimit(this.deps, RELEASE_RATE_LIMITS.applyMigration))
+      .andThen(({ actor, website }) =>
         this.loadReview(actor, website.id, input).andThen((review) => this.applyPages(review)),
-    );
+      );
   }
 
   /**

@@ -40,6 +40,8 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.propChangeNotPermitted]: fieldPath('errors', 'propsNotPermitted'),
   [ERRORS.pageConfigCorrupted]: fieldPath('errors', 'pageCorrupted'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'persistenceFailed'),
+  [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
+  [ERRORS.rateLimiterFailed]: fieldPath('errors', 'unavailable'),
   [VALIDATION.idInvalid]: fieldPath('validation', 'contentInvalid'),
   [VALIDATION.idSeedInvalid]: fieldPath('validation', 'contentInvalid'),
   [VALIDATION.idSeedReused]: fieldPath('validation', 'contentInvalid'),

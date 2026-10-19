@@ -10,15 +10,18 @@ import { checkComposition, checkEditScope } from '../../domain/rules/page-save-c
 import { countPageNodes } from '../../domain/tree/tree-operations';
 import { loadAuthorizedPage } from '../load-authorized-page';
 import { toSavedRevisionView } from '../page-view-mappers';
+import { BUILDER_RATE_LIMITS } from '../rate-limits';
 import { mayRestructure } from '../services/may-restructure';
+import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { Page } from '../../domain/models/page';
 import type { PageConfig } from '../../domain/models/page-config';
 import type { SavePageConfigInput, SavedRevisionView } from '../contracts/page-views';
 import type { LoadPageError } from '../load-authorized-page';
-import type { PageDependencies } from '../page-dependencies';
+import type { SavePageDependencies } from '../page-dependencies';
+import type { ActorLimitError } from '../services/within-actor-limit';
 
-export type SavePageConfigError = LoadPageError | ConflictAppError;
+export type SavePageConfigError = LoadPageError | ConflictAppError | ActorLimitError;
 
 /** What a save is judged against: the stored page and who is saving it, in which mode. */
 interface SaveContext {
@@ -39,41 +42,44 @@ interface ValidatedSave {
  * checked against the stored page: hiding a control in the UI is not
  * authorization. A save is refused when it exceeds what the actor may change
  * (and recorded as a security signal), or when someone saved a newer
- * revision since this editor loaded the page (`expectedVersion`).
+ * revision since this editor loaded the page (`expectedVersion`). Each
+ * editor has a budget of saves, spent after authorization.
  */
 export class SavePageConfig {
-  constructor(private readonly deps: PageDependencies) {}
+  constructor(private readonly deps: SavePageDependencies) {}
 
   execute(input: SavePageConfigInput): AppResultAsync<SavedRevisionView, SavePageConfigError> {
     const { pages, audit } = this.deps;
 
-    return loadAuthorizedPage(this.deps, input.pageId, 'page.update').andThen(({ actor, page }) =>
-      this.validate(input, {
-        page,
-        actor,
-        canRestructure: mayRestructure(actor),
-      }).asyncAndThen(({ config, expectedVersion }) =>
-        pages
-          .saveConfig({
-            id: page.id,
-            tenantId: actor.tenantId,
-            config,
-            expectedVersion,
-          })
-          .map((revision) => {
-            audit.record({
-              type: 'page.config_saved',
-              actorId: actor.id,
+    return loadAuthorizedPage(this.deps, input.pageId, 'page.update')
+      .andThen(withinActorLimit(this.deps, BUILDER_RATE_LIMITS.savePage))
+      .andThen(({ actor, page }) =>
+        this.validate(input, {
+          page,
+          actor,
+          canRestructure: mayRestructure(actor),
+        }).asyncAndThen(({ config, expectedVersion }) =>
+          pages
+            .saveConfig({
+              id: page.id,
               tenantId: actor.tenantId,
-              pageId: page.id,
-              websiteId: page.websiteId,
-              version: revision.version,
-              nodeCount: countPageNodes(config.children),
-            });
-            return toSavedRevisionView(revision, page);
-          }),
-      ),
-    );
+              config,
+              expectedVersion,
+            })
+            .map((revision) => {
+              audit.record({
+                type: 'page.config_saved',
+                actorId: actor.id,
+                tenantId: actor.tenantId,
+                pageId: page.id,
+                websiteId: page.websiteId,
+                version: revision.version,
+                nodeCount: countPageNodes(config.children),
+              });
+              return toSavedRevisionView(revision, page);
+            }),
+        ),
+      );
   }
 
   private validate(

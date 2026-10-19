@@ -15,6 +15,7 @@ import type { ComponentReleaseInfo } from '../contracts/catalog-views';
  * decides how to treat.
  *
  * @authorization public Reads the component catalog, which is code and contains nothing per tenant.
+ * @rate-limit none Reads the component catalog, which is code and the same for everyone; it touches no store.
  */
 export class GetComponentReleaseInfo {
   constructor(private readonly deps: PublicComponentPlatformDependencies) {}

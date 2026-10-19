@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { authEnvSchema } from './auth-env-schema';
 import { mailEnvSchema } from './mail-env-schema';
+import { rateLimitConfigIssues, rateLimitEnvSchema } from './rate-limit-env-schema';
 
 const DEFAULT_NODE_ENV = 'development' as const;
 const DEFAULT_DATABASE_POOL_SIZE = 10;
@@ -44,7 +45,12 @@ const serverEnvBaseSchema = z.object({
 export const serverEnvSchema = serverEnvBaseSchema
   .and(authEnvSchema)
   .and(mailEnvSchema)
+  .and(rateLimitEnvSchema)
   .superRefine((env, ctx) => {
+    for (const issue of rateLimitConfigIssues(env)) {
+      ctx.addIssue({ code: 'custom', path: [issue.path], message: issue.message });
+    }
+
     if (!env.AUTH_ENABLED && env.NODE_ENV === 'production') {
       ctx.addIssue({
         code: 'custom',

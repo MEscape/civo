@@ -720,7 +720,8 @@
       "datasetNotMapped": "Sample data: the dataset has no field mapping yet",
       "datasetKindMismatch": "Sample data: the dataset does not fit this component",
       "sourceFailed": "Sample data: the data source could not be reached",
-      "requestInvalid": "Sample data: the request was invalid"
+      "requestInvalid": "Sample data: the request was invalid",
+      "rateLimited": "Too many requests. Please wait a moment and try again."
     },
     "hero": {
       "defaultTitle": "Welcome"

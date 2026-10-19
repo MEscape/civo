@@ -49,6 +49,7 @@ export type GetMappedDatasetRecordsError =
  * belongs to the injected connector.
  *
  * @authorization public Feeds published pages, which anyone may read; the dataset is always resolved within the website that renders it.
+ * @rate-limit none Runs while published pages render, behind the cached connector; a per-visitor budget would make every page dynamic. Its only public caller from a browser, `ReadTrendWindow`, is limited.
  */
 export class GetMappedDatasetRecords {
   constructor(private readonly deps: PublicDatasetDependencies) {}

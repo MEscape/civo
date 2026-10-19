@@ -18,6 +18,8 @@ export interface SerializedActionError {
   code: string;
   message: string;
   fieldErrors?: Record<string, string[]>;
+  /** Only for a rate-limited error: seconds until the caller may try again. */
+  retryAfterSeconds?: number;
 }
 
 /**
@@ -39,6 +41,7 @@ export function toActionResult<T, E extends AppError>(result: AppResult<T, E>): 
       code: error.code,
       message: error.message,
       ...(error.kind === 'validation' ? { fieldErrors: error.fieldErrors } : {}),
+      ...(error.kind === 'rate_limited' ? { retryAfterSeconds: error.retryAfterSeconds } : {}),
     },
   };
 }

@@ -13,14 +13,16 @@ import { createBookingCustomer, normalizeEmail } from '../../domain/models/booki
 import { parseBookingId } from '../../domain/models/ids';
 import { MAX_LIVE_BOOKINGS_PER_EMAIL } from '../booking-limits';
 import { toBookingView } from '../booking-view-mappers';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
 import { notifyCustomer } from '../services/booking-notice';
+import { resolveScopeWithinBudget } from '../services/limit-visitor';
 import { loadBookingParts } from '../services/own-booking';
-import { resolvePublicScope } from '../services/public-scope';
 
 import type { Booking } from '../../domain/models/booking';
 import type { BookingFlowDependencies } from '../booking-dependencies';
 import type { ConfirmBookingInput } from '../contracts/booking-inputs';
 import type { BookingView } from '../contracts/booking-views';
+import type { VisitorLimitError } from '../services/limit-visitor';
 import type { BookingPartsError } from '../services/own-booking';
 import type { PublicScopeError } from '../services/public-scope';
 
@@ -42,6 +44,7 @@ export class ConfirmBooking {
   ): AppResultAsync<
     BookingView,
     | PublicScopeError
+    | VisitorLimitError
     | BookingPartsError
     | ValidationAppError
     | ConflictAppError
@@ -51,7 +54,11 @@ export class ConfirmBooking {
     const { bookings, audit, clock } = this.deps;
     const now = clock.now();
 
-    return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
+    return resolveScopeWithinBudget(
+      this.deps,
+      BOOKING_RATE_LIMITS.confirmClient,
+      input.websiteId,
+    ).andThen((scope) =>
       parseBookingId(input.holdId)
         .asyncAndThen((id) => bookings.findById(id, scope.tenantId))
         .andThen((hold): AppResultAsync<Booking, NotFoundAppError> =>

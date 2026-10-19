@@ -2,6 +2,7 @@ import {
   conflictError,
   infrastructureError,
   notFoundError,
+  rateLimitedError,
   validationError,
   FieldErrorBag,
   fieldPath,
@@ -10,8 +11,10 @@ import type {
   ConflictAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes. Presentation maps these to translation keys (i18n.md);
@@ -33,6 +36,8 @@ export const DATA_SOURCE_ERROR_CODES = {
   validationFailed: 'data_source.validation_failed',
   mappingFailed: 'dataset.mapping_failed',
   persistenceFailed: 'data_source.persistence_failed',
+  rateLimited: 'data_source.rate_limited',
+  rateLimiterFailed: 'data_source.rate_limiter_failed',
   // Reaching the external system
   connectionFailed: 'data_source.connection_failed',
   connectionTimedOut: 'data_source.connection_timed_out',
@@ -160,6 +165,28 @@ export function mappingFailed(fieldErrors: Record<string, string[]>): Validation
     'The field mapping could not be applied.',
     fieldErrors,
   );
+}
+
+/** The same person called the external system too often in a short time. */
+export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    CODES.rateLimited,
+    'Too many requests. Please wait a moment and try again.',
+    retryAfterSeconds,
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : infrastructureError(
+        CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
 }
 
 export function persistenceFailed(cause: unknown): InfrastructureAppError {

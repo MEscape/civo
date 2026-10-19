@@ -20,6 +20,8 @@ import { infrastructureError } from '@lib/errors';
 import { toPage } from '@lib/pagination';
 import { errAsync, okAsync } from '@lib/result';
 
+import { clientAt, createTestRateLimiter } from '../../support/rate-limiting';
+
 const NOW = new Date('2026-10-13T10:00:00Z');
 const EXISTING = toActorId('existing-1');
 
@@ -151,7 +153,8 @@ function world(
         return okAsync(undefined);
       },
     } as never,
-    rateLimiter: { consume: () => okAsync({ isAllowed: true }) } as never,
+    rateLimiter: createTestRateLimiter(),
+    clientAddress: clientAt('203.0.113.7'),
     audit,
     invitations,
     tokens,

@@ -9,7 +9,7 @@
 - Route Handlers contain no business logic.
 - Map application `Result` values into HTTP responses at the boundary; a failed `Result` becomes a specific status code, not a generic 500. See [`errors.md`](errors.md).
 - Never expose domain or persistence objects directly; return explicit response DTOs.
-- Use consistent HTTP status semantics and a consistent error response shape.
+- Use consistent HTTP status semantics and a consistent error response shape. A rate-limited `Result` becomes `429` with a `Retry-After` header.
 - Do not expose internal exception messages.
 - Version public APIs; do not make breaking changes to a published contract.
 - Make non-idempotent operations safe to retry where clients may retry.

@@ -29,6 +29,7 @@ import { commandAuditDependency } from './rules/use-cases/command-audit-dependen
 import { commandQueryShape } from './rules/use-cases/command-query-shape.mjs';
 import { limitsUsage } from './rules/use-cases/limits-usage.mjs';
 import { noThrowInCoreLayers } from './rules/use-cases/no-throw-in-core-layers.mjs';
+import { rateLimitUsage } from './rules/use-cases/rate-limit-usage.mjs';
 
 /** @type {import('eslint').ESLint.Plugin} */
 const plugin = {
@@ -55,6 +56,7 @@ const plugin = {
     'no-i18n-in-core': noI18nInCore,
     'no-throw-in-core-layers': noThrowInCoreLayers,
     'persistence-failures': persistenceFailures,
+    'rate-limit-usage': rateLimitUsage,
     'route-usage': routeUsage,
     'unsaved-work-guard': unsavedWorkGuard,
   },

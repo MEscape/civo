@@ -2,17 +2,22 @@ import {
   FieldErrorBag,
   conflictError,
   forbiddenError,
+  infrastructureError,
   notFoundError,
+  rateLimitedError,
   unexpectedError,
   validationError,
 } from '@lib/errors';
 import type {
   ConflictAppError,
   ForbiddenAppError,
+  InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   UnexpectedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes. Presentation maps these to translation keys (i18n.md);
@@ -35,6 +40,9 @@ export const BUILDER_ERROR_CODES = {
   propChangeNotPermitted: 'builder.prop_change_not_permitted',
   pageConfigCorrupted: 'builder.page_config_corrupted',
   persistenceFailed: 'builder.persistence_failed',
+  /** The same person asked for too much in a short time. */
+  rateLimited: 'builder.rate_limited',
+  rateLimiterFailed: 'builder.rate_limiter_failed',
 } as const;
 
 /** Field-level codes, carried in `fieldErrors`. Also stable, also never prose. */
@@ -66,6 +74,27 @@ export type BuilderErrorCode = (typeof BUILDER_ERROR_CODES)[keyof typeof BUILDER
 export type BuilderValidationCode =
   (typeof BUILDER_VALIDATION_CODES)[keyof typeof BUILDER_VALIDATION_CODES];
 export type BuilderCode = BuilderErrorCode | BuilderValidationCode;
+
+export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    BUILDER_ERROR_CODES.rateLimited,
+    'Too many requests. Please wait a moment and try again.',
+    retryAfterSeconds,
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : infrastructureError(
+        BUILDER_ERROR_CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
+}
 
 /** Also covers a foreign tenant's page: see `BUILDER_ERROR_CODES`. */
 export function pageNotFound(): NotFoundAppError {

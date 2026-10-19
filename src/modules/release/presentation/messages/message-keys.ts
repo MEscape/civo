@@ -34,6 +34,8 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.validationFailed]: fieldPath('errors', 'validationFailed'),
   [ERRORS.publishBlocked]: fieldPath('errors', 'publishBlocked'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'persistenceFailed'),
+  [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
+  [ERRORS.rateLimiterFailed]: fieldPath('errors', 'persistenceFailed'),
   [ERRORS.sourceFailed]: fieldPath('errors', 'persistenceFailed'),
   [ERRORS.snapshotCorrupted]: fieldPath('errors', 'snapshotCorrupted'),
   [ERRORS.migrationNotFound]: fieldPath('errors', 'migrationNotFound'),

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import plugin from '../../eslint/plugins/architecture/index.mjs';
 import { describeEntryPoints } from '../../eslint/policy/checks-behavior.mjs';
 import { checkPublicApi } from '../../eslint/policy/checks-dependencies.mjs';
+import { describeRateLimitOptOuts } from '../../eslint/policy/checks-rate-limits.mjs';
 import { checkModuleStructure } from '../../eslint/policy/checks-structure.mjs';
 import { CHECKS, loadProject } from '../../eslint/policy/index.mjs';
 import {
@@ -100,14 +101,35 @@ describe('architecture of this repository', () => {
       'use-case:ListWebsiteNames=public',
       'use-case:PreviewInvitation=public',
       'use-case:PruneAuditTrail=system',
+      'use-case:ReadTrendWindow=public',
       'use-case:ReleaseHold=public',
       'use-case:RequestPasswordReset=public',
       'use-case:RescheduleOwnBooking=public',
       'use-case:ResetPassword=public',
       'use-case:SignIn=public',
       'use-case:SignOut=public',
-      'use-case:SpendRequestBudget=public',
       'use-case:SuggestAlternativeSlots=public',
+    ]);
+  });
+
+  it('lists every public use case that spends no rate-limit budget, so adding one is a visible change in review', () => {
+    // Each carries `@rate-limit none <reason>`; `architecture/rate-limit-usage` refuses a public use case that has neither a budget nor that tag.
+    expect(describeRateLimitOptOuts(project)).toEqual([
+      'auth:GetCurrentActor',
+      'auth:PreviewInvitation',
+      'auth:SignOut',
+      'booking:GetBookingCatalog',
+      'component-platform:CanNestComponent',
+      'component-platform:GetComponentDefaultProps',
+      'component-platform:GetComponentReleaseInfo',
+      'component-platform:ListComponentCatalog',
+      'component-platform:ListContent',
+      'component-platform:ListContentCategories',
+      'data-sources:GetMappedDatasetRecords',
+      'map:BuildMapModel',
+      'release:GetPublishedSnapshot',
+      'website:GetPublicWebsiteBySlug',
+      'website:ListWebsiteNames',
     ]);
   });
 

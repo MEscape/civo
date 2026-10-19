@@ -1,6 +1,7 @@
 import type { AuthorizationService } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
+import type { RateLimiter } from '@lib/rate-limit';
 
 import type { ContentHasher } from '../domain/ports/content-hasher.port';
 import type { DataSourceAuditLog } from '../domain/ports/data-source-audit-log.port';
@@ -17,9 +18,13 @@ export interface DataSourceDependencies {
   readonly clock: Clock;
 }
 
-/** Use cases that call the external system (test, discover, preview, save mapping). */
+/**
+ * Use cases that call the external system (test, discover, preview, save mapping). Each call
+ * leaves our network, so each person has a budget of them.
+ */
 export interface ConnectedDataSourceDependencies extends DataSourceDependencies {
   readonly connector: DataSourceConnector;
+  readonly rateLimiter: RateLimiter;
 }
 
 /** The public site has no actor, so it gets no authorization service. */

@@ -2,6 +2,7 @@ import {
   conflictError,
   infrastructureError,
   notFoundError,
+  rateLimitedError,
   unexpectedError,
   validationError,
   FieldErrorBag,
@@ -10,9 +11,11 @@ import type {
   ConflictAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   UnexpectedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes. Presentation maps these to translation keys (i18n.md);
@@ -41,6 +44,8 @@ export const RELEASE_ERROR_CODES = {
   validationFailed: 'release.validation_failed',
   publishBlocked: 'release.publish_blocked',
   persistenceFailed: 'release.persistence_failed',
+  rateLimited: 'release.rate_limited',
+  rateLimiterFailed: 'release.rate_limiter_failed',
   sourceFailed: 'release.source_failed',
   snapshotCorrupted: 'release.snapshot_corrupted',
   migrationNotFound: 'release.migration_not_found',
@@ -130,6 +135,28 @@ export function releasePublishBlocked(fieldErrors: Record<string, string[]>): Va
 
 export function createReleasePublishBlockedBag(): FieldErrorBag {
   return new FieldErrorBag(releasePublishBlocked);
+}
+
+/** The same person asked for too much in a short time. */
+export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    RELEASE_ERROR_CODES.rateLimited,
+    'Too many requests. Please wait a moment and try again.',
+    retryAfterSeconds,
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : infrastructureError(
+        RELEASE_ERROR_CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
 }
 
 /** Another module (website, builder) failed while the release input was gathered. */

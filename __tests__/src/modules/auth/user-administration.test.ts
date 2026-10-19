@@ -15,6 +15,8 @@ import type { Role } from '@modules/auth/domain/models/role';
 import { toPage } from '@lib/pagination';
 import { errAsync, okAsync } from '@lib/result';
 
+import { clientAt, createTestRateLimiter } from '../../support/rate-limiting';
+
 const TENANT = toTenantId('default');
 const ADMIN = toActorId('admin-1');
 const NOW = new Date('2026-10-11T10:00:00Z');
@@ -140,6 +142,7 @@ function world(options: { readonly actorRoles?: readonly Role[] } = {}) {
 
   const deps = {
     authorization,
+    rateLimiter: createTestRateLimiter(),
     members,
     directory,
     invitations: repository,
@@ -157,7 +160,8 @@ function world(options: { readonly actorRoles?: readonly Role[] } = {}) {
   };
   const accept = new AcceptInvitation({
     authenticator,
-    rateLimiter: { consume: () => okAsync({ isAllowed: true }) },
+    rateLimiter: createTestRateLimiter(),
+    clientAddress: clientAt('203.0.113.7'),
     audit: { record: (event: { type: string }) => audit.push(event.type) },
     invitations: repository,
     tokens,

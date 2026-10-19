@@ -16,6 +16,7 @@ import type { PublicWebsiteDependencies } from '../website-dependencies';
  * on the server, never from the request.
  *
  * @authorization public A website's name is public information; nothing but the name leaves.
+ * @rate-limit none Runs while pages render and reveals only names that are public anyway; a per-visitor budget would make every page dynamic.
  */
 export class ListWebsiteNames {
   constructor(private readonly deps: PublicWebsiteDependencies) {}

@@ -720,7 +720,8 @@
       "datasetNotMapped": "Beispieldaten: der Datensatz hat noch keine Feldzuordnung",
       "datasetKindMismatch": "Beispieldaten: der Datensatz passt nicht zu dieser Komponente",
       "sourceFailed": "Beispieldaten: die Datenquelle ist nicht erreichbar",
-      "requestInvalid": "Beispieldaten: die Anfrage war ungültig"
+      "requestInvalid": "Beispieldaten: die Anfrage war ungültig",
+      "rateLimited": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
     },
     "hero": {
       "defaultTitle": "Willkommen"

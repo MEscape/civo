@@ -275,6 +275,7 @@
       "addressNotAllowed": "Invalid configuration: this address is not allowed.",
       "validation": "Please check your input.",
       "infrastructure": "A service error occurred. Please try again later.",
+      "rateLimited": "Too many requests to the data source. Please wait a moment and try again.",
       "unexpected": "An unexpected error occurred.",
       "datasetInUse": "A page still shows this data, so it was not deleted. The page has been reloaded with the current usage."
     },

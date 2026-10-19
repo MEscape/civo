@@ -16,12 +16,21 @@ const STATUS_BY_KIND: Record<AppErrorKind, number> = {
   conflict: 409,
   unauthorized: 401,
   forbidden: 403,
+  rate_limited: 429,
   infrastructure: 502,
   unexpected: 500,
 };
 
 export function httpStatusForError(error: AppError): number {
   return STATUS_BY_KIND[error.kind];
+}
+
+/**
+ * Headers a Route Handler must send with the error's status. Only a
+ * rate-limited error has any: `Retry-After` in whole seconds (RFC 9110).
+ */
+export function httpHeadersForError(error: AppError): Record<string, string> {
+  return error.kind === 'rate_limited' ? { 'Retry-After': String(error.retryAfterSeconds) } : {};
 }
 
 /**
@@ -33,6 +42,7 @@ export interface ErrorResponseBody {
   code: string;
   message: string;
   fieldErrors?: Record<string, string[]>;
+  retryAfterSeconds?: number;
 }
 
 /**
@@ -50,6 +60,11 @@ export function toErrorResponseBody(error: AppError): ErrorResponseBody {
     conflict: (e) => ({ code: e.code, message: e.message }),
     unauthorized: (e) => ({ code: e.code, message: e.message }),
     forbidden: (e) => ({ code: e.code, message: e.message }),
+    rate_limited: (e) => ({
+      code: e.code,
+      message: e.message,
+      retryAfterSeconds: e.retryAfterSeconds,
+    }),
     infrastructure: (e) => ({ code: e.code, message: e.message }),
     unexpected: (e) => ({ code: e.code, message: e.message }),
   });

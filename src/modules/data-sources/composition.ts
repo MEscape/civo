@@ -3,6 +3,7 @@ import { withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
 
 import { systemClock } from '@lib/clock';
+import { getRateLimiter } from '@lib/rate-limit';
 
 import { CreateDataSource } from './application/commands/create-data-source';
 import { CreateDataset } from './application/commands/create-dataset';
@@ -31,7 +32,10 @@ import { PrismaDataSourceRepository } from './infrastructure/prisma/prisma-data-
 import { PrismaDatasetRepository } from './infrastructure/prisma/prisma-dataset.repository';
 
 import type { DatasetDeletionGuard } from './application/contracts/deletion-inputs';
-import type { DataSourceDependencies } from './application/data-source-dependencies';
+import type {
+  ConnectedDataSourceDependencies,
+  DataSourceDependencies,
+} from './application/data-source-dependencies';
 
 /**
  * The module's composition root: the one file that knows both the use cases
@@ -66,9 +70,10 @@ const dependencies: DataSourceDependencies = {
 
 const liveConnector = new KindRoutingConnector(restJsonConnector);
 
-const connectedDependencies = {
+const connectedDependencies: ConnectedDataSourceDependencies = {
   ...dependencies,
   connector: liveConnector,
+  rateLimiter: getRateLimiter(),
 };
 
 export const dataSourceCommands = {

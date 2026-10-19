@@ -30,6 +30,7 @@ export const architectureRules = [
       'architecture/command-audit-dependency': 'error',
       'architecture/authorization-flow': 'error',
       'architecture/limits-usage': 'error',
+      'architecture/rate-limit-usage': 'error',
       'architecture/branded-id-usage': 'error',
       // adapters
       'architecture/persistence-failures': 'error',

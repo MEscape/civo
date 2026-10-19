@@ -40,6 +40,8 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
   [ERRORS.mappingFailed]: fieldPath('errors', 'mappingFailed'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
+  [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
+  [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.connectionFailed]: fieldPath('errors', 'connectionFailed'),
   [ERRORS.connectionTimedOut]: fieldPath('errors', 'connectionTimedOut'),
   [ERRORS.authenticationFailed]: fieldPath('errors', 'authenticationFailed'),

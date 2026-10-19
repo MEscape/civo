@@ -38,6 +38,7 @@
       "validationFailed": "Die Eingabe ist ungültig.",
       "publishBlocked": "Die Website kann nicht veröffentlicht werden. Bitte prüfen Sie ihre Seiten.",
       "persistenceFailed": "Der Vorgang konnte nicht abgeschlossen werden. Bitte versuchen Sie es später erneut.",
+      "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
       "snapshotCorrupted": "Das Snapshot dieses Releases ist beschädigt und kann nicht wiederhergestellt werden.",
       "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
       "migrationNotFound": "Dieses Update wurde nicht gefunden.",

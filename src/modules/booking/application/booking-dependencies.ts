@@ -1,6 +1,7 @@
 import type { AuthorizationService } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
+import type { ClientAddressProvider, RateLimiter } from '@lib/rate-limit';
 
 import type { AddressSearch } from '../domain/ports/address-search.port';
 import type { BookableResourceRepository } from '../domain/ports/bookable-resource.repository';
@@ -10,7 +11,6 @@ import type { BookingLocationRepository } from '../domain/ports/booking-location
 import type { BookingNotifier } from '../domain/ports/booking-notifier.port';
 import type { BookingReferenceGenerator } from '../domain/ports/booking-reference-generator.port';
 import type { BookingRepository } from '../domain/ports/booking.repository';
-import type { RequestLimiter } from '../domain/ports/request-limiter.port';
 import type { WebsiteDirectoryRepository } from '../domain/ports/website-directory.repository';
 
 /** What every protected booking use case is built from (the admin side). */
@@ -24,7 +24,7 @@ export interface BookingDependencies {
   /** Suggests addresses while an editor types one; `null` when no geocoder is configured. */
   readonly addresses: AddressSearch | null;
   /** Bounds how often one editor may ask the external address service. */
-  readonly limiter: RequestLimiter;
+  readonly rateLimiter: RateLimiter;
   /** Tells the customer when staff cancel or move their booking. */
   readonly notifier: BookingNotifier;
   readonly clock: Clock;
@@ -33,9 +33,12 @@ export interface BookingDependencies {
 /**
  * What the public read side is built from. There is no actor, so no
  * authorization service; the website directory resolves the tenant from the
- * website instead, and every later read is scoped by it.
+ * website instead, and every later read is scoped by it. What a visitor may
+ * repeat is bounded per client address instead.
  */
 export interface PublicBookingDependencies {
+  readonly rateLimiter: RateLimiter;
+  readonly clientAddress: ClientAddressProvider;
   readonly websites: WebsiteDirectoryRepository;
   readonly locations: BookingLocationRepository;
   readonly resources: BookableResourceRepository;
@@ -54,12 +57,6 @@ export interface BookingFlowDependencies extends PublicBookingDependencies {
   readonly audit: BookingAuditLog;
   /** Confirms, cancellations and moves are sent to the visitor by e-mail. */
   readonly notifier: BookingNotifier;
-}
-
-/** What the request budget is built from: a limiter and the clock it counts time with. */
-export interface RequestBudgetDependencies {
-  readonly limiter: RequestLimiter;
-  readonly clock: Clock;
 }
 
 /** What naming things by id needs: the stores of each kind, and nothing that sends or records. */

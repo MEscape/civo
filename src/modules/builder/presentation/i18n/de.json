@@ -17,6 +17,8 @@
       "pageCorrupted": "Die gespeicherte Seite ist beschädigt und kann nicht geöffnet werden.",
       "persistenceFailed": "Die Seite konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
       "pageLimitExceeded": "Diese Website hat mehr Seiten, als auf einmal verarbeitet werden können.",
+      "rateLimited": "Sie ändern zu schnell. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+      "unavailable": "Das ist gerade nicht verfügbar. Bitte versuchen Sie es später erneut.",
       "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
     },
     "validation": {

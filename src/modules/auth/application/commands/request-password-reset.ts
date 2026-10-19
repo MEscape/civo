@@ -1,7 +1,8 @@
 import type { AppResultAsync } from '@lib/result';
 
 import { createPasswordResetRequest } from '../../domain/models/credentials';
-import { enforceRateLimit } from '../services/enforce-rate-limit';
+import { AUTH_RATE_LIMITS } from '../rate-limits';
+import { enforceClientAndAccountLimits } from '../services/enforce-rate-limit';
 
 import type { AuthenticatorError } from '../../domain/ports/authenticator.port';
 import type { AuthenticationDependencies } from '../auth-dependencies';
@@ -15,16 +16,21 @@ export type RequestPasswordResetError = AuthenticatorError | RateLimitError;
  * it cannot be used to find out which addresses are registered.
  *
  * @authorization public A forgotten password means there is no actor; the rate limiter gates it and the answer never reveals whether the address exists.
- * @audit-exempt Outcomes are audited by the identity provider hooks (create-security-audit-options) where sessions and accounts change; this command audits only its rate-limit refusal, through enforceRateLimit.
+ * @audit-exempt Outcomes are audited by the identity provider hooks (create-security-audit-options) where sessions and accounts change; a refusal by the rate limiter is logged by the limiter itself.
  */
 export class RequestPasswordReset {
   constructor(private readonly deps: AuthenticationDependencies) {}
 
   execute(input: PasswordResetRequestInput): AppResultAsync<void, RequestPasswordResetError> {
     return createPasswordResetRequest(input).asyncAndThen((request) =>
-      enforceRateLimit(this.deps, 'password_reset', request.email).andThen(() =>
-        this.deps.authenticator.requestPasswordReset(request),
-      ),
+      enforceClientAndAccountLimits(
+        this.deps,
+        {
+          client: AUTH_RATE_LIMITS.passwordResetRequestClient,
+          account: AUTH_RATE_LIMITS.passwordResetRequest,
+        },
+        request.email,
+      ).andThen(() => this.deps.authenticator.requestPasswordReset(request)),
     );
   }
 }

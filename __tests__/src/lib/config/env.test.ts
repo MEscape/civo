@@ -168,6 +168,11 @@ describe('serverEnvSchema: authentication modes', () => {
     AUTH_SECRET: 'x'.repeat(40),
     AUTH_DATABASE_URL: 'postgres://localhost/auth',
   } as const;
+  const PRODUCTION_RATE_LIMIT = {
+    UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io',
+    UPSTASH_REDIS_REST_TOKEN: 'token',
+    RATE_LIMIT_SECRET: 'r'.repeat(32),
+  } as const;
   const PRODUCTION_MAIL = {
     MAIL_PROVIDER: 'resend',
     MAIL_API_KEY: 're_key',
@@ -201,6 +206,7 @@ describe('serverEnvSchema: authentication modes', () => {
       ...DATABASE,
       ...AUTH_DISABLED,
       ...PRODUCTION_MAIL,
+      ...PRODUCTION_RATE_LIMIT,
       NODE_ENV: 'production',
     });
     expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['AUTH_ENABLED']);
@@ -210,9 +216,23 @@ describe('serverEnvSchema: authentication modes', () => {
     const result = serverEnvSchema.safeParse({
       ...DATABASE,
       ...AUTH_SECRETS,
+      ...PRODUCTION_RATE_LIMIT,
       NODE_ENV: 'production',
     });
     expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['MAIL_PROVIDER']);
+  });
+
+  it('refuses a production start without a rate-limit store', () => {
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...AUTH_SECRETS,
+      ...PRODUCTION_MAIL,
+      NODE_ENV: 'production',
+    });
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual([
+      'UPSTASH_REDIS_REST_URL',
+      'UPSTASH_REDIS_REST_TOKEN',
+    ]);
   });
 
   it('accepts a fully configured production start', () => {
@@ -220,6 +240,7 @@ describe('serverEnvSchema: authentication modes', () => {
       ...DATABASE,
       ...AUTH_SECRETS,
       ...PRODUCTION_MAIL,
+      ...PRODUCTION_RATE_LIMIT,
       NODE_ENV: 'production',
     });
     expect(result.success).toBe(true);
@@ -281,6 +302,8 @@ describe('serverEnvSchema: mail', () => {
         MAIL_SMTP_USER: 'mailer',
         MAIL_SMTP_PASSWORD: 'secret',
         MAIL_FROM: 'a@b.c',
+        UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io',
+        UPSTASH_REDIS_REST_TOKEN: 'token',
       }),
     ).toBeUndefined();
   });

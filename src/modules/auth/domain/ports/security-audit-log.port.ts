@@ -1,7 +1,6 @@
 import type { DenialReason } from '../models/authorize';
 import type { ActorId, InvitationId, TenantId } from '../models/ids';
 import type { Permission } from '../models/permission';
-import type { AuthRateLimitAction } from '../models/rate-limit';
 
 /**
  * Security-relevant facts worth keeping. Every variant is free of secrets:
@@ -20,10 +19,6 @@ export type SecurityEvent =
   | {
       readonly type: 'authentication.sign_in_failed';
       readonly errorCode: string;
-    }
-  | {
-      readonly type: 'authentication.rate_limited';
-      readonly action: AuthRateLimitAction;
     }
   | {
       readonly type: 'authentication.session_created';

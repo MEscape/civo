@@ -64,4 +64,3 @@ export {
 export type { GermanRegion, HolidayKey } from '../../domain/holidays/german-holidays';
 export { ADDRESS_SEARCH_LIMITS, MAX_TEAM_HOURS_BATCH } from '../booking-limits';
 export { MAX_CUSTOMER_RESCHEDULES } from '../../domain/policies/change-policy';
-export type { LimitedAction } from '../../domain/ports/request-limiter.port';

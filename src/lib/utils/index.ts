@@ -137,4 +137,4 @@ export {
 } from './shape';
 export type { Guard } from './shape';
 
-export { MS_PER_DAY, MS_PER_MINUTE } from './date';
+export { MS_PER_DAY, MS_PER_MINUTE, SECONDS_PER_HOUR, SECONDS_PER_MINUTE } from './date';

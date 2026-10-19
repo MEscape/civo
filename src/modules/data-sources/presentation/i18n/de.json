@@ -275,6 +275,7 @@
       "addressNotAllowed": "Ungültige Konfiguration: Diese Adresse ist nicht erlaubt.",
       "validation": "Bitte überprüfen Sie Ihre Eingabe.",
       "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
+      "rateLimited": "Zu viele Anfragen an die Datenquelle. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
       "unexpected": "Ein unerwarteter Fehler ist aufgetreten.",
       "datasetInUse": "Eine Seite zeigt diese Daten noch an, deshalb wurde nichts gelöscht. Die Verwendung wurde neu geladen."
     },

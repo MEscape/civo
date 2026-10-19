@@ -48,6 +48,7 @@ function bookablePlaces(
  * configuration (resource requirements, buffers, staff policy).
  *
  * @authorization public Lists what the website offers its visitors; every website is public by its identity.
+ * @rate-limit none Renders the booking page, which is cached per website; it reads nothing a visitor chooses and reveals only what the page shows.
  */
 export class GetBookingCatalog {
   constructor(private readonly deps: PublicBookingDependencies) {}

@@ -1,9 +1,12 @@
 import 'server-only';
+import { headers } from 'next/headers';
+
 import { withAuditTrail } from '@modules/audit';
 import { getAccessControl } from '@modules/auth';
 
 import { systemClock } from '@lib/clock';
 import { publicEnv } from '@lib/config';
+import { getClientAddressProvider, getRateLimiter } from '@lib/rate-limit';
 import { toLocalizedPath } from '@lib/seo';
 
 import { AcknowledgeManagerChange } from './application/commands/acknowledge-manager-change';
@@ -45,11 +48,9 @@ import { GetTeam } from './application/queries/get-team';
 import { PreviewServiceFeasibility } from './application/queries/preview-service-feasibility';
 import { ResolveBookingNames } from './application/queries/resolve-booking-names';
 import { SearchAddresses } from './application/queries/search-addresses';
-import { SpendRequestBudget } from './application/queries/spend-request-budget';
 import { SuggestAlternativeSlots } from './application/queries/suggest-alternative-slots';
 import { MapboxAddressSearch } from './infrastructure/geocoding/mapbox-address-search';
 import { RandomBookingReferenceGenerator } from './infrastructure/identity/random-booking-reference-generator';
-import { MemoryRequestLimiter } from './infrastructure/limiting/memory-request-limiter';
 import {
   LEVEL_BY_EVENT,
   TRAIL_BY_EVENT,
@@ -68,7 +69,6 @@ import type {
   BookingDependencies,
   BookingFlowDependencies,
   PublicBookingDependencies,
-  RequestBudgetDependencies,
 } from './application/booking-dependencies';
 
 /**
@@ -101,7 +101,7 @@ const notifier = createBookingNotifier(
     return link.toString();
   },
 );
-const limiter = new MemoryRequestLimiter();
+const rateLimiter = getRateLimiter();
 // The map's public token also serves address suggestions; without it the address field is plain text.
 const geocodingToken = publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 const addresses = geocodingToken === undefined ? null : new MapboxAddressSearch(geocodingToken);
@@ -121,12 +121,14 @@ const adminDependencies: BookingDependencies = {
   bookings,
   audit: auditLog,
   addresses,
-  limiter,
+  rateLimiter,
   notifier,
   clock: systemClock,
 };
 
 const publicDependencies: PublicBookingDependencies = {
+  rateLimiter,
+  clientAddress: getClientAddressProvider(() => headers()),
   websites: new PrismaWebsiteDirectoryRepository(),
   locations,
   resources,
@@ -199,15 +201,4 @@ export const bookingAdminQueries = {
 export const bookingQueries = {
   getBookingSummary: bookingAdminQueries.getBookingSummary,
   resolveBookingNames: new ResolveBookingNames(adminDependencies),
-} as const;
-
-/** One limiter for this server process, shared by every public action (see `MemoryRequestLimiter`). */
-const requestBudgetDependencies: RequestBudgetDependencies = {
-  limiter,
-  clock: systemClock,
-};
-
-/** Counted before a public action reaches its use case. */
-export const bookingRequestCommands = {
-  spendRequestBudget: new SpendRequestBudget(requestBudgetDependencies),
 } as const;

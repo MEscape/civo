@@ -1,14 +1,16 @@
 import type { AppResultAsync } from '@lib/result';
 
 import { toBookingView } from '../booking-view-mappers';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
 import { rescheduleWithPolicy } from '../services/booking-changes';
+import { resolveScopeWithinBudget } from '../services/limit-visitor';
 import { loadOwnBooking } from '../services/own-booking';
-import { resolvePublicScope } from '../services/public-scope';
 
 import type { BookingFlowDependencies } from '../booking-dependencies';
 import type { RescheduleOwnBookingInput } from '../contracts/booking-inputs';
 import type { BookingView } from '../contracts/booking-views';
 import type { BookingChangeError } from '../services/booking-changes';
+import type { VisitorLimitError } from '../services/limit-visitor';
 import type { OwnBookingError } from '../services/own-booking';
 import type { PublicScopeError } from '../services/public-scope';
 
@@ -26,10 +28,17 @@ export class RescheduleOwnBooking {
 
   execute(
     input: RescheduleOwnBookingInput,
-  ): AppResultAsync<BookingView, PublicScopeError | OwnBookingError | BookingChangeError> {
+  ): AppResultAsync<
+    BookingView,
+    PublicScopeError | VisitorLimitError | OwnBookingError | BookingChangeError
+  > {
     const { audit, clock } = this.deps;
 
-    return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
+    return resolveScopeWithinBudget(
+      this.deps,
+      BOOKING_RATE_LIMITS.changeClient,
+      input.websiteId,
+    ).andThen((scope) =>
       loadOwnBooking(this.deps, scope, input).andThen((parts) =>
         rescheduleWithPolicy(this.deps, parts, {
           tenantId: scope.tenantId,

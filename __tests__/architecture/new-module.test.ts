@@ -74,6 +74,41 @@ describe('a new standard module', () => {
   });
 });
 
+/**
+ * Gives the module one rate-limit policy (`INVENTORY_RATE_LIMITS.create`) that `create-item` spends,
+ * with fields overridden by `fields`: the starting point of the policy mutations below.
+ */
+function withPolicy(
+  files: Record<string, string>,
+  fields: { id?: string; onBackendFailure?: string; second?: boolean },
+  options: { isSpent?: boolean } = {},
+): void {
+  const policy = (id: string) =>
+    `{ id: ${id}, limit: 10, windowSeconds: 60, onBackendFailure: ${fields.onBackendFailure ?? "'deny'"} }`;
+  const entries = [`create: ${policy(fields.id ?? "'inventory.create'")},`];
+  if (fields.second === true) {
+    entries.push(`update: ${policy("'inventory.create'")},`);
+  }
+  files[`${M}/application/rate-limits.ts`] = [
+    "import type { RateLimitPolicy } from '@lib/rate-limit';",
+    "const FAILURE_MODE = 'deny' as 'deny' | 'allow';",
+    `export const INVENTORY_RATE_LIMITS = { ${entries.join(' ')} } as const satisfies Record<string, RateLimitPolicy>;`,
+    '',
+  ].join('\n');
+  if (options.isSpent === false) {
+    return;
+  }
+  const spends = ['create', ...(fields.second === true ? ['update'] : [])]
+    .map((key) => `export const ${key}Budget = INVENTORY_RATE_LIMITS.${key};`)
+    .join('\n');
+  replaceIn(
+    files,
+    `${M}/application/commands/create-item.ts`,
+    'export class CreateItem',
+    `${spends}\nexport class CreateItem`,
+  );
+}
+
 interface Mutation {
   readonly name: string;
   readonly mutate: (files: Record<string, string>) => void;
@@ -359,6 +394,60 @@ const mutations: Mutation[] = [
       );
     },
     lint: /\[architecture\/route-usage\] Do not hard-code an internal path/,
+  },
+  {
+    name: 'a public use case that neither spends a rate-limit budget nor says why not',
+    mutate: (f) => {
+      replaceIn(
+        f,
+        `${M}/application/queries/get-public-item.ts`,
+        / \* @rate-limit none [^\n]*\n/,
+        '',
+      );
+    },
+    lint: /\[architecture\/rate-limit-usage\] A public use case runs for anyone/,
+  },
+  {
+    name: 'a rate-limit policy outside the module namespace',
+    mutate: (f) => {
+      withPolicy(f, { id: "'orders.create'" });
+    },
+    tree: /\[rate-limit policies\].*start with the module's name \('inventory\.'\)/,
+  },
+  {
+    name: 'a rate-limit policy that fails open without a reviewed reason',
+    mutate: (f) => {
+      withPolicy(f, { onBackendFailure: "'allow'" });
+    },
+    tree: /\[rate-limit policies\].*fails open, which is a reviewed decision/,
+  },
+  {
+    name: 'a rate-limit policy without an explicit failure mode',
+    mutate: (f) => {
+      withPolicy(f, { onBackendFailure: 'FAILURE_MODE' });
+    },
+    tree: /\[rate-limit policies\].*must say how it fails/,
+  },
+  {
+    name: 'a client rate-limit policy that does not say what an unknown address means',
+    mutate: (f) => {
+      withPolicy(f, { id: "'inventory.create-client'" });
+    },
+    tree: /\[rate-limit policies\].*must say what happens when the address cannot be determined/,
+  },
+  {
+    name: 'a rate-limit policy that no use case spends',
+    mutate: (f) => {
+      withPolicy(f, {}, { isSpent: false });
+    },
+    tree: /\[rate-limit policies\].*no use case or service of 'inventory' spends it/,
+  },
+  {
+    name: "a rate-limit policy that reuses another policy's id",
+    mutate: (f) => {
+      withPolicy(f, { second: true });
+    },
+    tree: /\[rate-limit policies\].*reuses id 'inventory\.create'/,
   },
 ];
 

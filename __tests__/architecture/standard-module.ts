@@ -213,6 +213,7 @@ import type { ItemView } from '../contracts/inventory-views';
  * Public catalogue entry.
  *
  * @authorization public the catalogue is world-readable; no permission applies
+ * @rate-limit none a cached read of what the site shows anyway; a budget would make every page dynamic
  */
 export class GetPublicItem {
   constructor(private readonly deps: PublicInventoryDependencies) {}

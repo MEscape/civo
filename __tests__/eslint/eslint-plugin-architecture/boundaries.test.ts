@@ -35,6 +35,9 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
     // the shared Clock port, as a type
     valid(APP, "import type { Clock } from '@lib/clock';"),
     valid(INFRA_REPO, "import type { Clock } from '@lib/clock';"),
+    // the shared rate-limiter port and its policy type, as types
+    valid(APP, "import type { RateLimiter, RateLimitPolicy } from '@lib/rate-limit';"),
+    valid(DOMAIN, "import type { RateLimitFailure } from '@lib/rate-limit';"),
     valid(INFRA_ADAPTER, "import { createSystemPage } from '@modules/builder';"),
     // presentation: contracts, composition from actions, shared UI, wrappers
     valid(
@@ -90,6 +93,12 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
       APP,
       "import { systemClock } from '@lib/clock';",
       /may only `import type` from '@lib\/clock'/,
+    ),
+    // @lib/rate-limit defines the shared RateLimiter port: the type is everyone's, the limiter is composition's.
+    invalid(
+      APP,
+      "import { getRateLimiter } from '@lib/rate-limit';",
+      /may only `import type` from '@lib\/rate-limit'/,
     ),
     invalid(DOMAIN, "import { logger } from '@lib/logger';", /must not import '@lib\/logger'/),
     invalid(DOMAIN, "import { useState } from 'react';", /Domain must not depend on 'react'/),

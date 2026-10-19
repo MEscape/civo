@@ -11,6 +11,10 @@
 - Derive authenticated identity from the server-side authentication context.
 - Enforce tenant isolation at the application/data-access boundary.
 - Rate-limit and bound the size of externally reachable inputs, including webhooks and public API routes.
+- A rate limit is a policy, declared as plain data in the module's `application/rate-limits.ts` and spent by a use case through the shared `RateLimiter` port; actions, route handlers and adapters never call it. A public use case spends a budget or states why it need not (`@rate-limit none <reason>`). See [`rate-limiting.md`](../architecture/rate-limiting.md).
+- A budget counts the authorized actor, the caller's address from trusted request metadata, or a normalised account identifier, never a raw request value; counters hold only keyed hashes.
+- A policy states how it fails when the limiter's store is down: operations that send mail, call external systems, change what is live or sign people in deny; allowing is a reviewed exception.
+- Counters live in a shared store (Redis over HTTP) in production; the in-memory store is for development and tests only. Lint and the architecture tests enforce all of this.
 - Validate webhook authenticity (signature and replay protection) before processing.
 - Protect state-changing requests against CSRF; use secure, `HttpOnly`, `SameSite` cookies for sessions.
 - Set standard security headers (CSP, `X-Content-Type-Options`, `Referrer-Policy`, frame protections).

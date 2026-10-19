@@ -147,6 +147,7 @@ function narrowSessionLookupError(error: AppError): CurrentActorError {
     validation: failClosed,
     not_found: failClosed,
     conflict: failClosed,
+    rate_limited: failClosed,
     forbidden: failClosed,
     unexpected: failClosed,
   });

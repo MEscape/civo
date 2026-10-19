@@ -15,6 +15,7 @@ import type { InvitationPreviewView } from '../contracts/user-views';
  * person already has, from the very email the link came in, leaves.
  *
  * @authorization public The single-use token in the emailed link is the credential; it is 256 random bits, so there is nothing to guess.
+ * @rate-limit none Runs when a person opens the emailed link; a guess cannot succeed, and the account is only created by `AcceptInvitation`, which is limited.
  */
 export class PreviewInvitation {
   constructor(private readonly deps: PreviewInvitationDependencies) {}

@@ -7,12 +7,29 @@ import {
   infrastructureError,
   matchAppError,
   notFoundError,
+  rateLimitedError,
   unauthorizedError,
   unexpectedError,
   validationError,
 } from '@lib/errors/factory';
 
 describe('error constructors', () => {
+  it('rateLimitedError carries the retry delay, rounded up to a whole second', () => {
+    expect(rateLimitedError('x.limited', 'Slow down', 12.2)).toEqual({
+      kind: 'rate_limited',
+      code: 'x.limited',
+      message: 'Slow down',
+      retryAfterSeconds: 13,
+    });
+  });
+
+  it.each([0, -5, 0.2])(
+    'rateLimitedError never reports a retry delay below 1 second (%s)',
+    (seconds) => {
+      expect(rateLimitedError('x.limited', 'Slow down', seconds).retryAfterSeconds).toBe(1);
+    },
+  );
+
   it('validationError carries fieldErrors and the validation kind', () => {
     const error = validationError('user.invalid', 'Invalid user', {
       email: ['Required'],
@@ -86,6 +103,7 @@ describe('matchAppError', () => {
     conflictError('c', 'c'),
     unauthorizedError('u', 'u'),
     forbiddenError('f', 'f'),
+    rateLimitedError('r', 'r', 30),
     infrastructureError('i', 'i'),
     unexpectedError('e', 'e'),
   ];
@@ -98,6 +116,7 @@ describe('matchAppError', () => {
         conflict: vi.fn(() => 'conflict'),
         unauthorized: vi.fn(() => 'unauthorized'),
         forbidden: vi.fn(() => 'forbidden'),
+        rate_limited: vi.fn(() => 'rate_limited'),
         infrastructure: vi.fn(() => 'infrastructure'),
         unexpected: vi.fn(() => 'unexpected'),
       };
@@ -116,6 +135,7 @@ describe('matchAppError', () => {
       conflict: vi.fn(),
       unauthorized: vi.fn(),
       forbidden: vi.fn(),
+      rate_limited: vi.fn(),
       infrastructure: vi.fn(),
       unexpected: vi.fn(),
     };
@@ -123,6 +143,6 @@ describe('matchAppError', () => {
     matchAppError(notFoundError('nf', 'nf'), handlers);
 
     const callCounts = Object.values(handlers).map((h) => h.mock.calls.length);
-    expect(callCounts).toEqual([0, 1, 0, 0, 0, 0, 0]);
+    expect(callCounts).toEqual([0, 1, 0, 0, 0, 0, 0, 0]);
   });
 });

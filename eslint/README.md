@@ -21,7 +21,7 @@ eslint/
 └── shims.d.ts         lets the TypeScript tests import the untyped `.mjs`
 ```
 
-Rule groups (`rules/`): `boundaries` (who may import or declare what), `structure` (module shape and public API), `use-cases` (commands, queries, authorization), `adapters` (repositories, audit), `presentation` (actions, DTOs, forms, messages, routes), `pages` (metadata, headings). Tests mirror them in `__tests__/eslint/eslint-plugin-architecture/`.
+Rule groups (`rules/`): `boundaries` (who may import or declare what), `structure` (module shape and public API), `use-cases` (commands, queries, authorization, rate limits), `adapters` (repositories, audit), `presentation` (actions, DTOs, forms, messages, routes), `pages` (metadata, headings). Tests mirror them in `__tests__/eslint/eslint-plugin-architecture/`.
 
 ## Adding a rule
 
@@ -41,6 +41,7 @@ A rule that cannot know intent accepts a one-line reason instead of blocking the
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | `architecture/unsaved-work-guard`    | A `useForm` form in module components uses `useReportUnsavedChanges`, `useUnsavedNavigationGuard` or `useBeforeUnloadGuard`. | `// @unsaved-work none <reason>`                         |
 | `architecture/authorization-flow`    | A use case authorizes, or is tagged public/system.                                                                           | `@authorization <category> <reason>`                     |
+| `architecture/rate-limit-usage`      | A public use case spends a rate-limit budget from `application/rate-limits.ts`.                                              | `@rate-limit none <reason>`                              |
 | raw HTML (`dangerouslySetInnerHTML`) | Content is rendered as text or components.                                                                                   | `// eslint-disable-next-line … -- <how it is sanitized>` |
 
 Every `eslint-disable` needs a description (`eslint-comments/require-description`).

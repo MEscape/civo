@@ -2,12 +2,15 @@ import type { AppResultAsync } from '@lib/result';
 
 import { parsePageConfig } from '../../domain/models/page-config';
 import { loadAuthorizedPageSummary } from '../load-authorized-page';
+import { BUILDER_RATE_LIMITS } from '../rate-limits';
+import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { RenderDraftPageInput } from '../contracts/page-views';
 import type { LoadPageSummaryError } from '../load-authorized-page';
 import type { RenderDraftPageDependencies } from '../page-dependencies';
+import type { ActorLimitError } from '../services/within-actor-limit';
 
-export type RenderDraftPageError = LoadPageSummaryError;
+export type RenderDraftPageError = LoadPageSummaryError | ActorLimitError;
 
 /**
  * Renders an unsaved draft for the editor canvas and the component preview.
@@ -18,19 +21,21 @@ export type RenderDraftPageError = LoadPageSummaryError;
  * component types are rendered as placeholders, not rejected: a draft may
  * still contain a since-removed component, and the editor must be able to
  * show it so it can be deleted. Only the summary is loaded because this
- * runs on every debounced edit.
+ * runs on every debounced edit, and each editor has a budget of renders.
  */
 export class RenderDraftPage<TOutput> {
   constructor(private readonly deps: RenderDraftPageDependencies<TOutput>) {}
 
   execute(input: RenderDraftPageInput): AppResultAsync<TOutput, RenderDraftPageError> {
-    return loadAuthorizedPageSummary(this.deps, input.pageId, 'page.update').andThen(({ page }) =>
-      parsePageConfig(input.config).map((config) =>
-        this.deps.renderer.render({
-          websiteId: page.websiteId,
-          children: config.children,
-        }),
-      ),
-    );
+    return loadAuthorizedPageSummary(this.deps, input.pageId, 'page.update')
+      .andThen(withinActorLimit(this.deps, BUILDER_RATE_LIMITS.renderDraft))
+      .andThen(({ page }) =>
+        parsePageConfig(input.config).map((config) =>
+          this.deps.renderer.render({
+            websiteId: page.websiteId,
+            children: config.children,
+          }),
+        ),
+      );
   }
 }

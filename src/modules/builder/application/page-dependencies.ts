@@ -1,5 +1,7 @@
 import type { AuthorizationService } from '@modules/auth';
 
+import type { RateLimiter } from '@lib/rate-limit';
+
 import type { ComponentCatalog } from '../domain/models/component-catalog';
 import type { BuilderAuditLog } from '../domain/ports/builder-audit-log.port';
 import type { DraftPageRenderer } from '../domain/ports/draft-page-renderer.port';
@@ -21,6 +23,11 @@ export interface PageDependencies extends PageAccessDependencies {
   readonly audit: BuilderAuditLog;
 }
 
+/** Saving also has a budget per editor: a save is a write of up to a whole page. */
+export interface SavePageDependencies extends PageDependencies {
+  readonly rateLimiter: RateLimiter;
+}
+
 /** The page list reads pages and sketches them from the catalog. */
 export type ListPagesDependencies = Pick<
   PageDependencies,
@@ -28,6 +35,7 @@ export type ListPagesDependencies = Pick<
 >;
 
 export interface RenderDraftPageDependencies<TOutput> extends PageAccessDependencies {
+  readonly rateLimiter: RateLimiter;
   readonly renderer: DraftPageRenderer<TOutput>;
 }
 

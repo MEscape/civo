@@ -36,10 +36,6 @@ import type {
   NewBooking,
   WebsiteScope,
 } from '@modules/booking/domain/ports/booking.repository';
-import type {
-  LimitedAction,
-  RequestLimiter,
-} from '@modules/booking/domain/ports/request-limiter.port';
 import type { WebsiteDirectoryRepository } from '@modules/booking/domain/ports/website-directory.repository';
 import type { TimeInterval } from '@modules/booking/domain/time/time-interval';
 
@@ -48,20 +44,6 @@ import { forbiddenError } from '@lib/errors';
 import type { NotFoundAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 import { errAsync, okAsync } from '@lib/result';
-
-/** A limiter that allows `budget` requests per key and action, then refuses: the test sets how many. */
-export class FakeRequestLimiter implements RequestLimiter {
-  private readonly spent = new Map<string, number>();
-
-  constructor(private readonly budget = Number.POSITIVE_INFINITY) {}
-
-  allow(key: string, action: LimitedAction): boolean {
-    const slot = `${action}:${key}`;
-    const used = this.spent.get(slot) ?? 0;
-    this.spent.set(slot, used + 1);
-    return used < this.budget;
-  }
-}
 
 /** A clock the test moves by hand. */
 export class ManualClock implements Clock {

@@ -8,6 +8,7 @@
 - Application errors must describe actionable failure cases.
 - Infrastructure errors must be mapped before crossing the infrastructure boundary.
 - Do not expose infrastructure error details to users.
+- A caller who used an operation too often gets the `rate_limited` kind with `retryAfterSeconds`: it is neither an infrastructure failure nor a permission problem, and waiting is the remedy. See [`security.md`](security.md).
 - Presentation layers map error codes to UI or HTTP responses. See [`api.md`](api.md) and [`i18n.md`](i18n.md).
 - Do not catch an error unless the layer can meaningfully handle or translate it.
 - Preserve the original error as a cause when translating unexpected failures.

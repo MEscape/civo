@@ -9,16 +9,19 @@ import { describeDraftChanges } from '../../domain/models/draft-changes';
 import { assembleReleaseSnapshot } from '../../domain/models/release-assembly';
 import { normalizeReleaseNote } from '../../domain/models/release-changes';
 import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
+import { RELEASE_RATE_LIMITS } from '../rate-limits';
 import { toReleaseSummaryView } from '../release-view-mappers';
+import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { PublishableWebsite } from '../../domain/models/publishable';
 import type { PublishReleaseInput, ReleaseSummaryView } from '../contracts/release-views';
 import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
 import type { PublishReleaseDependencies } from '../release-dependencies';
+import type { ActorLimitError } from '../services/within-actor-limit';
 
 type PublishFailure = ValidationAppError | ConflictAppError | InfrastructureAppError;
 
-export type PublishReleaseError = LoadReleaseWebsiteError | ConflictAppError;
+export type PublishReleaseError = LoadReleaseWebsiteError | ConflictAppError | ActorLimitError;
 
 /**
  * Builds an immutable release from the website's current pages and makes
@@ -35,8 +38,9 @@ export class PublishRelease {
   execute(input: PublishReleaseInput): AppResultAsync<ReleaseSummaryView, PublishReleaseError> {
     const { pages, components, releases, audit, clock } = this.deps;
 
-    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish').andThen(
-      ({ actor, website }) =>
+    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish')
+      .andThen(withinActorLimit(this.deps, RELEASE_RATE_LIMITS.publish))
+      .andThen(({ actor, website }) =>
         pages
           .listForRelease(website.id)
           .andThen((publishable) =>
@@ -78,7 +82,7 @@ export class PublishRelease {
             return toReleaseSummaryView(release, release.id);
           })
           .mapErr((error) => this.reportBlocked(actor, website, error)),
-    );
+      );
   }
 
   /** A blocked publish is a recoverable anomaly worth alerting on; the error itself is unchanged. */

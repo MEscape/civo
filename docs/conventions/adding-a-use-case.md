@@ -8,7 +8,7 @@ Owning rules: [`modules.md`](../rules/modules.md), [`errors.md`](../rules/errors
 2. Define the input type and the error union. Errors carry stable codes. See [`errors.md`](../rules/errors.md).
 3. Define or extend the domain **port** the use case needs. Do not import Prisma.
 4. Implement the use case in `application/`. It returns `Result` / `ResultAsync`.
-5. Enforce authorization inside the use case. See [`security.md`](../rules/security.md).
+5. Enforce authorization inside the use case. See [`security.md`](../rules/security.md). A public use case, or one whose every run costs something, also spends a rate-limit budget or states why not. See [`adding-a-rate-limit.md`](adding-a-rate-limit.md).
 6. Implement the port in `infrastructure/` (repository) and map records to domain models. See [`adding-a-repository.md`](adding-a-repository.md).
 7. Add the delivery adapter:
    - Mutation from UI: Server Action in `presentation/actions/`. Validate with Zod first. See [`adding-a-server-action.md`](adding-a-server-action.md).
@@ -18,8 +18,16 @@ Owning rules: [`modules.md`](../rules/modules.md), [`errors.md`](../rules/errors
 9. Test the use case with port fakes, then the adapter through observable behavior. See [`testing.md`](../rules/testing.md).
 10. Invalidate affected caches if the use case mutates cached data. See [`caching.md`](../rules/caching.md).
 
+## Scaffolding
+
+`npm run gen -- usecase <name> -m <module>` (`--query` for a query) creates the use case and
+registers it in `composition.ts`. A command needs its permission and audit event added by hand;
+the command prints both. Only for modules in the standard shape, see
+[`scripts/README.md`](../../scripts/README.md).
+
 ## Done when
 
 - [ ] Use case has no framework, Prisma, or HTTP imports
 - [ ] Every failure path returns a typed error, none throws
 - [ ] Authorization is checked in the use case, not only in the UI
+- [ ] A public use case spends a rate-limit budget or says why it need not

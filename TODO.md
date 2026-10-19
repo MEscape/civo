@@ -17,8 +17,6 @@
 
 - live monitoring of data sources and datasets. they could change format which breaks our system
 
-- ratelimiting
-
 - media storage
 
 - legal pages

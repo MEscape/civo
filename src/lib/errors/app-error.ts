@@ -14,6 +14,7 @@ export type AppErrorKind =
   | 'conflict'
   | 'unauthorized'
   | 'forbidden'
+  | 'rate_limited'
   | 'infrastructure'
   | 'unexpected';
 
@@ -46,6 +47,16 @@ export interface ForbiddenAppError extends BaseAppError {
 }
 
 /**
+ * The caller used an operation more often than its policy allows. It is not a
+ * failure of the system and not a permission problem: waiting is the remedy,
+ * so the error carries how long (`retryAfterSeconds`, always at least 1).
+ */
+export interface RateLimitedAppError extends BaseAppError {
+  readonly kind: 'rate_limited';
+  readonly retryAfterSeconds: number;
+}
+
+/**
  * An infrastructure failure that has already been mapped out of its
  * original shape (Prisma error, fetch failure, etc.) before crossing the
  * infrastructure boundary — persistence.md: "keep Prisma-specific errors
@@ -67,5 +78,6 @@ export type AppError =
   | ConflictAppError
   | UnauthorizedAppError
   | ForbiddenAppError
+  | RateLimitedAppError
   | InfrastructureAppError
   | UnexpectedAppError;

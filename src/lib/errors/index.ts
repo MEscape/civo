@@ -5,6 +5,7 @@ export type {
   ForbiddenAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   UnauthorizedAppError,
   UnexpectedAppError,
   ValidationAppError,
@@ -16,12 +17,18 @@ export {
   infrastructureError,
   matchAppError,
   notFoundError,
+  rateLimitedError,
   unauthorizedError,
   unexpectedError,
   validationError,
 } from './factory';
 
-export { httpStatusForError, toErrorResponseBody, type ErrorResponseBody } from './http-mapping';
+export {
+  httpHeadersForError,
+  httpStatusForError,
+  toErrorResponseBody,
+  type ErrorResponseBody,
+} from './http-mapping';
 
 export { FieldErrorBag } from './field-error-bag';
 

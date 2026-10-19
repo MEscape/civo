@@ -25,6 +25,7 @@ export interface BuildMapModelInput {
  * fail; a layer with nothing drawable is kept and contributes no bounds.
  *
  * @authorization public The map renders data its host already loaded and authorized; this use case reads no resource.
+ * @rate-limit none Reads nothing: it turns data its host already loaded into a model.
  */
 export class BuildMapModel {
   constructor(private readonly deps: MapDependencies) {}

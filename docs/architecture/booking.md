@@ -18,7 +18,7 @@ The component only carries `heading`, `serviceId` and `category`. Staff never us
 ```text
 domain/         pure TypeScript: time, scheduling engine, models, lifecycle, policies, ports
 application/    use cases (commands/queries), authorization, scope, request parsing
-infrastructure/ Prisma repositories + record mappers, in-memory rate limiter, audit logger
+infrastructure/ Prisma repositories + record mappers, geocoding, mail, audit logger
 presentation/   thin server actions, DTOs, Zod schemas, React (flow, admin), i18n (de/en)
 ```
 
@@ -49,6 +49,7 @@ Alternatives (when a chosen slot is taken) are the nearest free slots: the same 
 Double booking is prevented in the database, not in application code:
 
 - exclusion constraint `BookingResource_no_overlap` (btree_gist) on resource and time range, for `held` and `confirmed` rows;
+- composite foreign keys `(id, websiteId)` from booking, hold, resource and service to their parents, so a booking cannot mix rows of two websites;
 - `pg_advisory_xact_lock` on the session key while a slot is taken;
 - compare-and-swap on `status` + `updatedAt` for every state change;
 - expired holds are released inside the same transaction before every insert.
@@ -57,7 +58,7 @@ A hold lasts 10 minutes (`HOLD_MINUTES`); `holdId` is the capability needed to c
 
 ## Public access
 
-The website id is public and the tenant is derived server-side. Lookup of a booking needs reference **and** e-mail; a wrong e-mail answers "not found". Public use cases are tagged `@authorization public <reason>`. Requests are rate limited per client key by `SpendRequestBudget`.
+The website id is public and the tenant is derived server-side. Lookup of a booking needs reference **and** e-mail; a wrong e-mail answers "not found". Public use cases are tagged `@authorization public <reason>`. What a visitor can repeat is rate limited per client address by the use case itself (`application/rate-limits.ts`: search, hold, confirm, find, change), and an editor's paid address lookup per person. See [`rate-limiting.md`](rate-limiting.md).
 
 ## E-mail
 
@@ -98,13 +99,13 @@ Booking data is never cached for visitors: `BookingSection` calls `connection()`
 
 ## Tests
 
-| Layer             | Where                                                                                  |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| Domain            | `__tests__/src/modules/booking/domain`                                                 |
-| Application       | `__tests__/src/modules/booking/application` (incl. two users, one slot)                |
-| Presentation / UI | `__tests__/src/modules/booking/presentation`                                           |
-| Boundaries        | `calendar-isolation.test.ts`, `__tests__/architecture`                                 |
-| Real PostgreSQL   | `npm run test:integration` with `BOOKING_TEST_DATABASE_URL` (incl. the employee scope) |
+| Layer             | Where                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| Domain            | `__tests__/src/modules/booking/domain`                                             |
+| Application       | `__tests__/src/modules/booking/application` (incl. two users, one slot)            |
+| Presentation / UI | `__tests__/src/modules/booking/presentation`                                       |
+| Boundaries        | `calendar-isolation.test.ts`, `__tests__/architecture`                             |
+| Real PostgreSQL   | `npm run test:integration` (database of `DATABASE_URL`) (incl. the employee scope) |
 
 ## Who sets what up
 
@@ -144,7 +145,7 @@ Time zones are chosen from a grouped dropdown of the zones the browser knows, no
 
 ## Known limitations
 
-- Rate limiting is in memory, per server instance.
+- Without a configured client-address source (`RATE_LIMIT_CLIENT_ADDRESS_SOURCE`, or Vercel / `AUTH_TRUSTED_PROXIES`) the visitor budgets are skipped and the log says so; the caps on live holds and bookings and the database constraints still hold.
 - The e-mail address is not verified: a booking is confirmed on submit and the confirmation e-mail goes to whatever address was typed. Asking the visitor to confirm through a link in that e-mail (double opt-in) needs a stored single-use token, i.e. a schema change; it is not built.
 - Expired holds are released lazily (before the next insert); there is no scheduled cleanup.
 - The repeated hour at the end of daylight saving time is not offered as a slot.

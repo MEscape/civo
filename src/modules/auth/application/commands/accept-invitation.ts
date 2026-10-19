@@ -7,7 +7,8 @@ import { createSignUpDraft } from '../../domain/models/credentials';
 import { isInvitationOpen } from '../../domain/models/invitation';
 import { PLATFORM_ADMIN_ROLE } from '../../domain/models/role';
 import { PLATFORM_TENANT_ID } from '../../domain/models/tenant';
-import { enforceRateLimit } from '../services/enforce-rate-limit';
+import { AUTH_RATE_LIMITS } from '../rate-limits';
+import { enforceClientAndAccountLimits } from '../services/enforce-rate-limit';
 
 import type { ActorId } from '../../domain/models/ids';
 import type { Invitation } from '../../domain/models/invitation';
@@ -56,7 +57,11 @@ export class AcceptInvitation {
       .andThen((invitation) =>
         createSignUpDraft({ name: input.name, email: invitation.email, password: input.password })
           .asyncAndThen((draft) =>
-            enforceRateLimit(this.deps, 'sign_up', invitation.email).map(() => draft),
+            enforceClientAndAccountLimits(
+              this.deps,
+              { client: AUTH_RATE_LIMITS.signUpClient, account: AUTH_RATE_LIMITS.signUp },
+              invitation.email,
+            ).map(() => draft),
           )
           .andThen((draft) => this.join(invitation, draft)),
       );

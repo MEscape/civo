@@ -3,7 +3,9 @@ import { combineAsync, errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { parseDataSourceId, parseDatasetId } from '../../domain/models/ids';
+import { RELEASE_RATE_LIMITS } from '../rate-limits';
 import { liveDatasetsOf } from '../services/live-dataset-uses';
+import { limitActor } from '../services/within-actor-limit';
 
 import type {
   DataRemoval,
@@ -12,6 +14,7 @@ import type {
   DataRemovalGuardError,
 } from '../../domain/ports/data-source.port';
 import type { DeleteUnusedDataDependencies } from '../release-dependencies';
+import type { ActorLimitError } from '../services/within-actor-limit';
 
 export interface DeleteUnusedDataInput {
   /** A single dataset, or a source with all of its datasets. */
@@ -44,10 +47,13 @@ function toGuardError(error: AppError): DataRemovalGuardError {
 export class DeleteUnusedData {
   constructor(private readonly deps: DeleteUnusedDataDependencies) {}
 
-  execute(input: DeleteUnusedDataInput): AppResultAsync<DataRemoval, DataRemovalError> {
+  execute(
+    input: DeleteUnusedDataInput,
+  ): AppResultAsync<DataRemoval, DataRemovalError | ActorLimitError> {
     const { authorization, data } = this.deps;
     return authorization
       .requireInTenant(input.kind === 'dataset' ? 'dataset.delete' : 'datasource.delete')
+      .andThen((actor) => limitActor(this.deps, RELEASE_RATE_LIMITS.deleteUnusedData, actor))
       .andThen(() =>
         input.kind === 'dataset'
           ? parseDatasetId(input.id).asyncAndThen((id) => data.deleteDataset(id, this.guard))

@@ -131,8 +131,8 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
 
     // Applies only to requests that arrive through Better Auth's HTTP
     // handler (verification and reset links). Direct `auth.api.*` calls from
-    // Server Actions do NOT pass it; those are throttled by `AuthRateLimiter`
-    // in the application layer. Memory storage is per-process and
+    // Server Actions do NOT pass it; those are throttled by the rate-limit budgets
+    // of the use cases (docs/architecture/rate-limiting.md). Memory storage is per-process and
     // ineffective on serverless or multi-instance hosting; `database` is shared.
     rateLimit: {
       enabled: true,

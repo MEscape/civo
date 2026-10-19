@@ -38,6 +38,7 @@
       "validationFailed": "The input is invalid.",
       "publishBlocked": "The website cannot be published. Please check its pages.",
       "persistenceFailed": "The operation could not be completed. Please try again later.",
+      "rateLimited": "Too many attempts. Please wait a moment and try again.",
       "snapshotCorrupted": "This release's snapshot is damaged and cannot be restored.",
       "unexpected": "Something went wrong. Please try again.",
       "migrationNotFound": "This update was not found.",

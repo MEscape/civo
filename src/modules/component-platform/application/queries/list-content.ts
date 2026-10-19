@@ -66,6 +66,7 @@ function mergeBatches<K extends ContentKind>(
  *    its cause instead of hiding it.
  *
  * @authorization public Renders content for pages anyone may read; datasets are read through data-sources within the rendering website.
+ * @rate-limit none Runs while published pages render, which are served from release snapshots and caches; a per-visitor budget would make every page dynamic. The one public action that exposes it to a visitor’s browser, `ReadTrendWindow`, is limited.
  */
 export class ListContent {
   constructor(private readonly deps: PublicComponentPlatformDependencies) {}

@@ -44,6 +44,7 @@ function narrowAuthenticatorError(error: AppError): AuthenticatorError {
     infrastructure: (allowed) => allowed,
     not_found: failClosed,
     conflict: failClosed,
+    rate_limited: failClosed,
     unexpected: failClosed,
   });
 }

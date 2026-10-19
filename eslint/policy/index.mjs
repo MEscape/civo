@@ -11,6 +11,7 @@ import {
   checkPrismaContainment,
   checkPublicApi,
 } from './checks-dependencies.mjs';
+import { checkRateLimitPolicies } from './checks-rate-limits.mjs';
 import { checkModuleStructure } from './checks-structure.mjs';
 import { loadProject } from './project.mjs';
 
@@ -26,6 +27,7 @@ export const CHECKS = {
   'authorization categories': checkAuthorizationCategories,
   'public API': checkPublicApi,
   'translation ownership': checkTranslationOwnership,
+  'rate-limit policies': checkRateLimitPolicies,
 };
 
 export function runAllChecks(root) {

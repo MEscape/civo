@@ -14,6 +14,7 @@ import { serverEnv } from '@lib/config/server';
 import type { ServerEnv } from '@lib/config/server';
 import { logger } from '@lib/logger';
 import { getMailTransport } from '@lib/mail/server';
+import { getClientAddressProvider, getRateLimiter } from '@lib/rate-limit';
 import { ResultAsync } from '@lib/result';
 import { toLocalizedPath } from '@lib/seo';
 import { TENANT_HINT_HEADER } from '@lib/tenancy';
@@ -61,7 +62,6 @@ import {
 import { TransactionalAuthMailer } from './infrastructure/mail/transactional-auth-mailer';
 import { UnconfiguredAuthMailer } from './infrastructure/mail/unconfigured-auth-mailer';
 import { getAuthPool } from './infrastructure/pg/auth-pool';
-import { PgAuthRateLimiter } from './infrastructure/pg/pg-auth-rate-limiter';
 import { PgUserDirectory } from './infrastructure/pg/pg-user-directory';
 import { PrismaInvitationRepository } from './infrastructure/prisma/prisma-invitation.repository';
 import { PrismaMembershipRepository } from './infrastructure/prisma/prisma-membership.repository';
@@ -355,7 +355,8 @@ const getAuthenticationDependencies = once((): AuthenticationDependencies => {
         passwordReset: authRoutes.resetPassword(),
       },
     }),
-    rateLimiter: new PgAuthRateLimiter(getPool(), requireAuthCredentials(serverEnv).secret),
+    rateLimiter: getRateLimiter(),
+    clientAddress: getClientAddressProvider(() => headers()),
     audit: auditLog,
   };
   return dependencies;
@@ -377,7 +378,7 @@ export const getAuthCommands = once(() => {
     signOut: new SignOut(dependencies),
     requestPasswordReset: new RequestPasswordReset(dependencies),
     resetPassword: new ResetPassword(dependencies),
-    inviteUser: new InviteUser(administration),
+    inviteUser: new InviteUser({ ...administration, rateLimiter: getRateLimiter() }),
     changeUserRoles: new ChangeUserRoles(administration),
     removeUser: new RemoveUser(administration),
     setUserAccess: new SetUserAccess(platformAccess),

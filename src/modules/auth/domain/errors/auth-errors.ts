@@ -4,6 +4,7 @@ import {
   forbiddenError,
   infrastructureError,
   notFoundError,
+  rateLimitedError,
   unauthorizedError,
   validationError,
 } from '@lib/errors';
@@ -12,9 +13,11 @@ import type {
   ForbiddenAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   UnauthorizedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes. Presentation maps these to translation keys (i18n.md);
@@ -129,13 +132,13 @@ export function permissionDenied(): ForbiddenAppError {
   );
 }
 
-/**
- * Too many attempts for one subject in the current window. `forbidden`
- * is the closest existing kind; a dedicated `rate_limited` kind in
- * `@lib/errors` would let `httpStatusForError` answer 429.
- */
-export function rateLimited(): ForbiddenAppError {
-  return forbiddenError(AUTH_ERROR_CODES.rateLimited, 'Too many attempts. Try again later.');
+/** Too many attempts for one subject in the current window; `retryAfterSeconds` says how long to wait. */
+export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    AUTH_ERROR_CODES.rateLimited,
+    'Too many attempts. Try again later.',
+    retryAfterSeconds,
+  );
 }
 
 /** Never shown to the client: a duplicate account must stay indistinguishable. */
@@ -179,6 +182,15 @@ export function rateLimiterFailed(cause: unknown): InfrastructureAppError {
     'The rate limit could not be checked.',
     cause,
   );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : rateLimiterFailed(failure.cause);
 }
 
 export function mailerNotConfigured(): InfrastructureAppError {

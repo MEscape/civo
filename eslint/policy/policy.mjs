@@ -30,11 +30,11 @@ export const SHARED_LIB_ALLOW = {
 };
 
 /**
- * Shared libraries that define a PORT shared by every module (`Clock`). Any layer may
- * `import type` the port; the implementation (`systemClock`) is runtime state and is
- * wired by composition.ts only, so a runtime import from a layer is still reported.
+ * Shared libraries that define a PORT shared by every module (`Clock`, `RateLimiter`). Any layer
+ * may `import type` the port; the implementation (`systemClock`, `getRateLimiter`) is runtime state
+ * and is wired by composition.ts only, so a runtime import from a layer is still reported.
  */
-export const SHARED_PORT_LIBS = ['clock'];
+export const SHARED_PORT_LIBS = ['clock', 'rate-limit'];
 
 /** Packages that may never appear in a layer, regardless of how they are imported. */
 export const FORBIDDEN_PACKAGES = {
@@ -363,3 +363,39 @@ export const UNSAVED_WORK_GUARDS = [
  */
 export const SERVER_ONLY_ROUTE_FILES =
   /^(?:page|layout|template|default|not-found|loading|route)\.tsx?$/;
+
+/**
+ * Rate limiting (docs/architecture/rate-limiting.md). A module declares its budgets as plain data in
+ * `application/rate-limits.ts`; use cases spend them. `architecture/rate-limit-usage` checks the shape of
+ * that file and who may call the limiter; `__tests__/architecture/rate-limit-policies.test.ts` checks the
+ * policies themselves across modules.
+ */
+export const RATE_LIMIT_POLICIES = {
+  /** The file of policy data inside a module's application layer. */
+  file: 'rate-limits.ts',
+  /** The export name: `<NAME>_RATE_LIMITS`. */
+  exportName: /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_RATE_LIMITS$/,
+  /** What the export must satisfy, so a policy missing a field does not compile. */
+  type: 'Record<string, RateLimitPolicy>',
+  /** The only things that file may import: time constants and (as a type) the policy type. */
+  allowedImports: ['@lib/utils', '@lib/rate-limit'],
+  /**
+   * Policies that let a request through, uncounted, when the limiter's store is down
+   * (`onBackendFailure: 'allow'`). Every one is a reviewed decision: a short gap in protection
+   * costs less than refusing the people the operation serves. Everything else fails closed.
+   */
+  failOpen: [
+    'booking.hold-client',
+    'booking.search-client',
+    'builder.render-draft',
+    'builder.save-page',
+    'component-platform.read-trend-window-client',
+  ],
+  /** What may never fail open, whatever is added to `failOpen`: mail, calls to external systems, changes to what is live, sign-in. */
+  failClosed: [
+    /^auth\./,
+    /^data-sources\./,
+    /^release\./,
+    /^booking\.(?:confirm|lookup|change|search-address)/,
+  ],
+};

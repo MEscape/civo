@@ -23,6 +23,7 @@ export interface GetComponentDefaultPropsInput {
  * caller decides how to treat.
  *
  * @authorization public Reads the component catalog, which is code and contains nothing per tenant.
+ * @rate-limit none Reads the component catalog, which is code and the same for everyone; it touches no store.
  */
 export class GetComponentDefaultProps {
   constructor(private readonly deps: PublicComponentPlatformDependencies) {}

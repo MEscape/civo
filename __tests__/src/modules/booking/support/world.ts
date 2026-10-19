@@ -9,6 +9,8 @@ import type { BookingLocation } from '@modules/booking/domain/models/booking-loc
 import { toWebsiteId } from '@modules/booking/domain/models/ids';
 import type { AddressSearch } from '@modules/booking/domain/ports/address-search.port';
 
+import { clientAt, createTestRateLimiter } from '../../../support/rate-limiting';
+
 import {
   InMemoryBookingRepository,
   InMemoryLocationRepository,
@@ -21,11 +23,13 @@ import {
   RecordingNotifier,
   SequentialReferences,
   authorizationFor,
-  FakeRequestLimiter,
 } from './fakes';
 import { NOW, TENANT, WEBSITE, makeLocation, makeResource, makeService } from './fixtures';
 
 export const OTHER_WEBSITE = toWebsiteId('website-2');
+
+/** The address every visitor of a test world comes from. */
+export const VISITOR_ADDRESS = '203.0.113.7';
 
 interface WorldOptions {
   readonly service?: BookableService;
@@ -72,7 +76,11 @@ export function createWorld(options: WorldOptions = {}) {
     ]),
   );
 
+  const rateLimiter = createTestRateLimiter(clock);
+
   const flow: BookingFlowDependencies = {
+    rateLimiter,
+    clientAddress: clientAt(VISITOR_ADDRESS),
     websites,
     locations,
     resources,
@@ -92,7 +100,7 @@ export function createWorld(options: WorldOptions = {}) {
     bookings,
     audit,
     addresses: options.addresses ?? null,
-    limiter: new FakeRequestLimiter(),
+    rateLimiter,
     notifier,
     clock,
   };

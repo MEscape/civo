@@ -3,14 +3,17 @@ import {
   conflictError,
   infrastructureError,
   notFoundError,
+  rateLimitedError,
   validationError,
 } from '@lib/errors';
 import type {
   ConflictAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes; presentation maps them to translation keys. Nothing here is
@@ -28,6 +31,8 @@ export const COMPONENT_PLATFORM_ERROR_CODES = {
   recordInvalid: 'content.record_invalid',
   requestInvalid: 'content.request_invalid',
   componentNotRegistered: 'component.not_registered',
+  rateLimited: 'content.rate_limited',
+  rateLimiterFailed: 'content.rate_limiter_failed',
 } as const;
 
 /** Reasons one field of a record or an id is rejected. Carried in `fieldErrors`, never shown as prose. */
@@ -49,6 +54,28 @@ export type ComponentPlatformErrorCode =
   (typeof COMPONENT_PLATFORM_ERROR_CODES)[keyof typeof COMPONENT_PLATFORM_ERROR_CODES];
 export type ComponentPlatformValidationCode =
   (typeof COMPONENT_PLATFORM_VALIDATION_CODES)[keyof typeof COMPONENT_PLATFORM_VALIDATION_CODES];
+
+/** One visitor asked for too many windows of a chart in a short time. */
+export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    COMPONENT_PLATFORM_ERROR_CODES.rateLimited,
+    'Too many requests. Please wait a moment and try again.',
+    retryAfterSeconds,
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : infrastructureError(
+        COMPONENT_PLATFORM_ERROR_CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
+}
 
 export function contentDatasetNotFound(): NotFoundAppError {
   return notFoundError(

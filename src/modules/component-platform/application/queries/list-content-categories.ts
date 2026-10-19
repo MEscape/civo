@@ -40,6 +40,7 @@ function readCategories(
  * dataset's own failure is reported where it is read for rendering.
  *
  * @authorization public Called only by the editor route after it authorized the page; datasets are read through data-sources within the given website and only distinct category labels leave.
+ * @rate-limit none Runs for the editor, after the route authorized the page; the dataset reads it triggers are bounded by data-sources.
  */
 export class ListContentCategories {
   constructor(private readonly deps: PublicComponentPlatformDependencies) {}

@@ -9,8 +9,9 @@ import { evaluateSlot } from '../../domain/scheduling/slot-assessment';
 import { localDateOf } from '../../domain/time/time-zone';
 import { HOLD_MINUTES, MAX_LIVE_HOLDS_PER_WEBSITE } from '../booking-limits';
 import { toHoldView } from '../booking-view-mappers';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
 import { loadBookableContext } from '../services/bookable-context';
-import { resolvePublicScope } from '../services/public-scope';
+import { resolveScopeWithinBudget } from '../services/limit-visitor';
 import { parseParticipants, parseStart } from '../services/request-parsing';
 import { loadSchedulingIndex } from '../services/scheduling-context';
 
@@ -19,6 +20,7 @@ import type { BookingFlowDependencies } from '../booking-dependencies';
 import type { HoldSlotInput } from '../contracts/booking-inputs';
 import type { HoldView } from '../contracts/booking-views';
 import type { BookableContextError } from '../services/bookable-context';
+import type { VisitorLimitError } from '../services/limit-visitor';
 import type { PublicScopeError } from '../services/public-scope';
 
 /**
@@ -36,12 +38,20 @@ export class HoldSlot {
     input: HoldSlotInput,
   ): AppResultAsync<
     HoldView,
-    PublicScopeError | BookableContextError | ConflictAppError | InfrastructureAppError
+    | PublicScopeError
+    | VisitorLimitError
+    | BookableContextError
+    | ConflictAppError
+    | InfrastructureAppError
   > {
     const { bookings, references, audit, clock } = this.deps;
     const now = clock.now();
 
-    return resolvePublicScope(this.deps, input.websiteId).andThen((scope) =>
+    return resolveScopeWithinBudget(
+      this.deps,
+      BOOKING_RATE_LIMITS.holdClient,
+      input.websiteId,
+    ).andThen((scope) =>
       loadBookableContext(this.deps, scope, input).andThen(({ service, location }) =>
         parseStart(input.start)
           .andThen((start) =>

@@ -16,3 +16,5 @@ import { parseEnv } from './parse-env';
 export const serverEnv: ServerEnv = parseEnv('server', serverEnvSchema, process.env);
 
 export type { ServerEnv } from './env-schema';
+export { resolveRateLimitSettings } from './rate-limit-env-schema';
+export type { ClientAddressSettings, RateLimitSettings } from './rate-limit-env-schema';

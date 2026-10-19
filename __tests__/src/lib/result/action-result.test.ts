@@ -6,7 +6,7 @@ import { err, ok } from '@lib/result/app-result';
 
 // Stubbing an AppError for testing boundaries without importing actual domain errors
 const createError = (
-  kind: 'domain' | 'validation' | 'system',
+  kind: 'domain' | 'validation' | 'system' | 'rate_limited',
   code: string,
   fieldErrors?: Record<string, string[]>,
 ): AppError =>
@@ -54,6 +54,20 @@ describe('toActionResult', () => {
           email: ['Must be valid email'],
         },
       },
+    });
+  });
+});
+
+describe('toActionResult for a rate-limited error', () => {
+  it('keeps the retry delay so the client can show when to try again', () => {
+    const error = {
+      ...createError('rate_limited', 'RATE_LIMITED'),
+      retryAfterSeconds: 30,
+    } as unknown as AppError;
+
+    expect(toActionResult(err(error))).toEqual({
+      ok: false,
+      error: { code: 'RATE_LIMITED', message: 'Test error message', retryAfterSeconds: 30 },
     });
   });
 });

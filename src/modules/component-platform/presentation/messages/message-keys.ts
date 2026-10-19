@@ -35,6 +35,8 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.requestInvalid]: REQUEST_INVALID,
   [ERRORS.recordInvalid]: REQUEST_INVALID,
   [ERRORS.componentNotRegistered]: fieldPath('render', 'unknownComponent'),
+  [ERRORS.rateLimited]: fieldPath('origin', 'rateLimited'),
+  [ERRORS.rateLimiterFailed]: fieldPath('origin', 'sourceFailed'),
   [VALIDATION.idInvalid]: REQUEST_INVALID,
   [VALIDATION.required]: REQUEST_INVALID,
   [VALIDATION.tooLong]: REQUEST_INVALID,
