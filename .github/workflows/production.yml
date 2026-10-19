@@ -1,3 +1,10 @@
+# ==============================================================================
+# CIVO - PRODUCTION DEPLOYMENT PIPELINE
+# Re-validates full CI on `main`, builds the Vercel production artifact first,
+# applies database migrations (`app` & `auth`), deploys prebuilt output, and
+# runs post-deploy health & schema contract verification.
+# ==============================================================================
+
 name: Production
 
 on:
@@ -15,6 +22,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ----------------------------------------------------------------------------
+  # 1. Pre-Deploy CI Gate (Exact Commit Verification)
+  # ----------------------------------------------------------------------------
   ci:
     name: CI
     if: github.ref == 'refs/heads/main'
@@ -24,6 +34,9 @@ jobs:
       # Nested license job posts PR comments; a called workflow cannot exceed its caller's permissions.
       pull-requests: write
 
+  # ----------------------------------------------------------------------------
+  # 2. Build, Migrate, Deploy & Smoke-Test
+  # ----------------------------------------------------------------------------
   deploy:
     name: Migrate & deploy
     needs: ci
@@ -39,7 +52,11 @@ jobs:
       name: production
       url: ${{ steps.deploy.outputs.url }}
 
+    permissions:
+      contents: read
+
     env:
+      VERCEL_CLI_VERSION: "41.4.0"
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
@@ -56,6 +73,10 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      # Ensure Prisma client & contracts exist since `--ignore-scripts` skips postinstall.
+      - name: Generate Prisma client & contracts
+        run: npm run db:generate
+
       # Make sure the migrations being deployed are the reviewed migrations.
       - name: Check migration files
         run: npm run db:migrate:check
@@ -63,10 +84,10 @@ jobs:
       # 1) BUILD FIRST.
       # A broken build must never leave either database migrated.
       - name: Pull Vercel production settings
-        run: npx vercel pull --yes --environment=production
+        run: npx --yes "vercel@${VERCEL_CLI_VERSION}" pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       - name: Build production artifact
-        run: npx vercel build --prod
+        run: npx --yes "vercel@${VERCEL_CLI_VERSION}" build --prod --token="$VERCEL_TOKEN"
 
       # 2) MIGRATE APPLICATION DATABASE.
       - name: Show application migration status
@@ -83,7 +104,7 @@ jobs:
       - name: Deploy to Vercel
         id: deploy
         run: |
-          url="$(npx vercel deploy --prebuilt --prod)"
+          url="$(npx --yes "vercel@${VERCEL_CLI_VERSION}" deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
       # 5) VERIFY DEPLOYMENT.

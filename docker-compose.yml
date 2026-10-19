@@ -1,46 +1,110 @@
+# ==============================================================================
+# CIVO - DOCKER COMPOSE CONFIGURATION
+# Orchestrates local infrastructure (PostgreSQL, Redis, MailHog) and optional
+# production-profile containers (Database Migrator & Next.js App Runner).
+# All container environment variables are loaded strictly via `.env.docker`.
+# ==============================================================================
+
+name: civo
+
+# ------------------------------------------------------------------------------
+# Shared Service Templates (YAML Anchors)
+# ------------------------------------------------------------------------------
+x-common-env: &common-env
+  env_file:
+    - .env.docker
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
-  # -----------------------------
-  # PostgreSQL
-  # -----------------------------
+  # ----------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ----------------------------------------------------------------------------
   postgres:
-    image: postgres:latest
+    <<: *common-env
+    image: postgres:alpine
     container_name: civo-postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
-    env_file:
-      - .env.docker
     volumes:
       - civo-postgres-data:/var/lib/postgresql/data
       - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    networks:
+      - civo-network
+    logging: *default-logging
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d$$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
-  # -----------------------------
-  # MailHog
-  # -----------------------------
+  # ----------------------------------------------------------------------------
+  # MailHog (Local SMTP Server & Web Inbox)
+  # ----------------------------------------------------------------------------
   mailhog:
+    <<: *common-env
     image: mailhog/mailhog:latest
     container_name: civo-mailhog
     restart: unless-stopped
     ports:
-      - "1025:1025"
-      - "8025:8025"
-    env_file:
-      - .env.docker
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - civo-network
+    logging: *default-logging
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8025/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # -----------------------------
-  # Database Migrations (One-Off)
-  # -----------------------------
+  # ----------------------------------------------------------------------------
+  # Redis (In-Memory Rate-Limit Store)
+  # ----------------------------------------------------------------------------
+  redis:
+    <<: *common-env
+    image: redis:alpine
+    container_name: civo-redis
+    restart: unless-stopped
+    volumes:
+      - civo-redis-data:/data
+    networks:
+      - civo-network
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Serverless Redis HTTP Proxy (Upstash REST Emulator)
+  # ----------------------------------------------------------------------------
+  redis-rest:
+    <<: *common-env
+    image: hiett/serverless-redis-http:latest
+    container_name: civo-redis-rest
+    restart: unless-stopped
+    ports:
+      - "8079:80"
+    networks:
+      - civo-network
+    logging: *default-logging
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------------------
+  # Database Migrations (One-Off Runner — Production Profile)
+  # ----------------------------------------------------------------------------
   migrate:
+    <<: *common-env
     profiles: ["production"]
     build:
       context: .
@@ -48,18 +112,18 @@ services:
       target: migrator
     container_name: civo-migrate
     restart: "no"
-    environment:
-      DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo
-      AUTH_DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo_auth
-      AUTH_DATABASE_NAME: civo_auth
+    networks:
+      - civo-network
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
 
-  # -----------------------------
-  # Next.js Production
-  # -----------------------------
+  # ----------------------------------------------------------------------------
+  # Next.js Application Server (Production Profile)
+  # ----------------------------------------------------------------------------
   app:
+    <<: *common-env
     profiles: ["production"]
     build:
       context: .
@@ -72,30 +136,16 @@ services:
     init: true
     ports:
       - "3000:3000"
-    environment:
-      NODE_ENV: production
-      NEXT_TELEMETRY_DISABLED: "1"
-
-      # Inside Docker, "localhost" means the app container.
-      DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo
-      AUTH_DATABASE_URL: postgresql://civo:CivoSecureDbPass2026@postgres:5432/civo_auth
-
-      AUTH_ENABLED: "true"
-      AUTH_SECRET: CivoProdSecret9876543210abcdef9876543210abcdef
-
-      MAIL_PROVIDER: smtp
-      MAIL_SMTP_HOST: mailhog
-      MAIL_SMTP_PORT: "1025"
-      MAIL_FROM: Civo <no-reply@civo.local>
-
-      LOG_LEVEL: info
-
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    networks:
+      - civo-network
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
       mailhog:
         condition: service_healthy
+      redis-rest:
+        condition: service_started
       migrate:
         condition: service_completed_successfully
     healthcheck:
@@ -111,5 +161,19 @@ services:
       start_period: 20s
       retries: 3
 
+# ------------------------------------------------------------------------------
+# Networks
+# ------------------------------------------------------------------------------
+networks:
+  civo-network:
+    name: civo-network
+    driver: bridge
+
+# ------------------------------------------------------------------------------
+# Persistent Volumes
+# ------------------------------------------------------------------------------
 volumes:
   civo-postgres-data:
+    name: civo-postgres-data
+  civo-redis-data:
+    name: civo-redis-data

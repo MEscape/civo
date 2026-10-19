@@ -1,3 +1,9 @@
+# ==============================================================================
+# CIVO - CONTINUOUS INTEGRATION PIPELINE
+# Validates formatting, types, DB contracts, unit/integration/architecture tests,
+# license compliance, Next.js build, and hardened Docker targets (`migrator` & `runner`).
+# ==============================================================================
+
 name: CI
 
 on:
@@ -17,6 +23,9 @@ env:
   NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
+  # ----------------------------------------------------------------------------
+  # 1. Lint, Format & Component Lock
+  # ----------------------------------------------------------------------------
   lint:
     name: Lint & format
     runs-on: ubuntu-24.04
@@ -33,6 +42,9 @@ jobs:
       - run: npm run i18n:check
       - run: npm run components:lock
 
+  # ----------------------------------------------------------------------------
+  # 2. TypeScript Typecheck
+  # ----------------------------------------------------------------------------
   typecheck:
     name: Typecheck
     runs-on: ubuntu-24.04
@@ -47,6 +59,9 @@ jobs:
       # tsconfig.json includes scripts/ and prisma/, so one run covers them.
       - run: npm run typecheck
 
+  # ----------------------------------------------------------------------------
+  # 3. Database Contract & Migrations Verification
+  # ----------------------------------------------------------------------------
   database:
     name: Contract & migrations
     runs-on: ubuntu-24.04
@@ -54,7 +69,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17.6-alpine
+        image: postgres:alpine
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci_password
@@ -79,7 +94,6 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # The auth database is separate from the application database.
       - name: Create auth database
         run: |
           PGPASSWORD=ci_password psql \
@@ -88,11 +102,9 @@ jobs:
             -d app_ci \
             -c 'CREATE DATABASE app_ci_auth'
 
-      # Offline: were any committed migration files edited by hand or deleted?
       - name: Migration files are intact
         run: npm run db:migrate:check
 
-      # contract.json / contract.d.ts are committed and consumed by the runtime.
       - name: Emitted contract is up to date
         run: |
           npm run db:generate
@@ -104,19 +116,20 @@ jobs:
             exit 1
           fi
 
-      # Application database.
       - name: Apply application migrations
         run: |
           npm run db:migrate:app
           npm run db:migrate:status
 
-      # Auth database.
       - name: Apply auth migrations
         run: npm run db:migrate:auth
 
       - name: Database matches the contract
         run: npm run db:verify
 
+  # ----------------------------------------------------------------------------
+  # 4. Unit, Integration & Architecture Tests
+  # ----------------------------------------------------------------------------
   test:
     name: Unit, integration & architecture tests
     runs-on: ubuntu-24.04
@@ -124,7 +137,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17.6-alpine
+        image: postgres:alpine
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci_password
@@ -137,12 +150,31 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
+      redis:
+        image: redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis-rest:
+        image: hiett/serverless-redis-http:latest
+        env:
+          SRH_MODE: env
+          SRH_TOKEN: ci_rate_limit_token
+          SRH_CONNECTION_STRING: redis://redis:6379
+        ports:
+          - "8079:80"
+
     env:
       DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci
       AUTH_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci_auth
       AUTH_DATABASE_NAME: app_ci_auth
       AUTH_ENABLED: "false"
       LOG_LEVEL: warn
+      RATE_LIMIT_TEST_REST_URL: http://localhost:8079
+      RATE_LIMIT_TEST_REST_TOKEN: ci_rate_limit_token
 
     steps:
       - uses: actions/checkout@v5
@@ -159,12 +191,23 @@ jobs:
             -d app_ci \
             -c 'CREATE DATABASE app_ci_auth'
 
-      # Application & Auth databases.
       - name: Migrate databases
         run: npm run db:migrate
 
       - name: Run unit tests
         run: npm test
+
+      - name: Wait for the Redis REST proxy
+        run: |
+          for i in $(seq 1 30); do
+            curl -fsS -X POST http://localhost:8079 \
+              -H "Authorization: Bearer $RATE_LIMIT_TEST_REST_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '["PING"]' && exit 0
+            sleep 1
+          done
+          echo "::error::The Redis REST proxy did not answer."
+          exit 1
 
       - name: Run integration tests
         run: npm run test:integration
@@ -172,14 +215,22 @@ jobs:
       - name: Run architecture tests
         run: npm run test:architecture
 
+      - name: Run script tests
+        run: npm run test:scripts
+
+  # ----------------------------------------------------------------------------
+  # 5. License Compliance
+  # ----------------------------------------------------------------------------
   license:
     name: License compliance
     uses: ./.github/workflows/license-check.yml
     permissions:
       contents: read
-      # Lets the called workflow post/update its PR comment.
       pull-requests: write
 
+  # ----------------------------------------------------------------------------
+  # 6. Next.js Production Build
+  # ----------------------------------------------------------------------------
   build:
     name: Next.js build
     needs: [lint, typecheck, database, test]
@@ -187,18 +238,16 @@ jobs:
     timeout-minutes: 20
 
     env:
-      # Public value only; inlined into the browser bundle.
       NEXT_PUBLIC_APP_URL: https://ci.example.invalid
-
-      # Build-time placeholders only.
       DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci
       AUTH_ENABLED: "true"
       AUTH_SECRET: ci-placeholder-not-a-secret-000000000000
       AUTH_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/app_ci_auth
-      # Production requires a mail provider; nothing is sent during a build.
       MAIL_PROVIDER: smtp
       MAIL_SMTP_HOST: localhost
       MAIL_FROM: ci@example.invalid
+      UPSTASH_REDIS_REST_URL: https://ci-placeholder.upstash.invalid
+      UPSTASH_REDIS_REST_TOKEN: ci-placeholder-not-a-secret
 
     steps:
       - uses: actions/checkout@v5
@@ -217,6 +266,9 @@ jobs:
       - run: npm run db:generate
       - run: npm run build
 
+  # ----------------------------------------------------------------------------
+  # 7. Docker Image & Hardening Validation (`migrator` + `runner`)
+  # ----------------------------------------------------------------------------
   docker:
     name: Docker image validation
     needs: [lint, typecheck, database, test]
@@ -228,13 +280,21 @@ jobs:
         with:
           persist-credentials: false
 
-      # Setup Node & cached dependencies on the host so we can run migrations
-      # without polluting the standalone production container.
-      - uses: ./.github/actions/setup
-
       - uses: docker/setup-buildx-action@v3
 
-      - uses: docker/build-push-action@v6
+      - name: Build migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: migrator
+          push: false
+          load: true
+          tags: civo-migrator:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build runner image
+        uses: docker/build-push-action@v6
         with:
           context: .
           target: runner
@@ -246,9 +306,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Runs as non-root
+      - name: Verify non-root user & stripped package managers
         run: |
           test "$(docker run --rm --entrypoint id civo:ci -u)" != "0"
+          test "$(docker run --rm --entrypoint id civo-migrator:ci -u)" != "0"
+          ! docker run --rm --entrypoint which civo:ci npm
 
       - name: Create Docker network
         run: docker network create civo-ci
@@ -262,7 +324,7 @@ jobs:
             -e POSTGRES_USER=ci \
             -e POSTGRES_PASSWORD=ci_password \
             -e POSTGRES_DB=civo \
-            postgres:17.6-alpine
+            postgres:alpine
 
           for i in $(seq 1 30); do
             docker exec civo-postgres-ci \
@@ -274,26 +336,28 @@ jobs:
             psql -U ci -d civo \
             -c 'CREATE DATABASE civo_auth'
 
-      - name: Generate contract & migrate databases
-        env:
-          DATABASE_URL: postgresql://ci:ci_password@127.0.0.1:5432/civo
-          AUTH_DATABASE_URL: postgresql://ci:ci_password@127.0.0.1:5432/civo_auth
-          AUTH_DATABASE_NAME: civo_auth
+      - name: Run database migrations via `migrator` container
         run: |
-          npm run db:generate
-          npm run db:migrate
+          docker run --rm \
+            --network civo-ci \
+            -e DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo \
+            -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
+            -e AUTH_DATABASE_NAME=civo_auth \
+            civo-migrator:ci
 
       - name: Start MailHog
         run: |
           docker run -d \
             --name civo-mailhog-ci \
             --network civo-ci \
-            mailhog/mailhog:v1.0.1
+            mailhog/mailhog:latest
 
-      - name: Container boots and answers /api/health
+      - name: Container boots with hardened flags and answers /api/health
         run: |
           docker run -d \
             --init \
+            --security-opt=no-new-privileges:true \
+            --cap-drop=ALL \
             --name civo-app \
             --network civo-ci \
             -p 3000:3000 \
@@ -305,6 +369,8 @@ jobs:
             -e MAIL_SMTP_HOST=civo-mailhog-ci \
             -e MAIL_SMTP_PORT=1025 \
             -e MAIL_FROM=ci@example.invalid \
+            -e UPSTASH_REDIS_REST_URL=https://ci-placeholder.upstash.invalid \
+            -e UPSTASH_REDIS_REST_TOKEN=ci-placeholder-not-a-secret \
             civo:ci
 
           for i in $(seq 1 30); do
@@ -323,7 +389,9 @@ jobs:
           docker rm -f civo-app civo-mailhog-ci civo-postgres-ci 2>/dev/null || true
           docker network rm civo-ci 2>/dev/null || true
 
-  # Single required status check for branch protection.
+  # ----------------------------------------------------------------------------
+  # 8. Single Branch Protection Gate
+  # ----------------------------------------------------------------------------
   ci-success:
     name: CI success
     if: always()

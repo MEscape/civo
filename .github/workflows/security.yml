@@ -1,12 +1,14 @@
+# ==============================================================================
+# CIVO - SECURITY & SUPPLY-CHAIN AUDIT PIPELINE
+# Enforces dependency vulnerability checks, PR dependency diffs, and secret leaks.
+# ==============================================================================
+
 name: Security
 
 on:
   schedule:
-    - cron: "17 5 * * 1" # weekly, Monday
+    - cron: "17 5 * * 1" # Weekly on Monday at 05:17 UTC
   pull_request:
-    paths:
-      - "package.json"
-      - "package-lock.json"
   workflow_dispatch:
 
 permissions:
@@ -17,6 +19,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # ----------------------------------------------------------------------------
+  # 1. NPM Audit (Production Dependencies)
+  # ----------------------------------------------------------------------------
   npm-audit:
     name: npm audit (production deps)
     runs-on: ubuntu-24.04
@@ -29,3 +34,39 @@ jobs:
       - uses: ./.github/actions/setup
 
       - run: npm audit --omit=dev --audit-level=high
+
+  # ----------------------------------------------------------------------------
+  # 2. PR Dependency Diff Review (Blocks Newly Introduced Vulnerable Packages)
+  # ----------------------------------------------------------------------------
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Check dependency diff for vulnerabilities
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  # ----------------------------------------------------------------------------
+  # 3. Secret Scanning (Gitleaks)
+  # ----------------------------------------------------------------------------
+  secrets:
+    name: Secret scanning
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

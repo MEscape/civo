@@ -1,3 +1,9 @@
+# ==============================================================================
+# CIVO - LICENSE COMPLIANCE PIPELINE
+# Audits third-party SPDX package licenses against the approved policy allowlist,
+# annotates violations on `package-lock.json`, and updates a single PR comment.
+# ==============================================================================
+
 name: License check
 
 on:
@@ -51,6 +57,9 @@ env:
   REPORT_PATH: license-report.json
 
 jobs:
+  # ----------------------------------------------------------------------------
+  # Scan & Enforce SPDX License Policy
+  # ----------------------------------------------------------------------------
   license-check:
     name: License compliance
     runs-on: ubuntu-24.04
