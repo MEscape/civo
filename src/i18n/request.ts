@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { IntlErrorCode, type IntlError } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
 
@@ -16,28 +18,63 @@ import { I18N_ERROR_CODES } from './errors';
 
 const IS_PRODUCTION = serverEnv.NODE_ENV === 'production';
 
-async function loadRequestMessages(locale: Locale): Promise<MessageCatalog> {
+/**
+ * Explicit, statically analyzable loader map for each supported locale.
+ * Avoids bundler context-module bloat and unsafe `as` casts from template literals.
+ */
+const LOCALE_LOADERS: Readonly<Record<Locale, () => Promise<{ default: MessageCatalog }>>> = {
+  en: () => import('./locales/en'),
+  de: () => import('./locales/de'),
+};
+
+/**
+ * Process-level cache of resolved (and fallback-merged) catalogs for production.
+ * Prevents running a full `deepMerge` across 10 namespaces on every single HTTP request.
+ */
+const catalogCache = new Map<Locale, Promise<MessageCatalog>>();
+
+async function buildLocaleCatalog(locale: Locale): Promise<MessageCatalog> {
   try {
-    // A template-literal import cannot be typed by TypeScript; every locale file default-exports the catalog.
-    const { default: messages } = (await import(`./locales/${locale}.ts`)) as {
-      default: MessageCatalog;
-    };
+    const loader = LOCALE_LOADERS[locale];
+    const { default: messages } = await loader();
 
     const { defaultLocale } = I18N_CONFIG;
     if (!IS_PRODUCTION || locale === defaultLocale) {
       return messages;
     }
 
-    const { default: defaultMessages } = (await import(`./locales/${defaultLocale}.ts`)) as {
-      default: MessageCatalog;
-    };
+    const { default: defaultMessages } = await LOCALE_LOADERS[defaultLocale]();
     return deepMerge(defaultMessages, messages);
   } catch (error) {
+    logger.error('Failed to load locale message catalog', error, {
+      module: 'i18n',
+      code: I18N_ERROR_CODES.messagesLoadFailed,
+      locale,
+    });
     throw new Error(`Failed to load messages for locale "${locale}"`, { cause: error });
   }
 }
 
-function handleIntlError(error: IntlError): void {
+export async function loadRequestMessages(locale: Locale): Promise<MessageCatalog> {
+  if (!IS_PRODUCTION) {
+    return buildLocaleCatalog(locale);
+  }
+
+  const cached = catalogCache.get(locale);
+  if (cached) {
+    return cached;
+  }
+
+  const pending = buildLocaleCatalog(locale).catch((error: unknown) => {
+    catalogCache.delete(locale);
+    throw error;
+  });
+
+  catalogCache.set(locale, pending);
+  return pending;
+}
+
+export function handleIntlError(error: IntlError): void {
   if (error.code === IntlErrorCode.MISSING_MESSAGE) {
     logger.warn('Missing translation', {
       module: 'i18n',
@@ -56,7 +93,10 @@ function handleIntlError(error: IntlError): void {
     return;
   }
 
-  logger.error('Translation runtime error', error, { module: 'i18n', code: error.code });
+  logger.error('Translation runtime error', error, {
+    module: 'i18n',
+    code: error.code,
+  });
 }
 
 export default getRequestConfig(
@@ -64,7 +104,8 @@ export default getRequestConfig(
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- requestLocale is deprecated in favor of next/root-params; migrate together with the Next.js upgrade
     { requestLocale },
   ) => {
-    const locale = parseLocale(await requestLocale).unwrapOr(I18N_CONFIG.defaultLocale);
+    const rawLocale = await requestLocale;
+    const locale = parseLocale(rawLocale).unwrapOr(I18N_CONFIG.defaultLocale);
 
     return {
       locale,

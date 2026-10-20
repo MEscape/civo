@@ -444,8 +444,8 @@ const messages = { inventory } as const;
 
 export default messages;
 `,
-    'src/i18n/en.json': JSON.stringify({ unexpected: 'Unexpected error' }),
-    'src/i18n/de.json': JSON.stringify({ unexpected: 'Unerwarteter Fehler' }),
+    'src/i18n/messages/en.json': JSON.stringify({ unexpected: 'Unexpected error' }),
+    'src/i18n/messages/de.json': JSON.stringify({ unexpected: 'Unerwarteter Fehler' }),
   };
 }
 

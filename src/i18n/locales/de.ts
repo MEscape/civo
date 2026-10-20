@@ -8,12 +8,15 @@ import { deMap as map } from '@modules/map';
 import { deRelease as release } from '@modules/release';
 import { deWebsite as website } from '@modules/website';
 
-import deApp from '../de.json';
+import deApp from '../messages/de.json';
+
+import type { MessageCatalog, TranslationSchema } from '../config';
 
 /**
- * The German catalog: the app shell's own namespace plus one namespace per
- * module, each owned and completed by its module. Nothing is merged across
- * namespaces, so a module's message map can only point at keys it owns.
+ * The German catalog:
+ * Statically verified against the English `MessageCatalog` schema via `satisfies`.
+ * Any missing, extra, or structurally mismatched key in `de.json` or any module's
+ * German bundle will fail TypeScript compilation immediately.
  */
 const messages = {
   app: deApp,
@@ -26,6 +29,6 @@ const messages = {
   map: map.map,
   release: release.release,
   website: website.website,
-} as const;
+} as const satisfies TranslationSchema<MessageCatalog>;
 
 export default messages;

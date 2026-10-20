@@ -35,7 +35,7 @@ function catalogPaths(): ReadonlyArray<{
       }
     });
   return [
-    { owner: 'app', path: (locale) => `src/i18n/${locale}.json` },
+    { owner: 'app', path: (locale) => `src/i18n/messages/${locale}.json` },
     ...modules.map((name) => ({
       owner: name,
       path: (locale: string) => `src/modules/${name}/presentation/i18n/${locale}.json`,

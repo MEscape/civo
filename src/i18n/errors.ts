@@ -5,6 +5,8 @@ export const I18N_ERROR_CODES = {
   unsupportedLocale: 'i18n.unsupportedLocale',
 } as const satisfies Record<string, string>;
 
-export function resolveMessageByCode(code: string): string {
+export type I18nErrorCode = (typeof I18N_ERROR_CODES)[keyof typeof I18N_ERROR_CODES];
+
+export function resolveMessageByCode(code: string): `errors.${string}` {
   return `errors.${code}`;
 }
