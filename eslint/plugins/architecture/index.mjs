@@ -8,6 +8,7 @@
  */
 import { auditAdapter } from './rules/adapters/audit-adapter.mjs';
 import { persistenceFailures } from './rules/adapters/persistence-failures.mjs';
+import { tenantScope } from './rules/adapters/tenant-scope.mjs';
 import { directivePlacement } from './rules/boundaries/directive-placement.mjs';
 import { fieldErrorBagOwner } from './rules/boundaries/field-error-bag-owner.mjs';
 import { layerImports } from './rules/boundaries/layer-imports.mjs';
@@ -57,6 +58,7 @@ const plugin = {
     'no-throw-in-core-layers': noThrowInCoreLayers,
     'persistence-failures': persistenceFailures,
     'rate-limit-usage': rateLimitUsage,
+    'tenant-scope': tenantScope,
     'route-usage': routeUsage,
     'unsaved-work-guard': unsavedWorkGuard,
   },

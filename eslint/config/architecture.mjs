@@ -34,6 +34,7 @@ export const architectureRules = [
       'architecture/branded-id-usage': 'error',
       // adapters
       'architecture/persistence-failures': 'error',
+      'architecture/tenant-scope': 'error',
       'architecture/audit-adapter': 'error',
       // presentation
       'architecture/action-contract': 'error',

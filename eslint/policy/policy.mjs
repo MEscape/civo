@@ -399,3 +399,57 @@ export const RATE_LIMIT_POLICIES = {
     /^booking\.(?:confirm|lookup|change|search-address)/,
   ],
 };
+
+/**
+ * Tenancy of the stored data (docs/architecture/route-protection.md, "Tenants"). A tenant IS its
+ * website, so every row below a website belongs to exactly one tenant. These are the tables that do,
+ * and the columns that tie a row to its owner:
+ *
+ * - `pins`: a query that constrains one of these columns by equality is bound to ONE tenant. `Website`
+ *   is its own tenant, so its `id` pins it too (the table refuses any other pairing).
+ * - `via`: no such column of its own; the table is owned through that parent and reached with ids
+ *   from the parent's own pinned read, or through a relation filter (`datasets.dataSource.some(…)`).
+ *
+ * `__tests__/architecture/tenant-tables.test.ts` derives the same facts from the Prisma contract and
+ * fails when this list drifts from it, so a new table cannot go unlisted.
+ * `architecture/tenant-scope` checks every query on these tables.
+ */
+export const TENANT_TABLES = {
+  Website: { pins: ['tenantId', 'id'] },
+  WebsiteTheme: { pins: ['websiteId'] },
+  Page: { pins: ['tenantId', 'websiteId'] },
+  PageConfig: { pins: [], via: 'Page' },
+  WebsiteRelease: { pins: ['websiteId'] },
+  WebsiteMigration: { pins: ['websiteId'] },
+  DataSource: { pins: ['websiteId'] },
+  Dataset: { pins: [], via: 'DataSource' },
+  Membership: { pins: ['tenantId'] },
+  Invitation: { pins: ['tenantId'] },
+  BookingLocation: { pins: ['tenantId', 'websiteId'] },
+  BookableResource: { pins: ['tenantId', 'websiteId'] },
+  BookableService: { pins: ['tenantId', 'websiteId'] },
+  Booking: { pins: ['tenantId', 'websiteId'] },
+  BookingResource: { pins: ['websiteId'] },
+  AuditEntry: { pins: ['websiteId'] },
+};
+
+/**
+ * Why a query on a tenant-owned table may not be pinned to its tenant. A repository states it as
+ * `@tenant-scope <kind> <reason>` on the statement, the method or the helper (the reason says what
+ * binds the query instead). Each kind is a different argument for why nothing leaks; a query that
+ * fits none is pinned, not tagged.
+ */
+export const TENANT_SCOPE_KINDS = {
+  /** The ids come from a read or write in the same method that was pinned; the rows are that tenant's. */
+  derived: 'ids from an earlier pinned read or write',
+  /** A row of a parent that is itself pinned, reached through the parent's key. */
+  child: 'rows of a parent that is pinned',
+  /** Bound to the signed-in person's own id, not to a tenant: "my memberships". */
+  actor: "bound to the person's own id",
+  /** Deliberately across tenants, for the platform administrator; the use case authorizes that permission. */
+  platform: 'across tenants, for the platform administrator',
+  /** Reached by an unguessable single-use secret or a public identifier of a published site. */
+  capability: 'reached by a secret or a public identifier',
+  /** A starting point that callers extend; the callers pin it or tag themselves. */
+  builder: 'a query builder the callers pin',
+};

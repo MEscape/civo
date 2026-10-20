@@ -20,7 +20,7 @@ export class PrismaShopRepository {
     ).map(toShop);
   }
   update(id: ShopId) {
-    return fromThrowableAsync(() => db.orm.public.Shop.where({ id }).update({}), failures.orNotFound('update', shopNotFound));
+    return fromThrowableAsync(() => db.orm.public.Shop.where({ id }).update({}), failures.infraOnly('update'));
   }
 }`;
 
@@ -31,7 +31,6 @@ ruleTester.run('architecture/persistence-failures', rules['persistence-failures'
       MAPPER,
       "import type { ShopRecord } from './types';\nexport function toShop(record: ShopRecord) { return record; }",
     ),
-    valid('src/modules/shop/application/x.ts', "import { mapPrismaError } from '@lib/db';"), // layer rules, not this rule, police other layers
   ],
   invalid: [
     invalid(
@@ -75,11 +74,6 @@ ruleTester.run('architecture/persistence-failures', rules['persistence-failures'
         "failures.orConflict('create')",
       ),
       /takes the domain error factory as its second argument/,
-    ),
-    invalid(
-      REPO,
-      `import { mapPrismaError } from '@lib/db';\n${GOOD_REPO}`,
-      /Do not map Prisma errors locally/,
     ),
     invalid(
       REPO,

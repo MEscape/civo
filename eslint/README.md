@@ -41,6 +41,7 @@ A rule that cannot know intent accepts a one-line reason instead of blocking the
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | `architecture/unsaved-work-guard`    | A `useForm` form in module components uses `useReportUnsavedChanges`, `useUnsavedNavigationGuard` or `useBeforeUnloadGuard`. | `// @unsaved-work none <reason>`                         |
 | `architecture/authorization-flow`    | A use case authorizes, or is tagged public/system.                                                                           | `@authorization <category> <reason>`                     |
+| `architecture/tenant-scope`          | A query on a tenant-owned table (or raw SQL naming one) is bound to its tenant in `.where(…)` / `create(…)`.                 | `@tenant-scope <kind> <reason>` (kinds in `policy.mjs`)  |
 | `architecture/rate-limit-usage`      | A public use case spends a rate-limit budget from `application/rate-limits.ts`.                                              | `@rate-limit none <reason>`                              |
 | raw HTML (`dangerouslySetInnerHTML`) | Content is rendered as text or components.                                                                                   | `// eslint-disable-next-line … -- <how it is sanitized>` |
 

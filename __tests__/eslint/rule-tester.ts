@@ -2,7 +2,7 @@ import { RuleTester } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { afterAll, describe, it } from 'vitest';
 
-import plugin from '../../../eslint/plugins/architecture/index.mjs';
+import plugin from '../../eslint/plugins/architecture/index.mjs';
 
 import type { Rule } from 'eslint';
 
