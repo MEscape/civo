@@ -54,16 +54,16 @@ In `.env` set `AUTH_ENABLED=true`, `AUTH_SECRET` (32+ random characters), `AUTH_
 
 ## Commands
 
-| Command                       | Does                                                                                    |
-| ----------------------------- | --------------------------------------------------------------------------------------- |
-| `npm run dev`                 | Development server                                                                      |
-| `npm run check`               | Everything CI checks: typecheck, lint, format, i18n catalogs, unit + architecture tests |
-| `npm test`                    | Unit tests (`__tests__/src`)                                                            |
-| `npm run test:architecture`   | Architecture and lint-rule policy tests                                                 |
-| `npm run test:integration`    | Integration tests against a real database                                               |
-| `npm run lint:fix` / `format` | Fix what the tools own                                                                  |
-| `npm run db:migrate`          | Apply Prisma and auth migrations                                                        |
-| `npm run build` / `start`     | Production build and server                                                             |
+| Command                       | Does                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                 | Development server                                                                                               |
+| `npm run check`               | Everything CI checks: typecheck, lint, format, i18n catalogs, unit tests, `src/lib` coverage, architecture tests |
+| `npm test`                    | Unit tests (`__tests__/src`)                                                                                     |
+| `npm run test:architecture`   | Architecture and lint-rule policy tests                                                                          |
+| `npm run test:integration`    | Integration tests against a real database                                                                        |
+| `npm run lint:fix` / `format` | Fix what the tools own                                                                                           |
+| `npm run db:migrate`          | Apply Prisma and auth migrations                                                                                 |
+| `npm run build` / `start`     | Production build and server                                                                                      |
 
 ## How the code is organized
 

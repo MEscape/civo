@@ -26,7 +26,7 @@ When working on a recurring task, read the relevant convention and follow its ch
 
 ## Commands
 
-- `npm run check` — typecheck, lint, format check, i18n catalogs, unit and architecture tests. Run it before calling a change done.
+- `npm run check` — typecheck, lint, format check, i18n catalogs, unit tests, 100% coverage of `src/lib` (`npm run test:coverage`) and architecture tests. Run it before calling a change done.
 - `npm run test:integration` — needs a database. `npm run db:migrate` applies app and auth migrations.
 - `npm run format` / `npm run lint:fix` fix what the tools own; do not hand-format.
 

@@ -10,6 +10,8 @@
 
 - default Open Graph image (the favicon exists)
 
+- ability to disable ratelimiting (only possible in dev)
+
 - export const SMART_CITY_CATEGORIES = ['sustainability', 'mobility', 'energy', 'other'] as const;
   not good approach i think
 
