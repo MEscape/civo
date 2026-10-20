@@ -9,8 +9,9 @@ export default defineConfig({
     env: {
       // CI brings its own migrated database; locally create `test` (owner `user`) and migrate it.
       DATABASE_URL: process.env['DATABASE_URL'] ?? 'postgresql://user:pass@localhost:5432/test',
-      AUTH_DATABASE_URL: 'postgresql://user:pass@localhost:5432/test_auth',
-      AUTH_SECRET: 'x'.repeat(40),
+      AUTH_DATABASE_URL:
+        process.env['AUTH_DATABASE_URL'] ?? 'postgresql://user:pass@localhost:5432/test_auth',
+      AUTH_SECRET: process.env['AUTH_SECRET'] ?? 'x'.repeat(40),
     },
     // next-intl ships ESM with extensionless `next/*` imports; Vite must resolve them.
     server: { deps: { inline: ['next-intl'] } },

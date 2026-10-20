@@ -18,6 +18,14 @@ export default defineConfig({
       AUTH_DATABASE_URL: 'postgresql://user:pass@localhost:5432/test_auth',
       AUTH_SECRET: 'x'.repeat(40),
     },
+    // `npm run test:coverage`: the shared layer is held to full coverage, the types-only contract excepted.
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/**/*.ts'],
+      exclude: ['**/*.d.ts'],
+      reporter: ['text-summary', 'json-summary'],
+      thresholds: { statements: 100, branches: 100, functions: 100, lines: 100 },
+    },
     // next-intl ships ESM with extensionless `next/*` imports; Vite must resolve them.
     server: { deps: { inline: ['next-intl'] } },
   },
