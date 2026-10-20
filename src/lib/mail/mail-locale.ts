@@ -1,4 +1,4 @@
-import { I18N_CONFIG } from '@i18n';
+import { parseLocale, I18N_CONFIG } from '@i18n';
 import type { Locale } from '@i18n';
 
 import { getLocale } from '@i18n/server';
@@ -13,13 +13,9 @@ import { getLocale } from '@i18n/server';
  */
 export async function resolveMailLocale(): Promise<Locale> {
   try {
-    const raw = await getLocale();
-    const known = I18N_CONFIG.locales.find((locale) => locale === raw);
-    if (known !== undefined) {
-      return known;
-    }
+    return parseLocale(await getLocale()).unwrapOr(I18N_CONFIG.defaultLocale);
   } catch {
     // getLocale() throws if called outside a Next.js request context.
+    return I18N_CONFIG.defaultLocale;
   }
-  return I18N_CONFIG.defaultLocale;
 }

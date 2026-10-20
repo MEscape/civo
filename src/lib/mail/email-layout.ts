@@ -1,31 +1,18 @@
-import { APP_IDENTITY } from '@lib/config';
-import { escapeHtml, isDefined } from '@lib/utils';
+import { escapeHtml, invariant, isDefined, isValidUrl } from '@lib/utils';
 
-import { PLATFORM_EMAIL_BRAND } from './email-brand';
 import {
-  COLUMN_STYLE,
-  CREDIT_STYLE,
-  HEADING_STYLE,
-  OUTER_CELL_STYLE,
-  OUTRO_STYLE,
-  PAGE_STYLE,
-  PARAGRAPH_STYLE,
-  PRESENTATION_TABLE,
-  cardStyle,
   creditLine,
+  footerLine,
   renderAction,
   renderFacts,
   renderLogo,
   renderPreheader,
-} from './email-parts';
-import { EMAIL_TOKENS } from './email-tokens';
+} from './email-blocks';
+import { PLATFORM_EMAIL_BRAND } from './email-brand';
+import { emailStyles } from './email-styles';
 
+import type { EmailAction, EmailFact } from './email-blocks';
 import type { EmailBrand } from './email-brand';
-import type { EmailAction, EmailFact } from './email-parts';
-
-export { PLATFORM_EMAIL_BRAND, createEmailBrand } from './email-brand';
-export type { EmailBrand } from './email-brand';
-export type { EmailAction, EmailFact } from './email-parts';
 
 export interface EmailContent {
   /** The `lang` of the document: the language of every text below. */
@@ -65,43 +52,45 @@ function renderText(content: EmailContent, brand: EmailBrand): string {
     .join('\n\n');
 }
 
-function renderCard(content: EmailContent, brand: EmailBrand): string {
+function renderCard(content: EmailContent, styles: ReturnType<typeof emailStyles>): string {
   const { locale, title, greeting, intro, facts = [], action = null, outro } = content;
   const inner = [
-    `<h1 style="${HEADING_STYLE}">${escapeHtml(title)}</h1>`,
-    greeting ? `<p style="margin: 0 0 8px 0;">${escapeHtml(greeting)}</p>` : null,
-    `<p style="${PARAGRAPH_STYLE}">${escapeHtml(intro)}</p>`,
-    facts.length > 0 ? renderFacts(facts, brand) : null,
-    action ? renderAction(action, brand, locale) : null,
-    `<p style="${OUTRO_STYLE}">${escapeHtml(outro)}</p>`,
+    `<h1 style="${styles.heading}">${escapeHtml(title)}</h1>`,
+    greeting ? `<p style="${styles.greeting}">${escapeHtml(greeting)}</p>` : null,
+    `<p style="${styles.paragraph}">${escapeHtml(intro)}</p>`,
+    facts.length > 0 ? renderFacts(facts, styles) : null,
+    action ? renderAction(action, styles, locale) : null,
+    `<p style="${styles.outro}">${escapeHtml(outro)}</p>`,
   ]
     .filter(isDefined)
     .join('');
-  return `<tr><td style="${cardStyle(brand)}">${inner}</td></tr>`;
-}
-
-function renderFooter(locale: string, brand: EmailBrand): string {
-  const line =
-    brand.sender === 'website'
-      ? creditLine(locale)
-      : `${APP_IDENTITY.name} · ${APP_IDENTITY.company}`;
-  return `<tr><td align="center" style="${CREDIT_STYLE}">${escapeHtml(line)}</td></tr>`;
+  return `<div style="${styles.card}">${inner}</div>`;
 }
 
 /**
- * Renders one message as plain text and HTML. Every dynamic value that
- * reaches the HTML is escaped, so callers pass plain text. The look is the
- * platform's unless the caller passes the brand of the website it speaks for.
+ * Renders one message as plain text and HTML. Every dynamic value that reaches the HTML is
+ * escaped, so callers pass plain text. The look is the platform's unless the caller passes the
+ * brand of the website it speaks for.
  *
- * The HTML is built from tables, the one layout every mail client honours
- * (Outlook ignores the box model of a `div`), in a single 560px column that
- * simply narrows on a phone.
+ * The HTML is semantic and styled inline, with no layout tables and none of the presentational
+ * attributes (`bgcolor`, `align`, `cellpadding`, `width` on a cell): one centered column of at
+ * most 560px that simply narrows on a phone. The only table is the facts, which are tabular data.
+ * Current clients (Apple Mail, Gmail, Outlook on the web and the new Outlook, mobile apps) draw it
+ * as designed; classic Outlook for Windows, which renders with Word, ignores `max-width` and
+ * `border-radius` and shows the same content full width.
+ *
+ * @throws Error when the action's address is not an `http:` or `https:` URL: a link built by the
+ *   application that is anything else is a bug, and a mail is no place to carry it
  */
 export function renderEmail(
   content: EmailContent,
   brand: EmailBrand = PLATFORM_EMAIL_BRAND,
 ): RenderedEmail {
-  const { locale, title, subject = title, intro } = content;
+  const { locale, title, subject = title, intro, action } = content;
+  if (action) {
+    invariant(isValidUrl(action.url), 'An e-mail action links to an http(s) address.');
+  }
+  const styles = emailStyles(brand);
 
   const html = [
     `<!doctype html><html lang="${escapeHtml(locale)}">`,
@@ -110,14 +99,14 @@ export function renderEmail(
     // The look is made for a light page; clients that darken mail should leave it alone.
     `<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">`,
     `<title>${escapeHtml(subject)}</title></head>`,
-    `<body style="${PAGE_STYLE}">`,
-    renderPreheader(intro),
-    `<table ${PRESENTATION_TABLE} width="100%" style="background-color: ${EMAIL_TOKENS.color.canvas};"><tr><td align="center" style="${OUTER_CELL_STYLE}">`,
-    `<table ${PRESENTATION_TABLE} width="560" style="${COLUMN_STYLE}">`,
-    brand.sender === 'platform' ? renderLogo() : null,
-    renderCard(content, brand),
-    renderFooter(locale, brand),
-    '</table></td></tr></table>',
+    `<body style="${styles.page}">`,
+    renderPreheader(intro, styles),
+    `<div role="article" aria-roledescription="email" style="${styles.outer}">`,
+    `<div style="${styles.column}">`,
+    brand.sender === 'platform' ? renderLogo(styles) : null,
+    renderCard(content, styles),
+    `<p style="${styles.credit}">${escapeHtml(footerLine(brand, locale))}</p>`,
+    '</div></div>',
     '</body></html>',
   ]
     .filter(isDefined)

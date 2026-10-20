@@ -1,10 +1,7 @@
-export { PLATFORM_EMAIL_BRAND, createEmailBrand, renderEmail } from './email-layout';
-export type {
-  EmailAction,
-  EmailBrand,
-  EmailContent,
-  EmailFact,
-  RenderedEmail,
-} from './email-layout';
+export { PLATFORM_EMAIL_BRAND, createEmailBrand } from './email-brand';
+export type { EmailBrand, EmailThemeInput } from './email-brand';
+export { renderEmail } from './email-layout';
+export type { EmailContent, RenderedEmail } from './email-layout';
+export type { EmailAction, EmailFact } from './email-blocks';
 export { MAIL_DELIVERY_FAILED, mailDeliveryFailed } from './mail-errors';
 export type { MailAttachment, MailTransport, OutboundMail } from './mail-transport';
