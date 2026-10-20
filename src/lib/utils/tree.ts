@@ -1,9 +1,12 @@
 /**
- * Generic tree traversal. The caller supplies how to find children, so
- * these helpers know nothing about any node shape. Domain-specific tree
- * rules (for example duplicate-id detection) belong in the owning module
- * and build on these (architecture.md: "shared code must be genuinely
- * generic; do not extract module code prematurely").
+ * Generic tree and forest traversal. The caller supplies how to find children, so these helpers
+ * know nothing about any node shape. Domain-specific tree rules (for example duplicate-id
+ * detection) belong in the owning module and build on these (architecture.md: "shared code must be
+ * genuinely generic; do not extract module code prematurely").
+ *
+ * Traversal is recursive, one stack frame per level of depth: bound the depth of any tree that
+ * comes from untrusted input before walking it (`isJsonValue(value, maxDepth)`). The `…Forest`
+ * functions take a list of roots; the others take a single root.
  */
 
 export type GetChildren<T> = (node: T) => readonly T[] | undefined;
@@ -43,31 +46,6 @@ export function walkTree<T>(
   for (const child of getChildren(node) ?? []) {
     walkTree(child, getChildren, visit, depth + 1);
   }
-}
-
-/** Returns every node depth-first as a flat array. */
-export function flattenTree<T>(root: T, getChildren: GetChildren<T>): T[] {
-  const nodes: T[] = [];
-  walkTree(root, getChildren, (node) => nodes.push(node));
-  return nodes;
-}
-
-/** Returns the first node (depth-first) matching the predicate, or `undefined`. */
-export function findNode<T>(
-  root: T,
-  getChildren: GetChildren<T>,
-  predicate: (node: T) => boolean,
-): T | undefined {
-  if (predicate(root)) {
-    return root;
-  }
-  for (const child of getChildren(root) ?? []) {
-    const found = findNode(child, getChildren, predicate);
-    if (found !== undefined) {
-      return found;
-    }
-  }
-  return undefined;
 }
 
 /** Counts every node, including the root. */

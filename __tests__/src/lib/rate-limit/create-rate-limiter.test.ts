@@ -496,6 +496,45 @@ describe('createRateLimiter: it never throws', () => {
   });
 });
 
+describe('createRateLimiter: throttled logging of rare events', () => {
+  const allow = { ...POLICY, onBackendFailure: 'allow' } as const;
+
+  it('writes a fail-open once per interval, however many requests pass during the outage', async () => {
+    const { limiter, log, clock } = setup({ store: failingStore });
+
+    for (let request = 0; request < 5; request += 1) {
+      await limiter.enforce({ policy: allow, subject: PERSON });
+    }
+    expect(log.warn).toHaveBeenCalledTimes(1);
+
+    clock.advanceSeconds(11);
+    await limiter.enforce({ policy: allow, subject: PERSON });
+
+    expect(log.warn).toHaveBeenCalledTimes(2);
+    expect(log.warn).toHaveBeenLastCalledWith('rate_limit.failed_open', {
+      policy: 'test.operation',
+      reason: 'store_error',
+      suppressed: 4,
+    });
+  });
+
+  it('writes an unforeseen failure once per interval too', async () => {
+    const { limiter, log } = setup();
+    const hostile = {
+      kind: 'identifier',
+      get value(): string {
+        throw new Error('boom');
+      },
+    } as unknown as RateLimitSubject;
+
+    for (let request = 0; request < 3; request += 1) {
+      await limiter.enforce({ policy: allow, subject: hostile });
+    }
+
+    expect(log.error).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('createRateLimiter: logging', () => {
   it('writes one line per policy per interval during a flood, with a count of the rest', async () => {
     const { limiter, log, clock } = setup();

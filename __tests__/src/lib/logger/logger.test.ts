@@ -132,6 +132,76 @@ describe('logger', () => {
       });
     });
 
+    it('redacts a key that merely contains a sensitive word, in any spelling', () => {
+      logger.info('Spellings', {
+        accessToken: 'a',
+        refresh_token: 'b',
+        newPassword: 'c',
+        'x-api-key': 'd',
+        'Set-Cookie': 'e',
+        AUTH_SECRET: 'f',
+        clientSecret: 'g',
+        requestId: 'safe',
+      });
+
+      expect(getParsedLog(console.log).context).toEqual({
+        accessToken: '[REDACTED]',
+        refresh_token: '[REDACTED]',
+        newPassword: '[REDACTED]',
+        'x-api-key': '[REDACTED]',
+        'Set-Cookie': '[REDACTED]',
+        AUTH_SECRET: '[REDACTED]',
+        clientSecret: '[REDACTED]',
+        requestId: 'safe',
+      });
+    });
+
+    it('logs an object referenced twice as data, not as a cycle', () => {
+      const shared = { id: 7 };
+
+      logger.info('Shared', { first: shared, second: shared });
+
+      expect(getParsedLog(console.log).context).toEqual({
+        first: { id: 7 },
+        second: { id: 7 },
+      });
+    });
+
+    it('cuts off nesting deeper than any context is meant to be', () => {
+      let nested: Record<string, unknown> = { leaf: true };
+      for (let level = 0; level < 50; level += 1) {
+        nested = { nested };
+      }
+
+      logger.info('Deep', nested);
+
+      expect(console.log).toHaveBeenCalledTimes(1);
+      expect(getParsedLog(console.log).context).toBeDefined();
+      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('[Truncated]'));
+    });
+
+    it('writes a bigint as text instead of throwing', () => {
+      logger.info('Big', { count: 10n });
+
+      expect(getParsedLog(console.log).context).toEqual({ count: '10' });
+    });
+
+    it('never throws into the caller when the context cannot be serialized', () => {
+      const hostile = {
+        get boom(): string {
+          throw new Error('getter exploded');
+        },
+      };
+
+      expect(() => {
+        logger.error('Hostile', new Error('x'), hostile);
+      }).not.toThrow();
+
+      const parsed = getParsedLog(console.error);
+      expect(parsed.message).toBe('Hostile');
+      expect(parsed.context).toBe('[Unserializable]');
+    });
+
     it('treats opaque types like Dates and Classes as strings without recursing', () => {
       class CustomService {
         password = 'should_not_be_seen'; // Class properties are technically opaque to isPlainObject
@@ -163,6 +233,18 @@ describe('logger', () => {
       });
     });
 
+    it('binds the context to every level', () => {
+      const moduleLogger = logger.withContext({ module: 'payments' });
+
+      moduleLogger.debug('d');
+      moduleLogger.info('i');
+      moduleLogger.warn('w');
+
+      const levels = vi.mocked(console.log).mock.calls.map(([line]) => JSON.parse(String(line)));
+      expect(levels.map((entry) => entry.level)).toEqual(['debug', 'info', 'warn']);
+      expect(levels.every((entry) => entry.context.module === 'payments')).toBe(true);
+    });
+
     it('allows overriding base context properties with specific context', () => {
       const moduleLogger = logger.withContext({
         module: 'payments',
@@ -176,6 +258,50 @@ describe('logger', () => {
         module: 'payments',
         retry: true,
       });
+    });
+  });
+});
+
+describe('logger context edge cases', () => {
+  it('writes an invalid Date as text instead of throwing', () => {
+    logger.info('Dates', { at: new Date('nope') });
+
+    expect(getParsedLog(console.log).context).toEqual({ at: 'Invalid Date' });
+  });
+
+  it('keeps arrays of plain data, redacting inside them', () => {
+    logger.info('List', { items: [{ token: 'a' }, 'plain', 3] });
+
+    expect(getParsedLog(console.log).context).toEqual({
+      items: [{ token: '[REDACTED]' }, 'plain', 3],
+    });
+  });
+
+  it('logs without a context', () => {
+    logger.info('Bare');
+
+    expect(getParsedLog(console.log)).not.toHaveProperty('context');
+  });
+});
+
+describe('logger.error with unusual errors', () => {
+  it('names an AppError without a cause by its kind and code alone', () => {
+    logger.error('Failed', { kind: 'not_found', code: 'site.not_found', message: 'm' });
+
+    expect(getParsedLog(console.error).error).toEqual({
+      name: 'not_found',
+      message: 'site.not_found',
+    });
+  });
+
+  it('does not throw for a thrown value that cannot be converted to text', () => {
+    expect(() => {
+      logger.error('Failed', Object.create(null));
+    }).not.toThrow();
+
+    expect(getParsedLog(console.error).error).toEqual({
+      name: 'UnknownError',
+      message: '[unprintable value]',
     });
   });
 });

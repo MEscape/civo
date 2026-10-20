@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AppError } from '@lib/errors';
-import { isActionSuccess, toActionResult } from '@lib/result/action-app-result';
+import { toActionResult } from '@lib/result/action-app-result';
 import { err, ok } from '@lib/result/app-result';
 
 // Stubbing an AppError for testing boundaries without importing actual domain errors
@@ -69,20 +69,5 @@ describe('toActionResult for a rate-limited error', () => {
       ok: false,
       error: { code: 'RATE_LIMITED', message: 'Test error message', retryAfterSeconds: 30 },
     });
-  });
-});
-
-describe('isActionSuccess', () => {
-  it('returns true and acts as a type guard for success results', () => {
-    const result = { ok: true as const, data: 'success' };
-    expect(isActionSuccess(result)).toBe(true);
-  });
-
-  it('returns false for error results', () => {
-    const result = {
-      ok: false as const,
-      error: { code: 'ERR', message: 'failed' },
-    };
-    expect(isActionSuccess(result)).toBe(false);
   });
 });

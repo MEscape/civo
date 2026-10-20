@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { serverEnv } from '@lib/config/server';
+import { isPlainObject } from '@lib/utils';
 
 /**
  * Structured logging abstraction (observability.md: "use structured
@@ -64,73 +65,83 @@ function isEnabled(level: LogLevel): boolean {
  * nesting depth. security.md / observability.md: "never log credentials,
  * tokens, session secrets, or sensitive personal data."
  *
- * Matching is case-insensitive: `Authorization`, `AUTHORIZATION`, and
- * `authorization` must all be redacted, since header/casing conventions
- * differ by source and a sensitive value must never survive just because
- * its key was capitalized differently than expected.
+ * A key is redacted when it CONTAINS one of these words, in any casing:
+ * `accessToken`, `x-api-key`, `newPassword`, `Set-Cookie` and `AUTH_SECRET`
+ * carry credentials as surely as `token` does, and an exact-name list lets
+ * every spelling it did not foresee through. Over-redacting a harmless key
+ * costs a log field; under-redacting leaks a credential.
  */
-const REDACTED_KEYS = new Set([
-  'password',
-  'token',
-  'secret',
-  'apikey',
-  'api_key',
-  'authorization',
-  'cookie',
-  'sessiontoken',
-  'creditcard',
-]);
+const REDACTED_KEY_PATTERN =
+  /pass(?:word|wd|phrase)|token|secret|api[-_]?key|private[-_]?key|authorization|cookie|credit[-_]?card|cvv/i;
 
-function isRedactedKey(key: string): boolean {
-  return REDACTED_KEYS.has(key.toLowerCase());
+/** Deeper than any log context is meant to be; bounds the recursion on hostile or accidental nesting. */
+const MAX_REDACTION_DEPTH = 8;
+
+/**
+ * Opaque: keep it recognizable in the log line without pretending to
+ * redact fields inside it. Errors are handled separately via the
+ * `error` field on LogEntry, so a bare Error reaching here is already
+ * an edge case, not the primary path.
+ */
+function describeOpaque(value: object): string {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'Invalid Date' : value.toISOString();
+  }
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- intentional fallback for opaque objects
+  return String(value);
 }
 
 /**
- * True only for objects created by `{}`, `new Object()`, or with a null
- * prototype — the shapes whose own enumerable properties are meaningful
- * "data" to redact and re-serialize. Everything else (`Date`, `Map`,
- * `RegExp`, class instances, etc.) is treated as an opaque value instead:
- * most of those types carry their real content outside own enumerable
- * properties, so recursing into them with `Object.entries` silently
- * produces `{}` and throws the information away.
+ * A copy of `value` that is safe to serialize: sensitive keys redacted, cycles
+ * and over-deep nesting cut off, `bigint` as text (`JSON.stringify` throws on it).
+ * `ancestors` is the path from the root, not everything seen: an object
+ * referenced twice from different places is data, only a reference to one of
+ * its own ancestors is a cycle.
  */
-function isPlainObject(value: object): value is Record<string, unknown> {
-  const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
-function redact(value: unknown, seen = new WeakSet()): unknown {
+function redact(value: unknown, ancestors: readonly object[] = []): unknown {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
   if (value === null || typeof value !== 'object') {
     return value;
   }
 
-  if (seen.has(value)) {
+  if (ancestors.includes(value)) {
     return '[Circular]';
+  }
+  if (ancestors.length >= MAX_REDACTION_DEPTH) {
+    return '[Truncated]';
   }
 
   if (Array.isArray(value)) {
-    seen.add(value);
-    return value.map((item) => redact(item, seen));
+    return value.map((item) => redact(item, [...ancestors, value]));
   }
 
   if (!isPlainObject(value)) {
-    // Opaque: keep it recognizable in the log line without pretending to
-    // redact fields inside it. Errors are handled separately via the
-    // `error` field on LogEntry, so a bare Error reaching here is already
-    // an edge case, not the primary path.
-    if (value instanceof Date) {
-      return value.toISOString();
-    }
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- intentional fallback for opaque objects
-    return String(value);
+    return describeOpaque(value);
   }
 
-  seen.add(value);
   const result: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(value)) {
-    result[key] = isRedactedKey(key) ? '[REDACTED]' : redact(val, seen);
+    result[key] = REDACTED_KEY_PATTERN.test(key)
+      ? '[REDACTED]'
+      : redact(val, [...ancestors, value]);
   }
   return result;
+}
+
+/**
+ * The line for an entry. A context that cannot be serialized (a getter that
+ * throws, an object whose `toString` throws) costs only the context: a log call
+ * must never throw into the code it observes, least of all from a `catch` block.
+ */
+function serialize(entry: LogEntry): string {
+  try {
+    const context = entry.context ? (redact(entry.context) as LogContext) : undefined;
+    return JSON.stringify({ ...entry, context });
+  } catch {
+    return JSON.stringify({ ...entry, context: '[Unserializable]' });
+  }
 }
 
 function write(entry: LogEntry): void {
@@ -138,8 +149,7 @@ function write(entry: LogEntry): void {
     return;
   }
 
-  const safeContext = entry.context ? (redact(entry.context) as LogContext) : undefined;
-  const line = JSON.stringify({ ...entry, context: safeContext });
+  const line = serialize(entry);
 
   // The transport is intentionally the only console.* usage in the
   // codebase — everything else must go through `logger`.
@@ -155,11 +165,15 @@ function log(level: LogLevel, message: string, context?: LogContext): void {
   write({ level, message, timestamp: new Date().toISOString(), context });
 }
 
-/**
- * Logs an AppError. Accepts `cause` internally for the entry, but never
- * forwards it to a user-facing surface — that boundary is enforced in
- * lib/errors, not here.
- */
+/** `String(value)`, except for a value that cannot be converted (`Object.create(null)`), which must not make a log call throw. */
+function printable(value: unknown): string {
+  try {
+    return String(value);
+  } catch {
+    return '[unprintable value]';
+  }
+}
+
 /**
  * An `Error` keeps its stack. An `AppError` is a plain object: its kind and
  * code name it (its `String()` would be "[object Object]"), and an `Error`
@@ -181,7 +195,7 @@ function normalizeError(error: unknown): {
       ...(cause instanceof Error ? { stack: cause.stack } : {}),
     };
   }
-  return { name: 'UnknownError', message: String(error) };
+  return { name: 'UnknownError', message: printable(error) };
 }
 
 function logError(message: string, error: unknown, context?: LogContext): void {

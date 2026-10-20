@@ -12,7 +12,7 @@ export {
 } from './app-result';
 export type { AppResult, AppResultAsync } from './app-result';
 
-export { isActionSuccess, toActionResult } from './action-app-result';
+export { toActionResult } from './action-app-result';
 export type { ActionResult, SerializedActionError } from './action-app-result';
 
 export { createIdParser, parseValidIds } from './id-parser';

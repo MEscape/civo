@@ -1,15 +1,25 @@
 /**
  * Array helpers. Zero dependencies, no knowledge of any domain concept.
+ *
+ * Every function returns a new array (or `Map`) and leaves its input alone: the domain models
+ * built on them are immutable.
  */
 
-/** Type predicate that removes `null` and `undefined` in `.filter()` without a cast. */
+/**
+ * Type predicate that removes `null` and `undefined` in `.filter()` without a cast.
+ *
+ * @example [0, null, 'a', undefined].filter(isDefined) // [0, 'a']
+ */
 export function isDefined<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
 
 /**
- * Groups items into a `Map` keyed by the selector result. A `Map` keeps key
- * types honest and avoids prototype-key collisions that plain objects have.
+ * Groups items into a `Map` keyed by the selector result, keeping first-seen key order and the
+ * original order inside each group. A `Map` keeps key types honest and avoids the prototype-key
+ * collisions a plain object has (`constructor`, `__proto__`).
+ *
+ * @example groupBy([1, 2, 3], (n) => n % 2) // Map { 1 => [1, 3], 0 => [2] }
  */
 export function groupBy<T, K>(items: readonly T[], keyFn: (item: T) => K): Map<K, T[]> {
   const result = new Map<K, T[]>();
@@ -26,8 +36,10 @@ export function groupBy<T, K>(items: readonly T[], keyFn: (item: T) => K): Map<K
 }
 
 /**
- * Indexes items by a unique key. When keys collide the last item wins, so
- * use it only when uniqueness is guaranteed by the caller.
+ * Indexes items by a unique key. When keys collide the last item wins, so use it only when the
+ * caller guarantees uniqueness; use `groupBy` when it cannot.
+ *
+ * @example keyBy([{ id: 'a' }, { id: 'b' }], (x) => x.id).get('b') // { id: 'b' }
  */
 export function keyBy<T, K>(items: readonly T[], keyFn: (item: T) => K): Map<K, T> {
   const result = new Map<K, T>();
@@ -38,22 +50,11 @@ export function keyBy<T, K>(items: readonly T[], keyFn: (item: T) => K): Map<K, 
 }
 
 /**
- * Splits an array into fixed-size chunks; the last chunk may be smaller.
- * Throws when `size` is not a positive integer, which is a programmer
- * error rather than an expected failure (errors.md).
+ * Removes duplicates, optionally comparing by a derived key (`Map` equality, so `NaN` equals
+ * `NaN`). The first occurrence wins and order is kept.
+ *
+ * @example unique([{ id: 1 }, { id: 1 }, { id: 2 }], (x) => x.id) // [{ id: 1 }, { id: 2 }]
  */
-export function chunk<T>(items: readonly T[], size: number): T[][] {
-  if (!Number.isInteger(size) || size <= 0) {
-    throw new RangeError('chunk: size must be a positive integer');
-  }
-  const result: T[][] = [];
-  for (let index = 0; index < items.length; index += size) {
-    result.push(items.slice(index, index + size));
-  }
-  return result;
-}
-
-/** Removes duplicates, optionally comparing by a derived key. First occurrence wins. */
 export function unique<T>(items: readonly T[], keyFn?: (item: T) => unknown): T[] {
   if (!keyFn) {
     return Array.from(new Set(items));
@@ -70,40 +71,24 @@ export function unique<T>(items: readonly T[], keyFn?: (item: T) => unknown): T[
   return result;
 }
 
-/** Splits items into those matching the predicate and those that do not. */
-export function partition<T>(
-  items: readonly T[],
-  predicate: (item: T) => boolean,
-): [matching: T[], rest: T[]] {
-  const matching: T[] = [];
-  const rest: T[] = [];
-  for (const item of items) {
-    (predicate(item) ? matching : rest).push(item);
-  }
-  return [matching, rest];
-}
-
-/** Builds `[start, start + 1, ..., end - 1]`. Returns an empty array when `end <= start`. */
+/**
+ * Builds `[start, start + 1, ..., end - 1]`; a fractional `end` rounds the length up. Empty when
+ * `end <= start`.
+ *
+ * @example range(2, 5) // [2, 3, 4]
+ */
 export function range(start: number, end: number): number[] {
   const length = Math.max(0, Math.ceil(end - start));
   return Array.from({ length }, (_, index) => start + index);
 }
 
-/** Moves one item from one index to another without mutating the input. */
-export function moveItem<T>(items: readonly T[], fromIndex: number, toIndex: number): T[] {
-  const result = [...items];
-  const [moved] = result.splice(fromIndex, 1);
-  if (moved === undefined && fromIndex >= items.length) {
-    return result;
-  }
-  result.splice(toIndex, 0, moved as T);
-  return result;
-}
-
 /**
- * Builds a type guard for a closed set of string literals. `list.includes`
- * rejects a plain `string` argument, which is why such guards are otherwise
- * hand-written with `.some`.
+ * Builds a type guard for a closed set of string literals. `list.includes` rejects a plain
+ * `string` argument, which is why such guards are otherwise hand-written with `.some`.
+ *
+ * @example
+ * const isRole = literalGuard(['admin', 'viewer'] as const);
+ * isRole('admin'); // true, and narrows to 'admin' | 'viewer'
  */
 export function literalGuard<T extends readonly string[]>(
   allowed: T,
@@ -113,20 +98,30 @@ export function literalGuard<T extends readonly string[]>(
 }
 
 /**
- * Returns a copy with `item` inserted at `index`. The index is clamped into
- * `[0, items.length]`; a non-integer index (NaN, Infinity) appends.
+ * Returns a copy with `item` inserted at `index`. The index is clamped into `[0, items.length]`;
+ * a non-integer index (`NaN`, `Infinity`) appends.
+ *
+ * @example insertItem(['a', 'c'], 1, 'b') // ['a', 'b', 'c']
  */
 export function insertItem<T>(items: readonly T[], index: number, item: T): T[] {
   const at = Number.isInteger(index) ? Math.min(Math.max(index, 0), items.length) : items.length;
   return [...items.slice(0, at), item, ...items.slice(at)];
 }
 
-/** Returns a copy with the item at `index` replaced; an index outside the list changes nothing. */
+/**
+ * Returns a copy with the item at `index` replaced; an index outside the list changes nothing.
+ *
+ * @example replaceAt(['a', 'b'], 1, 'x') // ['a', 'x']
+ */
 export function replaceAt<T>(items: readonly T[], index: number, item: T): T[] {
   return items.map((existing, position) => (position === index ? item : existing));
 }
 
-/** Returns a copy without the item at `index`; an index outside the list changes nothing. */
+/**
+ * Returns a copy without the item at `index`; an index outside the list changes nothing.
+ *
+ * @example removeAt(['a', 'b', 'c'], 1) // ['a', 'c']
+ */
 export function removeAt<T>(items: readonly T[], index: number): T[] {
   return items.filter((_, position) => position !== index);
 }

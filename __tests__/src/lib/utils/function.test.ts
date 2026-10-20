@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { debounce, memoize, once, throttle } from '@lib/utils/function';
+import { debounce, identity, noop, once } from '@lib/utils/function';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -11,70 +11,94 @@ afterEach(() => {
 });
 
 describe('debounce', () => {
-  it('calls once with the last arguments after the wait', () => {
+  it('calls once after the quiet period, with the last arguments', () => {
     const fn = vi.fn();
     const debounced = debounce(fn, 100);
-    debounced(1);
-    debounced(2);
-    vi.advanceTimersByTime(100);
+
+    debounced('a');
+    vi.advanceTimersByTime(50);
+    debounced('b');
+    vi.advanceTimersByTime(99);
+    expect(fn).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+
     expect(fn).toHaveBeenCalledTimes(1);
-    expect(fn).toHaveBeenCalledWith(2);
+    expect(fn).toHaveBeenCalledWith('b');
   });
 
-  it('can be cancelled', () => {
+  it('can run again after it ran', () => {
     const fn = vi.fn();
-    const debounced = debounce(fn, 100);
+    const debounced = debounce(fn, 10);
+
+    debounced();
+    vi.advanceTimersByTime(10);
+    debounced();
+    vi.advanceTimersByTime(10);
+
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops a pending call on cancel', () => {
+    const fn = vi.fn();
+    const debounced = debounce(fn, 10);
+
     debounced();
     debounced.cancel();
     vi.advanceTimersByTime(100);
+
     expect(fn).not.toHaveBeenCalled();
   });
-});
 
-describe('throttle', () => {
-  it('runs the first call and ignores calls inside the window', () => {
-    const fn = vi.fn();
-    const throttled = throttle(fn, 100);
-    throttled(1);
-    throttled(2);
-    vi.advanceTimersByTime(100);
-    throttled(3);
-    expect(fn.mock.calls).toEqual([[1], [3]]);
+  it('has nothing to cancel before the first call', () => {
+    expect(() => {
+      debounce(vi.fn(), 10).cancel();
+    }).not.toThrow();
   });
 });
 
 describe('once', () => {
-  it('runs the function a single time and caches the result', () => {
-    const fn = vi.fn(() => Math.random());
-    const wrapped = once(fn);
-    expect(wrapped()).toBe(wrapped());
+  it('runs the function once and returns the cached result', () => {
+    const fn = vi.fn(() => ({ built: true }));
+    const get = once(fn);
+
+    expect(get()).toBe(get());
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
-  it('caches a falsy result', () => {
-    const fn = vi.fn(() => 0);
-    const wrapped = once(fn);
-    wrapped();
-    wrapped();
+  it('caches an undefined result too', () => {
+    const fn = vi.fn(() => undefined);
+    const get = once(fn);
+
+    get();
+    get();
+
     expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('caches nothing when the call throws, so the next call tries again', () => {
+    const fn = vi
+      .fn<() => string>()
+      .mockImplementationOnce(() => {
+        throw new Error('not yet');
+      })
+      .mockImplementation(() => 'built');
+    const get = once(fn);
+
+    expect(get).toThrow('not yet');
+    expect(get()).toBe('built');
+    expect(get()).toBe('built');
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 });
 
-describe('memoize', () => {
-  it('computes once per argument', () => {
-    const fn = vi.fn((n: number) => n * 2);
-    const memoized = memoize(fn);
-    expect(memoized(2)).toBe(4);
-    expect(memoized(2)).toBe(4);
-    expect(memoized(3)).toBe(6);
-    expect(fn).toHaveBeenCalledTimes(2);
+describe('identity and noop', () => {
+  it('identity returns its argument', () => {
+    const value = { a: 1 };
+
+    expect(identity(value)).toBe(value);
   });
 
-  it('caches undefined results', () => {
-    const fn = vi.fn(() => undefined);
-    const memoized = memoize(fn);
-    memoized('a');
-    memoized('a');
-    expect(fn).toHaveBeenCalledTimes(1);
+  it('noop returns nothing', () => {
+    expect(noop).not.toThrow();
   });
 });

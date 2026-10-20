@@ -111,3 +111,29 @@ describe('toErrorResponseBody', () => {
     });
   });
 });
+
+describe.each([
+  ['conflict', 409],
+  ['unauthorized', 401],
+  ['forbidden', 403],
+] as const)('a %s error', (kind, status) => {
+  const error = createError(kind, 'ERR', 'msg', { cause: new Error('hidden') });
+
+  it(`is ${status}`, () => {
+    expect(httpStatusForError(error)).toBe(status);
+  });
+
+  it('answers with its code and message only', () => {
+    expect(toErrorResponseBody(error)).toEqual({ code: 'ERR', message: 'msg' });
+  });
+});
+
+describe.each(['infrastructure', 'unexpected'] as const)('a %s error', (kind) => {
+  it('answers with its generic message and never its cause', () => {
+    const error = createError(kind, 'ERR', 'Something went wrong.', {
+      cause: new Error('connection refused to db.internal:5432'),
+    });
+
+    expect(toErrorResponseBody(error)).toEqual({ code: 'ERR', message: 'Something went wrong.' });
+  });
+});

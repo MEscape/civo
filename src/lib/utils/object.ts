@@ -1,8 +1,19 @@
 /**
  * Object helpers. Zero dependencies.
+ *
+ * They read and write only OWN properties, and build their results so that a key taken from data
+ * (`__proto__`, `constructor`) stays an ordinary key instead of reaching the prototype chain.
+ * Everything returns a new object; the inputs are never mutated.
  */
 
-/** True for objects created by `{}` or `new Object()`; false for arrays, `Date`, `Map`, class instances, and `null`. */
+/**
+ * True for objects created by `{}`, `new Object()` or `Object.create(null)`; false for arrays,
+ * `Date`, `Map`, class instances and `null`. The test that decides whether a value is "data" that
+ * may be walked, merged or compared key by key.
+ *
+ * @example isPlainObject({}) // true
+ * @example isPlainObject(new Map()) // false
+ */
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -11,19 +22,19 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
   return prototype === Object.prototype || prototype === null;
 }
 
-/** Own-property check that narrows the key. Unlike `in`, it ignores the prototype chain. */
+/**
+ * Own-property check that narrows the key. Unlike `in`, it ignores the prototype chain, so
+ * `hasOwnKey(obj, 'toString')` is false.
+ */
 export function hasOwnKey<T extends object>(obj: T, key: PropertyKey): key is keyof T {
   return Object.hasOwn(obj, key);
 }
 
-/** Removes keys whose value is `undefined`. Explicit `null` values are kept. */
-export function omitUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([, value]) => value !== undefined),
-  ) as Partial<T>; // Object.fromEntries widens the key type to string.
-}
-
-/** Returns a new object containing only the listed keys. */
+/**
+ * A new object with only the listed keys, those the object has as its own.
+ *
+ * @example pick({ a: 1, b: 2 }, ['a']) // { a: 1 }
+ */
 export function pick<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K> {
   const result = {} as Pick<T, K>; // Filled below for exactly the keys in Pick<T, K>.
   for (const key of keys) {
@@ -34,7 +45,11 @@ export function pick<T extends object, K extends keyof T>(obj: T, keys: readonly
   return result;
 }
 
-/** Returns a new object without the listed keys. */
+/**
+ * A new object without the listed keys.
+ *
+ * @example omit({ a: 1, b: 2 }, ['a']) // { b: 2 }
+ */
 export function omit<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Omit<T, K> {
   const excluded = new Set<PropertyKey>(keys);
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !excluded.has(key))) as Omit<
@@ -43,17 +58,12 @@ export function omit<T extends object, K extends keyof T>(obj: T, keys: readonly
   >; // Object.fromEntries widens the key type to string.
 }
 
-/** Maps each own value while keeping the keys. */
-export function mapValues<T, U>(
-  obj: Readonly<Record<string, T>>,
-  fn: (value: T, key: string) => U,
-): Record<string, U> {
-  return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, fn(value, key)]));
-}
-
 /**
- * Structural equality for plain JSON-shaped values: primitives, arrays, and
- * plain objects. Does not handle `Map`, `Set`, `Date`, or cyclic structures.
+ * Structural equality for plain JSON-shaped values: primitives (`Object.is`, so `NaN` equals
+ * `NaN`), arrays and plain objects, compared by own keys. Not for `Map`, `Set`, `Date` (these
+ * compare by identity) or cyclic structures (these recurse without end).
+ *
+ * @example deepEqual({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] }) // true
  */
 export function deepEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) {
@@ -76,79 +86,58 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
- * Recursively merges plain objects. Arrays and non-plain values from `source`
- * replace those in `target` rather than being merged. Returns a new object.
+ * Recursively merges plain objects into a new one; `source` wins. Arrays and non-plain values from
+ * `source` replace those in `target` instead of being merged. A key named `__proto__` in the data
+ * is merged as an ordinary key: it never changes the prototype of the result.
+ *
+ * @example deepMerge({ a: { x: 1 }, b: 1 }, { a: { y: 2 } }) // { a: { x: 1, y: 2 }, b: 1 }
  */
 export function deepMerge<T extends Record<string, unknown>>(
   target: T,
   source: Record<string, unknown>,
 ): T {
-  const result: Record<string, unknown> = { ...target };
+  // A `Map`, then `Object.fromEntries`: assigning `result['__proto__'] = value` would set the
+  // prototype, while `fromEntries` always defines an own property.
+  const merged = new Map<string, unknown>(Object.entries(target));
   for (const [key, sourceValue] of Object.entries(source)) {
-    const targetValue = result[key];
-    result[key] =
+    const targetValue = merged.get(key);
+    merged.set(
+      key,
       isPlainObject(targetValue) && isPlainObject(sourceValue)
         ? deepMerge(targetValue, sourceValue)
-        : sourceValue;
+        : sourceValue,
+    );
   }
-  return result as T; // The merge preserves T's top-level keys by construction.
-}
-
-/** Reads a nested value by dot path (`"a.b.0.c"`). Returns `undefined` when any segment is missing. */
-export function getPath(obj: unknown, path: string): unknown {
-  let current: unknown = obj;
-  for (const segment of path.split('.')) {
-    if (current === null || typeof current !== 'object') {
-      return undefined;
-    }
-    if (!Object.hasOwn(current, segment)) {
-      return undefined;
-    }
-    current = (current as Record<string, unknown>)[segment]; // Own-key presence was checked above.
-  }
-  return current;
+  return Object.fromEntries(merged) as T; // The merge preserves T's top-level keys by construction.
 }
 
 /**
- * Returns a copy of `obj` with the value at a dot path replaced. Never mutates
- * the input. Missing intermediate segments are created as plain objects.
- * Prototype-polluting segments are rejected.
+ * Keys whose value is not `undefined`; `null` counts as a value.
+ *
+ * @example definedKeys({ a: 1, b: undefined, c: null }) // ['a', 'c']
  */
-export function setPath<T extends Record<string, unknown>>(
-  obj: T,
-  path: string,
-  value: unknown,
-): T {
-  const segments = path.split('.');
-  if (segments.some((s) => s === '__proto__' || s === 'constructor' || s === 'prototype')) {
-    throw new Error(`Unsafe path segment in "${path}"`);
-  }
-
-  const [head, ...rest] = segments;
-  if (head === undefined) {
-    return obj;
-  }
-
-  const next =
-    rest.length === 0
-      ? value
-      : setPath(isPlainObject(obj[head]) ? obj[head] : {}, rest.join('.'), value);
-
-  return { ...obj, [head]: next };
-}
-
-/** Keys whose value is not `undefined`. `null` counts as a value, like `omitUndefined`. */
 export function definedKeys<T extends object>(obj: T): Array<keyof T> {
   return Object.entries(obj)
     .filter(([, value]) => value !== undefined)
     .map(([key]) => key) as Array<keyof T>; // Object.entries widens the key type to string.
 }
 
-/** Keys whose value differs between two records, including keys present on only one side. */
+/** The own value at `key`, or `undefined`: never one inherited from the prototype chain. */
+function ownValue(record: Readonly<Record<string, unknown>>, key: string): unknown {
+  return Object.hasOwn(record, key) ? record[key] : undefined;
+}
+
+/**
+ * Keys whose value differs between two records (compared with `deepEqual`), including keys
+ * present on only one side. A key that is missing on one side and `undefined` on the other counts
+ * as unchanged.
+ *
+ * @example changedKeys({ a: 1, b: 2 }, { a: 1, b: 3, c: 4 }) // ['b', 'c']
+ */
 export function changedKeys(
   before: Readonly<Record<string, unknown>>,
   after: Readonly<Record<string, unknown>>,
 ): string[] {
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
-  return [...keys].filter((key) => !deepEqual(before[key], after[key]));
+  return [...keys].filter((key) => !deepEqual(ownValue(before, key), ownValue(after, key)));
 }

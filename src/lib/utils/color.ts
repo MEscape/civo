@@ -1,3 +1,12 @@
+/**
+ * Colour parsing and WCAG contrast. Zero dependencies.
+ *
+ * Only `#rrggbb` is understood (no shorthand, no named colours, no alpha): a website's brand colours
+ * are stored in that one form, and what is not that form is treated as black for contrast and
+ * returned unchanged by `readableCopy`. Used to keep text legible whichever colours a municipality
+ * picks.
+ */
+
 const HEX_RADIX = 16;
 const HEX_BYTE_LENGTH = 2;
 const HEX_COLOR = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i;
@@ -9,7 +18,11 @@ export interface RgbColor {
   readonly blue: number;
 }
 
-/** `#rrggbb` (any case) as channels; anything else, including shorthand `#rgb`, is `null`. */
+/**
+ * `#rrggbb` (any case) as channels; anything else, including shorthand `#rgb`, is `null`.
+ *
+ * @example parseHexColor('#1F3A34') // { red: 31, green: 58, blue: 52 }
+ */
 export function parseHexColor(hex: string): RgbColor | null {
   const match = HEX_COLOR.exec(hex);
   if (match === null) {
@@ -23,7 +36,10 @@ export function parseHexColor(hex: string): RgbColor | null {
   };
 }
 
-/** Channels as lowercase `#rrggbb`. */
+/**
+ * Channels as lowercase `#rrggbb`. Channels are taken as whole numbers 0–255 (what
+ * `parseHexColor` returns); other values are not clamped.
+ */
 export function toHexColor({ red, green, blue }: RgbColor): string {
   return `#${[red, green, blue]
     .map((channel) => channel.toString(HEX_RADIX).padStart(HEX_BYTE_LENGTH, '0'))
@@ -61,7 +77,12 @@ function relativeLuminance(hex: string): number {
   );
 }
 
-/** The contrast ratio of two `#rrggbb` colours, from 1 (identical) to 21 (black on white). */
+/**
+ * The contrast ratio of two `#rrggbb` colours, from 1 (identical) to 21 (black on white), in
+ * either order. A value that is not `#rrggbb` counts as black.
+ *
+ * @example contrastRatio('#000000', '#ffffff') // 21
+ */
 export function contrastRatio(first: string, second: string): number {
   const [lighter = 0, darker = 0] = [relativeLuminance(first), relativeLuminance(second)].sort(
     (a, b) => b - a,
@@ -77,7 +98,12 @@ const LIGHT_FOREGROUND = '#ffffff';
  */
 const DARK_FOREGROUND = '#000000';
 
-/** White or black, whichever contrasts more with `background` (`#rrggbb`). */
+/**
+ * White or black, whichever contrasts more with `background` (`#rrggbb`): text on a brand-coloured
+ * button.
+ *
+ * @example readableForeground('#1f3a34') // '#ffffff'
+ */
 export function readableForeground(background: string): string {
   return contrastRatio(background, LIGHT_FOREGROUND) >= contrastRatio(background, DARK_FOREGROUND)
     ? LIGHT_FOREGROUND
@@ -116,7 +142,10 @@ function isReadableOnPage(color: string): boolean {
  * The brand colour as text or an icon colour (`--civo-color-*-copy`): the
  * colour itself when it is already readable on the page, else the nearest
  * darker shade that is. The raw colour is not safe as text: a light accent
- * such as cyan reaches 1.5:1. Not `#rrggbb`: returned as given.
+ * such as cyan reaches 1.5:1. Not `#rrggbb`: returned as given. A readable `#rrggbb` comes back
+ * lowercased.
+ *
+ * @example readableCopy('#00ffff') // a dark cyan that reaches 4.5:1 on both page backgrounds
  */
 export function readableCopy(color: string): string {
   const channels = parseHexColor(color);
@@ -126,11 +155,11 @@ export function readableCopy(color: string): string {
   if (isReadableOnPage(color)) {
     return toHexColor(channels);
   }
-  for (let step = 1; step < DARKEN_STEP_COUNT; step += 1) {
+  // The last step is black, so the search always ends, whatever the page backgrounds are.
+  for (let step = 1; ; step += 1) {
     const candidate = darkened(channels, step);
-    if (isReadableOnPage(candidate)) {
+    if (step >= DARKEN_STEP_COUNT || isReadableOnPage(candidate)) {
       return candidate;
     }
   }
-  return darkened(channels, DARKEN_STEP_COUNT);
 }

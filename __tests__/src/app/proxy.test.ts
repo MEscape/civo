@@ -21,18 +21,24 @@ const call = (url: string, headers: Record<string, string> = {}) => {
 
 describe('proxy', () => {
   it('names the website an admin address is about', () => {
-    expect(call('http://localhost:3000/de/websites/site-1/bookings')).toBe('site-1');
+    expect(
+      call('http://localhost:3000/de/websites/3f2b8c1e-5d4a-4f6b-9a7c-0e1d2c3b4a59/bookings'),
+    ).toBe('3f2b8c1e-5d4a-4f6b-9a7c-0e1d2c3b4a59');
   });
 
-  it('names none for the website list or a public address', () => {
+  it('names none for the website list, the platform screens beside it or a public address', () => {
     expect(call('http://localhost:3000/de/websites')).toBeNull();
+    expect(call('http://localhost:3000/de/websites/users')).toBeNull();
+    expect(call('http://localhost:3000/de/websites/audit')).toBeNull();
     expect(call('http://localhost:3000/de/s/town')).toBeNull();
   });
 
   it('overwrites what the client sent, and removes it where no website is named', () => {
-    expect(call('http://localhost:3000/de/websites/site-1', { 'x-civo-tenant': 'victim' })).toBe(
-      'site-1',
-    );
+    expect(
+      call('http://localhost:3000/de/websites/3f2b8c1e-5d4a-4f6b-9a7c-0e1d2c3b4a59', {
+        'x-civo-tenant': 'victim',
+      }),
+    ).toBe('3f2b8c1e-5d4a-4f6b-9a7c-0e1d2c3b4a59');
     expect(call('http://localhost:3000/de/websites', { 'x-civo-tenant': 'victim' })).toBeNull();
     expect(call('http://localhost:3000/de/sign-in', { 'x-civo-tenant': 'victim' })).toBeNull();
   });

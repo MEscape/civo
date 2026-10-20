@@ -1,128 +1,85 @@
+/**
+ * The public surface of `@lib/utils`: pure, dependency-free helpers, one file per concern, listed
+ * here in the same (alphabetical) order as the files. Import from `@lib/utils`, not from a file.
+ * A helper used only inside its own file stays out of this list.
+ */
+
 export { assertNever, invariant } from './assert';
 
 export {
-  chunk,
   groupBy,
+  insertItem,
   isDefined,
   keyBy,
-  moveItem,
-  partition,
-  range,
-  unique,
   literalGuard,
-  insertItem,
+  range,
   removeAt,
   replaceAt,
+  unique,
 } from './array';
 
-export {
-  deepEqual,
-  deepMerge,
-  hasOwnKey,
-  isPlainObject,
-  mapValues,
-  omit,
-  omitUndefined,
-  pick,
-  definedKeys,
-  changedKeys,
-} from './object';
-
-export {
-  getPath,
-  setPath,
-  normalizePath,
-  pathSegments,
-  isUnsafePathSegment,
-  hasUnsafePathSegment,
-} from './path';
-
-export {
-  capitalize,
-  escapeHtml,
-  isBlank,
-  normalizeWhitespace,
-  slugify,
-  stripHtml,
-  truncate,
-  trimToNull,
-} from './string';
-
-export { clamp, formatBytes, formatMoney, formatNumber, formatPercent } from './number';
-
-export {
-  addDays,
-  formatDate,
-  formatDateTime,
-  formatRelativeTime,
-  isSameDay,
-  type DateInput,
-} from './date';
-
-export {
-  buildQueryString,
-  ensureTrailingSlash,
-  isRelativePath,
-  isValidUrl,
-  joinPath,
-  stripTrailingSlash,
-} from './url';
-
-export {
-  mapWithConcurrency,
-  retryWithBackoff,
-  sleep,
-  TimeoutError,
-  withTimeout,
-  type RetryOptions,
-} from './async';
-
-export { debounce, identity, memoize, noop, once, throttle } from './function';
-
-export {
-  JsonParseError,
-  JsonStringifyError,
-  parseJson,
-  stringifyJson,
-  stableStringify,
-  type JsonPrimitive,
-  type JsonValue,
-} from './json';
-
-export { isJsonValue, isJsonRecord, jsonWeight } from './json-value';
-
-export {
-  countNodes,
-  findNode,
-  findPath,
-  flattenTree,
-  mapTree,
-  walkTree,
-  flattenForest,
-  locateInForest,
-  findPathInForest,
-  updateForest,
-  removeFromForest,
-  type GetChildren,
-  type WithChildren,
-  type TreeShape,
-  type ForestEntry,
-  type ForestLocation,
-} from './tree';
-
-export { cn } from './cn';
+export { TimeoutError, withTimeout } from './async';
 
 export { type Brand } from './brand';
 
+export { cn } from './cn';
+
 export {
   PAGE_BACKGROUNDS,
-  contrastRatio,
   parseHexColor,
   readableCopy,
   readableForeground,
   toHexColor,
   type RgbColor,
 } from './color';
+
+export {
+  addDays,
+  formatDate,
+  formatDateTime,
+  formatRelativeTime,
+  MS_PER_DAY,
+  MS_PER_MINUTE,
+  SECONDS_PER_HOUR,
+  SECONDS_PER_MINUTE,
+  type DateInput,
+} from './date';
+
+export { debounce, identity, noop, once } from './function';
+
+export {
+  JsonParseError,
+  JsonStringifyError,
+  parseJson,
+  stableStringify,
+  stringifyJson,
+  type JsonPrimitive,
+  type JsonValue,
+} from './json';
+
+export { isJsonRecord, isJsonValue, jsonWeight } from './json-value';
+
+export { clamp, formatBytes, formatMoney, formatNumber, formatPercent } from './number';
+
+export {
+  changedKeys,
+  deepEqual,
+  deepMerge,
+  definedKeys,
+  hasOwnKey,
+  isPlainObject,
+  omit,
+  pick,
+} from './object';
+
+export {
+  getPath,
+  hasUnsafePathSegment,
+  isUnsafePathSegment,
+  normalizePath,
+  pathSegments,
+  setPath,
+} from './path';
 
 export {
   arrayOf,
@@ -134,7 +91,24 @@ export {
   objectOf,
   oneOf,
   optional,
+  type Guard,
 } from './shape';
-export type { Guard } from './shape';
 
-export { MS_PER_DAY, MS_PER_MINUTE, SECONDS_PER_HOUR, SECONDS_PER_MINUTE } from './date';
+export { escapeHtml, isBlank, slugify, stripHtml, trimToNull, truncate } from './string';
+
+export {
+  countNodes,
+  findPathInForest,
+  flattenForest,
+  locateInForest,
+  mapTree,
+  removeFromForest,
+  updateForest,
+  type ForestEntry,
+  type ForestLocation,
+  type GetChildren,
+  type TreeShape,
+  type WithChildren,
+} from './tree';
+
+export { buildQueryString, isRelativePath, isValidUrl, joinPath, stripTrailingSlash } from './url';

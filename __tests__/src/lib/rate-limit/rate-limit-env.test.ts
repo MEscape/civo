@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
+import { envRuleIssues } from '@lib/config/env-rules';
 import { serverEnvSchema } from '@lib/config/env-schema';
-import {
-  rateLimitConfigIssues,
-  rateLimitEnvSchema,
-  resolveRateLimitSettings,
-} from '@lib/config/rate-limit-env-schema';
+import { rateLimitEnvRules, rateLimitEnvSchema } from '@lib/config/rate-limit-env-schema';
 import type { RateLimitEnvInput } from '@lib/config/rate-limit-env-schema';
+import { resolveRateLimitSettings } from '@lib/config/rate-limit-settings';
 
 const LONG_SECRET = 's'.repeat(40);
+
+const rateLimitConfigIssues = (env: RateLimitEnvInput) => envRuleIssues(env, rateLimitEnvRules);
 
 function input(overrides: Partial<RateLimitEnvInput> = {}): RateLimitEnvInput {
   return { ...rateLimitEnvSchema.parse({}), NODE_ENV: 'development', ...overrides };
@@ -64,10 +64,12 @@ describe('rate-limit configuration', () => {
       input({ NODE_ENV: 'production', RATE_LIMIT_BACKEND: 'memory' }),
     );
 
-    expect(issues.map((issue) => issue.path)).toContain('RATE_LIMIT_BACKEND');
-    expect(() =>
-      resolveRateLimitSettings(input({ NODE_ENV: 'production', RATE_LIMIT_BACKEND: 'memory' })),
-    ).toThrow(/memory backend/);
+    expect(issues).toEqual([
+      expect.objectContaining({
+        path: 'RATE_LIMIT_BACKEND',
+        message: expect.stringMatching(/memory backend/),
+      }),
+    ]);
   });
 
   it('requires the Upstash endpoint, its token and a long enough secret for the upstash backend', () => {
@@ -228,6 +230,14 @@ describe('rate-limit configuration', () => {
     expect(broken.success).toBe(false);
     expect(!broken.success && broken.error.issues.map((issue) => issue.path[0])).toContain(
       'UPSTASH_REDIS_REST_URL',
+    );
+  });
+});
+
+describe('resolveRateLimitSettings', () => {
+  it('refuses to build an upstash limiter from an environment the rules would have refused', () => {
+    expect(() => resolveRateLimitSettings(input({ RATE_LIMIT_BACKEND: 'upstash' }))).toThrow(
+      /Upstash URL, token or secret missing/,
     );
   });
 });

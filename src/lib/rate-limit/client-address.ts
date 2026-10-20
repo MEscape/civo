@@ -217,8 +217,8 @@ export function createClientAddressResolver(
     if (hops.length === 0) {
       return unresolved('header_missing');
     }
-    for (let index = hops.length - 1; index >= 0; index -= 1) {
-      const parsed = parseIp(hops[index] ?? '');
+    for (const hop of [...hops].reverse()) {
+      const parsed = parseIp(hop);
       if (parsed === null) {
         return unresolved('header_malformed');
       }

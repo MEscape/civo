@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { UpstashRateLimitStore } from '@lib/rate-limit/upstash-rate-limit-store';
 
@@ -123,5 +123,24 @@ describe('UpstashRateLimitStore', () => {
     });
 
     await expect(store.hit('k', 60)).rejects.toMatchObject({ name: 'TimeoutError' });
+  });
+});
+
+describe('UpstashRateLimitStore with the platform fetch', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('uses the global fetch when none is injected', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(jsonResponse({ result: [2, 30_000] })));
+    vi.stubGlobal('fetch', fetchMock);
+    const store = new UpstashRateLimitStore({
+      restUrl: REST_URL,
+      restToken: TOKEN,
+      timeoutMs: TIMEOUT_MS,
+    });
+
+    await expect(store.hit('k', 60)).resolves.toEqual({ hits: 2, retryAfterSeconds: 30 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

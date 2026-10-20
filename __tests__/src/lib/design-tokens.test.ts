@@ -28,15 +28,11 @@ const ALLOWED_PATHS: ReadonlyArray<{ match: (path: string) => boolean; why: stri
   { match: (p) => /\.test\.(ts|tsx)$/.test(p), why: 'tests describe violations on purpose' },
   {
     match: (p) => p === 'lib/config/app-identity.ts',
-    why: 'theme-color and the manifest need literal colours; pinned to the tokens below',
+    why: 'theme-color, the manifest and e-mail need literal colours; pinned to the tokens below',
   },
   {
     match: (p) => p.startsWith('lib/db/contract.'),
     why: 'generated from prisma/schema.prisma, which stores theme defaults',
-  },
-  {
-    match: (p) => p.startsWith('lib/mail/email-'),
-    why: 'mail clients do not resolve CSS custom properties',
   },
   {
     match: (p) => p === 'modules/website/domain/models/website-theme.ts',
@@ -205,8 +201,33 @@ describe('app identity colours', () => {
     const token = (name: string) =>
       new RegExp(`${name}:\\s*([^;]+);`).exec(css)?.[1]?.trim().toLowerCase();
 
-    expect(APP_IDENTITY.themeColor).toBe(token('--civo-color-primary'));
-    expect(APP_IDENTITY.backgroundColor).toBe(token('--civo-color-background'));
+    expect(APP_IDENTITY.colors).toEqual({
+      primary: token('--civo-color-primary'),
+      primaryForeground: token('--civo-color-primary-foreground'),
+      primaryCopy: token('--civo-color-primary-copy'),
+      background: token('--civo-color-background'),
+      surface: token('--civo-color-surface'),
+      text: token('--civo-color-text'),
+      textMuted: token('--civo-color-text-muted'),
+      border: token('--civo-color-border'),
+    });
+  });
+
+  it('make the same choices as the default website theme, and mean the same radius', async () => {
+    const { APP_IDENTITY } = await import('@lib/config/app-identity');
+    const { PLATFORM_EMAIL_BRAND } = await import('@lib/mail');
+    const { DEFAULT_WEBSITE_THEME } = await import('@modules/website/domain/models/website-theme');
+    const css = readFileSync(join(SRC, 'app/globals.css'), 'utf8');
+
+    expect(APP_IDENTITY.theme).toEqual({
+      radius: DEFAULT_WEBSITE_THEME.radius,
+      headingFont: DEFAULT_WEBSITE_THEME.typography.headingFont,
+      bodyFont: DEFAULT_WEBSITE_THEME.typography.bodyFont,
+      spacingScale: DEFAULT_WEBSITE_THEME.spacingScale,
+    });
+    // A new website starts with the platform's own primary colour (the domain cannot import the identity).
+    expect(DEFAULT_WEBSITE_THEME.colors.primary.toLowerCase()).toBe(APP_IDENTITY.colors.primary);
+    expect(PLATFORM_EMAIL_BRAND.radius).toBe(/--civo-radius:s*([^;]+);/.exec(css)?.[1]?.trim());
   });
 
   it('no delete trigger coloured by a class: use <Button variant="destructive-ghost">', () => {

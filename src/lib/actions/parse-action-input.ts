@@ -10,13 +10,17 @@ interface IssueLike {
   readonly message: string;
 }
 
+/**
+ * A `Map` while collecting: a path is data from the input (a `z.record` key), and on a plain object
+ * `fieldErrors['constructor']` is already a function, not an absent entry to start a list on.
+ */
 function collectFieldErrors(issues: readonly IssueLike[]): Record<string, string[]> {
-  const fieldErrors: Record<string, string[]> = {};
+  const fieldErrors = new Map<string, string[]>();
   for (const issue of issues) {
     const path = issue.path.length > 0 ? fieldPath(...issue.path.map(String)) : ROOT_FIELD;
-    (fieldErrors[path] ??= []).push(issue.message);
+    fieldErrors.set(path, [...(fieldErrors.get(path) ?? []), issue.message]);
   }
-  return fieldErrors;
+  return Object.fromEntries(fieldErrors);
 }
 
 export type ActionInputParser = <TOutput>(

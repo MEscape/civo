@@ -1,137 +1,152 @@
 # Core Shared Library (`@lib`)
 
-This directory contains the core shared infrastructure and utilities for the application. It acts as the foundational layer that other architectural layers (domain, application, presentation) can depend on.
+The shared infrastructure and utilities every module builds on. It is generic (no business owner, no domain concept), it never imports a module, and each part is imported through its own barrel: `@lib/<part>`.
 
-> **AI Note:** Before writing a new utility, helper, or wrapper, check the exports below. Always import from `@lib/<module>` instead of reimplementing these features.
+> **AI Note:** Before writing a utility, helper or wrapper, check the exports below. Import from `@lib/<part>` instead of reimplementing them.
 
-## Available Modules
+**Tests.** The whole layer is held to 100% statement, branch, function and line coverage: `npm run test:coverage` (thresholds in `vitest.config.ts`) fails below it, and `npm run check` runs it. A change to `src/lib` ships with the tests that keep it at 100%.
 
-### `@lib/config` (Environment Variables)
+## Parts
 
-Centralized environment validation via Zod. Do not use `process.env` directly in the application. Each entry point validates once, when first imported.
+| Part                            | What it is for                                                   |
+| ------------------------------- | ---------------------------------------------------------------- |
+| [`config`](#lib-config)         | Validated environment variables and the product's identity       |
+| [`mail`](#lib-mail)             | Outgoing e-mail: layout, transports, the one delivery error      |
+| [`clock`](#lib-clock)           | The time port                                                    |
+| [`rate-limit`](#lib-rate-limit) | Budgets for operations anyone can repeat                         |
+| [`db`](#lib-db)                 | The Prisma client and persistence failure translators            |
+| [`errors`](#lib-errors)         | Typed application errors                                         |
+| [`result`](#lib-result)         | The `Result` wrapper and what crosses the Server Action boundary |
+| [`actions`](#lib-actions)       | Parsing Server Action input, applying errors to a form           |
+| [`logger`](#lib-logger)         | Structured, redacting, server-only logging                       |
+| [`seo`](#lib-seo)               | Route metadata builders                                          |
+| [`security`](#lib-security)     | Response headers                                                 |
+| [`tenancy`](#lib-tenancy)       | The website a request is about                                   |
+| [`pagination`](#lib-pagination) | Slicing and sorting a list that can grow                         |
+| [`fonts`](#lib-fonts)           | Font loading and CSS variables                                   |
+| [`utils`](#lib-utils)           | Pure, dependency-free helpers                                    |
 
-- `publicEnv` (`@lib/config`): Validated `NEXT_PUBLIC_*` variables. Safe in any bundle.
-- `serverEnv` (`@lib/config/server`): Validated server variables, including secrets. The module imports `server-only`, so importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. Authentication variables (`AUTH_SECRET`, `AUTH_DATABASE_URL`) are required only while `AUTH_ENABLED=true`; mail settings (`MAIL_*`) are required as soon as a provider is chosen, and production needs `MAIL_PROVIDER=smtp` or `resend` (`resend` is refused outside production; SMTP credentials `MAIL_SMTP_USER`/`MAIL_SMTP_PASSWORD` are set together or not at all); `DATABASE_URL` is always required. Production refuses `AUTH_ENABLED=false`. The rate limiter needs `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in production (see `@lib/rate-limit`), and `resolveRateLimitSettings(serverEnv)` (`@lib/config/server`) turns the validated variables into the limiter's settings.
-- `APP_IDENTITY`: The product's name and the literal theme/background colours browsers need (`theme-color`, manifest). Not translated; colours are pinned to the `globals.css` tokens by a test.
+<a id="lib-config"></a>
+
+### `@lib/config` (Environment and identity)
+
+Environment variables are validated with Zod, once, when first imported. Do not read `process.env` anywhere else.
+
+- `publicEnv` (`@lib/config`): the validated `NEXT_PUBLIC_*` variables. Safe in any bundle.
+- `serverEnv` (`@lib/config/server`, `server-only`): everything, secrets included. Importing it from a Client Component is a build error instead of a runtime failure against the browser's empty `process.env`. A failing start names every variable at fault and the reason, never the value (`parseEnv`).
+- `resolveRateLimitSettings(serverEnv)` (`@lib/config/server`): the validated variables as the limiter's settings.
+- `APP_IDENTITY` (`@lib/config`): the product's name and company, and the platform's default theme for the places that cannot read CSS variables: `theme-color`, the web app manifest and every e-mail. `colors` are **literal** copies of the `--civo-color-*` tokens; `theme` holds the default's choices (`radius`, `headingFont`, `bodyFont`, `spacingScale`) in the vocabulary a website's theme settings use. Tests pin the colours to `globals.css` and the choices to `DEFAULT_WEBSITE_THEME`.
 - **Types**: `ServerEnv`, `PublicEnv`.
 
-### `@lib/mail` (Outgoing E-mail)
+How it is organised (to add a variable: [`adding-an-environment-variable.md`](../../docs/conventions/adding-an-environment-variable.md)):
+
+- A variable's own shape lives in its domain's Zod schema (`auth-env-schema.ts`, `mail-env-schema.ts`, `rate-limit-env-schema.ts`, `public-env-schema.ts`, the base in `env-schema.ts`). `env-primitives.ts` holds the shared building blocks: `booleanFlag`, `commaSeparatedList`, `integerSetting`, `httpUrl`, `postgresUrl`.
+- What must hold **across** variables is a table of `EnvRule`s (`path`, `violated`, `message`; `env-rules.ts`), attached with `schema.superRefine(refineEnv(rules))`: authentication (only while `AUTH_ENABLED=true`), mail (per provider), rate limit, and the production rules in `env-schema.ts`. Each domain's schema file holds its schema and its rules together; `rate-limit-settings.ts` turns the validated variables into the limiter's settings. To add a rule, add a row to its domain's table.
+- What the rules enforce, in short: `DATABASE_URL` is always required; authentication variables only while `AUTH_ENABLED=true`; mail settings as soon as a provider is chosen; production refuses `AUTH_ENABLED=false`, `MAIL_PROVIDER=none`, the in-memory rate-limit store, and an `http://` `UPSTASH_REDIS_REST_URL` or `MAIL_API_URL` (both carry a bearer credential); `resend` is refused outside production.
+
+<a id="lib-mail"></a>
+
+### `@lib/mail` (Outgoing e-mail)
 
 How a message leaves, shared by every module that sends one (sign-in, bookings). Modules keep their own wording and their own port; they share the transport and the look.
 
-- `renderEmail({ locale, title, intro, facts?, action?, outro }, brand?)` (`@lib/mail`): the shared layout as plain text and HTML. Every dynamic value is escaped; callers pass plain text. Mail that belongs to the platform (sign-in) uses the default `PLATFORM_EMAIL_BRAND`; mail sent for a website (bookings) passes that website's `EmailBrand`, built from its primary colour with `createEmailBrand(primary)`.
-- `MailTransport`, `OutboundMail`, `mailDeliveryFailed` (`@lib/mail`): the delivery contract and its one error.
-- `getMailTransport()` (`@lib/mail/server`, server-only): the process's transport (SMTP or Resend, from `MAIL_*`), or `null` while `MAIL_PROVIDER=none`. `resolveMailLocale()` reads the request's language.
+- `renderEmail(content, brand?)`: the shared layout as plain text and HTML. Every dynamic value is escaped; callers pass plain text; an action must link to an `http(s)` address. `subject` defaults to the title; `facts`, `action` (with an optional `note`) and `greeting` are optional. The HTML is semantic and styled inline: no layout tables, none of the retired presentational attributes (`bgcolor`, `align`, `cellpadding`, `width` on a cell), one centred column of at most 560px. The facts are the only table (tabular data). Classic Outlook for Windows draws it full width; every current client draws it as designed.
+- `EmailBrand` is everything the layout draws with, resolved to literals: colours, radius, card padding, font stacks. `PLATFORM_EMAIL_BRAND` is the platform's look, from `APP_IDENTITY`. Mail sent for a website passes `createEmailBrand({ primary, radius, headingFont, bodyFont, spacingScale })`, fed with the website's stored theme as it is: each token is looked up in a closed list (the website theme's own), and anything unknown, or a colour that is not `#rrggbb`, gives the platform's choice, so nothing stored is ever written into a style. The brand is built in `email-brand.ts` and nowhere else; `email-styles.ts` holds all CSS, `email-blocks.ts` the HTML fragments, `email-layout.ts` assembles.
+- `MailTransport`, `OutboundMail`, `MailAttachment`: the delivery contract. `mailDeliveryFailed(cause)` and `MAIL_DELIVERY_FAILED` (`mail.delivery_failed`): its one error. A module that shows the failure maps it to a code of its own and keeps this one as the cause (auth does: `auth.mail_delivery_failed`).
+- `getMailTransport()` (`@lib/mail/server`, `server-only`): the process's transport (SMTP or Resend, from `MAIL_*`), or `null` while `MAIL_PROVIDER=none`. Every send gives up after 10 s. SMTP with credentials requires STARTTLS (or `MAIL_SMTP_SECURE=true`), so a password is never sent in the clear. A delivery error names its failure by code (`EENVELOPE 550 RCPT TO`, an HTTP status), never by the recipient or the provider's reply. `resolveMailLocale()` reads the request's language.
 
-### `@lib/clock` (Time Port)
+<a id="lib-clock"></a>
+
+### `@lib/clock` (Time port)
 
 The `Clock` port every module shares. Domain and application code import it with `import type` and are handed an instance; only `composition.ts` files import `systemClock`.
 
 - **Types**: `Clock` (`now(): Date`).
-- `systemClock`: The real clock.
+- `systemClock`: the real clock.
 
-### `@lib/rate-limit` (Rate Limiting)
+<a id="lib-rate-limit"></a>
+
+### `@lib/rate-limit` (Rate limiting)
 
 Budgets for operations anyone can repeat or that cost something per run. Counters live in Redis, reached over HTTP with the platform `fetch` (Upstash), or in process memory for development and tests. How it fits together: [`docs/architecture/rate-limiting.md`](../../docs/architecture/rate-limiting.md); procedure: [`docs/conventions/adding-a-rate-limit.md`](../../docs/conventions/adding-a-rate-limit.md).
 
 Like `Clock`, it is a port every module shares: domain, application and presentation code `import type` from it and are handed an instance; only `composition.ts` files call the runtime functions.
 
 - **Types**: `RateLimiter` (`enforce(request)`, `enforceAll(requests)`: the first refusal wins and later budgets are not counted), `RateLimitPolicy` (`id`, `limit`, `windowSeconds`, `onBackendFailure`, `onUnresolvedClient`), `RateLimitSubject` (`actor`, `client`, `identifier`, `global`), `RateLimitFailure` (a `rate_limited` or an `infrastructure` error), `ClientAddressProvider` / `ClientSubject`, `RateLimitStore`.
-- `getRateLimiter()`: The application's limiter, built on the first `enforce` from validated configuration; a build failure refuses the attempt instead of throwing.
-- `getClientAddressProvider(() => headers())`: Who is calling by network address, from `x-vercel-forwarded-for` or the trusted-proxy chain of `x-forwarded-for`; an address that cannot be trusted is `unresolved-client`, never a guess.
-- `createRateLimiter(deps)`, `InMemoryRateLimitStore`: For tests, with a store you control. `UpstashRateLimitStore` is the production store (one `EVAL` per attempt).
-- `policyProblem(policy)`, `buildBucketKey(policyId, subject, secret)`: The validator behind the policy checks, and the keyed hash every counter is stored under.
+- `getRateLimiter()`: the application's limiter, built on the first `enforce` from validated configuration; a build failure refuses the attempt instead of throwing.
+- `getClientAddressProvider(() => headers())`: who is calling by network address, from `x-vercel-forwarded-for` or the trusted-proxy chain of `x-forwarded-for`; an address that cannot be trusted is `unresolved-client`, never a guess.
+- `createRateLimiter(deps)`, `InMemoryRateLimitStore`: for tests, with a store you control. `UpstashRateLimitStore` is the production store (one `EVAL` per attempt).
+- `policyProblem(policy)`, `buildBucketKey(policyId, subject, secret)`: the validator behind the policy checks, and the keyed hash every counter is stored under.
 
-### `@lib/db` (Database Access)
+<a id="lib-db"></a>
 
-Prisma database client singleton and error mapping.
+### `@lib/db` (Database access)
 
-- `db`: The singleton Prisma Postgres client instance (`ReturnType<typeof postgres<Contract>>`).
-- `disconnectDb(): Promise<void>`
-- `createPersistenceFailures(config: PersistenceFailureConfig)`: Creates a repository's failure translators (`infraOnly`, `orConflict`, `requireRow`). Repositories use these, never `mapPrismaError` directly.
-- `mapPrismaError(thrown: unknown, context: { code: string; message: string }): AppError`: The classifier behind them.
-- Importing `@lib/db` installs the `temporal-polyfill` global when the runtime has no native `Temporal`. Prisma 8's `timestamptz` codec and `now()` defaults need the global; Node 24 (`.nvmrc`) lacks it, Node 26 has it. Nothing else installs it, so any code that reads or writes through Prisma must reach the client through `@lib/db`.
-- `InstantRecord`: Interface for Temporal.Instant used by Prisma 8 for reads.
-- `instantToDate(instant: InstantRecord): Date`: Converts Prisma 8 Temporal reads to `Date`.
-- `dateToInstant(date: Date): string`: Converts `Date` to ISO-8601 string for Prisma 8 writes.
+- `db`: the singleton Prisma Postgres client (`ReturnType<typeof postgres<Contract>>`); every query is logged at `debug` as parameterised SQL and timing, never with bound values.
+- `disconnectDb(): Promise<void>`: for workers, scripts and tests.
+- `createPersistenceFailures({ module, code, subject })`: a repository's failure translators, and the one place Prisma and driver errors are classified:
+  - `infraOnly(operation)` for reads and idempotent deletes;
+  - `orConflict(operation, onConflict)` for writes that can violate a unique or exclusion constraint;
+  - `requireRow(onNotFound)` for single-row writes, which resolve to `null` on a miss.
 
-### `@lib/errors` (Error Handling & Factories)
+  Anything else thrown is an infrastructure failure: logged once with the operation and the database's `sqlState`, `constraint` and `table` (never its `detail`, which can quote a row), the thrown error kept as `cause`, a generic message for the user. The driver error is looked for along the cause chain, a few levels deep. Foreign-key, not-null and check violations are deliberately not conflicts.
 
-Typed application errors (Rule 5: Use strongly typed results and errors).
+- `toJsonValue(value)`: plain JSON for a write to a JSON column (`Date` becomes its ISO text, `undefined` members are dropped); throws `JsonStringifyError` for a `bigint` or a cycle.
+- Importing `@lib/db` installs the `temporal-polyfill` global when the runtime has no native `Temporal`. Prisma 8's `timestamptz` codec and `now()` defaults need it; Node 24 (`.nvmrc`) lacks it, Node 26 has it. Any code that reads or writes through Prisma must reach the client through `@lib/db`.
+- `instantToDate(instant): Date` converts a Prisma 8 read; `dateToInstant(date)` converts a write (a `Temporal.Instant`, or ISO-8601 text where there is no global `Temporal`). `InstantRecord` is the shape the read side needs.
 
-- **Types**: `AppError`, `AppErrorKind`, and specific error types.
-- **Factories**:
-  - `validationError(code: string, message: string, fieldErrors: Record<string, string[]>): ValidationAppError`
-  - `notFoundError(code: string, message: string): NotFoundAppError`
-  - `conflictError(code: string, message: string): ConflictAppError`
-  - `unauthorizedError(code: string, message: string): UnauthorizedAppError`
-  - `forbiddenError(code: string, message: string): ForbiddenAppError`
-  - `infrastructureError(code: string, message: string, cause?: unknown): InfrastructureAppError`
-  - `unexpectedError(code: string, message: string, cause?: unknown): UnexpectedAppError`
-- **Utilities**:
-  - `matchAppError<T>(error: AppError, handlers: { [K in AppError['kind']]: (error: Extract<AppError, { kind: K }>) => T }): T`
-  - `httpStatusForError(error: AppError): number`
-  - `toErrorResponseBody(error: AppError): ErrorResponseBody`
-  - `class FieldErrorBag`: Collects multiple validation field errors in one pass.
-    - `add(path: string, code: string): void`
-    - `hasErrors: boolean`
-    - `toError(): ValidationAppError`
-  - `ROOT_FIELD`: Key for validation errors that belong to no single field (`'_form'`).
-  - `NestedKeyOf<ObjectType>`: Generates a union of all dotted paths for a nested object type.
-  - `fieldPath<T>(...segments: T): JoinPath<T>`: Builds a strictly typed dotted field path (e.g., for `react-hook-form`).
-  - `escalate(error: AppError): never` (from `@lib/errors/escalate`, server-only): Logs and throws an unexpected or infrastructure error to the nearest `error.tsx` boundary. It is not in the `@lib/errors` barrel, which Client Components import.
+<a id="lib-errors"></a>
 
-### `@lib/fonts` (Typography)
+### `@lib/errors` (Typed application errors)
 
-Next.js font configuration and CSS variables.
+- **Types**: `AppError` (a union of eight kinds: validation, not found, conflict, unauthorized, forbidden, rate limited, infrastructure, unexpected), `AppErrorKind` and one interface per kind.
+- **Factories**: `validationError(code, message, fieldErrors)`, `notFoundError`, `conflictError`, `unauthorizedError`, `forbiddenError`, `rateLimitedError(code, message, retryAfterSeconds)` (rounded up, at least 1), `infrastructureError(code, message, cause?)`, `unexpectedError(code, message, cause?)`. The message is safe to show; the diagnostic detail goes in `cause`.
+- `matchAppError(error, handlers)`: one handler per kind, exhaustive at compile time.
+- **HTTP**: `httpStatusForError(error)`, `httpHeadersForError(error)` (`Retry-After` for a rate-limited error), `toErrorResponseBody(error)` (never the `cause`).
+- `FieldErrorBag`: collects field problems in one pass: `add(path, code)`, `expect(isOk, path, code)` (records unless `isOk`, returns it), `hasErrors`, `toError()`. A path may be named like a prototype member (`constructor`).
+- `ROOT_FIELD` (`'_form'`): the key for a problem that belongs to no field. `fieldPath(...segments)`: a typed dotted path for `react-hook-form`. `NestedKeyOf<T>`: every dotted path of an object type.
+- `escalate(error): never` (`@lib/errors/escalate`, `server-only`): logs and throws to the nearest `error.tsx`. Not in the barrel, which Client Components import.
 
-- `fontDMSans`, `fontGeist`, `fontSans`, `fontSerif` (`NextFontWithVariable`).
-- `fontVariables`: Combined CSS variables string to be injected into the root layout (`string`).
+<a id="lib-result"></a>
 
-### `@lib/logger` (Observability)
+### `@lib/result` (Result pattern)
 
-Centralized, server-only logging. Do not use `console.log`. Client Components never log through it.
+A wrapper around `neverthrow`, so call sites import from here and never from the package.
 
-- `logger`: The main logger instance with levels (`debug`, `info`, `warn`, `error`).
-- `logger.withContext(context: LogContext): Logger`
-- _Note:_ Always pass context objects (e.g., `logger.error("msg", { err, data })`).
-- `createAuditLog<T>(module: string, levels: Record<T, AuditLevel>): AuditRecorder<T>`: The one implementation of every module's audit port. The module owns its event types and levels; this writes one structured line per event and never throws.
+- **Types**: `AppResult<T, E>`, `AppResultAsync<T, E>`, `ActionResult<T>`, `SerializedActionError`.
+- **Constructors**: `ok`, `err`, `okAsync`, `errAsync`, `fromThrowable(fn, onError)`, `fromThrowableAsync(fn, onError)` (also catches a synchronous throw), `combine`, `combineAsync`.
+- `toActionResult(result)`: the plain object a Server Action returns; code and message, `fieldErrors` or `retryAfterSeconds` where they apply, never a `cause`.
+- `createIdParser({ isValid, brand, mapError })`: a module's branded id parser for request values. `parseValidIds(raw, parse, limit)`: those that parse, each once, at most `limit`.
 
-### `@lib/result` (Neverthrow Result Pattern)
-
-Wrapper around `neverthrow` to enforce Railway Oriented Programming.
-
-- **Result Types**: `AppResult<T, E>`, `AppResultAsync<T, E>`, `ActionResult<T>`.
-- **Constructors**:
-  - `ok<T, E>(value: T): Result<T, E>`
-  - `err<T, E>(error: E): Result<T, E>`
-  - `okAsync<T, E>(value: T): ResultAsync<T, E>`
-  - `errAsync<T, E>(error: E): ResultAsync<T, E>`
-  - `fromThrowable<T, E extends AppError>(fn: () => T, onError: (thrown: unknown) => E): AppResult<T, E>`
-  - `fromThrowableAsync<T, E extends AppError>(fn: () => Promise<T>, onError: (thrown: unknown) => E): AppResultAsync<T, E>`
-- **Utilities**:
-  - `combine(results: Result<unknown, unknown>[]): Result<unknown[], unknown>`
-  - `combineAsync(results: ResultAsync<unknown, unknown>[]): ResultAsync<unknown[], unknown>`
-  - `toActionResult<T, E extends AppError>(result: AppResult<T, E>): ActionResult<T>`
-  - `isActionSuccess<T>(result: ActionResult<T>): result is { ok: true; data: T }`
-  - `createIdParser<T, E>(config: IdParserConfig<T, E>): (raw: string) => AppResult<T, E>`: Builds a module's branded id parser for request values.
-  - `parseValidIds<T>(raw, parse, limit): T[]`: The ids of a lookup by id: those that parse, each once, at most `limit`; malformed ones are dropped.
+<a id="lib-actions"></a>
 
 ### `@lib/actions` (Server Actions)
 
-Utilities for parsing inputs and applying errors in Next.js Server Actions.
+- `createActionInputParser(code)`: returns `(schema, input) => AppResult<T, ValidationAppError>`; `code` is the module's "invalid input" code. Problems are reported by dotted field path, with no input value in them.
+- `applyActionError(error, setError, codeFields?)`: puts field errors on their inputs (focusing the first) and returns the form-level code to show, or `null`.
 
-- `createActionInputParser(code: string): ActionInputParser`: Returns `(schema, input) => AppResult<T, ValidationAppError>`; `code` is the module's "invalid input" code.
-- `applyActionError(error: SerializedActionError, setError: UseFormSetError, codeFields?): string | null`: Puts field errors on their inputs (focusing the first) and returns the form-level code to show, or `null`.
+<a id="lib-logger"></a>
 
-### `@lib/seo` (Search Engine Optimization)
+### `@lib/logger` (Observability)
 
-Builders for route metadata. Pages never assemble canonical URLs or robots directives themselves.
+Structured, server-only logging. Do not use `console.log`. Client Components never log through it.
 
-- `buildLocalizedMetadata({ locale, pathname, title, description })`: Translated platform pages: canonical, hreflang alternates, Open Graph with locale.
-- `buildContentMetadata({ pathname, title, description, siteName })`: Untranslated content (published municipal sites): one canonical URL in the default locale.
-- `buildPrivateMetadata(title)`: Pages behind sign-in or single-use emailed links: title and `noindex` only.
+- `logger.debug|info|warn(message, context?)`, `logger.error(message, error, context?)`, `logger.withContext(base)`: one JSON line each, filtered by `LOG_LEVEL`. Always pass context objects (`logger.error('msg', err, { siteId })`).
+- A context key that **contains** `password`, `token`, `secret`, `api-key`, `authorization`, `cookie` or a similar word is written as `[REDACTED]`, at any depth and in any casing (`accessToken`, `Set-Cookie`). Nesting past 8 levels is cut off, a `bigint` is written as text, and a context that cannot be serialized costs only the context: a log call never throws.
+- `createAuditLog(module, levels)`: the one implementation of every module's audit port. The module owns its event types and levels; this writes one structured line per event and never throws.
+
+<a id="lib-seo"></a>
+
+### `@lib/seo` (Route metadata)
+
+Pages never assemble canonical URLs or robots directives themselves.
+
+- `buildLocalizedMetadata({ locale, pathname, title, description })`: translated platform pages: canonical, hreflang alternates (every locale, and `x-default` for the default one, in lower case as the HTML specification and Google write it), Open Graph with locale.
+- `buildContentMetadata({ pathname, title, description, siteName })`: untranslated content (published municipal sites): one canonical URL in the default locale, the website as the brand.
+- `buildPrivateMetadata(title)`: pages behind sign-in or single-use emailed links: title and `noindex` only.
 - `toLocalizedPath(locale, pathname)`: `('de', '/')` → `/de`.
+
+<a id="lib-security"></a>
 
 ### `@lib/security` (Response headers)
 
@@ -139,12 +154,18 @@ What every response carries; `next.config.ts` applies it to all routes.
 
 - `securityHeaders({ isProduction })`: CSP without script rules (`object-src`, `base-uri`, `form-action`, `frame-ancestors`), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and HSTS in production. A script-src policy needs a per-request nonce and belongs in `proxy.ts`.
 
+<a id="lib-tenancy"></a>
+
 ### `@lib/tenancy` (The website a request is about)
 
-A tenant is its website, so the address names the tenant. `proxy.ts` and the auth module share one vocabulary for it.
+A tenant is its website. Server code cannot see the address of the page it renders, so `proxy.ts`, the one place that sees every address, copies the website out of the path into a request header, and the auth module's actor provider reads it. The two sides share this vocabulary.
 
-- `TENANT_HINT_HEADER`: the request header (`x-civo-tenant`) `proxy.ts` sets from the address, overwriting any client value.
-- `tenantHintFromPathname(pathname)`: the website id in `/<locale>/websites/<id>/...`, or `null`. Only a platform administrator is resolved by it.
+- `TENANT_HINT_HEADER` (`x-civo-tenant`): set by `proxy.ts` on every request that reaches the application, API routes included, which overwrites whatever the client sent and removes it where no website is named.
+- `isWebsiteId(value)`: the shape of a website id (a UUID). The proxy writes only that, and the one reader of the header (the auth composition root) checks it again.
+- `tenantHintFromPathname(pathname)`: the website id in exactly `/<locale>/websites/<uuid>/...`, or `null`. Website ids are UUIDs, so `/websites/users`, `/websites/audit` (the platform's own screens), the list and every other address name no website. A test walks `websiteRoutes` to keep the two in step.
+- The header is a **selector, never a credential**. A platform administrator, who may work in any website anyway, is moved by it; a member only to a website they already belong to; everyone else ignores it. The reserved scopes `platform` and `unassigned` can never be named. Every use case still authorizes against the server-side session ([`route-protection.md`](../../docs/architecture/route-protection.md)).
+
+<a id="lib-pagination"></a>
 
 ### `@lib/pagination` (Paging a list)
 
@@ -157,109 +178,37 @@ How every list that can grow is sliced. The address carries the state (`?page=3&
 - `PAGE_SIZE_OPTIONS`: the sizes a user can choose.
 - Pair with `<Pagination>` (`@components/shared/pagination`). Repositories take a `PageRequest` and return the items plus a `total`; filtering, ordering and counting happen in the store, never in memory over an unbounded read.
 
-### `@lib/utils` (Pure Utility Functions)
+<a id="lib-fonts"></a>
 
-Zero-dependency, pure utility functions organized by domain.
+### `@lib/fonts` (Typography)
 
-- **Array**:
-  - `isDefined<T>(value: T | null | undefined): value is T`
-  - `groupBy<T, K>(items: readonly T[], keyFn: (item: T) => K): Map<K, T[]>`
-  - `keyBy<T, K>(items: readonly T[], keyFn: (item: T) => K): Map<K, T>`
-  - `chunk<T>(items: readonly T[], size: number): T[][]`
-  - `unique<T>(items: readonly T[], keyFn?: (item: T) => unknown): T[]`
-  - `partition<T>(items: readonly T[], predicate: (item: T) => boolean): [matching: T[], rest: T[]]`
-  - `range(start: number, end: number): number[]`
-  - `moveItem<T>(items: readonly T[], fromIndex: number, toIndex: number): T[]`
-  - `literalGuard<T>(value: unknown, validValues: readonly T[]): value is T`
-  - `insertItem<T>(items: readonly T[], index: number, item: T): T[]`
-- **Assert**:
-  - `assertNever(value: never, message?: string): never`
-  - `invariant(condition: unknown, message: string): asserts condition`
-- **Async**:
-  - `sleep(ms: number): Promise<void>`
-  - `withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T>`
-  - `TimeoutError`: Error thrown when `withTimeout` expires.
-  - `retryWithBackoff<T>(fn: (attempt: number) => Promise<T>, options?: RetryOptions): Promise<T>`
-  - `mapWithConcurrency<T, R>(items: readonly T[], concurrency: number, fn: (item: T, index: number) => Promise<R>): Promise<R[]>`
-- **Brand**:
-  - `Brand<T, B extends string>`
-- **CSS**:
-  - `cn(...inputs: ClassValue[]): string` (Tailwind class merging)
-- **Color**:
-  - `parseHexColor(hex: string): RgbColor | null` (`#rrggbb` only)
-  - `toHexColor(color: RgbColor): string`
-  - `contrastRatio(first: string, second: string): number` (WCAG, `#rrggbb`)
-  - `readableForeground(background: string): string`: white or black, whichever reads on the colour
-  - `readableCopy(color: string): string`: the colour as text on the page backgrounds (`PAGE_BACKGROUNDS`), darkened until it reaches 4.5:1
-- **Date**:
-  - `formatDate(input: DateInput, locale: string, timeZone: string, options?: Intl.DateTimeFormatOptions): string`
-  - `formatDateTime(input: DateInput, locale: string, timeZone: string): string`
-  - _Note:_ Components never call the date and number formatters directly; they use `getAppFormatters` (`@i18n/server`) or `useAppFormatters` (`@i18n/client`), which bind the request locale and time zone.
-  - `formatRelativeTime(input: DateInput, now: DateInput, locale: string): string`
-  - `isSameDay(date: DateInput, other: DateInput, tz?: string): boolean`
-  - `addDays(input: DateInput, days: number): Date`
-- **Function**:
-  - `debounce<Args extends unknown[]>(fn: (...args: Args) => void, waitMs: number): ((...args: Args) => void) & { cancel: () => void }`
-  - `throttle<Args extends unknown[]>(fn: (...args: Args) => void, waitMs: number): ((...args: Args) => void) & { cancel: () => void }`
-  - `once<T>(fn: () => T): () => T`
-  - `memoize<Arg, Result>(fn: (arg: Arg) => Result): (arg: Arg) => Result`
-  - `identity<T>(value: T): T`
-  - `noop(): void`
-- **JSON**:
-  - `parseJson(text: string): unknown`
-  - `stringifyJson(value: unknown, space?: number): string`
-  - `JsonParseError`, `JsonStringifyError`
-  - `JsonPrimitive`, `JsonValue`
-- **JSON Value**:
-  - `isJsonValue(value: unknown, maxDepth?: number): value is JsonValue`
-  - `isJsonRecord(value: unknown, maxDepth?: number): value is Record<string, JsonValue>`
-  - `jsonWeight(value: JsonValue): number`
-- **Number**:
-  - `clamp(value: number, min: number, max: number): number`
-  - `formatNumber(value: number, locale: string, options?: Intl.NumberFormatOptions): string`
-  - `formatPercent(ratio: number, locale: string, fractionDigits?: number): string`
-  - `formatMoney(minorUnits: number, currency: string, locale: string): string`
-  - `formatBytes(bytes: number, locale: string, fractionDigits?: number): string`
-- **Object**:
-  - `isPlainObject(value: unknown): value is Record<string, unknown>`
-  - `hasOwnKey<T extends object>(obj: T, key: PropertyKey): key is keyof T`
-  - `omitUndefined<T extends Record<string, unknown>>(obj: T): Partial<T>`
-  - `pick<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K>`
-  - `omit<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Omit<T, K>`
-  - `mapValues<T, U>(obj: Readonly<Record<string, T>>, fn: (value: T, key: string) => U): Record<string, U>`
-  - `deepEqual(a: unknown, b: unknown): boolean`
-  - `deepMerge<T extends Record<string, unknown>>(target: T, source: Record<string, unknown>): T`
-  - `definedKeys<T extends object>(obj: T): (keyof T)[]`
-  - `changedKeys(before: Readonly<Record<string, unknown>>, after: Readonly<Record<string, unknown>>): string[]`
-- **Path**:
-  - `getPath(obj: unknown, path: string): unknown`
-  - `setPath<T extends Record<string, unknown>>(obj: T, path: string, value: unknown): T`
-  - `isUnsafePathSegment(segment: string): boolean`
-  - `normalizePath(path: string): string`
-  - `pathSegments(path: string): string[]`
-  - `hasUnsafePathSegment(path: string): boolean`
-- **String**:
-  - `slugify(text: string): string`
-  - `truncate(text: string, maxLength: number): string`
-  - `capitalize(text: string): string`
-  - `normalizeWhitespace(text: string): string`
-  - `stripHtml(html: string): string`
-  - `escapeHtml(text: string): string`
-  - `isBlank(text: string | null | undefined): boolean`
-  - `trimToNull(text: string | null | undefined): string | null`
-- **Tree**:
-  - `walkTree<T>(node: T, getChildren: GetChildren<T>, visitor: (node: T) => void | boolean): void`
-  - `flattenTree<T>(root: T, getChildren: GetChildren<T>): T[]`
-  - `findNode<T>(root: T, getChildren: GetChildren<T>, predicate: (node: T) => boolean): T | undefined`
-  - `countNodes<T>(root: T, getChildren: GetChildren<T>): number`
-  - `mapTree<T, U>(root: T, getChildren: GetChildren<T>, mapper: (node: T) => U): U`
-  - `findPath<T>(root: T, getChildren: GetChildren<T>, predicate: (node: T) => boolean): T[] | undefined`
-  - **Forest Operations**: `flattenForest`, `locateInForest`, `findPathInForest`, `updateForest`, `removeFromForest`
-  - **Types**: `GetChildren`, `WithChildren`, `TreeShape`, `ForestEntry`, `ForestLocation`
-- **URL**:
-  - `isValidUrl(value: string, protocols: readonly string[] = ['http:', 'https:']): boolean`
-  - `isRelativePath(value: string): boolean`
-  - `ensureTrailingSlash(value: string): string`
-  - `stripTrailingSlash(value: string): string`
-  - `joinPath(...segments: readonly string[]): string`
-  - `buildQueryString(params: Readonly<Record<string, QueryValue>>): string`
+- `fontSerif`, `fontSans`, `fontGeist`, `fontDMSans` (`NextFontWithVariable`): the loaders for `--font-serif`, `--font-sans`, `--font-geist`, `--font-dm-sans`; a website theme points at these variables.
+- `fontVariables`: the combined class string for the root layout.
+
+<a id="lib-utils"></a>
+
+### `@lib/utils` (Pure utilities)
+
+Zero-dependency (except `cn`, in its own file), side-effect-free helpers, one file per concern, all exported from `@lib/utils`. Every function is documented where it is defined: behaviour, edge cases, what it throws, an example. Untrusted text, paths and keys are treated as untrusted: nothing here reaches the prototype chain, and the text helpers run in linear time.
+
+| File         | Exports                                                                                                                                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `array`      | `isDefined`, `groupBy`, `keyBy`, `unique`, `range`, `literalGuard`, `insertItem`, `replaceAt`, `removeAt` (copies, never mutations)                                                                                            |
+| `assert`     | `assertNever` (exhaustiveness), `invariant` (a condition that must hold; never for input)                                                                                                                                      |
+| `async`      | `withTimeout`, `TimeoutError`                                                                                                                                                                                                  |
+| `brand`      | `Brand<T, B>`: a nominal type                                                                                                                                                                                                  |
+| `cn`         | `cn`: class names with Tailwind conflict resolution                                                                                                                                                                            |
+| `color`      | `parseHexColor`, `toHexColor`, `readableForeground`, `readableCopy`, `PAGE_BACKGROUNDS`, `RgbColor`: WCAG contrast for `#rrggbb` only                                                                                          |
+| `date`       | `formatDate`, `formatDateTime`, `formatRelativeTime`, `addDays`, `DateInput`, `MS_PER_DAY`, `MS_PER_MINUTE`, `SECONDS_PER_HOUR`, `SECONDS_PER_MINUTE`. Components use `getAppFormatters` / `useAppFormatters` instead          |
+| `function`   | `debounce`, `once` (a throwing call is not cached), `identity`, `noop`                                                                                                                                                         |
+| `json`       | `parseJson` (`JsonParseError`), `stringifyJson` (`JsonStringifyError`), `stableStringify` (sorted keys; ids derived from it are stored, so pin it with tests), `JsonValue`, `JsonPrimitive`                                    |
+| `json-value` | `isJsonValue`, `isJsonRecord` (both take a `maxDepth`), `jsonWeight`: is it JSON, and how big                                                                                                                                  |
+| `number`     | `clamp`, `formatNumber`, `formatPercent`, `formatMoney` (integer minor units only), `formatBytes`                                                                                                                              |
+| `object`     | `isPlainObject`, `hasOwnKey`, `pick`, `omit`, `deepEqual`, `deepMerge` (a `__proto__` key stays data), `definedKeys`, `changedKeys`                                                                                            |
+| `path`       | `getPath` (own properties only), `setPath`, `hasUnsafePathSegment`, `isUnsafePathSegment`, `normalizePath`, `pathSegments`                                                                                                     |
+| `shape`      | `Guard<T>`, `isString`, `isBoolean`, `isFiniteNumber`, `isInteger`, `arrayOf`, `nullable`, `optional`, `oneOf`, `objectOf`: shape checks for data read back from storage (Zod is for the presentation boundary)                |
+| `string`     | `slugify`, `truncate`, `escapeHtml`, `stripHtml` (a preview helper, **not** a sanitizer), `isBlank`, `trimToNull`                                                                                                              |
+| `tree`       | `countNodes`, `mapTree`, `GetChildren`, `WithChildren`, `TreeShape`; forests: `flattenForest`, `locateInForest`, `findPathInForest`, `updateForest`, `removeFromForest` (structural sharing). Recursive: bound untrusted depth |
+| `url`        | `isValidUrl` (protocol allowlist), `isRelativePath` (open-redirect guard, judged as a browser resolves it), `stripTrailingSlash`, `joinPath`, `buildQueryString`                                                               |
+
+Adding one: [`adding-a-shared-utility.md`](../../docs/conventions/adding-a-shared-utility.md). A helper with no user is removed, not kept "for later".

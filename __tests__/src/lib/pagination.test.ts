@@ -79,9 +79,17 @@ describe('resolveSort', () => {
     expect(formatSort({ field: 'createdAt', direction: 'desc' })).toBe('-createdAt');
   });
 
+  it('reads an ascending field without a prefix, and writes it back the same way', () => {
+    expect(resolveSort('name', FIELDS, FALLBACK)).toEqual({ field: 'name', direction: 'asc' });
+    expect(formatSort({ field: 'name', direction: 'asc' })).toBe('name');
+  });
+
   it('accepts only fields from the allowlist', () => {
     expect(resolveSort('password; drop table', FIELDS, FALLBACK)).toBe(FALLBACK);
+    expect(resolveSort('-password', FIELDS, FALLBACK)).toBe(FALLBACK);
+    expect(resolveSort('constructor', FIELDS, FALLBACK)).toBe(FALLBACK);
     expect(resolveSort(undefined, FIELDS, FALLBACK)).toBe(FALLBACK);
+    expect(resolveSort(['name'], FIELDS, FALLBACK)).toBe(FALLBACK);
   });
 });
 

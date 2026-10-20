@@ -1,1 +1,1 @@
-export { TENANT_HINT_HEADER, tenantHintFromPathname } from './tenant-hint';
+export { TENANT_HINT_HEADER, isWebsiteId, tenantHintFromPathname } from './tenant-hint';

@@ -10,19 +10,15 @@ import type { ValidationAppError } from './app-error';
  * module's own `code` and `message`.
  */
 export class FieldErrorBag {
-  private readonly errors: Record<string, string[]> = {};
+  // A `Map`: a path may be named after a prototype member (`constructor`) when it comes from data.
+  private readonly errors = new Map<string, string[]>();
 
   constructor(
     private readonly fail: (fieldErrors: Record<string, string[]>) => ValidationAppError,
   ) {}
 
   add(path: string, code: string): void {
-    const existing = this.errors[path];
-    if (existing) {
-      existing.push(code);
-    } else {
-      this.errors[path] = [code];
-    }
+    this.errors.set(path, [...(this.errors.get(path) ?? []), code]);
   }
 
   /** Records `code` at `path` unless `isOk`; returns `isOk`, so several checks can run without short-circuiting. */
@@ -34,13 +30,13 @@ export class FieldErrorBag {
   }
 
   get hasErrors(): boolean {
-    return Object.keys(this.errors).length > 0;
+    return this.errors.size > 0;
   }
 
   toError(): ValidationAppError {
     // Copy the arrays too, so the returned error cannot alias the bag.
     return this.fail(
-      Object.fromEntries(Object.entries(this.errors).map(([path, codes]) => [path, [...codes]])),
+      Object.fromEntries([...this.errors].map(([path, codes]) => [path, [...codes]])),
     );
   }
 }

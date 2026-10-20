@@ -45,8 +45,3 @@ export function toActionResult<T, E extends AppError>(result: AppResult<T, E>): 
     },
   };
 }
-
-/** Narrow an ActionResult to its success branch in calling code / tests. */
-export function isActionSuccess<T>(result: ActionResult<T>): result is { ok: true; data: T } {
-  return result.ok;
-}
