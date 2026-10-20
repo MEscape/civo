@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { PasswordField } from '@components/shared/password-field';
 
-import enApp from '@/i18n/en.json';
+import enApp from '@i18n/messages/en.json';
 
 function renderField(props: Partial<Parameters<typeof PasswordField>[0]> = {}) {
   return render(

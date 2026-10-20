@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { websiteRoutes } from '@modules/website';
 
 import { AppNav } from '@components/layout/app-nav';
+import { SectionBar } from '@components/layout/layout-primitives';
 import { Skeleton } from '@components/ui/skeleton';
 
 import { requireLocale } from '@i18n';
@@ -34,7 +35,7 @@ async function PlatformNav({ params }: Pick<LayoutProps, 'params'>) {
   }
 
   return (
-    <div className="sticky top-app-header z-30 flex h-website-bar shrink-0 items-stretch border-b border-border bg-surface px-4">
+    <SectionBar>
       <AppNav
         variant="section"
         label={t('platformNav.label')}
@@ -46,18 +47,23 @@ async function PlatformNav({ params }: Pick<LayoutProps, 'params'>) {
           { href: websiteRoutes.platformUsers(), label: t('platformNav.users') },
         ]}
       />
-    </div>
+    </SectionBar>
   );
 }
 
-export default function PlatformLayout({ children, params }: LayoutProps) {
+export default async function PlatformLayout({ children, params }: LayoutProps) {
+  const access = await getWebsiteAccess();
+  if (!access.may('website.list.all')) {
+    return children;
+  }
+
   return (
     <>
       <Suspense
         fallback={
-          <div className="sticky top-app-header z-30 flex h-website-bar items-center border-b border-border bg-surface px-4">
-            <Skeleton className="h-5 w-64" />
-          </div>
+          <SectionBar>
+            <Skeleton className="my-3 h-5 w-64" />
+          </SectionBar>
         }
       >
         <PlatformNav params={params} />

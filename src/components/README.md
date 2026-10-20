@@ -14,7 +14,7 @@ Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/ap
 
 ## `@components/layout` (Layout primitives)
 
-`layout-primitives.tsx`: `PageShell`, `AppHeader`, `Container`, `Section` (`tone`: `default` | `muted`), `PageHeading` (the page's single `h1`), `SectionHeading` (`h2`), `EmptyState` (`variant`: `plain` | `outlined`), `Grid` (container-query columns).
+`layout-primitives.tsx`: `PageShell`, `AppHeader`, `SectionBar` (the sticky bar under the header that holds a website's or the platform's navigation; its fallback uses the same component, so both take the same room), `Container`, `Section` (`tone`: `default` | `muted`), `PageHeading` (the page's single `h1`), `SectionHeading` (`h2`), `EmptyState` (`variant`: `plain` | `outlined`), `Grid` (container-query columns).
 
 `nav-disclosure.tsx` (`NavDisclosure`): a few navigation links behind one button (the disclosure pattern, not an ARIA menu); closes on Escape, outside click, after a link is followed and when the page is hidden. `fit-tabs.ts` (`fitTabs`): how many tabs fit the available width; the rest go behind a "more" button.
 
@@ -62,4 +62,4 @@ Built on **shadcn/ui** and **Radix UI**, adapted to the design tokens in `src/ap
 
 ## `@hooks`
 
-Client hooks used by more than one module. `useUnsavedNavigationGuard` and `useBeforeUnloadGuard` ask before unsaved work is left (see `ConfirmDialog` above); `useCountdown(seconds)` counts whole seconds down for a button that may be pressed again after a wait ("send again in 42s").
+Client hooks used by more than one module. `useUnsavedNavigationGuard` and `useBeforeUnloadGuard` ask before unsaved work is left (see `ConfirmDialog` above); `useCountdown(seconds)` counts whole seconds down for a button that may be pressed again after a wait ("send again in 42s"); `useDismiss(isOpen, rootRef, onDismiss)` reports a pointer press outside a popup or Escape (`'outside'` | `'escape'`) and consumes Escape, so a popup inside a modal `<dialog>` closes alone: the caller closes and, on `'escape'`, returns focus to the trigger (`NavDisclosure`, the booking date picker).

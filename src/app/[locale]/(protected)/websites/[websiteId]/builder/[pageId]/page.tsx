@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import {
   BuilderSessionProvider,
   BuilderShell,
+  BuilderSkeleton,
   builderQueries,
   collectCategoryTypes,
   collectDatasetTypes,
@@ -20,7 +21,6 @@ import { releaseRoutes } from '@modules/release/client';
 import { themeToCssVariables } from '@modules/website';
 
 import { I18nProvider } from '@components/providers/i18n-provider';
-import { PageSkeleton } from '@components/shared/page-skeleton';
 
 import { requireLocale } from '@i18n';
 
@@ -125,7 +125,7 @@ async function BuilderContent({ params, searchParams }: RouteProps) {
 
 export default function BuilderPage(props: RouteProps) {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<BuilderSkeleton />}>
       <BuilderContent {...props} />
     </Suspense>
   );

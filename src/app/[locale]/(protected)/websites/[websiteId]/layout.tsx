@@ -7,6 +7,7 @@ import { PublishStatus } from '@modules/release';
 import { WebsiteSwitcher, websiteRoutes } from '@modules/website';
 
 import { AppNav } from '@components/layout/app-nav';
+import { SectionBar } from '@components/layout/layout-primitives';
 import { I18nProvider } from '@components/providers/i18n-provider';
 import { Skeleton } from '@components/ui/skeleton';
 
@@ -132,7 +133,7 @@ async function PublishChip({ params }: Pick<LayoutProps, 'params'>) {
 export default function WebsiteLayout({ children, params }: LayoutProps) {
   return (
     <>
-      <div className="sticky top-app-header z-30 flex h-website-bar shrink-0 items-stretch border-b border-border bg-surface px-4">
+      <SectionBar>
         <Suspense fallback={<Skeleton className="my-3 h-5 w-64" />}>
           <WebsiteNav params={params} />
         </Suspense>
@@ -141,7 +142,7 @@ export default function WebsiteLayout({ children, params }: LayoutProps) {
             <PublishChip params={params} />
           </Suspense>
         </div>
-      </div>
+      </SectionBar>
       {children}
     </>
   );

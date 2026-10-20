@@ -4,7 +4,7 @@ import type { Metadata, Viewport } from 'next';
 
 import { I18nProvider } from '@components/providers/i18n-provider';
 
-import { I18N_CONFIG, requireLocale } from '@i18n';
+import { I18N_CONFIG, getDirection, requireLocale } from '@i18n';
 
 import { setRequestLocale } from '@i18n/server';
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: APP_IDENTITY.themeColor,
+  themeColor: APP_IDENTITY.colors.primary,
   colorScheme: 'light',
 };
 
@@ -50,7 +50,11 @@ export default async function RootLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${fontVariables} h-full antialiased`}>
+    <html
+      lang={locale}
+      dir={getDirection(locale)}
+      className={`${fontVariables} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>

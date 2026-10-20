@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { ChevronDown } from '@components/ui/icons';
+
+import { useDismiss } from '@hooks/use-dismiss';
 
 import { Link } from '@i18n';
 
@@ -52,28 +54,12 @@ export function NavDisclosure({
     [],
   );
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
+  useDismiss(isOpen, rootRef, (reason) => {
+    setIsOpen(false);
+    if (reason === 'escape') {
+      buttonRef.current?.focus();
     }
-    function handlePointer(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    function handleKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        buttonRef.current?.focus();
-      }
-    }
-    document.addEventListener('pointerdown', handlePointer);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointer);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [isOpen]);
+  });
 
   return (
     <div ref={rootRef} className={cn('relative flex', className)}>

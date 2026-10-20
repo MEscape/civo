@@ -32,6 +32,25 @@ export function AppHeader({ className, ...props }: HTMLAttributes<HTMLElement>) 
 }
 
 /**
+ * The bar under the app header that says where in the admin area one is (a
+ * website's sections, the platform's screens). It sticks below the header with
+ * the height of the `h-website-bar` token, so its loading fallback and its
+ * content take the same room and nothing jumps when one replaces the other.
+ */
+export function SectionBar({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        'sticky top-app-header z-30 flex h-website-bar shrink-0 items-stretch',
+        'border-b border-border bg-surface px-4',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/**
  * Centered, width-capped content column.
  *
  * `max-w-7xl` keeps line-lengths readable on wide screens while leaving room
