@@ -112,7 +112,7 @@ function fromCodeClass(codeClass: ProviderCodeClass): AppError {
 /**
  * Maps anything thrown by Better Auth into one of our AppErrors. This is
  * the error-mapping boundary for authentication, the counterpart of
- * `mapPrismaError` for persistence: provider failures are an
+ * `createPersistenceFailures` for persistence: provider failures are an
  * infrastructure concern and must not reach the application or domain.
  * Adapters call it from their catch blocks.
  *

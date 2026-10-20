@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { PruneAuditTrail } from '@modules/audit/application/commands/prune-audit-trail';
+import { GetAllWebsitesAuditTrail } from '@modules/audit/application/queries/get-all-websites-audit-trail';
 import { GetAuditDigest } from '@modules/audit/application/queries/get-audit-digest';
 import { GetAuditTrail } from '@modules/audit/application/queries/get-audit-trail';
 import { AuditTrailRecorder } from '@modules/audit/application/services/audit-trail-recorder';
 import type { NewAuditEntry } from '@modules/audit/domain/models/audit-entry';
 import { EMPTY_AUDIT_FILTER } from '@modules/audit/domain/models/audit-filter';
+import type { AuditScope } from '@modules/audit/domain/models/audit-scope';
 import type {
   AuditCriteria,
   AuditTrailRepository,
@@ -21,6 +23,7 @@ const clock = { now: () => NOW };
 function store(options: { readonly failAppend?: boolean } = {}) {
   const appended: NewAuditEntry[] = [];
   const asked: AuditCriteria[] = [];
+  const scopes: AuditScope[] = [];
   const cutoffs: Date[] = [];
   const entries: AuditTrailRepository = {
     append: (entry) => {
@@ -30,7 +33,8 @@ function store(options: { readonly failAppend?: boolean } = {}) {
       appended.push(entry);
       return okAsync(undefined);
     },
-    list: (_websiteId, criteria, page) => {
+    list: (scope, criteria, page) => {
+      scopes.push(scope);
       asked.push(criteria);
       return okAsync(toPage([], 0, page));
     },
@@ -42,7 +46,7 @@ function store(options: { readonly failAppend?: boolean } = {}) {
       return okAsync(7);
     },
   };
-  return { entries, appended, asked, cutoffs };
+  return { entries, appended, asked, cutoffs, scopes };
 }
 
 describe('reading a trail', () => {
@@ -142,5 +146,61 @@ describe('the overview digest', () => {
     });
     expect(digest.total).toBe(4);
     expect(digest.warnings).toBe(1);
+  });
+});
+
+describe('which websites a trail covers', () => {
+  it('reads one website, the one named', async () => {
+    const { entries, scopes } = store();
+
+    await new GetAuditTrail({ entries, clock }).execute('site-1', EMPTY_AUDIT_FILTER);
+
+    expect(scopes).toEqual([{ kind: 'website', websiteId: 'site-1' }]);
+  });
+
+  it.each(['', 'x'.repeat(129)])(
+    'never falls back to every website for the id %j: it is refused, and nothing is read',
+    async (rawId) => {
+      const { entries, scopes } = store();
+
+      const trail = await new GetAuditTrail({ entries, clock }).execute(rawId, EMPTY_AUDIT_FILTER);
+
+      expect(trail._unsafeUnwrapErr().kind).toBe('validation');
+      expect(scopes).toEqual([]);
+    },
+  );
+
+  it('reads across the websites only through the use case that says so', async () => {
+    const { entries, scopes } = store();
+
+    const trail = await new GetAllWebsitesAuditTrail({ entries, clock }).execute(
+      EMPTY_AUDIT_FILTER,
+    );
+
+    expect(trail.isOk()).toBe(true);
+    expect(scopes).toEqual([{ kind: 'platform' }]);
+  });
+
+  it('narrows the platform-wide read to the website the filter names', async () => {
+    const { entries, scopes } = store();
+
+    await new GetAllWebsitesAuditTrail({ entries, clock }).execute({
+      ...EMPTY_AUDIT_FILTER,
+      websiteId: 'site-2',
+    });
+
+    expect(scopes).toEqual([{ kind: 'website', websiteId: 'site-2' }]);
+  });
+
+  it('refuses a malformed website in the filter instead of widening to all of them', async () => {
+    const { entries, scopes } = store();
+
+    const trail = await new GetAllWebsitesAuditTrail({ entries, clock }).execute({
+      ...EMPTY_AUDIT_FILTER,
+      websiteId: '',
+    });
+
+    expect(trail._unsafeUnwrapErr().kind).toBe('validation');
+    expect(scopes).toEqual([]);
   });
 });

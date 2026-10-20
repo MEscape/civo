@@ -6,6 +6,8 @@ import { Button } from '@components/ui/button';
 import { Icons } from '@components/ui/icons';
 import { Label } from '@components/ui/input';
 
+import { useDismiss } from '@hooks/use-dismiss';
+
 import { useTranslations } from '@i18n/client';
 
 import { cn } from '@lib/utils';
@@ -73,32 +75,18 @@ export function DatePickerField({
   const [isOpen, setIsOpen] = useState(false);
   const [month, setMonth] = useState(() => startMonthOf(value, min));
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
+  useDismiss(isOpen, rootRef, (reason) => {
+    setIsOpen(false);
+    if (reason === 'escape') {
+      triggerRef.current?.focus();
     }
-    function handlePointerDown(event: PointerEvent) {
-      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, [isOpen]);
+  });
 
   useEffect(() => {
     if (!isOpen) {
       return undefined;
     }
     function handleKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setIsOpen(false);
-        triggerRef.current?.focus();
-        return;
-      }
       const step = STEP_BY_KEY[event.key];
       const buttons = Array.from(
         gridRef.current?.querySelectorAll<HTMLButtonElement>('button[data-day]:not(:disabled)') ??

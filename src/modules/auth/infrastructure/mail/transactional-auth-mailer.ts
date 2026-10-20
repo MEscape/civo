@@ -2,6 +2,8 @@ import type { InfrastructureAppError } from '@lib/errors';
 import type { MailTransport } from '@lib/mail';
 import type { AppResultAsync } from '@lib/result';
 
+import { mailDeliveryFailed } from '../../domain/errors/auth-errors';
+
 import { renderAuthEmail } from './auth-email-templates';
 
 import type { AuthEmailKind, MailLocale } from './auth-email-templates';
@@ -67,15 +69,17 @@ export class TransactionalAuthMailer implements AuthMailer {
     readonly locale: MailLocale;
     readonly name?: string | undefined;
   }): AppResultAsync<void, InfrastructureAppError> {
-    return this.transport.send({
-      to,
-      ...renderAuthEmail({
-        kind,
-        locale,
-        appName: this.settings.appName,
-        url,
-        name,
-      }),
-    });
+    return this.transport
+      .send({
+        to,
+        ...renderAuthEmail({
+          kind,
+          locale,
+          appName: this.settings.appName,
+          url,
+          name,
+        }),
+      })
+      .mapErr(mailDeliveryFailed);
   }
 }

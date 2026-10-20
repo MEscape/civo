@@ -14,7 +14,7 @@ import { config } from 'dotenv';
 import { Pool } from 'pg';
 
 // .env liegt im Repo-Root (eine Ebene höher als migrations/)
-config({ path: resolve(__dirname, '..', '.env') });
+config({ path: resolve(import.meta.dirname, '..', '.env') });
 
 interface Migration {
     readonly file: string;
@@ -33,7 +33,7 @@ const MIGRATIONS: readonly Migration[] = [
 ];
 
 async function applyMigration(pool: Pool, migration: Migration): Promise<void> {
-    const repoRoot = resolve(__dirname, '..');
+    const repoRoot = resolve(import.meta.dirname, '..');
     const sql = await readFile(join(repoRoot, migration.file), 'utf-8');
     await pool.query(sql);
     process.stdout.write(`  applied: ${migration.description}\n`);

@@ -1,3 +1,5 @@
+import { APP_IDENTITY } from '@lib/config';
+
 import type { BookingNotice } from '../../domain/ports/booking-notifier.port';
 
 /** What a calendar entry says, in the language of the message; the facts come from the notice. */
@@ -17,7 +19,10 @@ export interface CalendarFile {
   readonly contentType: string;
 }
 
-const PRODUCT_ID = '-//Artemis Connect//Civo//EN';
+/** Who made the file, in the form the format asks for. The download in `presentation/calendar` writes the same one. */
+const PRODUCT_ID = `-//${APP_IDENTITY.company}//${APP_IDENTITY.name}//EN`;
+/** The same booking is the same event whether it came by mail or by download, so a calendar updates it instead of adding a second. */
+const UID_DOMAIN = APP_IDENTITY.name.toLowerCase();
 const LINE_BREAK = '\r\n';
 /** A line of a calendar file is at most 75 bytes; a longer one continues on the next after a space. */
 const MAX_LINE_BYTES = 75;
@@ -92,7 +97,7 @@ export function renderBookingCalendarFile(
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:${notice.reference}@civo`,
+    `UID:${notice.reference}@${UID_DOMAIN}`,
     `DTSTAMP:${formatInstant(now)}`,
     `DTSTART:${formatInstant(notice.startsAt)}`,
     `DTEND:${formatInstant(notice.endsAt)}`,

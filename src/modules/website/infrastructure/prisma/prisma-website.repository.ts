@@ -35,7 +35,11 @@ const failures = createPersistenceFailures({
   subject: 'Website',
 });
 
-/** Website fields plus its theme, narrowed to what the mapper reads. */
+/**
+ * Website fields plus its theme, narrowed to what the mapper reads.
+ *
+ * @tenant-scope builder Every caller pins it by id and tenant, or says why it need not.
+ */
 const websiteWithTheme = () =>
   db.orm.public.Website.select(...WEBSITE_SUMMARY_SELECT).include('theme', (theme) =>
     theme.select(...THEME_SELECT),
@@ -49,8 +53,8 @@ const websiteWithTheme = () =>
  * Failure conventions (see `createPersistenceFailures`):
  * - reads and idempotent deletes -> `infraOnly`
  * - writes that can hit a unique constraint (they throw) -> `orConflict`
- * - single-row writes -> `orNotFound` (thrown row-missing) followed by
- *   `requireRow` (Prisma 8 `update()` resolves to `null` on a miss).
+ * - single-row writes -> `infraOnly` followed by `requireRow`
+ *   (Prisma 8 `update()` resolves to `null` on a miss rather than throwing).
  */
 export class PrismaWebsiteRepository implements WebsiteRepository {
   findById(
@@ -63,6 +67,7 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     ).map((record) => record && toWebsite(record));
   }
 
+  /** @tenant-scope capability The slug is the public address of a published site, unique across the platform. */
   findBySlug(slug: string): AppResultAsync<Website | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () => websiteWithTheme().where({ slug }).first(),
@@ -93,6 +98,7 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     );
   }
 
+  /** @tenant-scope platform Every website, for the platform administrator's website pickers. */
   listOptions(limit: number): AppResultAsync<
     {
       readonly items: ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>;
@@ -116,6 +122,7 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     }));
   }
 
+  /** @tenant-scope platform Every website, for the platform administrator's list. */
   list(page: PageRequest): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
       const total = await db.orm.public.Website.aggregate((aggregate) => ({

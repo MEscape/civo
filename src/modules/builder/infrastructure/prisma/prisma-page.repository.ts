@@ -60,7 +60,11 @@ const failures = createPersistenceFailures({
 
 const persistenceLogger = logger.withContext({ module: MODULE });
 
-/** Pages of every website with only the newest revision's JSON: never the whole history. */
+/**
+ * Pages with only the newest revision's JSON: never the whole history.
+ *
+ * @tenant-scope builder Every caller pins it to a tenant or a website before it runs.
+ */
 const pagesWithLatestConfig = () =>
   db.orm.public.Page.select(...PAGE_SUMMARY_SELECT).include('configs', (configs) =>
     configs
@@ -224,6 +228,7 @@ export class PrismaPageRepository implements PageRepository {
             title: draft.title,
             version: INITIAL_PAGE_VERSION,
           });
+          // @tenant-scope child The revision of the page created just above, under the same tenant.
           await tx.orm.public.PageConfig.create({
             pageId: page.id,
             version: INITIAL_PAGE_VERSION,
@@ -260,6 +265,7 @@ export class PrismaPageRepository implements PageRepository {
             return null;
           }
 
+          // @tenant-scope child The revision of the page updated just above, which is pinned to the tenant.
           await tx.orm.public.PageConfig.create({
             pageId: id,
             version: nextVersion,
@@ -267,6 +273,7 @@ export class PrismaPageRepository implements PageRepository {
             status: PUBLISHED_STATUS,
           });
           // Revisions are contiguous, so this keeps exactly the newest PAGE_REVISION_LIMIT.
+          // @tenant-scope child The older revisions of the page updated above.
           await tx.orm.public.PageConfig.where({ pageId: id })
             .where((revisionRow) => revisionRow.version.lte(nextVersion - PAGE_REVISION_LIMIT))
             .deleteAndCount();

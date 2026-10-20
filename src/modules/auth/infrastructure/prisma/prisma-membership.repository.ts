@@ -147,6 +147,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
     }, failures.infraOnly('setPlatformAdmin'));
   }
 
+  /** @tenant-scope actor The tenants the person belongs to: bound to the person's own id. */
   findTenantsOf(actorId: ActorId): AppResultAsync<readonly TenantId[], InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
@@ -212,6 +213,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
     }));
   }
 
+  /** @tenant-scope platform Everyone who works in any website, for the platform administrator's user list. */
   findMemberIds(
     filter: { readonly tenantId: TenantId | null; readonly role: TenantRole | null },
     limit: number,
@@ -243,6 +245,7 @@ export class PrismaMembershipRepository implements MembershipRepository {
     });
   }
 
+  /** @tenant-scope platform The memberships of the people on one page of the platform administrator's user list. */
   listMembershipsOf(
     actorIds: readonly ActorId[],
   ): AppResultAsync<ReadonlyMap<ActorId, readonly TenantMembership[]>, InfrastructureAppError> {

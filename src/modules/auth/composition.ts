@@ -17,7 +17,7 @@ import { getMailTransport } from '@lib/mail/server';
 import { getClientAddressProvider, getRateLimiter } from '@lib/rate-limit';
 import { ResultAsync } from '@lib/result';
 import { toLocalizedPath } from '@lib/seo';
-import { TENANT_HINT_HEADER } from '@lib/tenancy';
+import { TENANT_HINT_HEADER, isWebsiteId } from '@lib/tenancy';
 import { invariant, isDefined, once } from '@lib/utils';
 
 import { createAuthorizationService } from './application/authorization-service';
@@ -98,10 +98,13 @@ const MILLISECONDS_PER_SECOND = 1000;
 
 /**
  * The website a request is about, as `proxy.ts` set it from the address. Only a
- * platform administrator (and the loopback-only dev actor) is resolved by it.
+ * platform administrator (and the loopback-only dev actor) is resolved by it. This is the one place
+ * the header is read, and it is checked here against the shape of a website id, as well as by the
+ * proxy that wrote it: the reader does not trust the writer.
  */
 async function readTenantHint(): Promise<string | null> {
-  return (await headers()).get(TENANT_HINT_HEADER);
+  const raw = (await headers()).get(TENANT_HINT_HEADER);
+  return raw !== null && isWebsiteId(raw) ? raw : null;
 }
 
 function requireAuthCredentials(env: ServerEnv): {

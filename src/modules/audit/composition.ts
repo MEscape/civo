@@ -5,6 +5,7 @@ import { serverEnv } from '@lib/config/server';
 import { MS_PER_DAY, once } from '@lib/utils';
 
 import { PruneAuditTrail } from './application/commands/prune-audit-trail';
+import { GetAllWebsitesAuditTrail } from './application/queries/get-all-websites-audit-trail';
 import { GetAuditDigest } from './application/queries/get-audit-digest';
 import { GetAuditTrail } from './application/queries/get-audit-trail';
 import { AuditTrailRecorder } from './application/services/audit-trail-recorder';
@@ -23,6 +24,7 @@ const recorder = new AuditTrailRecorder(dependencies);
 
 export const auditQueries = {
   getAuditTrail: new GetAuditTrail(dependencies),
+  getAllWebsitesAuditTrail: new GetAllWebsitesAuditTrail(dependencies),
   getAuditDigest: new GetAuditDigest(dependencies),
 } as const;
 

@@ -59,6 +59,7 @@ function toInvitation(record: InvitationRecord): Invitation | null {
   };
 }
 
+/** @tenant-scope builder Created with its tenant, found by a secret token hash, or tagged by the caller. */
 const invitations = () => db.orm.public.Invitation.select(...INVITATION_SELECT);
 
 /**
@@ -87,6 +88,7 @@ export class PrismaInvitationRepository implements InvitationRepository {
     });
   }
 
+  /** @tenant-scope capability The hash of a single-use secret that only the invited person has; the invitation names the tenant. */
   findByTokenHash(tokenHash: string): AppResultAsync<Invitation | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () => invitations().where({ tokenHash }).first(),
@@ -94,6 +96,7 @@ export class PrismaInvitationRepository implements InvitationRepository {
     ).map((record) => (record === null ? null : toInvitation(record)));
   }
 
+  /** @tenant-scope capability The id was read by the token hash of the person claiming it. */
   claim(id: InvitationId, now: Date): AppResultAsync<boolean, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
@@ -105,6 +108,7 @@ export class PrismaInvitationRepository implements InvitationRepository {
     ).map((count) => count === 1);
   }
 
+  /** @tenant-scope capability Gives back an invitation the same request claimed by its token hash. */
   release(id: InvitationId): AppResultAsync<void, InfrastructureAppError> {
     return fromThrowableAsync(
       async () => db.orm.public.Invitation.where({ id }).updateAndCount({ acceptedAt: null }),

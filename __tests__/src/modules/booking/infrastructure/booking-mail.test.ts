@@ -8,9 +8,10 @@ import {
   renderBookingEmail,
 } from '@modules/booking/infrastructure/mail/booking-email-templates';
 import { EmailBookingNotifier } from '@modules/booking/infrastructure/mail/email-booking-notifier';
+import { buildCalendarFile } from '@modules/booking/presentation/calendar/calendar-file';
 
 import { infrastructureError } from '@lib/errors';
-import { PLATFORM_EMAIL_BRAND } from '@lib/mail';
+import { PLATFORM_EMAIL_BRAND, createEmailBrand } from '@lib/mail';
 import type { EmailBrand, MailTransport, OutboundMail } from '@lib/mail';
 import { errAsync, okAsync } from '@lib/result';
 
@@ -21,21 +22,28 @@ vi.mock('@lib/logger', () => ({
 }));
 vi.mock('@lib/mail/server', () => ({ resolveMailLocale: () => Promise.resolve('de') }));
 
-const WEBSITE_BRAND: EmailBrand = {
-  sender: 'website',
-  primary: '#7a1f3d',
-  primaryForeground: '#ffffff',
-  primaryCopy: '#7a1f3d',
-  radius: '12px',
+const WEBSITE_THEME = {
+  primaryColor: '#7a1f3d',
+  radius: 'lg',
+  headingFont: 'Inter',
+  bodyFont: 'DM Sans',
+  spacingScale: 'spacious',
 };
+const WEBSITE_BRAND: EmailBrand = createEmailBrand({
+  primary: WEBSITE_THEME.primaryColor,
+  radius: WEBSITE_THEME.radius,
+  headingFont: WEBSITE_THEME.headingFont,
+  bodyFont: WEBSITE_THEME.bodyFont,
+  spacingScale: WEBSITE_THEME.spacingScale,
+});
 
 /** A store with one themed website; every other website has no theme, and `isDown` makes every read fail. */
 function brandStore(options: { readonly isDown?: boolean } = {}): WebsiteBrandRepository {
   return {
-    findPrimaryColorOf: (websiteId) =>
+    findThemeOf: (websiteId) =>
       options.isDown === true
         ? errAsync(infrastructureError('booking.persistence_failed', 'down'))
-        : okAsync(websiteId === 'site-1' ? '#7a1f3d' : null),
+        : okAsync(websiteId === 'site-1' ? WEBSITE_THEME : null),
     findSlugOf: (websiteId) =>
       options.isDown === true
         ? errAsync(infrastructureError('booking.persistence_failed', 'down'))
@@ -140,7 +148,7 @@ describe('the booking e-mail', () => {
     );
 
     expect(mail.html).toContain('border-radius: 12px');
-    expect(mail.html).not.toContain(PLATFORM_EMAIL_BRAND.primary);
+    expect(mail.html).not.toContain(PLATFORM_EMAIL_BRAND.color.primary);
   });
 
   it('names the number of people only when there is more than one', () => {
@@ -186,6 +194,28 @@ describe('the greeting and the calendar file of the booking e-mail', () => {
     expect(lines).toContain('SEQUENCE:2');
     expect(lines).toContain('TRIGGER:-PT60M');
     expect(file?.content.endsWith('\r\n')).toBe(true);
+  });
+
+  it('names the product from the app identity, and the file by mail and the download are one event', () => {
+    const now = new Date('2027-01-01T08:00:00Z');
+    const mailed = renderBookingCalendar(NOTICE, 'en', now)?.content.split('\r\n') ?? [];
+    const downloaded = buildCalendarFile(
+      {
+        uid: NOTICE.reference,
+        title: 'x',
+        start: NOTICE.startsAt.toISOString(),
+        end: NOTICE.endsAt.toISOString(),
+        location: null,
+        description: null,
+      },
+      now,
+    ).split('\r\n');
+
+    expect(mailed).toContain('PRODID:-//Artemis Connect//Civo//EN');
+    expect(downloaded).toContain('PRODID:-//Artemis Connect//Civo//EN');
+    // The same UID: a calendar that has one of them updates it instead of adding a second.
+    expect(mailed.find((line) => line.startsWith('UID:'))).toBe('UID:ABCDE23456@civo');
+    expect(downloaded.find((line) => line.startsWith('UID:'))).toBe('UID:ABCDE23456@civo');
   });
 
   it('escapes and folds what a service administrator typed, within 75 bytes a line', () => {
@@ -347,9 +377,11 @@ describe('sending the booking e-mail', () => {
       manageLink: LINK,
     }).notify(NOTICE);
 
-    expect(sent[0]?.html).toContain(WEBSITE_BRAND.primary);
-    expect(sent[1]?.html).toContain(PLATFORM_EMAIL_BRAND.primary);
-    expect(sent[2]?.html).toContain(PLATFORM_EMAIL_BRAND.primary);
+    expect(sent[0]?.html).toContain(WEBSITE_BRAND.color.primary);
+    expect(sent[0]?.html).toContain('border-radius: 12px');
+    expect(sent[0]?.html).toContain("'DM Sans'");
+    expect(sent[1]?.html).toContain(PLATFORM_EMAIL_BRAND.color.primary);
+    expect(sent[2]?.html).toContain(PLATFORM_EMAIL_BRAND.color.primary);
   });
 
   it('absorbs a failed delivery, so a stored booking is never undone, and logs it without the address', async () => {

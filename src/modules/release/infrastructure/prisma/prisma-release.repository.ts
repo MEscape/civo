@@ -262,21 +262,22 @@ export class PrismaReleaseRepository implements ReleaseRepository {
             .first();
           const previous = website?.publishedReleaseId ?? null;
 
-          // History only: the replaced release's snapshot is never touched.
-          if (previous !== null && previous !== releaseId) {
-            await tx.orm.public.WebsiteRelease.where({ id: previous }).update({
-              status: RECORD_STATUS.rolled_back,
-            });
-          }
-
           const activated = await tx.orm.public.WebsiteRelease.where({ id: releaseId, websiteId })
             .select(...RELEASE_SUMMARY_SELECT)
             .update({
               status: RECORD_STATUS.published,
             });
 
+          // Nothing has been written yet, so a release that is not this website's leaves the live one alone.
           if (!activated) {
             return null;
+          }
+
+          // History only: the replaced release's snapshot is never touched.
+          if (previous !== null && previous !== releaseId) {
+            await tx.orm.public.WebsiteRelease.where({ id: previous, websiteId }).update({
+              status: RECORD_STATUS.rolled_back,
+            });
           }
 
           await tx.orm.public.Website.where({ id: websiteId }).update({

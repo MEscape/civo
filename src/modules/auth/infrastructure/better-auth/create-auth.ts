@@ -3,11 +3,13 @@ import { nextCookies } from 'better-auth/next-js';
 
 import { I18N_CONFIG } from '@i18n';
 
+import { resolveMailLocale } from '@lib/mail/server';
+
 import { AUTH_LINK_LIFETIME_SECONDS, CREDENTIAL_LIMITS } from '../../domain/models/credentials';
 import { toActorId } from '../../domain/models/ids';
 
 import { createSecurityAuditOptions } from './create-security-audit-options';
-import { deliverAuthEmail, resolveMailLocale } from './deliver-auth-email';
+import { deliverAuthEmail } from './deliver-auth-email';
 
 import type { AuthMailer } from '../../domain/ports/auth-mailer.port';
 import type { SecurityAuditLog } from '../../domain/ports/security-audit-log.port';

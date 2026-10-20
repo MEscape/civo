@@ -188,6 +188,7 @@ export class PrismaDatasetRepository implements DatasetRepository {
           return null;
         }
 
+        // @tenant-scope child The dataset of a source that was just found within this tenant.
         return db.orm.public.Dataset.select(...DATASET_SELECT)
           .include('dataSource', (parent) => parent.select(...DATA_SOURCE_PARENT_SELECT))
           .create({

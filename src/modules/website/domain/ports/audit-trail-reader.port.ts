@@ -18,9 +18,19 @@ export type AuditTrailReadError = ValidationAppError | InfrastructureAppError;
  * the audit module, which keeps the trail of every module.
  */
 export interface AuditTrailReader {
-  /** `websiteId: null` reads the trail of every website. */
+  /** The trail of one website. */
   read(
-    websiteId: WebsiteId | null,
+    websiteId: WebsiteId,
+    filter: AuditFilter,
+    page: AuditPageOptions,
+  ): AppResultAsync<AuditTrailView, AuditTrailReadError>;
+
+  /**
+   * The trail of every website, or of the one the filter names. A call of its own so that no absent
+   * website id can ever mean "all of them"; only a caller that authorized the platform's
+   * administrators makes it.
+   */
+  readAcrossWebsites(
     filter: AuditFilter,
     page: AuditPageOptions,
   ): AppResultAsync<AuditTrailView, AuditTrailReadError>;

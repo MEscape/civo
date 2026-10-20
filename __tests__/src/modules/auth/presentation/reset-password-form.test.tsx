@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ResetPasswordForm } from '@modules/auth/presentation/components/reset-password-form';
 import enAuth from '@modules/auth/presentation/i18n/en.json';
 
-import enApp from '@/i18n/en.json';
+import enApp from '@i18n/messages/en.json';
 
 vi.mock('@modules/auth/presentation/actions/reset-password-action', () => ({
   resetPasswordAction: vi.fn(),

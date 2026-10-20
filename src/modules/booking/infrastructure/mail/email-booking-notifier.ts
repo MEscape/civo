@@ -76,10 +76,19 @@ export class EmailBookingNotifier implements BookingNotifier {
     );
   }
 
-  /** A website whose theme cannot be read gets the platform's look: a confirmation is never held back for its colours. */
+  /** A website whose theme cannot be read gets the platform's look: a confirmation is never held back for its looks. */
   private brandOf(websiteId: WebsiteId): Promise<EmailBrand> {
-    return this.brands.findPrimaryColorOf(websiteId).match(
-      (color) => (color === null ? PLATFORM_EMAIL_BRAND : createEmailBrand(color)),
+    return this.brands.findThemeOf(websiteId).match(
+      (theme) =>
+        theme === null
+          ? PLATFORM_EMAIL_BRAND
+          : createEmailBrand({
+              primary: theme.primaryColor,
+              radius: theme.radius,
+              headingFont: theme.headingFont,
+              bodyFont: theme.bodyFont,
+              spacingScale: theme.spacingScale,
+            }),
       (error) => {
         mailLogger.warn('booking.brand_unreadable', { err: error });
         return PLATFORM_EMAIL_BRAND;

@@ -18,6 +18,7 @@ import {
 } from './audit-trail-record-mapper';
 
 import type { AuditActor, AuditEntry, NewAuditEntry } from '../../domain/models/audit-entry';
+import type { AuditScope } from '../../domain/models/audit-scope';
 import type { ActorId, WebsiteId } from '../../domain/models/ids';
 import type {
   AuditDayCount,
@@ -44,14 +45,23 @@ function actorWhere(actor: AuditActor | null) {
     : { actorKind: ACTOR_KIND_RECORD[actor.kind] };
 }
 
-/** The entries of one website (`null`: of every website) that match the criteria; every part maps onto an index's leading columns. */
+/** What a scope adds to a query: its website, or nothing for the platform's. */
+function inScope(scope: AuditScope): { websiteId?: WebsiteId } {
+  return scope.kind === 'website' ? { websiteId: scope.websiteId } : {};
+}
+
+/**
+ * The entries of the scope that match the criteria; every part maps onto an index's leading columns.
+ *
+ * @tenant-scope platform The platform scope reads every website and can only be named, never defaulted to: `AuditScope` has no absent value, and a website scope pins `websiteId`.
+ */
 function matching(
-  websiteId: WebsiteId | null,
+  scope: AuditScope,
   criteria: Omit<AuditCriteria, 'source' | 'type'> &
     Partial<Pick<AuditCriteria, 'source' | 'type'>>,
 ) {
   const equal = db.orm.public.AuditEntry.where({
-    ...(websiteId === null ? {} : { websiteId }),
+    ...inScope(scope),
     ...(criteria.source === undefined || criteria.source === null
       ? {}
       : { source: criteria.source }),
@@ -89,15 +99,15 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
   }
 
   list(
-    websiteId: WebsiteId | null,
+    scope: AuditScope,
     criteria: AuditCriteria,
     page: PageRequest,
   ): AppResultAsync<Page<AuditEntry>, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
-      const total = await matching(websiteId, criteria).aggregate((aggregate) => ({
+      const total = await matching(scope, criteria).aggregate((aggregate) => ({
         total: aggregate.count(),
       }));
-      const records = await matching(websiteId, criteria)
+      const records = await matching(scope, criteria)
         .select(...AUDIT_ENTRY_SELECT)
         // `id` breaks ties so the order is stable between requests.
         .orderBy([(entry) => entry.occurredAt.desc(), (entry) => entry.id.desc()])
@@ -115,13 +125,13 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
   }
 
   countByType(
-    websiteId: WebsiteId | null,
+    scope: AuditScope,
     criteria: Omit<AuditCriteria, 'source' | 'type'>,
     limit: number,
   ): AppResultAsync<readonly AuditTypeCount[], InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
-        matching(websiteId, criteria)
+        matching(scope, criteria)
           .groupBy('source', 'type')
           .orderBy([(entry) => entry.source.asc(), (entry) => entry.type.asc()])
           .limit(limit)
@@ -134,8 +144,9 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
     );
   }
 
+  /** @tenant-scope platform The scope names the website, or the platform's own: see `matching`. */
   listMemberIds(
-    websiteId: WebsiteId | null,
+    scope: AuditScope,
     limit: number,
   ): AppResultAsync<
     { readonly items: readonly ActorId[]; readonly isTruncated: boolean },
@@ -144,7 +155,7 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
     return fromThrowableAsync(
       async () =>
         db.orm.public.AuditEntry.where({
-          ...(websiteId === null ? {} : { websiteId }),
+          ...inScope(scope),
           actorKind: ACTOR_KIND_RECORD.member,
         })
           .groupBy('actorId')
@@ -184,6 +195,7 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
     }, failures.infraOnly('countPerDay'));
   }
 
+  /** @tenant-scope platform Retention is a job of the platform: it removes old entries of every website. */
   deleteOlderThan(cutoff: Date): AppResultAsync<number, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>

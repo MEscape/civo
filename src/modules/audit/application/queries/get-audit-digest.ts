@@ -3,6 +3,7 @@ import { ResultAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 import { MS_PER_DAY } from '@lib/utils';
 
+import { websiteAuditScope } from '../../domain/models/audit-scope';
 import { parseWebsiteId } from '../../domain/models/ids';
 import { toAuditEntryView } from '../audit-view-mappers';
 import { AUDIT_DIGEST_DAYS, AUDIT_DIGEST_PERIOD, AUDIT_DIGEST_RECENT } from '../list-limits';
@@ -52,7 +53,7 @@ export class GetAuditDigest {
     return parseWebsiteId(rawWebsiteId).asyncAndThen((websiteId) =>
       ResultAsync.combine([
         entries.list(
-          websiteId,
+          websiteAuditScope(websiteId),
           { source: null, type: null, actor: null, since: null, onlyWarnings: false },
           { page: 1, pageSize: AUDIT_DIGEST_RECENT },
         ),

@@ -19,7 +19,13 @@ export class AuditModuleTrailReader implements AuditTrailReader {
     private readonly queries: {
       readonly getAuditTrail: {
         execute(
-          websiteId: string | null,
+          websiteId: string,
+          filter: AuditFilter,
+          page: AuditPageOptions,
+        ): AppResultAsync<AuditTrailView, AuditTrailReadError>;
+      };
+      readonly getAllWebsitesAuditTrail: {
+        execute(
           filter: AuditFilter,
           page: AuditPageOptions,
         ): AppResultAsync<AuditTrailView, AuditTrailReadError>;
@@ -30,8 +36,12 @@ export class AuditModuleTrailReader implements AuditTrailReader {
     },
   ) {}
 
-  read(websiteId: WebsiteId | null, filter: AuditFilter, page: AuditPageOptions) {
+  read(websiteId: WebsiteId, filter: AuditFilter, page: AuditPageOptions) {
     return this.queries.getAuditTrail.execute(websiteId, filter, page);
+  }
+
+  readAcrossWebsites(filter: AuditFilter, page: AuditPageOptions) {
+    return this.queries.getAllWebsitesAuditTrail.execute(filter, page);
   }
 
   digest(websiteId: WebsiteId) {

@@ -46,6 +46,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.providerFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.mailerNotConfigured]: fieldPath('errors', 'infrastructure'),
+  [ERRORS.mailDeliveryFailed]: fieldPath('errors', 'infrastructure'),
   [VALIDATION.emailRequired]: fieldPath('validation', 'emailRequired'),
   [VALIDATION.emailInvalid]: fieldPath('validation', 'emailInvalid'),
   [VALIDATION.emailTooLong]: fieldPath('validation', 'emailTooLong'),

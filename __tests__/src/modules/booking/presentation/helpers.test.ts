@@ -187,7 +187,7 @@ describe('calendar file', () => {
     const file = buildCalendarFile(input, stamp);
     expect(file.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
     expect(file.endsWith('END:VCALENDAR\r\n')).toBe(true);
-    expect(file).toContain('UID:BK-ABCD-2345@civo.booking\r\n');
+    expect(file).toContain('UID:BK-ABCD-2345@civo\r\n');
     expect(file).toContain('DTSTAMP:20261001T093015Z\r\n');
     expect(file).toContain('DTSTART:20261012T080000Z\r\n');
     expect(file).toContain('DTEND:20261012T082000Z\r\n');

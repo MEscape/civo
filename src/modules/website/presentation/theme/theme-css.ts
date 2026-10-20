@@ -17,7 +17,7 @@ const FONT_STACK = {
   'Source Serif 4': 'var(--font-serif), ui-serif, Georgia, serif',
   Inter: 'var(--font-sans), ui-sans-serif, system-ui, sans-serif',
   'DM Sans': 'var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif',
-  Geist: 'var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif',
+  Geist: 'var(--font-geist), ui-sans-serif, system-ui, sans-serif',
 } as const satisfies Record<ThemeFontFamily, string>;
 
 const RADIUS_VALUE = {

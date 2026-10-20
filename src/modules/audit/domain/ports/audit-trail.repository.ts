@@ -3,6 +3,7 @@ import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import type { AuditActor, AuditEntry, AuditSource, NewAuditEntry } from '../models/audit-entry';
+import type { AuditScope } from '../models/audit-scope';
 import type { ActorId, WebsiteId } from '../models/ids';
 
 /** The filter as the store applies it: the period already resolved to an instant. */
@@ -33,9 +34,9 @@ export interface AuditDayCount {
 export interface AuditTrailRepository {
   append(entry: NewAuditEntry): AppResultAsync<void, InfrastructureAppError>;
 
-  /** One page of the matching entries, newest first; `websiteId: null` reads every website's. */
+  /** One page of the matching entries, newest first, within the scope. */
   list(
-    websiteId: WebsiteId | null,
+    scope: AuditScope,
     criteria: AuditCriteria,
     page: PageRequest,
   ): AppResultAsync<Page<AuditEntry>, InfrastructureAppError>;
@@ -46,17 +47,17 @@ export interface AuditTrailRepository {
    * by `limit`: there are only as many types as the modules declare.
    */
   countByType(
-    websiteId: WebsiteId | null,
+    scope: AuditScope,
     criteria: Omit<AuditCriteria, 'source' | 'type'>,
     limit: number,
   ): AppResultAsync<readonly AuditTypeCount[], InfrastructureAppError>;
 
   /**
-   * The members who appear in the website's trail (`null`: in any) at all.
+   * The members who appear in the scope's trail at all.
    * Bounded by `limit`; `isTruncated` says there are more.
    */
   listMemberIds(
-    websiteId: WebsiteId | null,
+    scope: AuditScope,
     limit: number,
   ): AppResultAsync<
     { readonly items: readonly ActorId[]; readonly isTruncated: boolean },

@@ -13,7 +13,15 @@ export const UNASSIGNED_TENANT_ID = toTenantId('unassigned');
 
 const TENANT_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
-/** Brands a tenant id that arrived with a request, after checking its shape; `null` when it is none. */
+/**
+ * Brands a tenant id that arrived with a request, after checking its shape; `null` when it is none.
+ * A hint names a website, so the two reserved scopes are no hint: a request cannot place anyone in
+ * `platform` or `unassigned` by naming it.
+ */
 export function parseTenantHint(raw: string | null): TenantId | null {
-  return raw !== null && TENANT_ID_PATTERN.test(raw) ? toTenantId(raw) : null;
+  if (raw === null || !TENANT_ID_PATTERN.test(raw)) {
+    return null;
+  }
+  const tenantId = toTenantId(raw);
+  return tenantId === PLATFORM_TENANT_ID || tenantId === UNASSIGNED_TENANT_ID ? null : tenantId;
 }

@@ -1,3 +1,5 @@
+import { APP_IDENTITY } from '@lib/config';
+
 export interface CalendarFileInput {
   /** A stable identifier for the event; the booking reference. */
   readonly uid: string;
@@ -9,6 +11,9 @@ export interface CalendarFileInput {
   readonly description: string | null;
 }
 
+/** The same identity as the file sent by mail (`infrastructure/mail/booking-calendar-file.ts`). */
+const PRODUCT_ID = `-//${APP_IDENTITY.company}//${APP_IDENTITY.name}//EN`;
+const UID_DOMAIN = APP_IDENTITY.name.toLowerCase();
 const LINE_BREAK = '\r\n';
 const FOLD_AT = 73;
 
@@ -49,11 +54,11 @@ export function buildCalendarFile(input: CalendarFileInput, stamp: Date): string
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Civo//Booking//EN',
+    `PRODID:${PRODUCT_ID}`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:${input.uid}@civo.booking`,
+    `UID:${input.uid}@${UID_DOMAIN}`,
     `DTSTAMP:${toIcsInstant(stamp.toISOString())}`,
     `DTSTART:${toIcsInstant(input.start)}`,
     `DTEND:${toIcsInstant(input.end)}`,

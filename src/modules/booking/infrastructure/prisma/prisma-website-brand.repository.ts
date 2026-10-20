@@ -5,10 +5,13 @@ import type { AppResultAsync } from '@lib/result';
 
 import { BOOKING_ERROR_CODES } from '../../domain/errors/booking-errors';
 
-import { WEBSITE_BRAND_SELECT, toPrimaryColor } from './website-brand-record-mapper';
+import { WEBSITE_BRAND_SELECT, toWebsiteTheme } from './website-brand-record-mapper';
 
 import type { WebsiteId } from '../../domain/models/ids';
-import type { WebsiteBrandRepository } from '../../domain/ports/website-brand.repository';
+import type {
+  WebsiteBrandRepository,
+  WebsiteTheme,
+} from '../../domain/ports/website-brand.repository';
 
 const failures = createPersistenceFailures({
   module: 'booking.persistence',
@@ -16,16 +19,16 @@ const failures = createPersistenceFailures({
   subject: 'WebsiteTheme',
 });
 
-/** Reads the primary colour of a website's stored theme and its slug: all of a website a booking message uses. */
+/** Reads a website's stored theme and its slug: all of a website a booking message uses. */
 export class PrismaWebsiteBrandRepository implements WebsiteBrandRepository {
-  findPrimaryColorOf(websiteId: WebsiteId): AppResultAsync<string | null, InfrastructureAppError> {
+  findThemeOf(websiteId: WebsiteId): AppResultAsync<WebsiteTheme | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
         db.orm.public.WebsiteTheme.where({ websiteId })
           .select(...WEBSITE_BRAND_SELECT)
           .first(),
-      failures.infraOnly('findPrimaryColorOf'),
-    ).map(toPrimaryColor);
+      failures.infraOnly('findThemeOf'),
+    ).map(toWebsiteTheme);
   }
 
   findSlugOf(websiteId: WebsiteId): AppResultAsync<string | null, InfrastructureAppError> {

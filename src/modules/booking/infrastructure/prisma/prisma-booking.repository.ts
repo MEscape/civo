@@ -114,7 +114,8 @@ async function expireHolds(scope: WriteScope, bookingIds: readonly string[]): Pr
     .where((booking) => booking.holdExpiresAt.lte(dateToInstant(now)))
     .updateAndCount({ status: 'EXPIRED', updatedAt: dateToInstant(now) });
   if (expired > 0) {
-    await tx.orm.public.BookingResource.where((hold) => hold.bookingId.in(ids))
+    await tx.orm.public.BookingResource.where({ websiteId: tenantId })
+      .where((hold) => hold.bookingId.in(ids))
       .where((hold) => hold.booking.some({ status: 'EXPIRED' }))
       .updateAndCount({ isActive: false });
   }
@@ -133,9 +134,8 @@ async function releaseExpiredHoldsOn(
   span: TimeInterval,
 ): Promise<void> {
   const { tx, tenantId, now } = scope;
-  const rows = await tx.orm.public.BookingResource.where((hold) =>
-    hold.resourceId.in([...resourceIds]),
-  )
+  const rows = await tx.orm.public.BookingResource.where({ websiteId: tenantId })
+    .where((hold) => hold.resourceId.in([...resourceIds]))
     .where({ isActive: true })
     .where((hold) => hold.occupiedStart.lt(dateToInstant(new Date(span.end))))
     .where((hold) => hold.occupiedEnd.gt(dateToInstant(new Date(span.start))))
@@ -394,6 +394,7 @@ export class PrismaBookingRepository implements BookingRepository {
             createdAt: stamp,
             updatedAt: stamp,
           });
+          // @tenant-scope child Every hold row carries the websiteId of the booking stored just above (`holdRows`).
           await tx.orm.public.BookingResource.createAll(holdRows(input, created.id));
           const booking: Booking = {
             ...input,
@@ -443,8 +444,12 @@ export class PrismaBookingRepository implements BookingRepository {
           }
 
           // Own old rows go first: they must not collide with the new span.
-          await tx.orm.public.BookingResource.where({ bookingId: next.id }).deleteAndCount();
+          await tx.orm.public.BookingResource.where({
+            bookingId: next.id,
+            websiteId: next.websiteId,
+          }).deleteAndCount();
           if (live) {
+            // @tenant-scope child Every hold row carries the websiteId of the booking swapped just above (`holdRows`).
             await tx.orm.public.BookingResource.createAll(holdRows(next, next.id));
           }
           return {
@@ -464,8 +469,10 @@ export class PrismaBookingRepository implements BookingRepository {
   ): AppResultAsync<boolean, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
       if (subject.kind === 'resource') {
-        // The hold rows carry no tenant of their own; the caller loaded the resource within its tenant.
-        const hold = await db.orm.public.BookingResource.where({ resourceId: subject.id })
+        const hold = await db.orm.public.BookingResource.where({
+          resourceId: subject.id,
+          websiteId: tenantId,
+        })
           .select('bookingId')
           .first();
         return hold !== null;
@@ -489,6 +496,7 @@ export class PrismaBookingRepository implements BookingRepository {
         // A hold row is active while its booking stands, and repeats the booking's occupied span.
         const hold = await db.orm.public.BookingResource.where({
           resourceId: subject.id,
+          websiteId: tenantId,
           isActive: true,
         })
           .where((row) => row.occupiedEnd.gt(stamp))

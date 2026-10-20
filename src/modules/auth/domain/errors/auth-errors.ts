@@ -51,6 +51,7 @@ export const AUTH_ERROR_CODES = {
   providerFailed: 'auth.provider_failed',
   rateLimiterFailed: 'auth.rate_limiter_failed',
   mailerNotConfigured: 'auth.mailer_not_configured',
+  mailDeliveryFailed: 'auth.mail_delivery_failed',
 } as const;
 
 /** Field-level codes, carried in `fieldErrors`. Also stable, also never prose. */
@@ -197,6 +198,19 @@ export function mailerNotConfigured(): InfrastructureAppError {
   return infrastructureError(
     AUTH_ERROR_CODES.mailerNotConfigured,
     'No email transport is configured for authentication emails.',
+  );
+}
+
+/**
+ * A message the transport could not deliver. The transport's own error (its code is shared by every
+ * module that sends mail) is kept as the cause, so the log still names it, while the code the user
+ * interface sees is this module's.
+ */
+export function mailDeliveryFailed(cause: unknown): InfrastructureAppError {
+  return infrastructureError(
+    AUTH_ERROR_CODES.mailDeliveryFailed,
+    'The authentication email could not be delivered.',
+    cause,
   );
 }
 

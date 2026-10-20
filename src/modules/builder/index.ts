@@ -22,6 +22,7 @@ export { PageList } from './presentation/components/page-list';
 export { toPageListItemDto, toPageSummaryDto } from './presentation/dto/page-dto';
 export { BuilderSessionProvider } from './presentation/components/builder-session-provider';
 export { BuilderShell } from './presentation/components/builder-shell';
+export { BuilderSkeleton } from './presentation/components/builder-skeleton';
 export { toEditorSessionDto } from './presentation/dto/editor-session-dto';
 export { collectCategoryTypes, collectDatasetTypes } from './presentation/properties/dataset-types';
 export { toDatasetOptionsByType } from './presentation/dto/dataset-options-dto';
