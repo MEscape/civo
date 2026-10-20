@@ -40,8 +40,8 @@ const FIXTURES: Record<string, string> = {
   '.env.example': 'env.example.txt',
   'src/i18n/locales/en.ts': 'locales-en.ts.txt',
   'src/i18n/locales/de.ts': 'locales-de.ts.txt',
-  'src/i18n/en.json': 'app-en.json.txt',
-  'src/i18n/de.json': 'app-de.json.txt',
+  'src/i18n/messages/en.json': 'app-en.json.txt',
+  'src/i18n/messages/de.json': 'app-de.json.txt',
 };
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
 

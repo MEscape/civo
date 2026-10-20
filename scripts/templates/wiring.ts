@@ -153,7 +153,7 @@ export function registerLocale(spec: ModuleSpec, locale: 'en' | 'de'): (source: 
     );
     const entriesStart = lines.findIndex((line) => line === 'const messages = {');
     const entriesEnd = lines.findIndex(
-      (line, index) => index > entriesStart && line === '} as const;',
+      (line, index) => index > entriesStart && line.startsWith('} as const'),
     );
     if (importIndexes.length === 0 || entriesStart === -1 || entriesEnd === -1) {
       throw new CliError(

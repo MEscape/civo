@@ -7,6 +7,7 @@ import { insertEnvEntry } from '../../scripts/commands/env';
 import { runModule } from '../../scripts/commands/module';
 import { addMessage } from '../../scripts/commands/translation';
 import { runUseCase } from '../../scripts/commands/usecase';
+import { PATHS } from '../../scripts/lib/config';
 import { parseFields } from '../../scripts/lib/fields';
 import { formatSource } from '../../scripts/lib/format';
 import { buildSpec } from '../../scripts/lib/spec';
@@ -63,7 +64,12 @@ describe('the real repository still has the shape the generators expect', () => 
   it('has app-shell messages and a namespace in every module catalog that `gen translation` can extend', () => {
     for (const locale of ['en', 'de']) {
       expect(() =>
-        addMessage('app.json', undefined, 'zzProbe.value', 'x')(real(`src/i18n/${locale}.json`)),
+        addMessage(
+          'app.json',
+          undefined,
+          'zzProbe.value',
+          'x',
+        )(real(`${PATHS.appMessages}/${locale}.json`)),
       ).not.toThrow();
     }
 

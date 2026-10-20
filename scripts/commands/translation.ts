@@ -15,7 +15,7 @@ function flagSpecs(): FlagSpecs {
     module: {
       type: 'string',
       description:
-        "Add to this module's namespace. Omit for the app shell (src/i18n/<locale>.json).",
+        "Add to this module's namespace. Omit for the app shell (src/i18n/messages/<locale>.json).",
       alias: 'm',
     },
   };

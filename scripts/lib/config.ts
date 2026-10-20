@@ -14,7 +14,7 @@ export const PATHS = {
   sharedComponents: 'src/components/shared',
   sharedComponentTests: '__tests__/src/components/shared',
   /** App-shell translations: `<locale>.json`. Module namespaces live in the modules. */
-  appMessages: 'src/i18n',
+  appMessages: 'src/i18n/messages',
   envExample: '.env.example',
   /** Lockfile recording registered component versions and structural fingerprints. */
   componentLock: 'src/modules/component-platform/domain/components/component-versions.lock.json',

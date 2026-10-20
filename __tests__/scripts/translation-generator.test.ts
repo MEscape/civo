@@ -31,9 +31,16 @@ describe('gen translation: the app shell', () => {
       { root },
     );
 
-    expect(changedPaths(before, snapshot(root))).toEqual(['src/i18n/de.json', 'src/i18n/en.json']);
-    expect((json(root, 'src/i18n/en.json')['home'] as Json)['subtitle']).toBe('Plan your trip');
-    expect((json(root, 'src/i18n/de.json')['home'] as Json)['subtitle']).toBe('Plane deine Reise');
+    expect(changedPaths(before, snapshot(root))).toEqual([
+      'src/i18n/messages/de.json',
+      'src/i18n/messages/en.json',
+    ]);
+    expect((json(root, 'src/i18n/messages/en.json')['home'] as Json)['subtitle']).toBe(
+      'Plan your trip',
+    );
+    expect((json(root, 'src/i18n/messages/de.json')['home'] as Json)['subtitle']).toBe(
+      'Plane deine Reise',
+    );
     expect(output).not.toContain('placeholder text');
   });
 
@@ -42,7 +49,7 @@ describe('gen translation: the app shell', () => {
 
     const output = runTranslation(['home.subtitle', 'Plan your trip'], { root });
 
-    expect((json(root, 'src/i18n/de.json')['home'] as Json)['subtitle']).toBe(
+    expect((json(root, 'src/i18n/messages/de.json')['home'] as Json)['subtitle']).toBe(
       '[de] Plan your trip',
     );
     expect(output).toContain('Replace the "[de]" placeholder text');
@@ -54,9 +61,9 @@ describe('gen translation: the app shell', () => {
 
     runTranslation(['form.submit', 'Send'], { root });
 
-    const after = snapshot(root)['src/i18n/en.json'] ?? '';
+    const after = snapshot(root)['src/i18n/messages/en.json'] ?? '';
     expect(Object.keys(JSON.parse(after) as Json)).toEqual([
-      ...Object.keys(JSON.parse(before['src/i18n/en.json'] ?? '{}') as Json),
+      ...Object.keys(JSON.parse(before['src/i18n/messages/en.json'] ?? '{}') as Json),
       'form',
     ]);
     expect(after).toBe(`${JSON.stringify(JSON.parse(after), null, 2)}\n`);
@@ -66,7 +73,9 @@ describe('gen translation: the app shell', () => {
     const root = makeRepo();
 
     runTranslation(['home.greeting', 'Hello {name}', '--de', 'Hallo {name}'], { root });
-    expect((json(root, 'src/i18n/de.json')['home'] as Json)['greeting']).toBe('Hallo {name}');
+    expect((json(root, 'src/i18n/messages/de.json')['home'] as Json)['greeting']).toBe(
+      'Hallo {name}',
+    );
 
     expect(() =>
       runTranslation(['home.other', 'Hello {name}', '--de', 'Hallo {user}'], { root }),
@@ -117,24 +126,24 @@ describe('gen translation: a module namespace', () => {
 describe('gen translation: nothing is written unless every locale accepts the key', () => {
   it('leaves the other locales untouched when only one has a collision', () => {
     const root = makeRepo();
-    const german = json(root, 'src/i18n/de.json');
+    const german = json(root, 'src/i18n/messages/de.json');
     (german['home'] as Json)['probe'] = 'schon da';
-    writeFileSync(join(root, 'src/i18n/de.json'), `${JSON.stringify(german, null, 2)}\n`);
+    writeFileSync(join(root, 'src/i18n/messages/de.json'), `${JSON.stringify(german, null, 2)}\n`);
     const before = snapshot(root);
 
     expect(() => runTranslation(['home.probe', 'Probe'], { root })).toThrow(
-      /already exists in src\/i18n\/de\.json/,
+      /already exists in src\/i18n\/messages\/de\.json/,
     );
     expect(changedPaths(before, snapshot(root))).toEqual([]);
   });
 
   it('fails clearly when a locale file is missing, without editing the others', () => {
     const root = makeRepo();
-    rmSync(join(root, 'src/i18n/de.json'));
+    rmSync(join(root, 'src/i18n/messages/de.json'));
     const before = snapshot(root);
 
     expect(() => runTranslation(['home.subtitle', 'Plan'], { root })).toThrow(
-      /i18n\/de\.json not found/,
+      /i18n\/messages\/de\.json not found/,
     );
     expect(changedPaths(before, snapshot(root))).toEqual([]);
   });
