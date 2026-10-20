@@ -16,5 +16,6 @@
 - Avoid N+1 queries. See [`performance.md`](performance.md).
 - Keep Prisma-specific errors inside infrastructure. See [`errors.md`](errors.md).
 - Schema changes ship as reviewed migrations committed with the change; never edit an applied migration.
+  Every query on a table a tenant owns is bound to that tenant (its `tenantId` or `websiteId`, or a parent that is); a query that deliberately reaches across tenants says why.
 - Store timestamps in UTC.
 - Store money as integer minor units or a decimal type, never as floating point.

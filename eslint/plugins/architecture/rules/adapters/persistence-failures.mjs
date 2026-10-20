@@ -1,7 +1,7 @@
 import { classifyContext, defineRule, findAncestor, report } from '../../util.mjs';
 
-const FAILURE_KINDS = new Set(['infraOnly', 'orConflict', 'orNotFound']);
-const NEEDS_FACTORY = new Set(['orConflict', 'orNotFound']);
+const FAILURE_KINDS = new Set(['infraOnly', 'orConflict']);
+const NEEDS_FACTORY = new Set(['orConflict']);
 const PRISMA_CODE = /^P\d{4}$|^(?:ORM|RUNTIME|CONTRACT)\.[A-Z_]+$/;
 
 /**
@@ -41,13 +41,6 @@ export const persistenceFailures = defineRule({
         }
         if (node.source.value === '@lib/db') {
           for (const s of node.specifiers) {
-            if (s.type === 'ImportSpecifier' && s.imported.name === 'mapPrismaError') {
-              report(
-                context,
-                s,
-                'Do not map Prisma errors locally. `createPersistenceFailures` already applies the shared mapping (conflict, not found, infrastructure).',
-              );
-            }
             if (isMapper && s.type === 'ImportSpecifier' && s.imported.name === 'db') {
               report(
                 context,
@@ -67,7 +60,7 @@ export const persistenceFailures = defineRule({
           report(
             context,
             node,
-            `Do not branch on Prisma/ORM error code '${node.value}' locally. Use failures.orConflict(...) / failures.orNotFound(...) so the shared mapping stays the single source of truth.`,
+            `Do not branch on Prisma/ORM error code '${node.value}' locally. Use failures.orConflict(...) so the shared mapping stays the single source of truth.`,
           );
         }
       },
@@ -100,7 +93,7 @@ export const persistenceFailures = defineRule({
           report(
             context,
             node,
-            'Pass `failures.infraOnly(<operation>)`, `failures.orConflict(<operation>, <factory>)` or `failures.orNotFound(<operation>, <factory>)` as the error mapper of fromThrowableAsync.',
+            'Pass `failures.infraOnly(<operation>)` or `failures.orConflict(<operation>, <factory>)` as the error mapper of fromThrowableAsync.',
           );
           return;
         }

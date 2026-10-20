@@ -81,6 +81,7 @@ describe('architecture of this repository', () => {
       'use-case:CancelOwnBooking=public',
       'use-case:ConfirmBooking=public',
       'use-case:CreateSystemPage=system',
+      'use-case:GetAllWebsitesAuditTrail=system',
       'use-case:GetAuditDigest=system',
       'use-case:GetAuditTrail=system',
       'use-case:GetAvailableSlots=public',
