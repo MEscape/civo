@@ -1,8 +1,15 @@
 import { z } from 'zod';
 
 import { authEnvSchema } from './auth-env-schema';
+import { integerSetting, postgresUrl } from './env-primitives';
+import { refineEnv } from './env-rules';
 import { mailEnvSchema } from './mail-env-schema';
-import { rateLimitConfigIssues, rateLimitEnvSchema } from './rate-limit-env-schema';
+import { rateLimitEnvRules, rateLimitEnvSchema } from './rate-limit-env-schema';
+
+import type { AuthEnv } from './auth-env-schema';
+import type { EnvRule } from './env-rules';
+import type { MailEnv } from './mail-env-schema';
+import type { RateLimitEnv } from './rate-limit-env-schema';
 
 const DEFAULT_NODE_ENV = 'development' as const;
 const DEFAULT_DATABASE_POOL_SIZE = 10;
@@ -16,65 +23,68 @@ const MAX_AUDIT_RETENTION_DAYS = 3650;
 const serverEnvBaseSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default(DEFAULT_NODE_ENV),
 
-  DATABASE_URL: z.url(),
+  DATABASE_URL: postgresUrl,
 
-  DATABASE_POOL_SIZE: z.coerce.number().int().positive().default(DEFAULT_DATABASE_POOL_SIZE),
+  DATABASE_POOL_SIZE: integerSetting(DEFAULT_DATABASE_POOL_SIZE),
 
-  DATABASE_POOL_TIMEOUT_SECONDS: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(DEFAULT_DATABASE_POOL_TIMEOUT_SECONDS),
+  DATABASE_POOL_TIMEOUT_SECONDS: integerSetting(DEFAULT_DATABASE_POOL_TIMEOUT_SECONDS),
 
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default(DEFAULT_LOG_LEVEL),
 
-  AUDIT_RETENTION_DAYS: z.coerce
-    .number()
-    .int()
-    .min(MIN_AUDIT_RETENTION_DAYS)
-    .max(MAX_AUDIT_RETENTION_DAYS)
-    .default(DEFAULT_AUDIT_RETENTION_DAYS),
+  AUDIT_RETENTION_DAYS: integerSetting(DEFAULT_AUDIT_RETENTION_DAYS, {
+    min: MIN_AUDIT_RETENTION_DAYS,
+    max: MAX_AUDIT_RETENTION_DAYS,
+  }),
 });
+
+/** Everything the server schema validates, as one value: what the rules below read. */
+type ServerEnvShape = z.infer<typeof serverEnvBaseSchema> & AuthEnv & MailEnv & RateLimitEnv;
+
+const isProduction = (env: ServerEnvShape) => env.NODE_ENV === 'production';
+
+/** What production demands of the domains together; a domain's own requirements stay in its file. */
+const productionRules: ReadonlyArray<EnvRule<ServerEnvShape>> = [
+  {
+    path: 'AUTH_ENABLED',
+    violated: (env) => isProduction(env) && !env.AUTH_ENABLED,
+    message: 'AUTH_ENABLED=false is not allowed when NODE_ENV=production.',
+  },
+  {
+    path: 'MAIL_PROVIDER',
+    violated: (env) => isProduction(env) && env.MAIL_PROVIDER === 'none',
+    message:
+      'MAIL_PROVIDER must be "smtp" or "resend" in production: sign-in and bookings send e-mail.',
+  },
+  {
+    path: 'MAIL_PROVIDER',
+    violated: (env) => !isProduction(env) && env.MAIL_PROVIDER === 'resend',
+    message: 'MAIL_PROVIDER must be "none" or "smtp" outside production.',
+  },
+  {
+    path: 'MAIL_API_URL',
+    // Every request carries MAIL_API_KEY as a bearer credential.
+    violated: (env) =>
+      isProduction(env) &&
+      env.MAIL_PROVIDER === 'resend' &&
+      new URL(env.MAIL_API_URL).protocol !== 'https:',
+    message: 'MAIL_API_URL must be an https URL in production.',
+  },
+];
 
 /**
  * Server-only configuration.
  *
- * Authentication and mail configuration are composed into the server schema so
- * the application has one validated server configuration object.
+ * Authentication, mail and rate-limit configuration are composed into the
+ * server schema so the application has one validated server configuration
+ * object. Rules internal to one domain live in that domain's file and are
+ * attached there (authentication, mail) or here (rate limit, which reads
+ * `NODE_ENV` and the authentication secret); rules that span the domains are
+ * `productionRules`.
  */
 export const serverEnvSchema = serverEnvBaseSchema
   .and(authEnvSchema)
   .and(mailEnvSchema)
   .and(rateLimitEnvSchema)
-  .superRefine((env, ctx) => {
-    for (const issue of rateLimitConfigIssues(env)) {
-      ctx.addIssue({ code: 'custom', path: [issue.path], message: issue.message });
-    }
-
-    if (!env.AUTH_ENABLED && env.NODE_ENV === 'production') {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['AUTH_ENABLED'],
-        message: 'AUTH_ENABLED=false is not allowed when NODE_ENV=production.',
-      });
-    }
-
-    if (env.NODE_ENV === 'production' && env.MAIL_PROVIDER === 'none') {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['MAIL_PROVIDER'],
-        message:
-          'MAIL_PROVIDER must be "smtp" or "resend" in production: sign-in and bookings send e-mail.',
-      });
-    }
-
-    if (env.NODE_ENV !== 'production' && env.MAIL_PROVIDER === 'resend') {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['MAIL_PROVIDER'],
-        message: 'MAIL_PROVIDER must be "none" or "smtp" outside production.',
-      });
-    }
-  });
+  .superRefine(refineEnv<ServerEnvShape>(rateLimitEnvRules, productionRules));
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

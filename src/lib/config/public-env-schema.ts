@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { httpUrl } from './env-primitives';
+
 const DEFAULT_PUBLIC_APP_URL = 'http://localhost:3000';
 const DEFAULT_MAPBOX_STYLE_URL = 'mapbox://styles/mapbox/light-v11';
 
@@ -13,7 +15,8 @@ const MAPBOX_STYLE_URL_PATTERN = /^mapbox:\/\/styles\/[\w-]+\/[\w-]+$/;
  * no server dependency so it can sit in a browser bundle.
  */
 export const publicEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.url().default(DEFAULT_PUBLIC_APP_URL),
+  /** Origin the app is served from. */
+  NEXT_PUBLIC_APP_URL: httpUrl.default(DEFAULT_PUBLIC_APP_URL),
 
   /**
    * A Mapbox PUBLIC token (`pk.…`), which Mapbox designs to be shipped to the

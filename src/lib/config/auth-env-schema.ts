@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import { booleanFlag, commaSeparatedList, integerSetting, postgresUrl } from './env-primitives';
+import { refineEnv } from './env-rules';
+
+import type { EnvRule } from './env-rules';
+
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_DAY = 24 * 60 * SECONDS_PER_MINUTE;
 
@@ -15,100 +20,85 @@ const DEFAULT_DEV_ACTOR_ROLE = 'viewer';
 
 const MIN_AUTH_SECRET_LENGTH = 32;
 
-/**
- * An environment flag is the text `true` or `false`. `z.coerce.boolean()`
- * is not used: it turns every non-empty string, including "false", into `true`.
- */
-const booleanFlagSchema = (defaultValue: boolean) =>
-  z
-    .enum(['true', 'false'])
-    .optional()
-    .transform((value) => (value === undefined ? defaultValue : value === 'true'));
-
-const commaSeparatedListSchema = z
-  .string()
-  .optional()
-  .transform((value) =>
-    (value ?? '')
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.length > 0),
-  );
-
-const positiveIntegerSchema = (defaultValue: number) =>
-  z.coerce.number().int().positive().default(defaultValue);
-
 const authEnvObjectSchema = z.object({
-  AUTH_ENABLED: booleanFlagSchema(DEFAULT_AUTH_ENABLED),
+  /** `false` skips sign-in and acts as `AUTH_DEV_ACTOR_ROLE`. Refused in production (see `env-schema.ts`). */
+  AUTH_ENABLED: booleanFlag(DEFAULT_AUTH_ENABLED),
 
+  /** Signs sessions and tokens. Required, at least `MIN_AUTH_SECRET_LENGTH` characters, once auth is enabled. */
   AUTH_SECRET: z.string().optional(),
 
-  AUTH_DATABASE_URL: z.string().optional(),
+  /** Database holding the authentication tables. Required once auth is enabled. */
+  AUTH_DATABASE_URL: postgresUrl.optional(),
 
-  AUTH_DATABASE_POOL_SIZE: positiveIntegerSchema(DEFAULT_AUTH_DATABASE_POOL_SIZE),
+  AUTH_DATABASE_POOL_SIZE: integerSetting(DEFAULT_AUTH_DATABASE_POOL_SIZE),
 
-  AUTH_SESSION_EXPIRES_IN_SECONDS: positiveIntegerSchema(DEFAULT_SESSION_EXPIRES_IN_SECONDS),
+  /** Session lifetime. */
+  AUTH_SESSION_EXPIRES_IN_SECONDS: integerSetting(DEFAULT_SESSION_EXPIRES_IN_SECONDS),
 
-  AUTH_SESSION_UPDATE_AGE_SECONDS: positiveIntegerSchema(DEFAULT_SESSION_UPDATE_AGE_SECONDS),
+  /** How often a session in use is extended. Not above the session lifetime. */
+  AUTH_SESSION_UPDATE_AGE_SECONDS: integerSetting(DEFAULT_SESSION_UPDATE_AGE_SECONDS),
 
-  AUTH_SESSION_FRESH_AGE_SECONDS: positiveIntegerSchema(DEFAULT_SESSION_FRESH_AGE_SECONDS),
+  /** How recent a sign-in must be for sensitive actions. Not above the session lifetime. */
+  AUTH_SESSION_FRESH_AGE_SECONDS: integerSetting(DEFAULT_SESSION_FRESH_AGE_SECONDS),
 
-  AUTH_SESSION_MAX_LIFETIME_SECONDS: positiveIntegerSchema(DEFAULT_SESSION_MAX_LIFETIME_SECONDS),
+  /** Hard cap on a session's total age, however often it is extended. Not below the session lifetime. */
+  AUTH_SESSION_MAX_LIFETIME_SECONDS: integerSetting(DEFAULT_SESSION_MAX_LIFETIME_SECONDS),
 
-  AUTH_TRUSTED_PROXIES: commaSeparatedListSchema,
+  /** IPs or CIDR ranges of the reverse proxies in front of the app. Entries are checked by the rate-limit rules. */
+  AUTH_TRUSTED_PROXIES: commaSeparatedList,
 
-  /** Platform administrators by (verified) e-mail address: the bootstrap of a deployment. Lower-cased. */
-  AUTH_PLATFORM_ADMIN_EMAILS: commaSeparatedListSchema.transform((entries) =>
-    entries.map((entry) => entry.toLowerCase()),
-  ),
+  /**
+   * Platform administrators by (verified) e-mail address: the bootstrap of a
+   * deployment. Lower-cased. A malformed entry would silently grant nobody
+   * anything, so it is rejected instead.
+   */
+  AUTH_PLATFORM_ADMIN_EMAILS: commaSeparatedList
+    .transform((entries) => entries.map((entry) => entry.toLowerCase()))
+    .pipe(z.array(z.email({ error: 'Must be an e-mail address.' }))),
 
-  AUTH_DEV_ACTOR_ROLE: z.string().default(DEFAULT_DEV_ACTOR_ROLE),
+  /** The role acted as when `AUTH_ENABLED=false`. Unused while auth is enabled. */
+  AUTH_DEV_ACTOR_ROLE: z.string().min(1).default(DEFAULT_DEV_ACTOR_ROLE),
 });
 
-/** A setting that must hold once auth is enabled. */
-interface Requirement {
-  readonly path: keyof AuthEnv;
-  readonly isMet: (env: AuthEnv) => boolean;
-  readonly message: string;
-}
+export type AuthEnv = z.infer<typeof authEnvObjectSchema>;
 
-const REQUIREMENTS_WHEN_ENABLED: readonly Requirement[] = [
+/** Auth is off in development only, and then none of its settings matter. */
+const whileEnabled = (breaks: (env: AuthEnv) => boolean) => (env: AuthEnv) =>
+  env.AUTH_ENABLED && breaks(env);
+
+/** What must hold once auth is enabled. */
+export const authEnvRules: ReadonlyArray<EnvRule<AuthEnv>> = [
   {
     path: 'AUTH_SECRET',
-    isMet: (env) => (env.AUTH_SECRET?.length ?? 0) >= MIN_AUTH_SECRET_LENGTH,
+    violated: whileEnabled((env) => (env.AUTH_SECRET?.length ?? 0) < MIN_AUTH_SECRET_LENGTH),
     message: `AUTH_SECRET is required and must be at least ${MIN_AUTH_SECRET_LENGTH} characters when auth is enabled.`,
   },
   {
     path: 'AUTH_DATABASE_URL',
-    isMet: (env) => Boolean(env.AUTH_DATABASE_URL),
+    violated: whileEnabled((env) => !env.AUTH_DATABASE_URL),
     message: 'AUTH_DATABASE_URL is required when auth is enabled.',
   },
   {
     path: 'AUTH_SESSION_UPDATE_AGE_SECONDS',
-    isMet: (env) => env.AUTH_SESSION_UPDATE_AGE_SECONDS <= env.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    violated: whileEnabled(
+      (env) => env.AUTH_SESSION_UPDATE_AGE_SECONDS > env.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    ),
     message: 'Must not exceed AUTH_SESSION_EXPIRES_IN_SECONDS.',
   },
   {
     path: 'AUTH_SESSION_FRESH_AGE_SECONDS',
-    isMet: (env) => env.AUTH_SESSION_FRESH_AGE_SECONDS <= env.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    violated: whileEnabled(
+      (env) => env.AUTH_SESSION_FRESH_AGE_SECONDS > env.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    ),
     message: 'Must not exceed AUTH_SESSION_EXPIRES_IN_SECONDS.',
   },
   {
     path: 'AUTH_SESSION_MAX_LIFETIME_SECONDS',
-    isMet: (env) => env.AUTH_SESSION_MAX_LIFETIME_SECONDS >= env.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    violated: whileEnabled(
+      (env) => env.AUTH_SESSION_MAX_LIFETIME_SECONDS < env.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    ),
     message: 'Must be at least AUTH_SESSION_EXPIRES_IN_SECONDS.',
   },
 ];
 
-export const authEnvSchema = authEnvObjectSchema.superRefine((env, ctx) => {
-  if (!env.AUTH_ENABLED) {
-    return;
-  }
-  for (const requirement of REQUIREMENTS_WHEN_ENABLED) {
-    if (!requirement.isMet(env)) {
-      ctx.addIssue({ code: 'custom', path: [requirement.path], message: requirement.message });
-    }
-  }
-});
-
-export type AuthEnv = z.infer<typeof authEnvSchema>;
+export const authEnvSchema = authEnvObjectSchema.superRefine(refineEnv(authEnvRules));

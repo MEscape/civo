@@ -235,6 +235,25 @@ describe('serverEnvSchema: authentication modes', () => {
     ]);
   });
 
+  it('refuses a production start that sends a bearer token over plain http', () => {
+    const issuePaths = (overrides: Record<string, string>) =>
+      serverEnvSchema
+        .safeParse({
+          ...DATABASE,
+          ...AUTH_SECRETS,
+          ...PRODUCTION_MAIL,
+          ...PRODUCTION_RATE_LIMIT,
+          NODE_ENV: 'production',
+          ...overrides,
+        })
+        .error?.issues.map((issue) => issue.path.join('.'));
+
+    expect(issuePaths({ UPSTASH_REDIS_REST_URL: 'http://eu1-example.upstash.io' })).toEqual([
+      'UPSTASH_REDIS_REST_URL',
+    ]);
+    expect(issuePaths({ MAIL_API_URL: 'http://api.resend.com/emails' })).toEqual(['MAIL_API_URL']);
+  });
+
   it('accepts a fully configured production start', () => {
     const result = serverEnvSchema.safeParse({
       ...DATABASE,
@@ -312,5 +331,33 @@ describe('serverEnvSchema: mail', () => {
     const smtp = { MAIL_PROVIDER: 'smtp', MAIL_SMTP_HOST: 'h', MAIL_FROM: 'a@b.c' } as const;
     expect(paths({ ...smtp, MAIL_SMTP_USER: 'mailer' })).toEqual(['MAIL_SMTP_PASSWORD']);
     expect(paths({ ...smtp, MAIL_SMTP_PASSWORD: 'secret' })).toEqual(['MAIL_SMTP_USER']);
+  });
+});
+
+describe('serverEnvSchema: platform administrators', () => {
+  const BASE = { DATABASE_URL: 'postgres://localhost/db', AUTH_ENABLED: 'false' } as const;
+  const admins = (value: string | undefined) =>
+    serverEnvSchema.safeParse({ ...BASE, AUTH_PLATFORM_ADMIN_EMAILS: value });
+
+  it('lists none by default', () => {
+    const result = serverEnvSchema.safeParse(BASE);
+
+    expect(result.success && result.data.AUTH_PLATFORM_ADMIN_EMAILS).toEqual([]);
+  });
+
+  it('reads a comma-separated list, trimmed and lower-cased', () => {
+    const result = admins(' Admin@Example.org , ops@example.org ,, ');
+
+    expect(result.success && result.data.AUTH_PLATFORM_ADMIN_EMAILS).toEqual([
+      'admin@example.org',
+      'ops@example.org',
+    ]);
+  });
+
+  it('rejects an entry that is not an e-mail address instead of granting nobody anything', () => {
+    const result = admins('admin@example.org, not-an-email');
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path[0]).toBe('AUTH_PLATFORM_ADMIN_EMAILS');
   });
 });

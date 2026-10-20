@@ -6,7 +6,7 @@ Owning rules: [`configuration.md`](../rules/configuration.md), [`security.md`](.
 
 1. Decide server-only or public. Secrets are always server-only. Use `NEXT_PUBLIC_*` only for values that are safe to ship to the browser.
 2. Name it in `UPPER_SNAKE_CASE`. See [`naming.md`](../rules/naming.md).
-3. Add it to the Zod schema of the typed configuration module, with the right type and a default only when a default is safe.
+3. Add it to the Zod schema of its domain in `src/lib/config`, with the right type and a default only when a default is safe. A requirement that spans variables ("required once X is on", "https in production") is a row in that domain's `EnvRule` table, not an `if` in a schema; see `@lib/config` in [`src/lib/README.md`](../../src/lib/README.md).
 4. Read it only through the typed configuration module. Never use `process.env` elsewhere.
 5. Add it to `.env.example` with a placeholder value and a one-line description. Never commit a real value.
 6. Confirm the app fails fast at startup when it is missing or malformed.

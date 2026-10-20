@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import { httpUrl, integerSetting } from './env-primitives';
+
+import type { EnvRule } from './env-rules';
+import type { ClientAddressSettings, ClientAddressSourceName } from './rate-limit-settings';
+
 const DEFAULT_RATE_LIMIT_TIMEOUT_MS = 1500;
 const MIN_RATE_LIMIT_TIMEOUT_MS = 100;
 const MAX_RATE_LIMIT_TIMEOUT_MS = 10_000;
@@ -16,6 +21,9 @@ const MIN_RATE_LIMIT_SECRET_LENGTH = 32;
  * The REST variables carry the names Upstash and its Vercel integration already
  * set, so a deployment needs no remapping. The key secret falls back to
  * `AUTH_SECRET`, so a deployment that already runs auth needs no new secret.
+ *
+ * Below the schema: what an unset variable means (`effective…`) and `rateLimitEnvRules`, what must
+ * hold across the variables. How they become the limiter's settings is `rate-limit-settings.ts`.
  */
 export const rateLimitEnvSchema = z.object({
   RATE_LIMIT_BACKEND: z.enum(['upstash', 'memory']).optional(),
@@ -44,12 +52,10 @@ export const rateLimitEnvSchema = z.object({
   RATE_LIMIT_SECRET: z.string().optional(),
 
   /** Upper bound for one limiter check, including the round trip to the store. */
-  RATE_LIMIT_TIMEOUT_MS: z.coerce
-    .number()
-    .int()
-    .min(MIN_RATE_LIMIT_TIMEOUT_MS)
-    .max(MAX_RATE_LIMIT_TIMEOUT_MS)
-    .default(DEFAULT_RATE_LIMIT_TIMEOUT_MS),
+  RATE_LIMIT_TIMEOUT_MS: integerSetting(DEFAULT_RATE_LIMIT_TIMEOUT_MS, {
+    min: MIN_RATE_LIMIT_TIMEOUT_MS,
+    max: MAX_RATE_LIMIT_TIMEOUT_MS,
+  }),
 });
 
 export type RateLimitEnv = z.infer<typeof rateLimitEnvSchema>;
@@ -61,68 +67,22 @@ export type RateLimitEnvInput = RateLimitEnv & {
   readonly AUTH_TRUSTED_PROXIES?: readonly string[] | undefined;
 };
 
-export type ClientAddressSourceName = 'vercel' | 'proxies' | 'none';
-
-/** How the client address of a request is determined. */
-export interface ClientAddressSettings {
-  readonly source: ClientAddressSourceName;
-  /**
-   * False only when the source is `none` because nothing was configured or detected. An operator
-   * who wrote `none` made a decision; an unset variable on an unknown platform did not, and the
-   * logs say so at warning level.
-   */
-  readonly configured: boolean;
-  /** IPs or CIDR ranges of the proxies in front of the app; only used by `proxies`. */
-  readonly trustedProxies: readonly string[];
-}
-
-export type RateLimitSettings =
-  | {
-      readonly backend: 'upstash';
-      readonly restUrl: string;
-      readonly restToken: string;
-      readonly keySecret: string;
-      readonly timeoutMs: number;
-      readonly clientAddress: ClientAddressSettings;
-    }
-  | {
-      /** Process-local counters. Development and tests only. */
-      readonly backend: 'memory';
-      /** Absent means the limiter generates a throw-away key for this process. */
-      readonly keySecret: string | undefined;
-      readonly timeoutMs: number;
-      readonly clientAddress: ClientAddressSettings;
-    };
-
-export interface RateLimitConfigIssue {
-  readonly path: keyof RateLimitEnv;
-  readonly message: string;
-}
+/*
+ * What an unset variable means, in one place: the rules below and `resolveRateLimitSettings` both
+ * read it from here.
+ */
 
 /** An empty value (`RATE_LIMIT_SECRET=`) is the same as an unset one. */
-function nonEmpty(value: string | undefined): string | undefined {
+export function nonEmpty(value: string | undefined): string | undefined {
   return value === undefined || value === '' ? undefined : value;
 }
 
-function effectiveBackend(env: RateLimitEnvInput): 'upstash' | 'memory' {
+export function effectiveBackend(env: RateLimitEnvInput): 'upstash' | 'memory' {
   return env.RATE_LIMIT_BACKEND ?? (env.NODE_ENV === 'production' ? 'upstash' : 'memory');
 }
 
-function effectiveSecret(env: RateLimitEnvInput): string | undefined {
+export function effectiveSecret(env: RateLimitEnvInput): string | undefined {
   return nonEmpty(env.RATE_LIMIT_SECRET) ?? nonEmpty(env.AUTH_SECRET);
-}
-
-const restUrlSchema = z.url({ protocol: /^https?$/ });
-
-/**
- * A trusted proxy is an IP address or an `IP/prefix` range; anything else would silently match
- * nothing. Checked with Zod's own validators rather than `node:net`: this file is part of the
- * `@lib/config` barrel that client components import, so it must not reach for a Node built-in.
- */
-const proxyEntrySchema = z.union([z.ipv4(), z.ipv6(), z.cidrv4(), z.cidrv6()]);
-
-function isValidProxyEntry(entry: string): boolean {
-  return proxyEntrySchema.safeParse(entry).success;
 }
 
 function detectClientAddressSource(
@@ -135,7 +95,7 @@ function detectClientAddressSource(
   return trustedProxies.length > 0 ? 'proxies' : 'none';
 }
 
-function effectiveClientAddress(env: RateLimitEnvInput): ClientAddressSettings {
+export function effectiveClientAddress(env: RateLimitEnvInput): ClientAddressSettings {
   const trustedProxies = env.AUTH_TRUSTED_PROXIES ?? [];
   const explicit = env.RATE_LIMIT_CLIENT_ADDRESS_SOURCE;
   const source = explicit ?? detectClientAddressSource(env, trustedProxies);
@@ -146,127 +106,98 @@ function effectiveClientAddress(env: RateLimitEnvInput): ClientAddressSettings {
   };
 }
 
-function upstashIssues(env: RateLimitEnvInput): RateLimitConfigIssue[] {
-  const issues: RateLimitConfigIssue[] = [];
-  const restUrl = nonEmpty(env.UPSTASH_REDIS_REST_URL);
+/**
+ * A trusted proxy is an IP address or an `IP/prefix` range; anything else would silently match
+ * nothing. Checked with Zod's own validators rather than `node:net`, which keeps this module free
+ * of Node built-ins and so loadable in any runtime the server configuration is read from.
+ */
+const proxyEntrySchema = z.union([z.ipv4(), z.ipv6(), z.cidrv4(), z.cidrv6()]);
 
-  if (restUrl === undefined) {
-    issues.push({
-      path: 'UPSTASH_REDIS_REST_URL',
-      message: 'UPSTASH_REDIS_REST_URL is required for the upstash backend.',
-    });
-  } else if (!restUrlSchema.safeParse(restUrl).success) {
-    issues.push({
-      path: 'UPSTASH_REDIS_REST_URL',
-      message: 'UPSTASH_REDIS_REST_URL must be an http(s) URL.',
-    });
-  }
-  if (nonEmpty(env.UPSTASH_REDIS_REST_TOKEN) === undefined) {
-    issues.push({
-      path: 'UPSTASH_REDIS_REST_TOKEN',
-      message: 'UPSTASH_REDIS_REST_TOKEN is required for the upstash backend.',
-    });
-  }
-  return issues;
-}
+const isProduction = (env: RateLimitEnvInput) => env.NODE_ENV === 'production';
+const usesUpstash = (env: RateLimitEnvInput) => effectiveBackend(env) === 'upstash';
+const restUrl = (env: RateLimitEnvInput) => nonEmpty(env.UPSTASH_REDIS_REST_URL);
+const isWeak = (secret: string | undefined) => (secret?.length ?? 0) < MIN_RATE_LIMIT_SECRET_LENGTH;
 
-function backendIssues(env: RateLimitEnvInput): RateLimitConfigIssue[] {
-  const backend = effectiveBackend(env);
-  const secret = effectiveSecret(env);
-  const secretIsWeak = (secret?.length ?? 0) < MIN_RATE_LIMIT_SECRET_LENGTH;
-
-  if (backend === 'memory') {
-    if (env.NODE_ENV === 'production') {
-      return [
-        {
-          path: 'RATE_LIMIT_BACKEND',
-          message:
-            'The memory backend keeps counters per process and cannot enforce a limit across instances; it is not allowed when NODE_ENV=production.',
-        },
-      ];
-    }
-    return secret !== undefined && secretIsWeak
-      ? [
-          {
-            path: 'RATE_LIMIT_SECRET',
-            message: `A rate-limit secret, when set, must be at least ${MIN_RATE_LIMIT_SECRET_LENGTH} characters.`,
-          },
-        ]
-      : [];
-  }
-
-  const issues = upstashIssues(env);
-  if (secretIsWeak) {
-    issues.push({
-      path: 'RATE_LIMIT_SECRET',
-      message: `RATE_LIMIT_SECRET (or AUTH_SECRET as its fallback) must be at least ${MIN_RATE_LIMIT_SECRET_LENGTH} characters for the upstash backend.`,
-    });
-  }
-  return issues;
-}
-
-function clientAddressIssues(env: RateLimitEnvInput): RateLimitConfigIssue[] {
-  const { source, trustedProxies } = effectiveClientAddress(env);
-  if (source !== 'proxies') {
-    return [];
-  }
-
-  if (trustedProxies.length === 0) {
-    return [
-      {
-        path: 'RATE_LIMIT_CLIENT_ADDRESS_SOURCE',
-        message:
-          'The "proxies" source needs AUTH_TRUSTED_PROXIES (IPs or CIDR ranges of your proxies).',
-      },
-    ];
-  }
-
-  const invalid = trustedProxies.filter((entry) => !isValidProxyEntry(entry));
-  return invalid.length === 0
-    ? []
-    : [
-        {
-          path: 'RATE_LIMIT_CLIENT_ADDRESS_SOURCE',
-          message: `AUTH_TRUSTED_PROXIES contains entries that are not an IP or CIDR range: ${invalid.join(', ')}.`,
-        },
-      ];
+function malformedProxies(env: RateLimitEnvInput): string[] {
+  return effectiveClientAddress(env).trustedProxies.filter(
+    (entry) => !proxyEntrySchema.safeParse(entry).success,
+  );
 }
 
 /**
- * Everything that must hold for the rate limiter to start. Reported through the
- * server schema so a bad deployment fails at startup, not on the first request.
+ * What must hold for the rate limiter to start. Reported through the server schema, so a bad
+ * deployment fails at startup, not on the first request.
  */
-export function rateLimitConfigIssues(env: RateLimitEnvInput): RateLimitConfigIssue[] {
-  return [...backendIssues(env), ...clientAddressIssues(env)];
-}
+export const rateLimitEnvRules: ReadonlyArray<EnvRule<RateLimitEnvInput>> = [
+  {
+    path: 'RATE_LIMIT_BACKEND',
+    violated: (env) => isProduction(env) && !usesUpstash(env),
+    message:
+      'The memory backend keeps counters per process and cannot enforce a limit across instances; it is not allowed when NODE_ENV=production.',
+  },
 
-/**
- * The validated settings the limiter is built from. Throws when the environment
- * breaks `rateLimitConfigIssues`; the server schema reports the same problems
- * at startup, so reaching the throw means the schema was bypassed.
- */
-export function resolveRateLimitSettings(env: RateLimitEnvInput): RateLimitSettings {
-  const issues = rateLimitConfigIssues(env);
-  if (issues.length > 0) {
-    throw new Error(
-      `Invalid rate-limit configuration:\n${issues.map((issue) => `  - ${issue.path}: ${issue.message}`).join('\n')}`,
-    );
-  }
+  {
+    path: 'UPSTASH_REDIS_REST_URL',
+    violated: (env) => usesUpstash(env) && restUrl(env) === undefined,
+    message: 'UPSTASH_REDIS_REST_URL is required for the upstash backend.',
+  },
+  {
+    path: 'UPSTASH_REDIS_REST_URL',
+    violated: (env) => {
+      const url = restUrl(env);
+      return usesUpstash(env) && url !== undefined && !httpUrl.safeParse(url).success;
+    },
+    message: 'UPSTASH_REDIS_REST_URL must be an http(s) URL.',
+  },
+  {
+    path: 'UPSTASH_REDIS_REST_URL',
+    // Every request carries the database token as a bearer credential.
+    violated: (env) => {
+      const url = restUrl(env);
+      return (
+        usesUpstash(env) &&
+        isProduction(env) &&
+        url !== undefined &&
+        httpUrl.safeParse(url).success &&
+        new URL(url).protocol !== 'https:'
+      );
+    },
+    message: 'UPSTASH_REDIS_REST_URL must be an https URL when NODE_ENV=production.',
+  },
+  {
+    path: 'UPSTASH_REDIS_REST_TOKEN',
+    violated: (env) => usesUpstash(env) && nonEmpty(env.UPSTASH_REDIS_REST_TOKEN) === undefined,
+    message: 'UPSTASH_REDIS_REST_TOKEN is required for the upstash backend.',
+  },
 
-  const common = {
-    timeoutMs: env.RATE_LIMIT_TIMEOUT_MS,
-    clientAddress: effectiveClientAddress(env),
-  };
-  if (effectiveBackend(env) === 'memory') {
-    return { backend: 'memory', keySecret: effectiveSecret(env), ...common };
-  }
+  {
+    path: 'RATE_LIMIT_SECRET',
+    violated: (env) => usesUpstash(env) && isWeak(effectiveSecret(env)),
+    message: `RATE_LIMIT_SECRET (or AUTH_SECRET as its fallback) must be at least ${MIN_RATE_LIMIT_SECRET_LENGTH} characters for the upstash backend.`,
+  },
+  {
+    path: 'RATE_LIMIT_SECRET',
+    // The memory backend works without one, but a secret that is set must not be a weak one.
+    violated: (env) => {
+      const secret = effectiveSecret(env);
+      return !usesUpstash(env) && secret !== undefined && isWeak(secret);
+    },
+    message: `A rate-limit secret, when set, must be at least ${MIN_RATE_LIMIT_SECRET_LENGTH} characters.`,
+  },
 
-  // `rateLimitConfigIssues` has just proved all three are present.
-  const restUrl = nonEmpty(env.UPSTASH_REDIS_REST_URL);
-  const restToken = nonEmpty(env.UPSTASH_REDIS_REST_TOKEN);
-  const keySecret = effectiveSecret(env);
-  if (restUrl === undefined || restToken === undefined || keySecret === undefined) {
-    throw new Error('Invalid rate-limit configuration: Upstash URL, token or secret missing.');
-  }
-  return { backend: 'upstash', restUrl, restToken, keySecret, ...common };
-}
+  {
+    path: 'RATE_LIMIT_CLIENT_ADDRESS_SOURCE',
+    violated: (env) => {
+      const { source, trustedProxies } = effectiveClientAddress(env);
+      return source === 'proxies' && trustedProxies.length === 0;
+    },
+    message:
+      'The "proxies" source needs AUTH_TRUSTED_PROXIES (IPs or CIDR ranges of your proxies).',
+  },
+  {
+    path: 'RATE_LIMIT_CLIENT_ADDRESS_SOURCE',
+    violated: (env) => malformedProxies(env).length > 0,
+    message: (env) =>
+      `AUTH_TRUSTED_PROXIES contains entries that are not an IP or CIDR range: ${malformedProxies(env).join(', ')}.`,
+  },
+];
