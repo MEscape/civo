@@ -163,7 +163,7 @@ export function runEnv(argv: string[], options: { root?: string } = {}): string 
       : [`   const ${constant} = ${literal};   (next to the other DEFAULT_ constants)`]),
     `   ${schemaLine.trim()}`,
     '2. Read it only through the typed config module; never use process.env elsewhere.',
-    '3. Set it in every deployment environment before merging (also .env.docker.example if the container needs it).',
+    '3. Set it in every deployment environment (Vercel, and the CI workflows that need it) before merging.',
     ...(isPublic && /(TOKEN|KEY)/.test(name)
       ? [
           '4. This name looks like a credential: make sure the value is designed to ship to the browser (e.g. a restricted public token).',

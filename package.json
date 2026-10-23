@@ -30,7 +30,9 @@
     "db:studio": "prisma studio",
     "i18n:check": "vitest run __tests__/architecture/i18n-catalogs.test.ts",
     "components:lock": "tsx scripts/gen.ts component-lock",
-    "gen": "tsx scripts/gen.ts"
+    "gen": "tsx scripts/gen.ts",
+    "infra:up": "docker compose --env-file .env.docker up -d --wait",
+    "infra:down": "docker compose --env-file .env.docker down"
   },
   "dependencies": {
     "@fullcalendar/core": "6.1.21",

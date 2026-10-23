@@ -1,7 +1,7 @@
 # ==============================================================================
 # CIVO - CONTINUOUS INTEGRATION PIPELINE
 # Validates formatting, types, DB contracts, unit/integration/architecture tests,
-# license compliance, Next.js build, and hardened Docker targets (`migrator` & `runner`).
+# license compliance and the Next.js build.
 # ==============================================================================
 
 name: CI
@@ -267,135 +267,12 @@ jobs:
       - run: npm run build
 
   # ----------------------------------------------------------------------------
-  # 7. Docker Image & Hardening Validation (`migrator` + `runner`)
-  # ----------------------------------------------------------------------------
-  docker:
-    name: Docker image validation
-    needs: [lint, typecheck, database, test]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Build migrator image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          target: migrator
-          push: false
-          load: true
-          tags: civo-migrator:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build runner image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          target: runner
-          push: false
-          load: true
-          tags: civo:ci
-          build-args: |
-            NEXT_PUBLIC_APP_URL=https://ci.example.invalid
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Verify non-root user & stripped package managers
-        run: |
-          test "$(docker run --rm --entrypoint id civo:ci -u)" != "0"
-          test "$(docker run --rm --entrypoint id civo-migrator:ci -u)" != "0"
-          ! docker run --rm --entrypoint which civo:ci npm
-
-      - name: Create Docker network
-        run: docker network create civo-ci
-
-      - name: Start PostgreSQL
-        run: |
-          docker run -d \
-            --name civo-postgres-ci \
-            --network civo-ci \
-            -p 127.0.0.1:5432:5432 \
-            -e POSTGRES_USER=ci \
-            -e POSTGRES_PASSWORD=ci_password \
-            -e POSTGRES_DB=civo \
-            postgres:alpine
-
-          for i in $(seq 1 30); do
-            docker exec civo-postgres-ci \
-              pg_isready -U ci -d civo && break
-            sleep 2
-          done
-
-          docker exec civo-postgres-ci \
-            psql -U ci -d civo \
-            -c 'CREATE DATABASE civo_auth'
-
-      - name: Run database migrations via `migrator` container
-        run: |
-          docker run --rm \
-            --network civo-ci \
-            -e DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo \
-            -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
-            -e AUTH_DATABASE_NAME=civo_auth \
-            civo-migrator:ci
-
-      - name: Start MailHog
-        run: |
-          docker run -d \
-            --name civo-mailhog-ci \
-            --network civo-ci \
-            mailhog/mailhog:latest
-
-      - name: Container boots with hardened flags and answers /api/health
-        run: |
-          docker run -d \
-            --init \
-            --security-opt=no-new-privileges:true \
-            --cap-drop=ALL \
-            --name civo-app \
-            --network civo-ci \
-            -p 3000:3000 \
-            -e DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo \
-            -e AUTH_ENABLED=true \
-            -e AUTH_SECRET=ci-placeholder-not-a-secret-000000000000 \
-            -e AUTH_DATABASE_URL=postgresql://ci:ci_password@civo-postgres-ci:5432/civo_auth \
-            -e MAIL_PROVIDER=smtp \
-            -e MAIL_SMTP_HOST=civo-mailhog-ci \
-            -e MAIL_SMTP_PORT=1025 \
-            -e MAIL_FROM=ci@example.invalid \
-            -e UPSTASH_REDIS_REST_URL=https://ci-placeholder.upstash.invalid \
-            -e UPSTASH_REDIS_REST_TOKEN=ci-placeholder-not-a-secret \
-            civo:ci
-
-          for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/api/health; then
-              exit 0
-            fi
-            sleep 2
-          done
-
-          docker logs civo-app
-          exit 1
-
-      - name: Cleanup Docker resources
-        if: always()
-        run: |
-          docker rm -f civo-app civo-mailhog-ci civo-postgres-ci 2>/dev/null || true
-          docker network rm civo-ci 2>/dev/null || true
-
-  # ----------------------------------------------------------------------------
-  # 8. Single Branch Protection Gate
+  # 7. Single Branch Protection Gate
   # ----------------------------------------------------------------------------
   ci-success:
     name: CI success
     if: always()
-    needs: [lint, typecheck, database, test, license, build, docker]
+    needs: [lint, typecheck, database, test, license, build]
     runs-on: ubuntu-24.04
 
     steps:

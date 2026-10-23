@@ -74,7 +74,6 @@ CHANGELOG.md
 *.key
 *.crt
 .nvmrc
-Dockerfile*
 
 # ------------------------------------------------------------------------------
 # IDEs (JetBrains / VS Code), OS & Logs

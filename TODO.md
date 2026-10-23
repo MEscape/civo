@@ -31,8 +31,6 @@
 
 - confirm dialog everywhere where uload guard?
 
-- ci only validate docker image no generate and migration but idk how to handle it because of standalone setting
-
 - navbar is loaded shortly and then got to sign in panel
 
 - Update-Verlauf always one step behind
@@ -56,5 +54,4 @@
 - Chart windows for the other dataset-scale components (donut, dashboard grid); only the trend chart has zoom/pan today.
 - Window semantics: category filter runs inside the window; consider fetching more when a category is set.
 - E2E tests for critical journeys: accept invitation, employee calendar, chart zoom/pan.
-- Replace `docker-compose.yml` hardcoded demo secrets (DB password, `AUTH_SECRET`) with env interpolation.
 - Rerender issue when hovering over component palette for preview

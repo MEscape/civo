@@ -21,21 +21,21 @@ Published sites are served at `/<locale>/s/<site-slug>`. The admin area is at `/
 
 ## Quick start
 
-You need **Node.js 24** (see `.nvmrc`), npm, and Docker for PostgreSQL and a local mail catcher.
+You need **Node.js 24** (see `.nvmrc`), npm, and Docker for the local PostgreSQL, mail catcher and Redis endpoint (`docker-compose.yml`). The app itself does not run in Docker.
 
 ```bash
 npm ci
 cp .env.example .env                 # then edit DATABASE_URL (below)
-cp .env.docker.example .env.docker   # database credentials for Docker Compose
-docker compose up -d postgres mailhog
+cp .env.docker.example .env.docker   # fill in the two <generate-...> values
+npm run infra:up                     # PostgreSQL (two databases), MailHog, Redis REST
 npm run db:migrate                   # app schema (Prisma) + auth tables (SQL)
 npm run dev
 ```
 
-With the Compose defaults, set in `.env`:
+In `.env`, use the `POSTGRES_PASSWORD` you put in `.env.docker`:
 
 ```text
-DATABASE_URL=postgresql://civo:change-me@localhost:5432/civo
+DATABASE_URL=postgresql://civo:<POSTGRES_PASSWORD>@localhost:5432/civo
 ```
 
 Open <http://localhost:3000/en/websites>. `.env.example` ships with `AUTH_ENABLED=false`, so there is no sign-in: you act as a platform administrator (`AUTH_DEV_ACTOR_ROLE`). Create a website, open its builder, add components, publish a release, then view the site at `/en/s/<slug>`. This mode is refused in production.
@@ -49,7 +49,7 @@ In `.env` set `AUTH_ENABLED=true`, `AUTH_SECRET` (32+ random characters), `AUTH_
 ### Optional
 
 - **Map:** set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to a Mapbox _public_ token. Without it the map degrades to a list.
-- **Rate limits against Redis:** in development the limits count in process memory. To try the production path, run `docker compose up -d redis redis-rest` and set `RATE_LIMIT_BACKEND=upstash`, `UPSTASH_REDIS_REST_URL=http://localhost:8079` and `UPSTASH_REDIS_REST_TOKEN` (the token is in `docker-compose.yml`). Production uses an Upstash database; see [`docs/architecture/rate-limiting.md`](./docs/architecture/rate-limiting.md).
+- **Rate limits against Redis:** in development the limits count in process memory. To try the production path, start the services with `npm run infra:up` and set `RATE_LIMIT_BACKEND=upstash`, `UPSTASH_REDIS_REST_URL=http://localhost:8079` and `UPSTASH_REDIS_REST_TOKEN` (the token is `SRH_TOKEN` in `.env.docker`). Production uses an Upstash database; see [`docs/architecture/rate-limiting.md`](./docs/architecture/rate-limiting.md).
 - **Database tools:** `npm run db:studio` (Prisma Studio), `npm run db:migrate:status`.
 
 ## Commands
@@ -99,7 +99,7 @@ A website _is_ a tenant: every row below a website carries the pair `(websiteId,
 
 ## Deployment
 
-Production runs on Vercel, deployed by GitHub Actions (`.github/workflows/production.yml`): CI on the exact commit, then database migrations, then deploy. Pull requests get a preview deployment. The `Dockerfile` is used to validate the build in CI and for non-Vercel targets; the `app` service in `docker-compose.yml` (`--profile production`) is a local demo with throwaway secrets, not a production configuration. `GET /api/health` is the liveness probe.
+Production runs on Vercel, deployed by GitHub Actions (`.github/workflows/production.yml`): CI on the exact commit, then database migrations, then deploy. Pull requests get a preview deployment. Vercel is the only deployment target; `docker-compose.yml` only provides local development services. `GET /api/health` is the liveness probe.
 
 ## Contributing
 

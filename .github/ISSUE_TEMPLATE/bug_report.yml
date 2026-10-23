@@ -51,8 +51,7 @@ body:
       value: |
         - OS: 
         - Browser: 
-        - Node.js version: 
-        - Docker version (if applicable):
+        - Node.js version:
     validations:
       required: false
   - type: textarea

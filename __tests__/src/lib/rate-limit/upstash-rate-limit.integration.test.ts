@@ -11,7 +11,7 @@ import { createFakeLog, SECRET } from './support';
 
 /**
  * The Upstash store and the application's wiring against a real REST endpoint: Upstash itself, or
- * `hiett/serverless-redis-http` in front of a Redis (what CI and `docker compose` run), which speaks
+ * `hiett/serverless-redis-http` in front of a Redis (what CI and `npm run infra:up` run), which speaks
  * the same protocol. Skipped unless `RATE_LIMIT_TEST_REST_URL` and `RATE_LIMIT_TEST_REST_TOKEN` are set.
  */
 const REST_URL = process.env['RATE_LIMIT_TEST_REST_URL'];

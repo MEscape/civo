@@ -1,7 +1,7 @@
 import { connection } from 'next/server';
 
 /**
- * Liveness probe for the platform and Docker. It deliberately does not
+ * Liveness probe for the platform and the post-deploy smoke test. It deliberately does not
  * touch the database, so a DB blip cannot make the platform kill a healthy
  * web process. `connection()` keeps it a per-request answer instead of a
  * response prerendered at build time.

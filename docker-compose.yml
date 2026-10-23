@@ -1,179 +1,103 @@
 # ==============================================================================
-# CIVO - DOCKER COMPOSE CONFIGURATION
-# Orchestrates local infrastructure (PostgreSQL, Redis, MailHog) and optional
-# production-profile containers (Database Migrator & Next.js App Runner).
-# All container environment variables are loaded strictly via `.env.docker`.
+# CIVO - LOCAL DEVELOPMENT SERVICES
+# Backing services for development and `npm run test:integration` only. The app
+# itself is not containerised: production runs on Vercel (Neon, Upstash, Resend).
+#
+#   npm run infra:up      start (reads `.env.docker`, see `.env.docker.example`)
+#   npm run infra:down    stop; add `-- -v` to also delete the database volume
+#
+# Every port is published on 127.0.0.1 only. Each service receives just the
+# variables it needs, interpolated from `.env.docker`, which holds nothing the
+# app reads: the app's own settings live in `.env`.
 # ==============================================================================
 
 name: civo
 
-# ------------------------------------------------------------------------------
-# Shared Service Templates (YAML Anchors)
-# ------------------------------------------------------------------------------
-x-common-env: &common-env
-  env_file:
-    - .env.docker
-
-x-logging: &default-logging
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
+x-service: &service
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  networks:
+    - civo-network
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
 
 services:
-  # ----------------------------------------------------------------------------
-  # PostgreSQL Database
-  # ----------------------------------------------------------------------------
+  # PostgreSQL: the application database (`POSTGRES_DB`) plus a second, separate
+  # one for authentication (`AUTH_DATABASE_NAME`), mirroring the two Neon databases.
   postgres:
-    <<: *common-env
-    image: postgres:alpine
+    <<: *service
+    image: postgres:18-alpine
     container_name: civo-postgres
-    restart: unless-stopped
+    environment:
+      TZ: UTC
+      PGTZ: UTC
+      POSTGRES_USER: ${POSTGRES_USER:-civo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.docker (see .env.docker.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-civo}
+      AUTH_DATABASE_NAME: ${AUTH_DATABASE_NAME:-civo_auth}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
-      - civo-postgres-data:/var/lib/postgresql/data
+      - civo-postgres-data:/var/lib/postgresql
       - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
-    networks:
-      - civo-network
-    logging: *default-logging
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d$$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
-  # ----------------------------------------------------------------------------
-  # MailHog (Local SMTP Server & Web Inbox)
-  # ----------------------------------------------------------------------------
+  # MailHog: catches outgoing mail when MAIL_PROVIDER=smtp (web inbox on :8025).
   mailhog:
-    <<: *common-env
-    image: mailhog/mailhog:latest
+    <<: *service
+    image: mailhog/mailhog:v1.0.1
     container_name: civo-mailhog
-    restart: unless-stopped
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
-    networks:
-      - civo-network
-    logging: *default-logging
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8025/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ----------------------------------------------------------------------------
-  # Redis (In-Memory Rate-Limit Store)
-  # ----------------------------------------------------------------------------
+  # Redis behind the REST proxy below. Not published to the host; rate-limit
+  # counters are disposable, so nothing is persisted.
   redis:
-    <<: *common-env
-    image: redis:alpine
+    <<: *service
+    image: redis:8-alpine
     container_name: civo-redis
-    restart: unless-stopped
-    volumes:
-      - civo-redis-data:/data
-    networks:
-      - civo-network
-    logging: *default-logging
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ----------------------------------------------------------------------------
-  # Serverless Redis HTTP Proxy (Upstash REST Emulator)
-  # ----------------------------------------------------------------------------
+  # Upstash-compatible REST endpoint in front of `redis`, for the same client the
+  # app uses in production. Reachable at http://localhost:8079.
   redis-rest:
-    <<: *common-env
-    image: hiett/serverless-redis-http:latest
+    <<: *service
+    image: hiett/serverless-redis-http:0.0.10
     container_name: civo-redis-rest
-    restart: unless-stopped
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: ${SRH_TOKEN:?Set SRH_TOKEN in .env.docker (see .env.docker.example)}
+      SRH_CONNECTION_STRING: redis://redis:6379
     ports:
-      - "8079:80"
-    networks:
-      - civo-network
-    logging: *default-logging
+      - "127.0.0.1:8079:80"
     depends_on:
       redis:
         condition: service_healthy
 
-  # ----------------------------------------------------------------------------
-  # Database Migrations (One-Off Runner — Production Profile)
-  # ----------------------------------------------------------------------------
-  migrate:
-    <<: *common-env
-    profiles: ["production"]
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: migrator
-    container_name: civo-migrate
-    restart: "no"
-    networks:
-      - civo-network
-    logging: *default-logging
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  # ----------------------------------------------------------------------------
-  # Next.js Application Server (Production Profile)
-  # ----------------------------------------------------------------------------
-  app:
-    <<: *common-env
-    profiles: ["production"]
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runner
-      args:
-        NEXT_PUBLIC_APP_URL: http://localhost:3000
-    container_name: civo-app
-    restart: unless-stopped
-    init: true
-    ports:
-      - "3000:3000"
-    networks:
-      - civo-network
-    logging: *default-logging
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mailhog:
-        condition: service_healthy
-      redis-rest:
-        condition: service_started
-      migrate:
-        condition: service_completed_successfully
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
-      interval: 30s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
-
-# ------------------------------------------------------------------------------
-# Networks
-# ------------------------------------------------------------------------------
 networks:
   civo-network:
     name: civo-network
-    driver: bridge
 
-# ------------------------------------------------------------------------------
-# Persistent Volumes
-# ------------------------------------------------------------------------------
 volumes:
   civo-postgres-data:
     name: civo-postgres-data
-  civo-redis-data:
-    name: civo-redis-data

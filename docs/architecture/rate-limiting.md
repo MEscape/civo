@@ -73,7 +73,7 @@ Reading published pages is not limited per visitor: they are served from release
 ## Operations
 
 - **Production and preview** need `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (the Vercel Upstash integration sets both) and a secret of at least 32 characters (`RATE_LIMIT_SECRET`, or `AUTH_SECRET` as its fallback). The server refuses to start without them, and refuses `RATE_LIMIT_BACKEND=memory`. `next build` validates them too, so set them for the build environment as well.
-- **Local development** uses the in-memory store by default. `docker compose up` also runs Redis and a REST endpoint with Upstash's protocol on `http://localhost:8079` (`redis-rest`, token in `docker-compose.yml`); point `UPSTASH_REDIS_REST_URL` at it with `RATE_LIMIT_BACKEND=upstash` to try the real path.
+- **Local development** uses the in-memory store by default. `npm run infra:up` also runs Redis and a REST endpoint with Upstash's protocol on `http://localhost:8079` (`redis-rest`, token `SRH_TOKEN` in `.env.docker`); point `UPSTASH_REDIS_REST_URL` at it with `RATE_LIMIT_BACKEND=upstash` to try the real path.
 - **CI** runs the store and the wiring against the same endpoint (`redis` and `redis-rest` services, `npm run test:integration`).
 - To see or reset one policy's counters, its keys start with `rate-limit:<policy id>:`.
 - Better Auth keeps its own, separate limiter for the requests that arrive through its HTTP handler (verification and reset links), in the auth database.
