@@ -1,10 +1,12 @@
 import type { TenantId } from '@modules/auth';
 
-import { db, createPersistenceFailures } from '@lib/db';
+import { db, createPersistenceFailures, advisoryLock, retryTransient } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { unique } from '@lib/utils';
 
+import { MAX_SETUP_MAPPINGS } from '../../application/data-sources-limits';
 import {
   DATA_SOURCE_ERROR_CODES,
   dataSourceNotFound,
@@ -12,7 +14,9 @@ import {
   datasetSlugTaken,
   persistenceFailed,
 } from '../../domain/errors/data-source-errors';
-import { toDatasetId } from '../../domain/models/ids';
+import { restoreDatasetMapping } from '../../domain/mapping/dataset-mapping';
+import { CANONICAL_KINDS, isCanonicalKind } from '../../domain/models/canonical-kinds';
+import { toDatasetId, toWebsiteId } from '../../domain/models/ids';
 
 import { DATA_SOURCE_SELECT } from './data-source-record-mapper';
 import {
@@ -35,8 +39,8 @@ import type {
   DatasetDraft,
   DatasetWithSource,
 } from '../../domain/models/dataset';
-import type { DataSourceId, DatasetId, WebsiteId } from '../../domain/models/ids';
-import type { DatasetRepository } from '../../domain/ports/dataset.repository';
+import type { DatasetId, WebsiteId } from '../../domain/models/ids';
+import type { DatasetRepository, DatasetSetup } from '../../domain/ports/dataset.repository';
 
 const failures = createPersistenceFailures({
   module: 'data-source.persistence',
@@ -71,6 +75,58 @@ const ownDatasetsWithSource = (tenantId: TenantId) =>
  *   `null` on a miss; a row outside the tenant is a miss)
  */
 export class PrismaDatasetRepository implements DatasetRepository {
+  getSetup(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+  ): AppResultAsync<DatasetSetup, InfrastructureAppError> {
+    const query = () =>
+      datasetsOf(tenantId)
+        .where((dataset) => dataset.dataSource.some({ websiteId }))
+        .where((dataset) => dataset.canonicalKind.in(CANONICAL_KINDS));
+    return fromThrowableAsync(async () => {
+      const [kinds, mapped] = await Promise.all([
+        query()
+          .groupBy('canonicalKind')
+          .aggregate((a) => ({ count: a.count() })),
+        query()
+          .where((dataset) => dataset.mapping.isNotNull())
+          .select('canonicalKind', 'mapping')
+          .orderBy((dataset) => dataset.id.asc())
+          .limit(MAX_SETUP_MAPPINGS + 1)
+          .all(),
+      ]);
+      return {
+        kinds: kinds.map((row) => row.canonicalKind).filter(isCanonicalKind),
+        mappedKinds: unique(
+          mapped
+            .slice(0, MAX_SETUP_MAPPINGS)
+            .flatMap((row) =>
+              isCanonicalKind(row.canonicalKind) &&
+              restoreDatasetMapping(row.canonicalKind, row.mapping) !== null
+                ? [row.canonicalKind]
+                : [],
+            ),
+        ),
+        isTruncated: mapped.length > MAX_SETUP_MAPPINGS,
+      };
+    }, failures.infraOnly('getSetup'));
+  }
+
+  findWebsiteId(id: DatasetId): AppResultAsync<WebsiteId | null, InfrastructureAppError> {
+    return fromThrowableAsync(
+      // @owner-scope derived Only routing metadata; the application authorizes before loading contents.
+      async () =>
+        db.orm.public.Dataset.where({ id })
+          .select('id')
+          .include('dataSource', (source) => source.select('websiteId'))
+          .first(),
+      failures.infraOnly('findWebsiteId'),
+    ).map((record) => {
+      const websiteId = record?.dataSource?.websiteId;
+      return websiteId === undefined ? null : toWebsiteId(websiteId);
+    });
+  }
+
   findWithSource(
     id: DatasetId,
     tenantId: TenantId,
@@ -127,23 +183,6 @@ export class PrismaDatasetRepository implements DatasetRepository {
     ).map((record) => record && toDatasetWithSourceInWebsite(record));
   }
 
-  listByDataSource(
-    dataSourceId: DataSourceId,
-    tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly Dataset[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        ownDatasets(tenantId)
-          .where({ dataSourceId })
-          // `id` breaks ties so the order is stable between requests.
-          .orderBy([(d) => d.name.asc(), (d) => d.id.asc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('listByDataSource'),
-    ).map((records) => toDatasets(records, tenantId));
-  }
-
   /**
    * One query over the datasets of the website's sources, filtered to the
    * kind. The website filter is part of the query, so datasets of other
@@ -159,17 +198,23 @@ export class PrismaDatasetRepository implements DatasetRepository {
     readonly tenantId: TenantId;
     readonly canonicalKinds: readonly CanonicalKind[];
     readonly limit: number;
-  }): AppResultAsync<readonly Dataset[], InfrastructureAppError> {
+  }): AppResultAsync<
+    { readonly items: readonly Dataset[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  > {
     return fromThrowableAsync(
       async () =>
         ownDatasets(tenantId)
           .where((dataset) => dataset.canonicalKind.in(canonicalKinds))
           .where((dataset) => dataset.dataSource.some({ websiteId }))
           .orderBy([(d) => d.name.asc(), (d) => d.id.asc()])
-          .limit(limit)
+          .limit(limit + 1)
           .all(),
       failures.infraOnly('listCompatible'),
-    ).map((records) => toDatasets(records, tenantId));
+    ).map((records) => ({
+      items: toDatasets(records.slice(0, limit), tenantId),
+      isTruncated: records.length > limit,
+    }));
   }
 
   create(input: {
@@ -178,27 +223,31 @@ export class PrismaDatasetRepository implements DatasetRepository {
   }): AppResultAsync<Dataset, ConflictAppError | NotFoundAppError | InfrastructureAppError> {
     const { tenantId, draft } = input;
     return fromThrowableAsync(
-      async () => {
-        // The source must exist IN THIS TENANT; otherwise it is "not found".
-        const source = await dataSourcesOf(tenantId)
-          .where({ id: draft.dataSourceId })
-          .select('id')
-          .first();
-        if (source === null) {
-          return null;
-        }
+      () =>
+        retryTransient(() =>
+          db.transaction(async (tx) => {
+            await advisoryLock(tx, `data-source:${draft.dataSourceId}`);
+            // The source must exist IN THIS TENANT; otherwise it is "not found".
+            const source = await dataSourcesOf(tenantId, tx)
+              .where({ id: draft.dataSourceId })
+              .select('id')
+              .first();
+            if (source === null) {
+              return null;
+            }
 
-        // @tenant-scope child The dataset of a source that was just found within this tenant.
-        return db.orm.public.Dataset.select(...DATASET_SELECT)
-          .include('dataSource', (parent) => parent.select(...DATA_SOURCE_PARENT_SELECT))
-          .create({
-            dataSourceId: draft.dataSourceId,
-            name: draft.name,
-            slug: draft.slug,
-            canonicalKind: draft.canonicalKind,
-            path: draft.path,
-          });
-      },
+            // @owner-scope child The dataset of a source that was just found within this tenant.
+            return tx.orm.public.Dataset.select(...DATASET_SELECT)
+              .include('dataSource', (parent) => parent.select(...DATA_SOURCE_PARENT_SELECT))
+              .create({
+                dataSourceId: draft.dataSourceId,
+                name: draft.name,
+                slug: draft.slug,
+                canonicalKind: draft.canonicalKind,
+                path: draft.path,
+              });
+          }),
+        ),
       failures.orConflict('create', datasetSlugTaken),
     )
       .andThen(failures.requireRow(dataSourceNotFound))

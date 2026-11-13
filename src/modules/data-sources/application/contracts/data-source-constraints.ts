@@ -32,5 +32,6 @@ export type {
 } from '../../domain/models/data-source-kinds';
 export { DATASET_LIMITS, DATASET_SLUG_PATTERN } from '../../domain/models/dataset';
 export { PAGINATION_KINDS, PAGINATION_LIMITS } from '../../domain/pagination/pagination-strategy';
+export { READ_WINDOW_LIMITS } from '../../domain/pagination/read-window';
 export type { PaginationKind } from '../../domain/pagination/pagination-strategy';
 export { DATA_SOURCE_ID_MAX_LENGTH } from '../../domain/models/ids';

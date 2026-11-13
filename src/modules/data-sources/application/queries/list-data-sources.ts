@@ -5,7 +5,7 @@ import type { AppResultAsync } from '@lib/result';
 
 import { parseWebsiteId } from '../../domain/models/ids';
 import { toDataSourceView } from '../data-source-view-mappers';
-import { MAX_SOURCES_PER_WEBSITE } from '../list-limits';
+import { MAX_SOURCES_PER_WEBSITE } from '../data-sources-limits';
 
 import type { DataSourceView } from '../contracts/data-source-views';
 import type { DataSourceDependencies } from '../data-source-dependencies';
@@ -17,18 +17,21 @@ export class ListDataSources {
   execute(
     websiteId: string,
   ): AppResultAsync<
-    readonly DataSourceView[],
+    { readonly items: readonly DataSourceView[]; readonly isTruncated: boolean },
     AuthorizationError | ValidationAppError | InfrastructureAppError
   > {
-    const { authorization, dataSources } = this.deps;
+    const { access, dataSources } = this.deps;
 
-    return authorization
-      .requireInTenant('datasource.read')
-      .andThen((actor) =>
+    return access
+      .authorizeWebsite('datasource.read', websiteId)
+      .andThen((scope) =>
         parseWebsiteId(websiteId).asyncAndThen((id) =>
-          dataSources.listByWebsite(id, actor.tenantId, MAX_SOURCES_PER_WEBSITE),
+          dataSources.listByWebsite(id, scope.tenantId, MAX_SOURCES_PER_WEBSITE),
         ),
       )
-      .map((sources) => sources.map(toDataSourceView));
+      .map((sources) => ({
+        items: sources.items.map(toDataSourceView),
+        isTruncated: sources.isTruncated,
+      }));
   }
 }

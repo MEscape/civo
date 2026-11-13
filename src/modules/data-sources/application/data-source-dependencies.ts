@@ -4,6 +4,7 @@ import type { Clock } from '@lib/clock';
 import type { RateLimiter } from '@lib/rate-limit';
 
 import type { ContentHasher } from '../domain/ports/content-hasher.port';
+import type { DataSourceAccess } from '../domain/ports/data-source-access.port';
 import type { DataSourceAuditLog } from '../domain/ports/data-source-audit-log.port';
 import type { DataSourceConnector } from '../domain/ports/data-source-connector.port';
 import type { DataSourceRepository } from '../domain/ports/data-source.repository';
@@ -12,6 +13,7 @@ import type { DatasetRepository } from '../domain/ports/dataset.repository';
 /** What every protected data-source use case is built from. */
 export interface DataSourceDependencies {
   readonly authorization: AuthorizationService;
+  readonly access: DataSourceAccess;
   readonly dataSources: DataSourceRepository;
   readonly datasets: DatasetRepository;
   readonly audit: DataSourceAuditLog;

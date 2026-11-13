@@ -22,6 +22,7 @@ export interface DataSourceDto {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly datasets: readonly DatasetDto[];
+  readonly isDatasetListTruncated: boolean;
 }
 
 export function toDataSourceDto(view: DataSourceWithDatasetsView): DataSourceDto {
@@ -37,6 +38,7 @@ export function toDataSourceDto(view: DataSourceWithDatasetsView): DataSourceDto
     createdAt: view.createdAt.toISOString(),
     updatedAt: view.updatedAt.toISOString(),
     datasets: view.datasets.map(toDatasetDto),
+    isDatasetListTruncated: view.isDatasetListTruncated,
   };
 }
 

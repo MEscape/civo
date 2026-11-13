@@ -1,6 +1,12 @@
 import type { SerializedActionError } from '@lib/result';
 
+import { REST_SOURCE_FORM_DEFAULTS } from './rest-source-form-schema';
+
 import type { RestSourceForm } from './rest-source-form-schema';
+import type {
+  DataSourceSettingsView,
+  RestConnectionSettingsView,
+} from '../../application/contracts/data-source-views';
 
 const nonEmpty = (text: string): string | undefined => (text === '' ? undefined : text);
 
@@ -45,6 +51,13 @@ function paginationOf(values: RestSourceForm): Record<string, unknown> | undefin
   }
 }
 
+/** The area filter as typed; either half alone is passed on, for the server to refuse. */
+function spatialFilterOf(values: RestSourceForm): Record<string, unknown> | undefined {
+  return values.areaParam === '' && values.areaTemplate === ''
+    ? undefined
+    : { param: values.areaParam, template: values.areaTemplate };
+}
+
 /** The config the create action submits; the domain validates every part of it. */
 export function toRestConfig(values: RestSourceForm): Record<string, unknown> {
   return {
@@ -52,6 +65,7 @@ export function toRestConfig(values: RestSourceForm): Record<string, unknown> {
     authMode: values.authMode,
     recordsPath: nonEmpty(values.recordsPath),
     pagination: paginationOf(values),
+    spatialFilter: spatialFilterOf(values),
   };
 }
 
@@ -62,6 +76,9 @@ const PAGINATION_PREFIX = 'config.pagination.';
 const RENAMED_FIELDS: Readonly<Record<string, string>> = {
   'config.pagination': 'paginationKind',
   'config.pagination.kind': 'paginationKind',
+  'config.spatialFilter': 'areaParam',
+  'config.spatialFilter.param': 'areaParam',
+  'config.spatialFilter.template': 'areaTemplate',
 };
 
 function formFieldOf(serverPath: string): string {
@@ -89,5 +106,55 @@ export function toFormFieldErrors(error: SerializedActionError): SerializedActio
     fieldErrors: Object.fromEntries(
       Object.entries(error.fieldErrors).map(([path, codes]) => [formFieldOf(path), codes]),
     ),
+  };
+}
+
+/** The pagination fields as the form shows them; `toRestConfig` turns them back into a strategy. */
+function paginationFieldsOf(
+  pagination: RestConnectionSettingsView['pagination'],
+): Partial<RestSourceForm> {
+  switch (pagination.kind) {
+    case 'none':
+      return {};
+    case 'offset':
+      return {
+        limitParam: pagination.limitParam,
+        offsetParam: pagination.offsetParam,
+        pageSize: String(pagination.pageSize),
+      };
+    case 'page':
+      return {
+        pageParam: pagination.pageParam,
+        sizeParam: pagination.sizeParam ?? '',
+        pageSize: String(pagination.pageSize),
+      };
+    case 'cursor':
+      return {
+        cursorParam: pagination.cursorParam,
+        nextCursorPath: pagination.nextCursorPath,
+        sizeParam: pagination.sizeParam ?? '',
+        pageSize: String(pagination.pageSize),
+      };
+    case 'next-url':
+      return { nextUrlPath: pagination.nextUrlPath };
+  }
+}
+
+/** A stored source as the form's starting values: the inverse of `toRestConfig`. */
+export function toRestSourceForm(settings: DataSourceSettingsView): RestSourceForm {
+  const { connection } = settings;
+  if (connection === null) {
+    return { ...REST_SOURCE_FORM_DEFAULTS, name: settings.name };
+  }
+  return {
+    ...REST_SOURCE_FORM_DEFAULTS,
+    name: settings.name,
+    baseUrl: connection.baseUrl,
+    authMode: connection.authMode,
+    recordsPath: connection.recordsPath ?? '',
+    paginationKind: connection.pagination.kind,
+    ...paginationFieldsOf(connection.pagination),
+    areaParam: connection.spatialFilter?.param ?? '',
+    areaTemplate: connection.spatialFilter?.template ?? '',
   };
 }

@@ -11,12 +11,11 @@ export const newDatasetSchema = z.object({
   path: z.string().optional(),
 });
 
-export type NewDataset = z.infer<typeof newDatasetSchema>;
-
 /** The form only collects what the user decides. */
 export const datasetFormSchema = newDatasetSchema.pick({
   name: true,
   canonicalKind: true,
   path: true,
 });
+
 export type DatasetForm = z.infer<typeof datasetFormSchema>;

@@ -1,13 +1,13 @@
 import { okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { loadAuthorizedDataSource } from '../load-authorized-data-source';
 import { DATA_SOURCE_RATE_LIMITS } from '../rate-limits';
+import { loadAuthorizedDataSource } from '../services/load-authorized-data-source';
 import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { ConnectionTestOutcome, ConnectionTestView } from '../contracts/data-source-views';
 import type { ConnectedDataSourceDependencies } from '../data-source-dependencies';
-import type { LoadDataSourceError } from '../load-authorized-data-source';
+import type { LoadDataSourceError } from '../services/load-authorized-data-source';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
 /**
@@ -24,7 +24,7 @@ export class TestDataSourceConnection {
 
     return loadAuthorizedDataSource(this.deps, id, 'datasource.test')
       .andThen(withinActorLimit(this.deps, DATA_SOURCE_RATE_LIMITS.testConnection))
-      .andThen(({ actor, source }) =>
+      .andThen(({ scope, source }) =>
         connector
           .test(source)
           .map((): ConnectionTestOutcome => ({ isHealthy: true }))
@@ -36,7 +36,7 @@ export class TestDataSourceConnection {
             const errorCode = outcome.isHealthy ? null : outcome.errorCode;
 
             return dataSources
-              .recordTestResult(source.id, actor.tenantId, {
+              .recordTestResult(source.id, scope.tenantId, {
                 status,
                 errorCode,
                 checkedAt: clock.now(),
@@ -44,8 +44,8 @@ export class TestDataSourceConnection {
               .map(() => {
                 audit.record({
                   type: 'data_source.tested',
-                  actorId: actor.id,
-                  tenantId: actor.tenantId,
+                  actorId: scope.actorId,
+                  tenantId: scope.tenantId,
                   websiteId: source.websiteId,
                   dataSourceId: source.id,
                   outcome: status,

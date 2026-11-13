@@ -1,12 +1,11 @@
 import type { AppResultAsync } from '@lib/result';
 
-import { MAX_DATASETS_PER_SOURCE } from '../list-limits';
-import { loadAuthorizedDataSource } from '../load-authorized-data-source';
+import { loadAuthorizedDataSource } from '../services/load-authorized-data-source';
 
+import type { DatasetDeletionGuard, DeletionGuardError } from '../contracts/data-removal-inputs';
 import type { DataSourceRemovalView } from '../contracts/data-source-views';
-import type { DatasetDeletionGuard, DeletionGuardError } from '../contracts/deletion-inputs';
 import type { DataSourceDependencies } from '../data-source-dependencies';
-import type { LoadDataSourceError } from '../load-authorized-data-source';
+import type { LoadDataSourceError } from '../services/load-authorized-data-source';
 
 /**
  * Removes a source together with its datasets. The ids of those datasets
@@ -21,30 +20,24 @@ export class DeleteDataSource {
     id: string,
     guard: DatasetDeletionGuard,
   ): AppResultAsync<DataSourceRemovalView, LoadDataSourceError | DeletionGuardError> {
-    const { dataSources, datasets, audit } = this.deps;
+    const { dataSources, audit } = this.deps;
 
     return loadAuthorizedDataSource(this.deps, id, 'datasource.delete').andThen(
-      ({ actor, source }) =>
-        datasets
-          .listByDataSource(source.id, actor.tenantId, MAX_DATASETS_PER_SOURCE)
-          .andThen((removed) =>
-            guard({ websiteId: source.websiteId, datasetIds: removed.map((dataset) => dataset.id) })
-              .andThen(() => dataSources.deleteById(source.id, actor.tenantId))
-              .map(() => {
-                audit.record({
-                  type: 'data_source.deleted',
-                  actorId: actor.id,
-                  tenantId: actor.tenantId,
-                  websiteId: source.websiteId,
-                  dataSourceId: source.id,
-                });
-                return {
-                  id: source.id,
-                  websiteId: source.websiteId,
-                  removedDatasetIds: removed.map((dataset) => dataset.id),
-                };
-              }),
-          ),
+      ({ scope, source }) =>
+        dataSources.deleteGuarded(source.id, scope.tenantId, guard).map((removedDatasetIds) => {
+          audit.record({
+            type: 'data_source.deleted',
+            actorId: scope.actorId,
+            tenantId: scope.tenantId,
+            websiteId: source.websiteId,
+            dataSourceId: source.id,
+          });
+          return {
+            id: source.id,
+            websiteId: source.websiteId,
+            removedDatasetIds,
+          };
+        }),
     );
   }
 }

@@ -3,7 +3,7 @@ import type { JsonValue } from '@lib/utils';
 
 import type { PageRequest } from './pagination-strategy';
 
-export type RequestBody = Readonly<Record<string, JsonValue>>;
+type RequestBody = Readonly<Record<string, JsonValue>>;
 
 /** One outgoing request: where to, and the JSON body of a POST (`null`: none). */
 export interface OutgoingRequest {

@@ -1,6 +1,7 @@
 import type { TenantId } from '@modules/auth';
 
 import { db } from '@lib/db';
+import type { Transaction } from '@lib/db';
 
 /**
  * Tenant-scoped starting points for every tenant-scoped query.
@@ -19,10 +20,10 @@ import { db } from '@lib/db';
  * Start from these instead of `db.orm.public.*` and the scope cannot be
  * forgotten.
  */
-export const dataSourcesOf = (tenantId: TenantId) =>
-  db.orm.public.DataSource.where((source) => source.website.some({ tenantId }));
+export const dataSourcesOf = (tenantId: TenantId, database: Pick<Transaction, 'orm'> = db) =>
+  database.orm.public.DataSource.where((source) => source.website.some({ tenantId }));
 
-export const datasetsOf = (tenantId: TenantId) =>
-  db.orm.public.Dataset.where((dataset) =>
+export const datasetsOf = (tenantId: TenantId, database: Pick<Transaction, 'orm'> = db) =>
+  database.orm.public.Dataset.where((dataset) =>
     dataset.dataSource.some((source) => source.website.some({ tenantId })),
   );

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { serverEnv } from '@lib/config/server';
+import { readServerSecret } from '@lib/config/server';
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
@@ -13,8 +13,8 @@ import type {
   ResolvedCredential,
 } from '../../domain/ports/credential-provider.port';
 
-/** A read-only view of environment variables. `serverEnv` satisfies it. */
-export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
+/** A read-only environment supplied by tests or an alternative host. */
+type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 
 const NO_CREDENTIAL: ResolvedCredential = { mode: 'NONE' };
 
@@ -33,7 +33,7 @@ const SAFE_ID = /^[A-Za-z0-9_-]+$/;
  * Hyphens (common in cuid/uuid ids) become underscores. `null` when the id
  * cannot be mapped to a valid name.
  */
-export function credentialVariableName(
+function credentialVariableName(
   dataSourceId: string,
   authMode: Exclude<AuthMode, 'NONE'>,
 ): string | null {
@@ -47,20 +47,15 @@ export function credentialVariableName(
 /**
  * Resolves credentials from server-only environment variables.
  *
- * DEVIATION (configuration.md): these variable names are per data source
- * and created at runtime, so they cannot be declared and validated at
- * startup in `@lib/config`. This is therefore the one place besides
- * `@lib/config` that reads the process environment. The clean fix is a
- * `readSecret(name)` accessor in `@lib/config`; this class takes the
- * environment as a constructor argument so only the default changes then.
+ * Names are created at runtime, so the server configuration boundary reads
+ * them separately from the fixed startup schema. Parsed serverEnv strips
+ * undeclared keys and must never be used as a dynamic credential store.
  *
  * The secret is returned to the connector and nowhere else: it is never
  * logged, put into an error `cause` or into a cache key.
  */
 export class EnvironmentCredentialProvider implements CredentialProvider {
-  constructor(
-    private readonly environment: EnvironmentSource = serverEnv as unknown as EnvironmentSource,
-  ) {}
+  constructor(private readonly environment?: EnvironmentSource) {}
 
   resolve(
     input: Parameters<CredentialProvider['resolve']>[0],
@@ -72,7 +67,11 @@ export class EnvironmentCredentialProvider implements CredentialProvider {
     }
 
     const variable = credentialVariableName(dataSourceId, authMode);
-    const secret = variable === null ? undefined : this.environment[variable];
+    if (variable === null) {
+      return errAsync(credentialsMissing());
+    }
+    const secret =
+      this.environment === undefined ? readServerSecret(variable) : this.environment[variable];
     if (!secret) {
       return errAsync(credentialsMissing());
     }

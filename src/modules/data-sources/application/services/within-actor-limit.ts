@@ -1,10 +1,10 @@
-import type { Actor } from '@modules/auth';
-
 import type { InfrastructureAppError, RateLimitedAppError } from '@lib/errors';
 import type { RateLimitPolicy, RateLimiter } from '@lib/rate-limit';
 import type { AppResultAsync } from '@lib/result';
 
 import { fromRateLimitFailure } from '../../domain/errors/data-source-errors';
+
+import type { DataSourceScope } from '../../domain/ports/data-source-access.port';
 
 export type ActorLimitError = RateLimitedAppError | InfrastructureAppError;
 
@@ -13,7 +13,7 @@ export type ActorLimitError = RateLimitedAppError | InfrastructureAppError;
  * budget and passes what was loaded on, or stops with the module's own rate-limit error. The
  * subject is the actor the use case authorized, never anything from the request.
  */
-export function withinActorLimit<TLoaded extends { readonly actor: Actor }>(
+export function withinActorLimit<TLoaded extends { readonly scope: DataSourceScope }>(
   deps: { readonly rateLimiter: RateLimiter },
   policy: RateLimitPolicy,
 ): (loaded: TLoaded) => AppResultAsync<TLoaded, ActorLimitError> {
@@ -21,7 +21,7 @@ export function withinActorLimit<TLoaded extends { readonly actor: Actor }>(
     deps.rateLimiter
       .enforce({
         policy,
-        subject: { kind: 'actor', tenantId: loaded.actor.tenantId, actorId: loaded.actor.id },
+        subject: { kind: 'actor', tenantId: loaded.scope.tenantId, actorId: loaded.scope.actorId },
       })
       .map(() => loaded)
       .mapErr(fromRateLimitFailure);

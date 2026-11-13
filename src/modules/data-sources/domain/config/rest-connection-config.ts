@@ -16,9 +16,13 @@ import {
   createDataSourceErrorBag,
 } from '../errors/data-source-errors';
 import { isAuthMode } from '../models/data-source-kinds';
-import { PAGINATION_LIMITS, checkPaginationStrategy } from '../pagination/pagination-strategy';
+import { checkPaginationStrategy } from '../pagination/check-pagination';
+import { PAGINATION_LIMITS } from '../pagination/pagination-strategy';
 import { checkOutboundUrl } from '../rules/outbound-url';
 
+import { checkSpatialFilter } from './spatial-filter';
+
+import type { SpatialFilter } from './spatial-filter';
 import type { AuthMode } from '../models/data-source-kinds';
 import type { PaginationStrategy, RequestMethod } from '../pagination/pagination-strategy';
 import type { OutboundRejection, OutboundUrlDecision } from '../rules/outbound-url';
@@ -40,10 +44,15 @@ export interface RestConnectionConfig {
    */
   readonly recordsPath: string | null;
   readonly pagination: PaginationStrategy;
+  /**
+   * How the API is asked for one area (a map window); absent when it cannot be. Left out of a
+   * normalized config rather than stored as `null`, so a source saved before it existed still
+   * equals its own normalized form.
+   */
+  readonly spatialFilter?: SpatialFilter;
 }
 
 export const DEFAULT_REST_PATH = '/';
-export const REQUEST_METHODS: readonly RequestMethod[] = ['GET', 'POST'];
 
 const MAX_REQUEST_BODY_CHARS = 4_000;
 const MAX_REQUEST_BODY_DEPTH = 6;
@@ -56,6 +65,7 @@ const ALLOWED_KEYS: ReadonlySet<string> = new Set([
   'requestBody',
   'recordsPath',
   'pagination',
+  'spatialFilter',
 ]);
 
 const REJECTION_CODES = {
@@ -207,6 +217,7 @@ interface RestFields {
   readonly requestBody: RestConnectionConfig['requestBody'] | undefined;
   readonly recordsPath: string | null | undefined;
   readonly pagination: PaginationStrategy | null;
+  readonly spatialFilter: SpatialFilter | null | undefined;
 }
 
 /** Reads every field, so one submit reports ALL invalid ones; an invalid field is `null` or `undefined`. */
@@ -225,12 +236,14 @@ function readFields(raw: Record<string, unknown>, bag: FieldErrorBag): RestField
       bag,
       at: fieldPath('config', 'pagination'),
     }),
+    spatialFilter: checkSpatialFilter(raw['spatialFilter'], bag),
   };
 }
 
 /** The config when every field was valid, else `null`. */
 function assemble(fields: RestFields): RestConnectionConfig | null {
-  const { baseUrl, path, authMode, method, requestBody, recordsPath, pagination } = fields;
+  const { baseUrl, path, authMode, method, requestBody, recordsPath, pagination, spatialFilter } =
+    fields;
   if (
     !baseUrl ||
     !path ||
@@ -238,11 +251,21 @@ function assemble(fields: RestFields): RestConnectionConfig | null {
     method === null ||
     requestBody === undefined ||
     recordsPath === undefined ||
-    pagination === null
+    pagination === null ||
+    spatialFilter === undefined
   ) {
     return null;
   }
-  return { baseUrl, path, authMode, method, requestBody, recordsPath, pagination };
+  return {
+    baseUrl,
+    path,
+    authMode,
+    method,
+    requestBody,
+    recordsPath,
+    pagination,
+    ...(spatialFilter === null ? {} : { spatialFilter }),
+  };
 }
 
 /**

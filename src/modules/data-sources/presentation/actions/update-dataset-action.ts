@@ -3,7 +3,7 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { dataSourceCommands } from '../../composition';
+import { getDataSourceCommands } from '../../composition';
 import { invalidateDatasetConsumers } from '../cache/invalidate';
 import { toDatasetDto } from '../dto/dataset-dto';
 import { datasetEditSchema } from '../schemas/dataset-edit-schema';
@@ -13,7 +13,7 @@ import type { DatasetDto } from '../dto/dataset-dto';
 
 export async function updateDatasetAction(input: unknown): Promise<ActionResult<DatasetDto>> {
   const result = await parseDataSourceInput(datasetEditSchema, input).asyncAndThen((command) =>
-    dataSourceCommands.updateDataset.execute(command),
+    getDataSourceCommands().updateDataset.execute(command),
   );
 
   if (result.isOk()) {

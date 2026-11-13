@@ -1,24 +1,16 @@
-import type { DiscoveredField } from '../../domain/discovery/discovery';
-import type { DatasetMapping, DatasetMappingInput } from '../../domain/mapping/dataset-mapping';
-import type { MappedRecord } from '../../domain/mapping/mapped-record';
-import type { CanonicalKind } from '../../domain/models/canonical-kinds';
-import type { DataSourceDraftInput } from '../../domain/models/data-source';
-import type { DataSourceKind, DataSourceStatus } from '../../domain/models/data-source-kinds';
-import type { DatasetChangesInput, DatasetDraftInput } from '../../domain/models/dataset';
+import type { DatasetView } from './dataset-views';
+import type { SpatialFilter } from '../../domain/config/spatial-filter';
+import type {
+  AuthMode,
+  DataSourceKind,
+  DataSourceStatus,
+} from '../../domain/models/data-source-kinds';
+import type { PaginationStrategy } from '../../domain/pagination/pagination-strategy';
 
-export type { CanonicalKind, DataSourceKind, DataSourceStatus, DatasetMappingInput };
-
-/** The mapping as consumers see it. Plain, serializable, fully resolved. */
-export type DatasetMappingView = DatasetMapping;
-
-/** A field found in a live sample: path, type and a short preview. */
-export type DiscoveredFieldView = DiscoveredField;
-
-/** One external record after mapping. `values` is UNVALIDATED canonical data. */
-export type MappedRecordView = MappedRecord;
+export type { DataSourceKind, DataSourceStatus };
 
 /** A source's or dataset's name by id, for a screen that keeps only ids (the audit log). */
-export interface DataNameView {
+interface DataNameView {
   readonly id: string;
   readonly name: string;
 }
@@ -27,6 +19,7 @@ export interface DataNameView {
 export interface DataNamesView {
   readonly dataSources: readonly DataNameView[];
   readonly datasets: readonly DataNameView[];
+  readonly isTruncated: boolean;
 }
 
 /**
@@ -48,29 +41,32 @@ export interface DataSourceView {
   readonly updatedAt: Date;
 }
 
-export interface DatasetView {
+/** The editable connection of a REST source, safe to prefill a form with. */
+export interface RestConnectionSettingsView {
+  /** The base URL without its query or fragment, which can carry a token. */
+  readonly baseUrl: string;
+  /** The stored address has a query or fragment that `baseUrl` leaves out; kept while the address is unchanged. */
+  readonly hasHiddenUrlParts: boolean;
+  readonly authMode: AuthMode;
+  readonly recordsPath: string | null;
+  readonly pagination: PaginationStrategy;
+  /** How the API is asked for one area (a map window); `null` when it is not. */
+  readonly spatialFilter: SpatialFilter | null;
+}
+
+/** A source as its edit form starts from. Credentials are never part of it: they live in the server environment. */
+export interface DataSourceSettingsView {
   readonly id: string;
   readonly websiteId: string;
-  readonly source: {
-    readonly id: string;
-    readonly name: string;
-    readonly kind: DataSourceKind;
-    readonly status: DataSourceStatus;
-  };
   readonly name: string;
-  readonly slug: string;
-  readonly canonicalKind: CanonicalKind;
-  /** The endpoint below the source's base URL; null uses the source's own. */
-  readonly path: string | null;
-  readonly mapping: DatasetMappingView | null;
-  readonly status: DataSourceStatus;
-  readonly lastFetchedAt: Date | null;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  readonly kind: DataSourceKind;
+  /** `null` for a source that is not REST, or whose stored config no longer parses. */
+  readonly connection: RestConnectionSettingsView | null;
 }
 
 export interface DataSourceWithDatasetsView extends DataSourceView {
   readonly datasets: readonly DatasetView[];
+  readonly isDatasetListTruncated: boolean;
 }
 
 /**
@@ -94,43 +90,3 @@ export interface DataSourceRemovalView {
   /** Datasets removed with the source, so their caches can be invalidated. */
   readonly removedDatasetIds: readonly string[];
 }
-
-export interface DatasetRemovalView {
-  readonly id: string;
-  readonly websiteId: string;
-}
-
-/** Field names and short previews only. The raw sample records never leave the server. */
-export interface DiscoveryView {
-  readonly fields: readonly DiscoveredFieldView[];
-}
-
-export interface MappingPreviewView {
-  readonly values: Readonly<Record<string, unknown>>;
-}
-
-/** What a content consumer receives: mapped, UNVALIDATED records of one dataset. */
-export interface MappedRecordsView {
-  readonly datasetId: string;
-  readonly canonicalKind: CanonicalKind;
-  readonly records: readonly MappedRecordView[];
-  readonly skipped: number;
-  readonly truncated: boolean;
-}
-
-export type CreateDataSourceInput = DataSourceDraftInput;
-
-export interface CreateDatasetInput extends DatasetDraftInput {
-  readonly dataSourceId: string;
-}
-
-export interface UpdateDatasetInput extends DatasetChangesInput {
-  readonly datasetId: string;
-}
-
-export interface SaveDatasetMappingInput {
-  readonly datasetId: string;
-  readonly mapping: DatasetMappingInput;
-}
-
-export type PreviewDatasetMappingInput = SaveDatasetMappingInput;

@@ -29,8 +29,9 @@ export type ConnectorError = ValidationAppError | InfrastructureAppError;
  *
  * Implementations bound every call (timeout, maximum response size) and
  * translate each failure into our own error kinds. Upstream details (HTTP
- * status, response text) are logged, never returned. A kind without a
- * connector, such as MOCK, yields `connectorUnavailable()`.
+ * status, response text) are logged, never returned. Unsupported stored
+ * configurations yield connectorUnavailable(); the legacy MOCK kind can
+ * serve validated snapshots without making network requests.
  */
 export interface FetchOptions {
   /**

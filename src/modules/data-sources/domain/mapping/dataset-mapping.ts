@@ -48,7 +48,7 @@ export const SIMPLE_TRANSFORM_KINDS = [
 ] as const;
 export type SimpleTransformKind = (typeof SIMPLE_TRANSFORM_KINDS)[number];
 
-export const isSimpleTransformKind = literalGuard(SIMPLE_TRANSFORM_KINDS);
+const isSimpleTransformKind = literalGuard(SIMPLE_TRANSFORM_KINDS);
 
 export type TransformDefinition =
   | { readonly kind: SimpleTransformKind }
@@ -59,7 +59,7 @@ export type TransformDefinition =
     }
   | { readonly kind: 'fallback'; readonly value: string | number | boolean };
 
-export interface FieldMapping {
+interface FieldMapping {
   readonly sourcePath: string;
   readonly targetPath: string;
   readonly transform?: TransformDefinition;
@@ -72,7 +72,7 @@ export interface DatasetMapping {
 }
 
 /** Untrusted-but-typed input; shape is checked at the boundary, invariants here. */
-export type TransformInput =
+type TransformInput =
   | { readonly kind: SimpleTransformKind }
   | {
       readonly kind: 'join';
@@ -81,7 +81,7 @@ export type TransformInput =
     }
   | { readonly kind: 'fallback'; readonly value: string | number | boolean };
 
-export interface FieldMappingInput {
+interface FieldMappingInput {
   readonly sourcePath: string;
   readonly targetPath: string;
   readonly transform?: TransformInput | undefined;

@@ -3,7 +3,7 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { dataSourceCommands } from '../../composition';
+import { getDataSourceCommands } from '../../composition';
 import { invalidateSettings } from '../cache/invalidate';
 import { toDataSourceDto } from '../dto/data-source-dto';
 import { newDataSourceSchema } from '../schemas/new-data-source-schema';
@@ -17,11 +17,13 @@ import type { DataSourceDto } from '../dto/data-source-dto';
  */
 export async function createDataSourceAction(input: unknown): Promise<ActionResult<DataSourceDto>> {
   const result = await parseDataSourceInput(newDataSourceSchema, input).asyncAndThen((command) =>
-    dataSourceCommands.createDataSource.execute(command),
+    getDataSourceCommands().createDataSource.execute(command),
   );
 
   if (result.isOk()) {
     invalidateSettings(result.value.websiteId);
   }
-  return toActionResult(result.map((view) => toDataSourceDto({ ...view, datasets: [] })));
+  return toActionResult(
+    result.map((view) => toDataSourceDto({ ...view, datasets: [], isDatasetListTruncated: false })),
+  );
 }

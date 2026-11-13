@@ -4,14 +4,16 @@ import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
-import type { DataSource, DataSourceDraft } from '../models/data-source';
+import type { DatasetDeletionGuard, DeletionGuardError } from './dataset-deletion-guard.port';
+import type { DataSource, DataSourceChanges, DataSourceDraft } from '../models/data-source';
 import type { DataSourceStatus } from '../models/data-source-kinds';
 import type { Dataset } from '../models/dataset';
-import type { WebsiteId, DataSourceId } from '../models/ids';
+import type { WebsiteId, DataSourceId, DatasetId } from '../models/ids';
 
 export interface DataSourceWithDatasets {
   readonly source: DataSource;
   readonly datasets: readonly Dataset[];
+  readonly isDatasetListTruncated: boolean;
 }
 
 export interface TestOutcome {
@@ -38,6 +40,17 @@ export interface DataSourceListSlice {
 }
 
 export interface DataSourceRepository {
+  /** Routing metadata only; authenticate first, then authorize this website before reading the source. */
+  findWebsiteId(id: DataSourceId): AppResultAsync<WebsiteId | null, InfrastructureAppError>;
+
+  /** The source's deterministic list position, so a saved source is visible even beyond the first page. */
+  pageOfSource(input: {
+    readonly websiteId: WebsiteId;
+    readonly tenantId: TenantId;
+    readonly sourceId: DataSourceId;
+    readonly pageSize: number;
+  }): AppResultAsync<number | null, InfrastructureAppError>;
+
   findById(
     id: DataSourceId,
     tenantId: TenantId,
@@ -58,7 +71,10 @@ export interface DataSourceRepository {
     websiteId: WebsiteId,
     tenantId: TenantId,
     limit: number,
-  ): AppResultAsync<readonly DataSource[], InfrastructureAppError>;
+  ): AppResultAsync<
+    { readonly items: readonly DataSource[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
 
   /** One page of sources, oldest first, each with at most `datasetsPerSource` datasets. */
   listWithDatasets(
@@ -73,8 +89,22 @@ export interface DataSourceRepository {
     readonly draft: DataSourceDraft;
   }): AppResultAsync<DataSource, NotFoundAppError | InfrastructureAppError>;
 
-  /** Idempotent. Datasets of the source go with it. */
-  deleteById(id: DataSourceId, tenantId: TenantId): AppResultAsync<void, InfrastructureAppError>;
+  /**
+   * Stores a validated edit. `resetsCheck` (a changed connection) clears the last test, so the
+   * source reads as untested until it is tested again.
+   */
+  update(
+    id: DataSourceId,
+    tenantId: TenantId,
+    changes: DataSourceChanges & { readonly resetsCheck: boolean },
+  ): AppResultAsync<DataSource, NotFoundAppError | InfrastructureAppError>;
+
+  /** Checks every stored child before cascading; incomplete enumeration refuses deletion. */
+  deleteGuarded(
+    id: DataSourceId,
+    tenantId: TenantId,
+    guard: DatasetDeletionGuard,
+  ): AppResultAsync<readonly DatasetId[], DeletionGuardError>;
 
   recordTestResult(
     id: DataSourceId,

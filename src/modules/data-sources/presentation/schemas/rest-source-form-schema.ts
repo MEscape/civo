@@ -31,6 +31,8 @@ export const restSourceFormSchema = z.object({
   cursorParam: z.string().trim(),
   nextCursorPath: z.string().trim(),
   nextUrlPath: z.string().trim(),
+  areaParam: z.string().trim(),
+  areaTemplate: z.string().trim(),
 });
 
 export type RestSourceForm = z.infer<typeof restSourceFormSchema>;
@@ -49,4 +51,6 @@ export const REST_SOURCE_FORM_DEFAULTS: RestSourceForm = {
   cursorParam: '',
   nextCursorPath: '',
   nextUrlPath: '',
+  areaParam: '',
+  areaTemplate: '',
 };

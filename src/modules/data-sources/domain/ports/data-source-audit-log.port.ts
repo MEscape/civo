@@ -19,6 +19,14 @@ export type DataSourceEvent =
       readonly kind: DataSourceKind;
     }
   | {
+      readonly type: 'data_source.updated';
+      readonly actorId: ActorId;
+      readonly tenantId: TenantId;
+      readonly websiteId: WebsiteId;
+      readonly dataSourceId: DataSourceId;
+      readonly changedFields: ReadonlyArray<'name' | 'config'>;
+    }
+  | {
       readonly type: 'data_source.tested';
       readonly actorId: ActorId;
       readonly tenantId: TenantId;

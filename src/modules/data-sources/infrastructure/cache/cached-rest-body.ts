@@ -49,7 +49,7 @@ export class SourceReadFailure extends Error {
 const FRESHNESS = { stale: 60, revalidate: 120, expire: 900 } as const;
 
 /** What one cached read is keyed by. Plain JSON, as `'use cache'` requires: ids are branded inside. */
-export interface CachedRestRead {
+interface CachedRestRead {
   readonly tenantId: string;
   readonly dataSourceId: string;
   readonly rawConfig: unknown;

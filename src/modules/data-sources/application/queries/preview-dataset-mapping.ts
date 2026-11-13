@@ -1,18 +1,16 @@
 import type { AppResultAsync } from '@lib/result';
 
 import { createDatasetMapping } from '../../domain/mapping/dataset-mapping';
-import { loadAuthorizedDataset } from '../load-authorized-dataset';
 import { DATA_SOURCE_RATE_LIMITS } from '../rate-limits';
 import { dryRunMapping } from '../services/dry-run-mapping';
+import { loadAuthorizedDataset } from '../services/load-authorized-dataset';
 import { withinActorLimit } from '../services/within-actor-limit';
 
-import type {
-  MappingPreviewView,
-  PreviewDatasetMappingInput,
-} from '../contracts/data-source-views';
+import type { PreviewDatasetMappingInput } from '../contracts/data-source-inputs';
+import type { MappingPreviewView } from '../contracts/dataset-views';
 import type { ConnectedDataSourceDependencies } from '../data-source-dependencies';
-import type { LoadDatasetError } from '../load-authorized-dataset';
 import type { DryRunError } from '../services/dry-run-mapping';
+import type { LoadDatasetError } from '../services/load-authorized-dataset';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
 /** Applies a candidate mapping to one live record without saving it. Each person has a budget of previews. */

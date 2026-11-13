@@ -6,10 +6,11 @@ import type { AppResultAsync } from '@lib/result';
 import { createDataSourceDraft } from '../../domain/models/data-source';
 import { toDataSourceView } from '../data-source-view-mappers';
 
-import type { CreateDataSourceInput, DataSourceView } from '../contracts/data-source-views';
+import type { CreateDataSourceInput } from '../contracts/data-source-inputs';
+import type { DataSourceView } from '../contracts/data-source-views';
 import type { DataSourceDependencies } from '../data-source-dependencies';
 
-export type CreateDataSourceError =
+type CreateDataSourceError =
   AuthorizationError | ValidationAppError | NotFoundAppError | InfrastructureAppError;
 
 /**
@@ -22,16 +23,16 @@ export class CreateDataSource {
   constructor(private readonly deps: DataSourceDependencies) {}
 
   execute(input: CreateDataSourceInput): AppResultAsync<DataSourceView, CreateDataSourceError> {
-    const { authorization, dataSources, audit } = this.deps;
+    const { access, dataSources, audit } = this.deps;
 
-    return authorization.requireInTenant('datasource.create').andThen((actor) =>
+    return access.authorizeWebsite('datasource.create', input.websiteId).andThen((scope) =>
       createDataSourceDraft(input)
-        .asyncAndThen((draft) => dataSources.create({ tenantId: actor.tenantId, draft }))
+        .asyncAndThen((draft) => dataSources.create({ tenantId: scope.tenantId, draft }))
         .map((source) => {
           audit.record({
             type: 'data_source.created',
-            actorId: actor.id,
-            tenantId: actor.tenantId,
+            actorId: scope.actorId,
+            tenantId: scope.tenantId,
             websiteId: source.websiteId,
             dataSourceId: source.id,
             kind: source.kind,

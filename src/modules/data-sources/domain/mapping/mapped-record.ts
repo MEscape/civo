@@ -12,7 +12,7 @@ export interface MappedRecord {
   readonly values: Readonly<Record<string, unknown>>;
 }
 
-export interface MappedRecords {
+interface MappedRecords {
   readonly records: readonly MappedRecord[];
   /** Records that failed their mapping and were left out. */
   readonly skipped: number;
@@ -24,7 +24,7 @@ const ID_FIELDS = ['id', '_id', 'uuid', 'guid'] as const;
 const FALLBACK_ID_LENGTH = 16;
 
 /** Hashing is a platform concern, so the domain receives it as a function. */
-export type TextHasher = (text: string) => string;
+type TextHasher = (text: string) => string;
 
 /**
  * A stable id for a mapped record. An id-like field on the RAW record is
@@ -32,7 +32,7 @@ export type TextHasher = (text: string) => string;
  * keeps its id across refreshes. Otherwise a hash of the mapped content:
  * stable as long as the record's mapped fields do not change.
  */
-export function deriveMappedRecordId(
+function deriveMappedRecordId(
   raw: unknown,
   mapped: Readonly<Record<string, unknown>>,
   hash: TextHasher,
@@ -63,7 +63,7 @@ export function toRecordList(body: unknown): readonly unknown[] {
   return body === null || body === undefined ? [] : [body];
 }
 
-export interface MapRecordsInput {
+interface MapRecordsInput {
   readonly mapping: DatasetMapping;
   /** The records of the window, plus one when there are more (see `ReadWindow`). */
   readonly body: unknown;

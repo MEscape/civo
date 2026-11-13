@@ -5,10 +5,14 @@
       "intro": "Verbinden Sie kommunale und Smart-City-Datenquellen, um Ihren Website-Komponenten echte Daten zur Verfügung zu stellen.",
       "newSource": "Datenquelle verbinden",
       "createTitle": "Datenquelle verbinden",
-      "createIntro": "Drei kurze Fragen. Von der API wird erst gelesen, wenn Sie einen Datensatz anlegen.",
+      "createIntro": "Benennen Sie Ihre Quelle und geben Sie die Adresse ihrer API an. Wir testen die Verbindung direkt nach dem Speichern.",
       "connected": "{count, plural, one {# verbundene Quelle} other {# verbundene Quellen}}",
       "emptyTitle": "Noch keine Datenquellen",
-      "emptyDescription": "Bis Sie eine verbinden, zeigen Komponenten Beispieldaten. Sie brauchen nur die Webadresse einer API, die JSON liefert."
+      "emptyDescription": "Bis Sie eine verbinden, zeigen Komponenten Beispieldaten. Sie brauchen nur die Webadresse einer API, die JSON liefert.",
+      "usageTruncated": "Die Nutzung durch Seiten und Karten konnte nur teilweise gelesen werden. Sie wird als unbekannt angezeigt. Vor dem Löschen werden gespeicherte Seiten, Karten und die veröffentlichte Version erneut geprüft.",
+      "usageUnavailable": "Die Seitennutzung ist nicht verfügbar. Vor dem Löschen prüft der Server weiterhin gespeicherte Seiten, Karten und die veröffentlichte Version.",
+      "listTitle": "Verbundene Quellen",
+      "listDescription": "Jede Quelle enthält die Datensätze, die Ihre Komponenten lesen. Testen Sie zuerst die Quelle und legen Sie dann ihre Datensätze an."
     },
     "sourceCard": {
       "confirmDelete": "Diese Datenquelle und alle ihre Datensätze wirklich entfernen? Das lässt sich nicht rückgängig machen.",
@@ -19,9 +23,9 @@
       "testHealthy": "Verbindung erfolgreich.",
       "testing": "Prüft…",
       "test": "Verbindung testen",
-      "remove": "Entfernen",
+      "remove": "Löschen",
       "untestedHint": "Noch nicht getestet. Testen Sie die Verbindung, um sicherzugehen, dass die API erreichbar ist; danach lassen sich Datensätze anlegen.",
-      "deleteTitle": "„{name}“ entfernen?",
+      "deleteTitle": "„{name}“ löschen?",
       "failedHint": "Prüfen Sie Adresse oder API und testen Sie erneut. Datensätze lassen sich anlegen, sobald der Test gelingt.",
       "failedWithDatasets": "Die vorhandenen Datensätze bleiben erhalten, aber Komponenten, die sie nutzen, können keine aktuellen Daten laden, bis die Quelle wieder antwortet. Neue Datensätze lassen sich anlegen, sobald ein Test gelingt."
     },
@@ -65,21 +69,41 @@
       "save": "Speichern",
       "cancel": "Abbrechen",
       "baseUrlHint": "Die Adresse, von der die Einträge gelesen werden. Sie beginnt mit https:// oder http://.",
-      "afterSave": "Die Verbindung können Sie direkt nach dem Speichern testen.",
+      "afterSave": "Wir testen die Verbindung direkt nach dem Speichern. Danach legen Sie einen Datensatz an.",
       "connect": "Quelle verbinden",
       "steps": {
-        "identity": {
-          "title": "Benennen",
-          "description": "Ein Name, den Ihr Team in Listen und im Editor wiedererkennt."
+        "connection": {
+          "title": "Verbindung",
+          "description": "Benennen Sie die Quelle und geben Sie an, wo ihre Daten gelesen werden."
         },
-        "location": {
-          "title": "Wo liegen die Daten?",
-          "description": "Die API-Adresse und ob sie einen Schlüssel braucht."
+        "records": {
+          "title": "Einträge",
+          "description": "Die meisten APIs brauchen hier nichts: Fahren Sie im Zweifel einfach fort. Ändern Sie dies nur, wenn die API ihre Einträge ungewöhnlich verpackt oder seitenweise liefert."
         },
-        "advanced": {
-          "title": "Erweitert: Einträge und Seitenweise Abfrage",
-          "description": "Nur nötig, wenn die API ihre Einträge ungewöhnlich verpackt oder seitenweise liefert. Übliche Formate werden automatisch erkannt."
+        "review": {
+          "title": "Prüfen und verbinden"
         }
+      },
+      "nameHint": "Ein Name, den Ihr Team in Listen und im Editor wiedererkennt.",
+      "editTitle": "Quelle bearbeiten",
+      "afterEdit": "Ändert sich die Verbindung, testen wir sie direkt nach dem Speichern erneut.",
+      "baseUrlHiddenHint": "Die gespeicherte Adresse enthält weitere Parameter, etwa einen Zugangsschlüssel. Sie werden hier nicht angezeigt und bleiben erhalten, solange Sie die Adresse nicht ändern.",
+      "area": {
+        "legend": "Kartenausschnitt",
+        "title": "Kartenausschnitt bei der API anfragen (optional)",
+        "hint": "Zeigt eine Karte nur einen Teil der Welt, wird bei der API nur dieser Ausschnitt angefragt, wenn sie das kann. Ohne Angabe wird die ganze Liste gelesen und der Ausschnitt danach herausgeschnitten, das ist langsamer und auf die ersten 10.000 Einträge begrenzt.",
+        "preset": "Art der API",
+        "presets": {
+          "none": "Nicht unterstützt",
+          "opendatasoft": "Opendatasoft (where)",
+          "socrata": "Socrata (within_box)",
+          "ogc": "OGC API Features (bbox)",
+          "custom": "Andere"
+        },
+        "param": "Anfrageparameter",
+        "paramHint": "Der Query-Parameter, aus dem die API den Ausschnitt liest.",
+        "template": "Wert",
+        "templateHint": "Verwenden Sie '{west}', '{south}', '{east}' und '{north}' für die Ecken des Ausschnitts. Ersetzen Sie den Feldnamen (geo_point_2d, location) durch den Ihrer Daten."
       }
     },
     "datasets": {
@@ -88,23 +112,34 @@
       "empty": "Diese Quelle stellt noch keine Datensätze bereit. Fügen Sie einen Datensatz hinzu.",
       "kind": "Typ: {kind}",
       "confirmDelete": "Diesen Datensatz und seine Feldzuordnung wirklich löschen? Das lässt sich nicht rückgängig machen.",
-      "hideMapping": "Zuordnung schließen",
-      "editMapping": "Felder zuordnen",
+      "editMapping": "Zuordnung bearbeiten",
       "edit": "Bearbeiten",
       "delete": "Löschen",
       "firstTitle": "Als Nächstes: Was liefert diese Quelle?",
       "firstDescription": "Ein Datensatz ist eine Liste von Einträgen dieser Quelle, etwa die Termine oder die Messstationen. Komponenten nutzen Datensätze, nicht Quellen.",
-      "addFirst": "Ersten Datensatz anlegen",
       "mapped": "Einsatzbereit",
       "unmapped": "Felder nicht zugeordnet",
       "editLabel": "{name} bearbeiten",
       "deleteLabel": "{name} löschen",
       "deleteTitle": "„{name}“ löschen?",
-      "titleOf": "{count, plural, =0 {Datensätze von {source}} one {# Datensatz von {source}} other {# Datensätze von {source}}}",
-      "unused": "Noch auf keiner Seite verwendet.",
+      "unused": "Noch auf keiner Seite und in keiner Karte verwendet.",
       "usedOn": "Verwendet auf:",
       "useLabel": "{page} › {component}",
-      "liveOnly": "Kein Entwurf nutzt ihn mehr, die Live-Website zeigt ihn aber noch auf: {pages}, bis zur nächsten Veröffentlichung."
+      "liveOnly": "Kein Entwurf nutzt ihn mehr, die Live-Website zeigt ihn aber noch auf: {pages}, bis zur nächsten Veröffentlichung.",
+      "truncated": "Es werden nur die ersten Datensätze dieser Quelle angezeigt. Vor dem Löschen wird weiterhin die vollständige Menge geprüft.",
+      "description": "Jeder Datensatz ist eine Liste von Einträgen. Komponenten lesen Datensätze, deren Felder zugeordnet sind.",
+      "count": "{count, plural, one {# Datensatz} other {# Datensätze}}",
+      "columns": {
+        "dataset": "Datensatz",
+        "fields": "Felder",
+        "usedOn": "Verwendet auf",
+        "actions": "Aktionen"
+      },
+      "mapNow": "Felder zuordnen",
+      "usageUnknown": "Die Verwendung ist unbekannt.",
+      "testFirst": "Testen Sie zuerst die Verbindung. Ein Datensatz lässt sich anlegen, sobald die Quelle antwortet.",
+      "waitingTitle": "Warten auf die Verbindung",
+      "mapLabel": "Karte „{map}“"
     },
     "datasetForm": {
       "title": "Neuen Datensatz anlegen",
@@ -116,15 +151,26 @@
       "pathPlaceholder": "/pfad/zu/datensaetzen",
       "pathHint": "Wird an die Basis-URL der Datenquelle angehängt. Leer lassen, um den Pfad der Datenquelle zu verwenden.",
       "saving": "Speichert…",
-      "add": "Hinzufügen",
+      "add": "Datensatz anlegen",
       "save": "Speichern",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "kindFixed": "Der Typ gehört zum gespeicherten Datensatz und seinen Zuordnungen. Legen Sie für einen anderen Typ einen neuen Datensatz an.",
+      "sourcePath": "Adresse der Quelle verwenden",
+      "afterSave": "Als Nächstes lesen wir die Felder aus Ihrer Quelle und schlagen vor, welches wozu passt. Sie prüfen die Zuordnung und speichern sie.",
+      "testFirst": "Testen Sie diese Quelle erfolgreich, bevor Sie einen Datensatz hinzufügen.",
+      "panelTitle": "Details des Datensatzes",
+      "panelDescription": "Was diese Quelle liefert und wo ihre Einträge liegen.",
+      "kindHint": "Wählen Sie, was die Einträge sind. Komponenten für Veranstaltungen, Nachrichten oder Messwerte lesen den passenden Typ.",
+      "steps": {
+        "basics": "Name und Typ",
+        "endpoint": "Wo liegen die Einträge?",
+        "review": "Prüfen und speichern"
+      }
     },
     "mapping": {
       "fieldRow": "Zeile {row}",
       "title": "Felder zuordnen",
       "loading": "Lädt…",
-      "load": "Felder laden",
       "noFields": "In der Antwort der Datenquelle wurden keine Felder gefunden.",
       "tableCaption": "Zuordnung externer Felder zu Zielfeldern",
       "externalField": "Externes Feld",
@@ -135,13 +181,32 @@
       "preview": "Vorschau",
       "save": "Mapping speichern",
       "saving": "Speichert…",
-      "saved": "Mapping gespeichert.",
       "previewTitle": "Vorschau des zugeordneten Datensatzes",
-      "targetOption": "{label}{required, select, yes { *} other {}}{taken, select, yes { (bereits zugeordnet)} other {}}"
+      "targetOption": "{label}{required, select, yes { *} other {}}{taken, select, yes { (bereits zugeordnet)} other {}}",
+      "notSampled": "In dieser Stichprobe nicht vorhanden",
+      "preservedAssignments": "{count, plural, one {Eine weitere gespeicherte Zuordnung bleibt unverändert.} other {# weitere gespeicherte Zuordnungen bleiben unverändert.}}",
+      "reload": "Felder neu laden",
+      "reading": "Die Felder werden aus Ihrer Quelle gelesen …",
+      "notLoaded": "Die Felder wurden noch nicht gelesen.",
+      "pageIntro": "Legen Sie fest, welches Feld von „{dataset}“ den Titel, das Datum usw. enthält. Ihre Komponenten lesen die zugeordneten Felder.",
+      "suggested": "{count, plural, one {Wir haben ein Feld anhand seines Namens zugeordnet.} other {Wir haben # Felder anhand ihrer Namen zugeordnet.}} Prüfen Sie die Zuordnung und speichern Sie dann.",
+      "missingRequired": "Noch nötig: {fields}. Ohne diese kann eine Komponente keinen Eintrag anzeigen.",
+      "requiredDone": "Alle Pflichtfelder sind zugeordnet.",
+      "noFieldsTitle": "Keine Felder gefunden",
+      "steps": {
+        "fields": "Felder zuordnen",
+        "review": "Prüfen und speichern"
+      },
+      "review": {
+        "tableCaption": "Zugeordnete Felder",
+        "emptyTitle": "Noch nichts zugeordnet",
+        "emptyDescription": "Gehen Sie zurück und ordnen Sie mindestens die Pflichtfelder zu.",
+        "afterSave": "Mit dem Speichern ist der Datensatz einsatzbereit: Wählen Sie ihn in einer Komponente einer Seite aus."
+      }
     },
     "kinds": {
       "REST": "REST / JSON",
-      "MOCK": "Mock (Beispieldaten)"
+      "MOCK": "Gespeicherte Daten (Snapshot)"
     },
     "status": {
       "OK": "Verbunden",
@@ -226,6 +291,7 @@
         "category": "Kategorie"
       },
       "SmartCityObservation": {
+        "resolution": "Zeitliche Auflösung (ISO-Zeitraum)",
         "series": "Reihe (Name der Messgröße)",
         "observedAt": "Erfasst am",
         "value": "Wert",
@@ -277,7 +343,8 @@
       "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
       "rateLimited": "Zu viele Anfragen an die Datenquelle. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
       "unexpected": "Ein unerwarteter Fehler ist aufgetreten.",
-      "datasetInUse": "Eine Seite zeigt diese Daten noch an, deshalb wurde nichts gelöscht. Die Verwendung wurde neu geladen."
+      "datasetInUse": "Eine Seite zeigt diese Daten noch an, deshalb wurde nichts gelöscht. Die Verwendung wurde neu geladen.",
+      "deletionIncomplete": "Die Datensätze konnten nicht vollständig geprüft werden oder haben sich während der Prüfung geändert. Laden Sie die Seite neu und versuchen Sie es erneut. Entfernen Sie bei großen Quellen zuerst einzelne ungenutzte Datensätze. Es wurden keine Daten gelöscht."
     },
     "validation": {
       "idInvalid": "Ungültige Kennung.",
@@ -314,13 +381,17 @@
       "valueNotBoolean": "Der Wert ist kein gültiger Wahrheitswert.",
       "valueNotDate": "Der Wert ist kein gültiges Datum.",
       "valueNotUrl": "Der Wert ist keine gültige http(s)-URL.",
-      "valueMissing": "Der Wert ist erforderlich, fehlt aber."
+      "valueMissing": "Der Wert ist erforderlich, fehlt aber.",
+      "spatialFilterInvalid": "Der Kartenausschnitt-Filter ist ungültig.",
+      "spatialFilterParamInvalid": "Nennen Sie den Anfrageparameter, der den Ausschnitt trägt, zum Beispiel where oder bbox.",
+      "spatialFilterTemplateInvalid": "Schreiben Sie den Wert mit '{west}', '{south}', '{east}' und '{north}', zum Beispiel '{west},{south},{east},{north}'."
     },
     "auditEvents": {
       "data_source": {
         "created": "Datenquelle hinzugefügt",
+        "updated": "Datenquelle geändert",
         "tested": "Verbindung getestet",
-        "deleted": "Datenquelle entfernt"
+        "deleted": "Datenquelle gelöscht"
       },
       "dataset": {
         "created": "Datensatz hinzugefügt",
@@ -339,25 +410,30 @@
       "steps": {
         "source": {
           "title": "Quelle verbinden",
-          "description": "Die Adresse einer API, etwa eines Open-Data-Portals."
+          "description": "Die Adresse einer API, etwa eines Open-Data-Portals.",
+          "action": "Datenquelle verbinden"
         },
         "dataset": {
           "title": "Datensatz anlegen",
-          "description": "Eine Liste von Einträgen daraus, etwa Termine oder Messstationen."
+          "description": "Eine Liste von Einträgen daraus, etwa Termine oder Messstationen.",
+          "action": "Datensatz anlegen"
         },
         "mapping": {
           "title": "Felder zuordnen",
-          "description": "Angeben, welches Feld Titel, Datum, Ort usw. enthält."
+          "description": "Angeben, welches Feld Titel, Datum, Ort usw. enthält.",
+          "action": "Felder zuordnen"
         },
         "use": {
           "title": "Auf einer Seite nutzen",
-          "description": "Den Datensatz im Seiteneditor in einer Komponente wählen."
+          "description": "Den Datensatz im Seiteneditor in einer Komponente wählen.",
+          "action": "Seiten öffnen"
         }
       },
       "ready": "Ihre Daten sind bereit. Letzter Schritt: Wählen Sie einen Datensatz in einer Komponente wie Karte, Liste oder Diagramm.",
       "openPages": "Zu den Seiten",
       "readyFor": "Ihre Daten sind bereit. Letzter Schritt: „{page} › {component}“ zeigt noch Beispieldaten; wählen Sie dort Ihren Datensatz.",
-      "assign": "Dort Datensatz wählen"
+      "assign": "Dort Datensatz wählen",
+      "truncated": "Der Einrichtungsfortschritt beruht auf einer begrenzten Stichprobe gespeicherter Zuordnungen. Weitere eingerichtete Datensätze können vorhanden sein."
     },
     "leave": {
       "title": "Ohne Speichern verlassen?",
@@ -369,11 +445,54 @@
     },
     "inUse": {
       "title": "„{name}“ wird noch verwendet",
-      "description": "{count, plural, one {Eine Komponente zeigt diese Daten noch an.} other {# Komponenten zeigen diese Daten noch an.}} Auf der Live-Website führen fehlende Daten zu einer Fehlermeldung. Wählen Sie deshalb zuerst einen anderen Datensatz; danach lässt sich löschen.",
+      "description": "{count, plural, one {Eine Komponente oder Karte nutzt diese Daten noch.} other {# Komponenten und Karten nutzen diese Daten noch.}} Auf der Live-Website führen fehlende Daten zu einer Fehlermeldung. Wählen Sie deshalb zuerst einen anderen Datensatz; danach lässt sich löschen.",
       "openFirst": "Im Editor öffnen",
       "close": "Abbrechen",
       "liveDescription": "Im Editor nutzt ihn keine Seite mehr, die Live-Website zeigt ihn aber noch auf: {pages}. Veröffentlichen Sie zuerst Ihre Änderungen; danach lässt er sich löschen.",
-      "openReleases": "Zum Veröffentlichen"
+      "openReleases": "Zum Veröffentlichen",
+      "unknown": "Die Nutzung ist unbekannt. Vor dem Löschen prüft der Server gespeicherte Seiten, Karten und die veröffentlichte Version. Dies kann nicht rückgängig gemacht werden.",
+      "mapDetail": "Karte"
+    },
+    "form": {
+      "next": "Weiter: {step}"
+    },
+    "navigation": {
+      "breadcrumb": "Datenquellen-Navigation"
+    },
+    "text": {
+      "showMore": "Mehr anzeigen",
+      "showLess": "Weniger anzeigen"
+    },
+    "websiteOverview": {
+      "title": "Daten",
+      "mapped": "Zugeordnete Inhalte",
+      "empty": "Noch keine Datenquelle. Verbinden Sie eine, um Datensätze auf einer Seite zu zeigen."
+    },
+    "list": {
+      "title": "Verbundene Quellen",
+      "description": "Öffnen Sie eine Quelle, um sie zu testen, ihre Datensätze anzulegen und deren Felder zuzuordnen.",
+      "columns": {
+        "source": "Quelle",
+        "status": "Status",
+        "datasets": "Datensätze",
+        "checked": "Zuletzt geprüft",
+        "actions": "Aktionen"
+      },
+      "datasetCount": "{count, plural, =0 {Keine Datensätze} one {# Datensatz} other {# Datensätze}}",
+      "unmappedCount": "{count, plural, one {# nicht zugeordnet} other {# nicht zugeordnet}}",
+      "open": "{name} öffnen",
+      "openLabel": "Öffnen"
+    },
+    "sourceDetail": {
+      "metaTitle": "Datenquelle",
+      "description": "Testen Sie zuerst die Verbindung und legen Sie dann die Datensätze an, die Ihre Komponenten lesen.",
+      "connectionTitle": "Verbindung",
+      "connectionDescription": "Woher diese Quelle ihre Einträge liest.",
+      "address": "Adresse",
+      "status": "Status",
+      "type": "Typ",
+      "descriptionReady": "Legen Sie die Datensätze an, die Ihre Komponenten lesen, und ordnen Sie deren Felder zu.",
+      "edit": "Bearbeiten"
     }
   }
 }

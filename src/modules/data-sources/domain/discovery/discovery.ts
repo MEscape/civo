@@ -3,7 +3,7 @@ import { isPlainObject, truncate, hasUnsafePathSegment } from '@lib/utils';
 import { isValidSourcePath } from '../mapping/dataset-mapping';
 import { toRecordList } from '../mapping/mapped-record';
 
-export type DiscoveredSampleKind = 'string' | 'number' | 'boolean' | 'array' | 'object' | 'null';
+type DiscoveredSampleKind = 'string' | 'number' | 'boolean' | 'array' | 'object' | 'null';
 
 export interface DiscoveredField {
   readonly path: string;
@@ -12,7 +12,7 @@ export interface DiscoveredField {
   readonly sampleValue: string;
 }
 
-export interface DataDiscovery {
+interface DataDiscovery {
   readonly fields: readonly DiscoveredField[];
   /** The raw records the fields were inferred from; empty when the source returned none. */
   readonly sample: readonly unknown[];

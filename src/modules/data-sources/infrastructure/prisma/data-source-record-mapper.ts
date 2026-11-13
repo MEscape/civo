@@ -32,7 +32,7 @@ export interface DataSourceRecord {
 }
 
 /** A source read together with some of its datasets. */
-export interface DataSourceWithDatasetsRecord extends DataSourceRecord {
+interface DataSourceWithDatasetsRecord extends DataSourceRecord {
   readonly datasets: readonly DatasetColumnsRecord[];
 }
 
@@ -77,10 +77,15 @@ export function toDataSource(record: DataSourceRecord, tenantId: TenantId): Data
 export function toDataSourceWithDatasets(
   record: DataSourceWithDatasetsRecord,
   tenantId: TenantId,
+  limit: number,
 ): DataSourceWithDatasets {
   const parent = toParent(record, tenantId);
   return {
     source: toDataSource(record, tenantId),
-    datasets: record.datasets.map((columns) => buildDataset(columns, parent)).filter(isDefined),
+    datasets: record.datasets
+      .slice(0, limit)
+      .map((columns) => buildDataset(columns, parent))
+      .filter(isDefined),
+    isDatasetListTruncated: record.datasets.length > limit,
   };
 }

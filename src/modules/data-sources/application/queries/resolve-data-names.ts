@@ -5,12 +5,12 @@ import { ResultAsync, parseValidIds } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { parseDataSourceId, parseDatasetId, parseWebsiteId } from '../../domain/models/ids';
-import { MAX_RESOLVED_NAMES } from '../list-limits';
+import { MAX_RESOLVED_NAMES } from '../data-sources-limits';
 
 import type { DataNamesView } from '../contracts/data-source-views';
 import type { DataSourceDependencies } from '../data-source-dependencies';
 
-export interface ResolveDataNamesInput {
+interface ResolveDataNamesInput {
   readonly dataSourceIds: readonly string[];
   readonly datasetIds: readonly string[];
 }
@@ -32,19 +32,22 @@ export class ResolveDataNames {
     DataNamesView,
     AuthorizationError | ValidationAppError | InfrastructureAppError
   > {
-    const { authorization, dataSources, datasets } = this.deps;
-    const sourceIds = parseValidIds(input.dataSourceIds, parseDataSourceId, MAX_RESOLVED_NAMES);
-    const datasetIds = parseValidIds(input.datasetIds, parseDatasetId, MAX_RESOLVED_NAMES);
+    const { access, dataSources, datasets } = this.deps;
+    const sourceIds = parseValidIds(input.dataSourceIds, parseDataSourceId, MAX_RESOLVED_NAMES + 1);
+    const datasetIds = parseValidIds(input.datasetIds, parseDatasetId, MAX_RESOLVED_NAMES + 1);
 
-    return authorization
-      .requireInTenant('datasource.read')
-      .andThen((actor) =>
-        parseWebsiteId(websiteId).asyncAndThen((id) =>
-          ResultAsync.combine([
-            dataSources.findNames(id, actor.tenantId, sourceIds),
-            datasets.findNames(id, actor.tenantId, datasetIds),
-          ] as const).map(([sources, sets]) => ({ dataSources: sources, datasets: sets })),
-        ),
-      );
+    return access.authorizeWebsite('datasource.read', websiteId).andThen((scope) =>
+      parseWebsiteId(websiteId).asyncAndThen((id) =>
+        ResultAsync.combine([
+          dataSources.findNames(id, scope.tenantId, sourceIds.slice(0, MAX_RESOLVED_NAMES)),
+          datasets.findNames(id, scope.tenantId, datasetIds.slice(0, MAX_RESOLVED_NAMES)),
+        ] as const).map(([sources, sets]) => ({
+          dataSources: sources,
+          datasets: sets,
+          isTruncated:
+            sourceIds.length > MAX_RESOLVED_NAMES || datasetIds.length > MAX_RESOLVED_NAMES,
+        })),
+      ),
+    );
   }
 }

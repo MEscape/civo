@@ -9,6 +9,8 @@ import {
 
 import { PAGINATION_LIMITS } from './pagination-strategy';
 
+import type { AreaBounds } from '../config/spatial-filter';
+
 /**
  * Which records of a source a caller wants: `limit` records starting at
  * `offset`. The caller is whoever shows them (a component with the Limit an
@@ -18,6 +20,11 @@ import { PAGINATION_LIMITS } from './pagination-strategy';
 export interface ReadWindow {
   readonly limit: number;
   readonly offset: number;
+  /**
+   * The area the records must lie in (a map window). A source whose API can be asked for an area
+   * (`SpatialFilter`) sends only that area; for any other the caller applies the area itself.
+   */
+  readonly bounds?: AreaBounds | undefined;
 }
 
 /**
@@ -35,13 +42,34 @@ function isWholeNumberWithin(value: number, min: number, max: number): boolean {
   return Number.isInteger(value) && value >= min && value <= max;
 }
 
+const MAX_LONGITUDE = 180;
+const MAX_LATITUDE = 90;
+
+function isArea(bounds: AreaBounds): boolean {
+  const [west, south, east, north] = bounds;
+  return (
+    bounds.every(Number.isFinite) &&
+    west >= -MAX_LONGITUDE &&
+    east <= MAX_LONGITUDE &&
+    south >= -MAX_LATITUDE &&
+    north <= MAX_LATITUDE &&
+    west < east &&
+    south < north
+  );
+}
+
 /** The only way a window enters the system. */
 export function createReadWindow(raw: ReadWindow): AppResult<ReadWindow, ValidationAppError> {
   const isValid =
     isWholeNumberWithin(raw.limit, 1, READ_WINDOW_LIMITS.maxLimit) &&
-    isWholeNumberWithin(raw.offset, 0, READ_WINDOW_LIMITS.maxOffset);
+    isWholeNumberWithin(raw.offset, 0, READ_WINDOW_LIMITS.maxOffset) &&
+    (raw.bounds === undefined || isArea(raw.bounds));
   return isValid
-    ? ok({ limit: raw.limit, offset: raw.offset })
+    ? ok({
+        limit: raw.limit,
+        offset: raw.offset,
+        ...(raw.bounds === undefined ? {} : { bounds: raw.bounds }),
+      })
     : err(dataSourceValidationFailed({ window: [CODES.windowInvalid] }));
 }
 

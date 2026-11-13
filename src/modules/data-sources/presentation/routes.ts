@@ -7,5 +7,15 @@
  */
 export const dataSourceRoutes = {
   sources: (websiteId: string) => `/websites/${websiteId}/data`,
+  source: (websiteId: string, sourceId: string) => `/websites/${websiteId}/data/${sourceId}`,
+  sourceNew: (websiteId: string) => `/websites/${websiteId}/data/new`,
+  sourceEdit: (websiteId: string, sourceId: string) =>
+    `/websites/${websiteId}/data/${sourceId}/edit`,
+  datasetNew: (websiteId: string, sourceId: string) =>
+    `/websites/${websiteId}/data/${sourceId}/datasets/new`,
+  datasetEdit: (websiteId: string, sourceId: string, datasetId: string) =>
+    `/websites/${websiteId}/data/${sourceId}/datasets/${datasetId}/edit`,
+  datasetMapping: (websiteId: string, sourceId: string, datasetId: string) =>
+    `/websites/${websiteId}/data/${sourceId}/datasets/${datasetId}/mapping`,
   builder: (websiteId: string) => `/websites/${websiteId}/builder`,
 } as const;

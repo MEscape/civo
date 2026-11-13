@@ -8,5 +8,3 @@ export const datasetEditSchema = z.object({
   slug: z.string().optional(),
   path: z.string().optional(),
 });
-
-export type DatasetEdit = z.infer<typeof datasetEditSchema>;

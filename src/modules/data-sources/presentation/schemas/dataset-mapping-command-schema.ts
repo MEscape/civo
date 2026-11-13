@@ -7,5 +7,3 @@ export const datasetMappingCommandSchema = z.object({
   datasetId: idSchema,
   mapping: datasetMappingShapeSchema,
 });
-
-export type DatasetMappingCommandInput = z.infer<typeof datasetMappingCommandSchema>;

@@ -2,14 +2,14 @@ import type { AppResultAsync } from '@lib/result';
 
 import { DISCOVERY_LIMITS, discoverFromBody } from '../../domain/discovery/discovery';
 import { firstRecords } from '../../domain/pagination/read-window';
-import { loadAuthorizedDataset } from '../load-authorized-dataset';
 import { DATA_SOURCE_RATE_LIMITS } from '../rate-limits';
+import { loadAuthorizedDataset } from '../services/load-authorized-dataset';
 import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { ConnectorError } from '../../domain/ports/data-source-connector.port';
-import type { DiscoveryView } from '../contracts/data-source-views';
+import type { DiscoveryView } from '../contracts/dataset-views';
 import type { ConnectedDataSourceDependencies } from '../data-source-dependencies';
-import type { LoadDatasetError } from '../load-authorized-dataset';
+import type { LoadDatasetError } from '../services/load-authorized-dataset';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
 /**

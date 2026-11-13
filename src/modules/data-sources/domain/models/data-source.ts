@@ -3,9 +3,11 @@ import type { TenantId } from '@modules/auth';
 import type { FieldErrorBag, ValidationAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
-import { isPlainObject } from '@lib/utils';
+import type { JsonValue } from '@lib/utils';
 
 import { checkRestConnectionConfig } from '../config/rest-connection-config';
+import { mergeRestSettings } from '../config/rest-connection-settings';
+import { checkSnapshotSourceConfig } from '../config/snapshot-source-config';
 import {
   DATA_SOURCE_VALIDATION_CODES,
   createDataSourceErrorBag,
@@ -50,12 +52,26 @@ export interface DataSource {
   readonly updatedAt: Date;
 }
 
+/** The stored form of a validated config: normalized, so every setting that was checked is kept. */
+export type DataSourceConfig = Readonly<Record<string, JsonValue>>;
+
 /** A validated source that has not been stored yet. */
 export interface DataSourceDraft {
   readonly websiteId: WebsiteId;
   readonly name: string;
   readonly kind: DataSourceKind;
-  readonly config: Readonly<Record<string, string>>;
+  readonly config: DataSourceConfig;
+}
+
+/** A validated edit of a stored source: its name and connection; the kind never changes. */
+export interface DataSourceChanges {
+  readonly name: string;
+  readonly config: DataSourceConfig;
+}
+
+export interface DataSourceChangesInput {
+  readonly name: string;
+  readonly config: unknown;
 }
 
 export interface DataSourceDraftInput {
@@ -77,26 +93,16 @@ function checkConfig(
   kind: DataSourceKind,
   raw: unknown,
   bag: FieldErrorBag,
-): Readonly<Record<string, string>> | null {
+): DataSourceConfig | null {
   switch (kind) {
     case 'REST': {
       const rest = checkRestConnectionConfig(raw, bag);
-      if (rest === null) {
-        return null;
-      }
-      return {
-        baseUrl: rest.baseUrl,
-        path: rest.path,
-        authMode: rest.authMode,
-      };
+      // Every checked setting is stored: records path and pagination are part of the connection.
+      return rest === null ? null : { ...rest };
     }
     case 'MOCK':
-      // The mock provider takes no configuration, and an unexpected key is refused like any other kind's.
-      if (isPlainObject(raw) && Object.keys(raw).length === 0) {
-        return {};
-      }
-      bag.add('config', CODES.configInvalid);
-      return null;
+      // Versioned snapshot configuration extends the legacy empty mock configuration.
+      return checkSnapshotSourceConfig(raw, bag);
   }
 }
 
@@ -122,4 +128,24 @@ export function createDataSourceDraft(
     return err(bag.toError());
   }
   return ok({ websiteId: websiteId.value, name, kind, config });
+}
+
+/**
+ * The only way a stored source changes. The submitted connection is laid over the stored one
+ * (`mergeRestSettings`) and validated like a new source's, reporting every invalid field.
+ */
+export function parseDataSourceChanges(
+  source: Pick<DataSource, 'kind' | 'config'>,
+  input: DataSourceChangesInput,
+): AppResult<DataSourceChanges, ValidationAppError> {
+  const bag = createDataSourceErrorBag();
+  const name = input.name.trim();
+  checkName(name, bag);
+  const raw =
+    source.kind === 'REST' ? mergeRestSettings(source.config, input.config) : input.config;
+  const config = checkConfig(source.kind, raw, bag);
+  if (bag.hasErrors || config === null) {
+    return err(bag.toError());
+  }
+  return ok({ name, config });
 }

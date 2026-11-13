@@ -19,10 +19,7 @@ import type { Dataset, DatasetSource, DatasetWithSource } from '../../domain/mod
 
 const log = logger.withContext({ module: 'data-source.persistence' });
 
-export type DatasetParentRecord = Pick<
-  DataSourceRecord,
-  'id' | 'websiteId' | 'name' | 'kind' | 'status'
->;
+type DatasetParentRecord = Pick<DataSourceRecord, 'id' | 'websiteId' | 'name' | 'kind' | 'status'>;
 
 export interface DatasetColumnsRecord {
   readonly id: string;
@@ -43,12 +40,12 @@ export interface DatasetRecord extends DatasetColumnsRecord {
 }
 
 /** A dataset read together with its complete parent source. */
-export interface DatasetWithSourceRecord extends DatasetColumnsRecord {
+interface DatasetWithSourceRecord extends DatasetColumnsRecord {
   readonly dataSource: DataSourceRecord | null;
 }
 
 /** Same, plus the tenant: for the one lookup that is scoped by website, not by tenant. */
-export interface DatasetWithSourceAndTenantRecord extends DatasetColumnsRecord {
+interface DatasetWithSourceAndTenantRecord extends DatasetColumnsRecord {
   readonly dataSource:
     | (DataSourceRecord & {
         readonly website: TenantRecord | null;
@@ -81,7 +78,7 @@ export const DATASET_SELECT = [
   'updatedAt',
 ] as const satisfies ReadonlyArray<keyof DatasetColumnsRecord>;
 
-export interface DatasetParent {
+interface DatasetParent {
   readonly source: DatasetSource;
   readonly websiteId: Dataset['websiteId'];
   readonly tenantId: Dataset['tenantId'];

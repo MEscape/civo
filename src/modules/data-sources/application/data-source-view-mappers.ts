@@ -1,10 +1,16 @@
-import { describeRestEndpoint } from '../domain/config/rest-connection-config';
+import {
+  describeRestEndpoint,
+  parseRestConnectionConfig,
+} from '../domain/config/rest-connection-config';
+import { editableBaseUrl } from '../domain/config/rest-connection-settings';
 
 import type {
+  DataSourceSettingsView,
   DataSourceView,
   DataSourceWithDatasetsView,
-  DatasetView,
+  RestConnectionSettingsView,
 } from './contracts/data-source-views';
+import type { DatasetView } from './contracts/dataset-views';
 import type { DataSource } from '../domain/models/data-source';
 import type { Dataset } from '../domain/models/dataset';
 import type { DataSourceWithDatasets } from '../domain/ports/data-source.repository';
@@ -22,6 +28,34 @@ export function toDataSourceView(source: DataSource): DataSourceView {
     lastErrorCode: source.lastErrorCode,
     createdAt: source.createdAt,
     updatedAt: source.updatedAt,
+  };
+}
+
+function toRestConnectionSettings(rawConfig: unknown): RestConnectionSettingsView | null {
+  const parsed = parseRestConnectionConfig(rawConfig);
+  if (parsed.isErr()) {
+    return null;
+  }
+  const { baseUrl, authMode, recordsPath, pagination, spatialFilter } = parsed.value;
+  const editable = editableBaseUrl(baseUrl);
+  return {
+    baseUrl: editable.baseUrl,
+    hasHiddenUrlParts: editable.hasHiddenParts,
+    authMode,
+    recordsPath,
+    pagination,
+    spatialFilter: spatialFilter ?? null,
+  };
+}
+
+/** Never the raw config: only what the edit form shows, with the base URL's query left out. */
+export function toDataSourceSettingsView(source: DataSource): DataSourceSettingsView {
+  return {
+    id: source.id,
+    websiteId: source.websiteId,
+    name: source.name,
+    kind: source.kind,
+    connection: source.kind === 'REST' ? toRestConnectionSettings(source.config) : null,
   };
 }
 
@@ -53,5 +87,6 @@ export function toDataSourceWithDatasetsView(
   return {
     ...toDataSourceView(row.source),
     datasets: row.datasets.map(toDatasetView),
+    isDatasetListTruncated: row.isDatasetListTruncated,
   };
 }

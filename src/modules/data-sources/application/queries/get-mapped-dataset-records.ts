@@ -7,6 +7,8 @@ import type {
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
+import { parseRestConnectionConfig } from '../../domain/config/rest-connection-config';
+import { readSnapshotSourceConfig } from '../../domain/config/snapshot-source-config';
 import { datasetNotFound, datasetNotMapped } from '../../domain/errors/data-source-errors';
 import { mapRecords } from '../../domain/mapping/mapped-record';
 import { parseWebsiteId, parseDatasetId } from '../../domain/models/ids';
@@ -14,7 +16,7 @@ import { createReadWindow } from '../../domain/pagination/read-window';
 
 import type { DatasetWithSource } from '../../domain/models/dataset';
 import type { ReadWindow } from '../../domain/pagination/read-window';
-import type { MappedRecordsView } from '../contracts/data-source-views';
+import type { MappedRecordsView } from '../contracts/dataset-views';
 import type { PublicDatasetDependencies } from '../data-source-dependencies';
 
 /** Which dataset of which website, and which of its records are wanted. */
@@ -24,7 +26,7 @@ export interface MappedRecordsRequest {
   readonly window: ReadWindow;
 }
 
-export type GetMappedDatasetRecordsError =
+type GetMappedDatasetRecordsError =
   NotFoundAppError | ConflictAppError | ValidationAppError | InfrastructureAppError;
 
 /**
@@ -90,6 +92,7 @@ export class GetMappedDatasetRecords {
           return connector
             .fetchBody(source, { window: window.value, path: dataset.path })
             .map((body) => {
+              const snapshot = readSnapshotSourceConfig(source.config);
               const mapped = mapRecords({
                 mapping,
                 body,
@@ -97,11 +100,21 @@ export class GetMappedDatasetRecords {
                 limit: window.value.limit,
               });
               return {
+                ...(snapshot?.windowPolicy === undefined
+                  ? {}
+                  : { maxWindowRecords: snapshot.windowPolicy.maxRecords }),
+                ...(snapshot === null ? {} : { provenance: snapshot.provenance }),
                 datasetId: dataset.id,
                 canonicalKind: dataset.canonicalKind,
                 records: mapped.records,
                 skipped: mapped.skipped,
                 truncated: mapped.truncated,
+                isAreaApplied:
+                  window.value.bounds !== undefined &&
+                  parseRestConnectionConfig(source.config).match(
+                    (config) => config.spatialFilter !== undefined,
+                    () => false,
+                  ),
               };
             });
         },

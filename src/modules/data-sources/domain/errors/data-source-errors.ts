@@ -33,6 +33,7 @@ export const DATA_SOURCE_ERROR_CODES = {
   datasetSlugTaken: 'dataset.slug_taken',
   datasetNotMapped: 'dataset.not_mapped',
   datasetInUse: 'dataset.in_use',
+  deletionIncomplete: 'data_source.deletion_incomplete',
   validationFailed: 'data_source.validation_failed',
   mappingFailed: 'dataset.mapping_failed',
   persistenceFailed: 'data_source.persistence_failed',
@@ -70,6 +71,9 @@ export const DATA_SOURCE_VALIDATION_CODES = {
   methodUnsupported: 'data_source.validation.method_unsupported',
   requestBodyInvalid: 'data_source.validation.request_body_invalid',
   recordsPathInvalid: 'data_source.validation.records_path_invalid',
+  spatialFilterInvalid: 'data_source.validation.spatial_filter_invalid',
+  spatialFilterParamInvalid: 'data_source.validation.spatial_filter_param_invalid',
+  spatialFilterTemplateInvalid: 'data_source.validation.spatial_filter_template_invalid',
   paginationInvalid: 'data_source.validation.pagination_invalid',
   windowInvalid: 'data_source.validation.window_invalid',
   authModeUnsupported: 'data_source.validation.auth_mode_unsupported',
@@ -98,14 +102,20 @@ export const DATA_SOURCE_VALIDATION_CODES = {
   valueMissing: 'dataset.mapping.value_missing',
 } as const;
 
-export type DataSourceErrorCode =
-  (typeof DATA_SOURCE_ERROR_CODES)[keyof typeof DATA_SOURCE_ERROR_CODES];
+type DataSourceErrorCode = (typeof DATA_SOURCE_ERROR_CODES)[keyof typeof DATA_SOURCE_ERROR_CODES];
 export type DataSourceValidationCode =
   (typeof DATA_SOURCE_VALIDATION_CODES)[keyof typeof DATA_SOURCE_VALIDATION_CODES];
 export type DataSourceCode = DataSourceErrorCode | DataSourceValidationCode;
 
 const CODES = DATA_SOURCE_ERROR_CODES;
 const FIELD_CODES = DATA_SOURCE_VALIDATION_CODES;
+
+export function dataSourceDeletionIncomplete(): ConflictAppError {
+  return conflictError(
+    CODES.deletionIncomplete,
+    'The complete set of child datasets could not be checked.',
+  );
+}
 
 /** Covers a foreign tenant's data source as well: see `DATA_SOURCE_ERROR_CODES`. */
 export function dataSourceNotFound(): NotFoundAppError {
@@ -168,14 +178,13 @@ export function mappingFailed(fieldErrors: Record<string, string[]>): Validation
 }
 
 /** The same person called the external system too often in a short time. */
-export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
   return rateLimitedError(
     CODES.rateLimited,
     'Too many requests. Please wait a moment and try again.',
     retryAfterSeconds,
   );
 }
-
 /** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
 export function fromRateLimitFailure(
   failure: RateLimitFailure,

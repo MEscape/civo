@@ -16,7 +16,7 @@ import type {
 export type DryRunError = ConnectorError;
 
 /** Where the sample comes from: the source, and the dataset's path into its response. */
-export interface DryRunTarget {
+interface DryRunTarget {
   readonly source: DataSource;
   readonly path: string | null;
 }

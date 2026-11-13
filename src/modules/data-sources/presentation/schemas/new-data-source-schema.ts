@@ -18,5 +18,3 @@ export const newDataSourceSchema = z.object({
   kind: z.enum(DATA_SOURCE_KINDS, { message: CODES.kindUnknown }),
   config: z.record(z.string(), z.unknown()),
 });
-
-export type NewDataSource = z.infer<typeof newDataSourceSchema>;

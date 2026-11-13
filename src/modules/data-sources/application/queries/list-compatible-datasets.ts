@@ -11,10 +11,10 @@ import {
 import { isCanonicalKind } from '../../domain/models/canonical-kinds';
 import { parseWebsiteId } from '../../domain/models/ids';
 import { toDatasetView } from '../data-source-view-mappers';
-import { MAX_COMPATIBLE_DATASETS } from '../list-limits';
+import { MAX_COMPATIBLE_DATASETS } from '../data-sources-limits';
 
 import type { CanonicalKind } from '../../domain/models/canonical-kinds';
-import type { DatasetView } from '../contracts/data-source-views';
+import type { DatasetChoicesView } from '../contracts/dataset-views';
 import type { DataSourceDependencies } from '../data-source-dependencies';
 
 function parseCanonicalKind(raw: string): AppResult<CanonicalKind, ValidationAppError> {
@@ -37,15 +37,15 @@ export class ListCompatibleDatasets {
     websiteId: string;
     canonicalKinds: readonly string[];
   }): AppResultAsync<
-    readonly DatasetView[],
+    DatasetChoicesView,
     AuthorizationError | ValidationAppError | InfrastructureAppError
   > {
-    const { authorization, datasets } = this.deps;
+    const { access, datasets } = this.deps;
     const { websiteId, canonicalKinds } = input;
 
-    return authorization
-      .requireInTenant('dataset.read')
-      .andThen((actor) =>
+    return access
+      .authorizeWebsite('dataset.read', websiteId)
+      .andThen((scope) =>
         parseWebsiteId(websiteId)
           .andThen((id) => {
             const parsedKinds: CanonicalKind[] = [];
@@ -60,15 +60,15 @@ export class ListCompatibleDatasets {
           })
           .asyncAndThen(({ id, kinds }) =>
             kinds.length === 0
-              ? okAsync([])
+              ? okAsync({ items: [], isTruncated: false })
               : datasets.listCompatible({
                   websiteId: id,
-                  tenantId: actor.tenantId,
+                  tenantId: scope.tenantId,
                   canonicalKinds: kinds,
                   limit: MAX_COMPATIBLE_DATASETS,
                 }),
           ),
       )
-      .map((found) => found.map(toDatasetView));
+      .map((found) => ({ items: found.items.map(toDatasetView), isTruncated: found.isTruncated }));
   }
 }

@@ -3,7 +3,7 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { dataSourceCommands } from '../../composition';
+import { getDataSourceCommands } from '../../composition';
 import { invalidateSettings } from '../cache/invalidate';
 import { toConnectionTestDto } from '../dto/data-source-dto';
 import { idSchema } from '../schemas/data-source-fields-schema';
@@ -15,7 +15,7 @@ export async function testDataSourceConnectionAction(
   dataSourceId: unknown,
 ): Promise<ActionResult<ConnectionTestDto>> {
   const result = await parseDataSourceInput(idSchema, dataSourceId).asyncAndThen((id) =>
-    dataSourceCommands.testDataSourceConnection.execute(id),
+    getDataSourceCommands().testDataSourceConnection.execute(id),
   );
 
   // The settings list shows status and last-checked after every attempt, healthy or not.

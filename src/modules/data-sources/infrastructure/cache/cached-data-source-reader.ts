@@ -4,11 +4,13 @@ import { logger } from '@lib/logger';
 import { fromThrowableAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
+import { parseRestConnectionConfig } from '../../domain/config/rest-connection-config';
 import { connectionFailed } from '../../domain/errors/data-source-errors';
 
 import { SourceReadFailure, readCachedRestBody } from './cached-rest-body';
 
 import type { DataSource } from '../../domain/models/data-source';
+import type { ReadWindow } from '../../domain/pagination/read-window';
 import type {
   ConnectorError,
   DataSourceConnector,
@@ -24,6 +26,19 @@ function toConnectorError(thrown: unknown): ConnectorError {
   // Anything else crossed the cache boundary unexpectedly: report it once, as unreachable.
   log.error('Cached source read failed unexpectedly', thrown);
   return connectionFailed(thrown);
+}
+
+/**
+ * The window as the cache key sees it. An area only changes what the API answers when the source
+ * can be asked for one; for any other source it must not be part of the key, or every pan of a map
+ * would miss the cache and download the whole list again.
+ */
+function cacheableWindow(source: DataSource, window: ReadWindow): ReadWindow {
+  const { bounds, ...plain } = window;
+  const parsed = parseRestConnectionConfig(source.config);
+  return bounds !== undefined && parsed.isOk() && parsed.value.spatialFilter !== undefined
+    ? window
+    : plain;
 }
 
 /**
@@ -55,7 +70,7 @@ export class CachedDataSourceConnector implements DataSourceConnector {
           dataSourceId: source.id,
           rawConfig: source.config,
           path: options.path ?? null,
-          window: options.window,
+          window: cacheableWindow(source, options.window),
         }),
       toConnectorError,
     );

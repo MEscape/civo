@@ -4,6 +4,8 @@ import { assertNever } from '@lib/utils';
 
 import { connectorUnavailable } from '../../domain/errors/data-source-errors';
 
+import { SnapshotConnector } from './snapshot-connector';
+
 import type { DataSource } from '../../domain/models/data-source';
 import type {
   ConnectorError,
@@ -14,12 +16,15 @@ import type {
 /**
  * The `DataSourceConnector` the application sees: it picks the adapter for
  * a source's kind. Exhaustive over kinds, so a new kind does not compile
- * until it is decided here. A kind without a connector (MOCK is served by
- * mock providers directly; there is nothing to connect to) yields
- * `connectorUnavailable()`, as the port promises.
+ * until it is decided here. The legacy MOCK storage name now routes to a
+ * validated snapshot adapter; it never invents records. An unsupported
+ * stored configuration yields connectorUnavailable() in its adapter.
  */
 export class KindRoutingConnector implements DataSourceConnector {
-  constructor(private readonly rest: DataSourceConnector) {}
+  constructor(
+    private readonly rest: DataSourceConnector,
+    private readonly snapshot: DataSourceConnector = new SnapshotConnector(),
+  ) {}
 
   test(source: DataSource): AppResultAsync<void, ConnectorError> {
     const connector = this.forKind(source);
@@ -38,7 +43,7 @@ export class KindRoutingConnector implements DataSourceConnector {
       case 'REST':
         return this.rest;
       case 'MOCK':
-        return null;
+        return this.snapshot;
       default:
         return assertNever(source.kind);
     }

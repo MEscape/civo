@@ -6,7 +6,7 @@ import type { AppResultAsync } from '@lib/result';
 import type { DatasetMapping } from '../mapping/dataset-mapping';
 import type { CanonicalKind } from '../models/canonical-kinds';
 import type { Dataset, DatasetChanges, DatasetDraft, DatasetWithSource } from '../models/dataset';
-import type { WebsiteId, DataSourceId, DatasetId } from '../models/ids';
+import type { WebsiteId, DatasetId } from '../models/ids';
 
 /**
  * Persistence for datasets. Tenant scoping works as for sources: every
@@ -20,7 +20,22 @@ import type { WebsiteId, DataSourceId, DatasetId } from '../models/ids';
  * the use case's job. Adapters translate every driver failure into our own
  * error kinds before returning (errors.md).
  */
+export interface DatasetSetup {
+  readonly kinds: readonly CanonicalKind[];
+  readonly mappedKinds: readonly CanonicalKind[];
+  readonly isTruncated: boolean;
+}
+
 export interface DatasetRepository {
+  /** Whole-website setup state, independent of the source list's page. */
+  getSetup(
+    websiteId: WebsiteId,
+    tenantId: TenantId,
+  ): AppResultAsync<DatasetSetup, InfrastructureAppError>;
+
+  /** Routing metadata only; authenticate first, then authorize this website before reading the dataset. */
+  findWebsiteId(id: DatasetId): AppResultAsync<WebsiteId | null, InfrastructureAppError>;
+
   findWithSource(
     id: DatasetId,
     tenantId: TenantId,
@@ -41,20 +56,16 @@ export interface DatasetRepository {
     websiteId: WebsiteId,
   ): AppResultAsync<DatasetWithSource | null, InfrastructureAppError>;
 
-  /** Bounded: never returns more than `limit` items (performance.md). */
-  listByDataSource(
-    dataSourceId: DataSourceId,
-    tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly Dataset[], InfrastructureAppError>;
-
   /** Datasets of one or more canonical kinds within a website: the builder's selector. Bounded. */
   listCompatible(query: {
     readonly websiteId: WebsiteId;
     readonly tenantId: TenantId;
     readonly canonicalKinds: readonly CanonicalKind[];
     readonly limit: number;
-  }): AppResultAsync<readonly Dataset[], InfrastructureAppError>;
+  }): AppResultAsync<
+    { readonly items: readonly Dataset[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
 
   /**
    * `NotFoundAppError` when the draft's data source does not exist in the

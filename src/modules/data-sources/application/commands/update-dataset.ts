@@ -5,14 +5,15 @@ import { definedKeys } from '@lib/utils';
 
 import { isEmptyChanges, parseDatasetChanges } from '../../domain/models/dataset';
 import { toDatasetView } from '../data-source-view-mappers';
-import { loadAuthorizedDataset } from '../load-authorized-dataset';
+import { loadAuthorizedDataset } from '../services/load-authorized-dataset';
 
 import type { Dataset } from '../../domain/models/dataset';
-import type { DatasetView, UpdateDatasetInput } from '../contracts/data-source-views';
+import type { UpdateDatasetInput } from '../contracts/data-source-inputs';
+import type { DatasetView } from '../contracts/dataset-views';
 import type { DataSourceDependencies } from '../data-source-dependencies';
-import type { LoadDatasetError } from '../load-authorized-dataset';
+import type { LoadDatasetError } from '../services/load-authorized-dataset';
 
-export type UpdateDatasetError = LoadDatasetError | ConflictAppError;
+type UpdateDatasetError = LoadDatasetError | ConflictAppError;
 
 /** Renames a dataset or changes its slug. The mapping has its own flow: `SaveDatasetMapping`. */
 export class UpdateDataset {
@@ -22,7 +23,7 @@ export class UpdateDataset {
     const { datasets, audit } = this.deps;
 
     return loadAuthorizedDataset(this.deps, input.datasetId, 'dataset.update').andThen(
-      ({ actor, dataset }) =>
+      ({ scope, dataset }) =>
         parseDatasetChanges(input)
           .asyncAndThen(
             (
@@ -34,11 +35,11 @@ export class UpdateDataset {
               if (isEmptyChanges(changes)) {
                 return okAsync(dataset);
               }
-              return datasets.update(dataset.id, actor.tenantId, changes).map((updated) => {
+              return datasets.update(dataset.id, scope.tenantId, changes).map((updated) => {
                 audit.record({
                   type: 'dataset.updated',
-                  actorId: actor.id,
-                  tenantId: actor.tenantId,
+                  actorId: scope.actorId,
+                  tenantId: scope.tenantId,
                   websiteId: updated.websiteId,
                   datasetId: updated.id,
                   changedFields: definedKeys(changes),

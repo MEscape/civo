@@ -17,10 +17,10 @@ import type {
   PaginationKind,
 } from '../../application/contracts/data-source-constraints';
 import type {
-  CanonicalKind,
   DataSourceKind,
   DataSourceStatus,
 } from '../../application/contracts/data-source-views';
+import type { CanonicalKind } from '../../application/contracts/dataset-views';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['dataSources']>;
 
@@ -37,6 +37,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.datasetSlugTaken]: fieldPath('errors', 'datasetSlugTaken'),
   [ERRORS.datasetNotMapped]: fieldPath('errors', 'datasetNotMapped'),
   [ERRORS.datasetInUse]: fieldPath('errors', 'datasetInUse'),
+  [ERRORS.deletionIncomplete]: fieldPath('errors', 'deletionIncomplete'),
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
   [ERRORS.mappingFailed]: fieldPath('errors', 'mappingFailed'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
@@ -68,6 +69,12 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.methodUnsupported]: fieldPath('validation', 'methodUnsupported'),
   [VALIDATION.requestBodyInvalid]: fieldPath('validation', 'requestBodyInvalid'),
   [VALIDATION.recordsPathInvalid]: fieldPath('validation', 'recordsPathInvalid'),
+  [VALIDATION.spatialFilterInvalid]: fieldPath('validation', 'spatialFilterInvalid'),
+  [VALIDATION.spatialFilterParamInvalid]: fieldPath('validation', 'spatialFilterParamInvalid'),
+  [VALIDATION.spatialFilterTemplateInvalid]: fieldPath(
+    'validation',
+    'spatialFilterTemplateInvalid',
+  ),
   [VALIDATION.paginationInvalid]: fieldPath('validation', 'paginationInvalid'),
   [VALIDATION.windowInvalid]: fieldPath('validation', 'windowInvalid'),
   [VALIDATION.authModeUnsupported]: fieldPath('validation', 'authModeUnsupported'),
@@ -96,8 +103,7 @@ export const MESSAGE_KEY_BY_CODE = {
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 
-export type MessageKey =
-  (typeof MESSAGE_KEY_BY_CODE)[DataSourceCode] | typeof GENERIC_ERROR_MESSAGE_KEY;
+type MessageKey = (typeof MESSAGE_KEY_BY_CODE)[DataSourceCode] | typeof GENERIC_ERROR_MESSAGE_KEY;
 
 function isDataSourceCode(code: string): code is DataSourceCode {
   return Object.hasOwn(MESSAGE_KEY_BY_CODE, code);

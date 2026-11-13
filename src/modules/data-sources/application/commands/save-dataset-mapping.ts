@@ -2,18 +2,19 @@ import type { AppResultAsync } from '@lib/result';
 
 import { createDatasetMapping, ensureRequiredTargets } from '../../domain/mapping/dataset-mapping';
 import { toDatasetView } from '../data-source-view-mappers';
-import { loadAuthorizedDataset } from '../load-authorized-dataset';
 import { DATA_SOURCE_RATE_LIMITS } from '../rate-limits';
 import { dryRunMapping } from '../services/dry-run-mapping';
+import { loadAuthorizedDataset } from '../services/load-authorized-dataset';
 import { withinActorLimit } from '../services/within-actor-limit';
 
-import type { DatasetView, SaveDatasetMappingInput } from '../contracts/data-source-views';
+import type { SaveDatasetMappingInput } from '../contracts/data-source-inputs';
+import type { DatasetView } from '../contracts/dataset-views';
 import type { ConnectedDataSourceDependencies } from '../data-source-dependencies';
-import type { LoadDatasetError } from '../load-authorized-dataset';
 import type { DryRunError } from '../services/dry-run-mapping';
+import type { LoadDatasetError } from '../services/load-authorized-dataset';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
-export type SaveDatasetMappingError = LoadDatasetError | DryRunError | ActorLimitError;
+type SaveDatasetMappingError = LoadDatasetError | DryRunError | ActorLimitError;
 
 /**
  * Validates and saves a field mapping. Three gates, in order:
@@ -34,18 +35,18 @@ export class SaveDatasetMapping {
 
     return loadAuthorizedDataset(this.deps, input.datasetId, 'dataset.map')
       .andThen(withinActorLimit(this.deps, DATA_SOURCE_RATE_LIMITS.saveMapping))
-      .andThen(({ actor, dataset, source }) =>
+      .andThen(({ scope, dataset, source }) =>
         createDatasetMapping(dataset.canonicalKind, input.mapping)
           .andThen((mapping) => ensureRequiredTargets(dataset.canonicalKind, mapping))
           .asyncAndThen((mapping) =>
             dryRunMapping(connector, { source, path: dataset.path }, mapping).map(() => mapping),
           )
-          .andThen((mapping) => datasets.saveMapping(dataset.id, actor.tenantId, mapping))
+          .andThen((mapping) => datasets.saveMapping(dataset.id, scope.tenantId, mapping))
           .map((saved) => {
             audit.record({
               type: 'dataset.mapping_saved',
-              actorId: actor.id,
-              tenantId: actor.tenantId,
+              actorId: scope.actorId,
+              tenantId: scope.tenantId,
               websiteId: saved.websiteId,
               datasetId: saved.id,
             });

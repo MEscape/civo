@@ -49,7 +49,9 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
     { path: 'title', required: true },
     { path: 'message', required: false },
     { path: 'severity', required: true },
-    { path: 'active', required: true },
+    { path: 'active', required: false },
+    { path: 'startsAt', required: false },
+    { path: 'endsAt', required: false },
     { path: 'href', required: false },
   ],
   /** A current reading shown as a figure: a KPI card, a bar, a table row. */
@@ -57,6 +59,7 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
     { path: 'label', required: true },
     { path: 'value', required: true },
     { path: 'unit', required: false },
+    { path: 'observedAt', required: false },
     { path: 'category', required: false },
     { path: 'trend', required: false },
     { path: 'changePercent', required: false },
@@ -73,6 +76,7 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
   SmartCityObservation: [
     { path: 'series', required: true },
     { path: 'observedAt', required: true },
+    { path: 'resolution', required: false },
     { path: 'value', required: true },
     { path: 'unit', required: false },
     { path: 'category', required: false },
@@ -85,9 +89,13 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
     { path: 'unit', required: false },
   ],
   OpeningHoursEntry: [
-    { path: 'dayOfWeek', required: true },
-    { path: 'openTime', required: true },
-    { path: 'closeTime', required: true },
+    { path: 'day', required: false },
+    { path: 'closed', required: false },
+    { path: 'opensAt', required: false },
+    { path: 'closesAt', required: false },
+    { path: 'dayOfWeek', required: false },
+    { path: 'openTime', required: false },
+    { path: 'closeTime', required: false },
   ],
   ServiceDetail: [
     { path: 'title', required: true },
@@ -95,9 +103,16 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
     { path: 'requirements', required: false },
     { path: 'costs', required: false },
     { path: 'href', required: false },
+    { path: 'category', required: false },
+    { path: 'department', required: false },
+    { path: 'processingNote', required: false },
+    { path: 'keywords', required: false },
+    { path: 'icon', required: false },
   ],
   CouncilBody: [
     { path: 'name', required: true },
+    { path: 'description', required: false },
+    { path: 'members', required: false },
     { path: 'role', required: false },
     { path: 'party', required: false },
     { path: 'imageUrl', required: false },
@@ -105,13 +120,16 @@ export const CANONICAL_TARGET_FIELDS: Readonly<
   WasteCollectionEntry: [
     { path: 'district', required: true },
     { path: 'wasteType', required: true },
-    { path: 'collectionDate', required: true },
+    { path: 'date', required: false },
+    { path: 'collectionDate', required: false },
   ],
   Department: [
     { path: 'name', required: true },
     { path: 'description', required: false },
     { path: 'contact', required: false },
     { path: 'address', required: false },
+    { path: 'href', required: false },
+    { path: 'contacts', required: false },
   ],
   /**
    * A located thing for the map: a point (`latitude`/`longitude`) or any

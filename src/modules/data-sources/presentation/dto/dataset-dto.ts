@@ -1,15 +1,17 @@
 import { stringifyJson } from '@lib/utils';
 
 import type {
+  DataSourceKind,
+  DataSourceStatus,
+} from '../../application/contracts/data-source-views';
+import type {
   CanonicalKind,
   DatasetMappingView,
   DatasetView,
-  DataSourceKind,
-  DataSourceStatus,
   DiscoveredFieldView,
   DiscoveryView,
   MappingPreviewView,
-} from '../../application/contracts/data-source-views';
+} from '../../application/contracts/dataset-views';
 
 export interface DatasetDto {
   readonly id: string;
