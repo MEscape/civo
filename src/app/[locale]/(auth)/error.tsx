@@ -1,15 +1,10 @@
 'use client';
 
-import { RouteErrorPanel } from '@components/shared/route-error-panel';
-
 import { useTranslations } from '@i18n/client';
 
-export default function AuthError({
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+import { RouteErrorPanel } from '@/components/page-states/route-error-panel';
+
+export default function AuthError({ retry }: { error: unknown; retry: () => void }) {
   const t = useTranslations('auth');
 
   return (
@@ -17,7 +12,7 @@ export default function AuthError({
       title={t('pageError.title')}
       description={t('pageError.description')}
       retryLabel={t('pageError.retry')}
-      onRetry={reset}
+      onRetry={retry}
     />
   );
 }

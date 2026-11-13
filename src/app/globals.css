@@ -75,11 +75,24 @@
   --civo-radius: 6px;
   --civo-section-spacing: 4rem;
 
+  /* Layout widths. `measure` keeps body text near 70 characters; `narrow` is
+     for compact data lists (hours, schedules). */
+  --civo-measure: 40rem;
+  --civo-width-narrow: 36rem;
+
+  /* Motion: short and calm. Reduced motion is handled globally below. */
+  --civo-duration-quick: 150ms;
+  --civo-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
   /* Height of the internal app header, and of the bar under it that names a
        website and holds its sections. The builder sizes itself to the space
        below both via `h-website-body`. */
   --civo-app-header-height: 3.5rem;
   --civo-website-bar-height: 2.75rem;
+
+  /* The columns of a day in the weekly hours editor: the day, its bar, its buttons.
+     The header above the rows uses the same ones so they line up. */
+  --civo-week-row-columns: 7rem minmax(0, 1fr) 13rem;
 
   --background: var(--civo-color-background);
   --foreground: var(--civo-color-text);
@@ -136,6 +149,13 @@
    * a themable token, so it is declared here with the chart palette (see above).
    */
   --civo-color-today: color-mix(in oklab, var(--civo-color-accent) 16%, var(--civo-color-surface));
+
+  /*
+   * Focus ring colour. Built from the -copy variant (4.5:1 on the page by
+   * construction), not the raw accent, which a brand palette can push to
+   * ~1.5:1. Derived from a themable token, so it lives in this block.
+   */
+  --civo-color-focus: var(--civo-color-accent-copy);
 }
 
 /*
@@ -152,6 +172,8 @@
   --color-primary: var(--civo-color-primary);
   --color-primary-foreground: var(--civo-color-primary-foreground);
   --color-primary-copy: var(--civo-color-primary-copy);
+  /* Only on primary-foreground fills: the inverse pair preserves the theme's guaranteed contrast. */
+  --color-inverse-action-copy: var(--civo-color-primary);
   --color-secondary: var(--civo-color-secondary);
   --color-secondary-foreground: var(--civo-color-secondary-foreground);
   --color-secondary-copy: var(--civo-color-secondary-copy);
@@ -171,6 +193,9 @@
   --color-copy-muted: var(--civo-color-text-muted);
   --color-border: var(--civo-color-border);
   --color-border-strong: var(--civo-color-border-strong);
+
+  /* Focus ring colour for `ring-focus`. A dark band sets --civo-focus-ring. */
+  --color-focus: var(--civo-focus-ring, var(--civo-color-focus));
 
   --color-success: var(--civo-color-success);
   --color-success-subtle: var(--civo-color-success-subtle);
@@ -195,13 +220,22 @@
   --color-chart-5: var(--civo-chart-5);
   --color-chart-6: var(--civo-chart-6);
 
-  --spacing-section: var(--civo-section-spacing);
+  /* Section spacing follows the theme's scale times an optional density
+     multiplier that a wrapper sets (see `density-tight` / `density-airy`). */
+  --spacing-section: calc(var(--civo-section-spacing) * var(--civo-section-density, 1));
   --spacing-app-header: var(--civo-app-header-height);
   --spacing-website-bar: var(--civo-website-bar-height);
+  --spacing-dialog-max: 90dvh;
   /* Where a panel that follows the scroll stops: under both bars, with a gap. */
   --spacing-sticky-panel: calc(
     var(--civo-app-header-height) + var(--civo-website-bar-height) + 1.5rem
   );
+
+  /* How much room a box has before it drops its words, as container-query sizes
+     (`@max-entry-narrow:hidden`): a column's room is the width of its own box, not of the screen. */
+  --container-entry-narrow: 6rem;
+  --container-entry-tight: 9rem;
+  --container-bar-label: 7.5rem;
 
   --radius-token: var(--civo-radius);
   --radius-token-sm: calc(var(--civo-radius) - 2px);
@@ -220,6 +254,23 @@
 @utility h-website-body {
   height: calc(100vh - var(--civo-app-header-height) - var(--civo-website-bar-height));
   height: calc(100dvh - var(--civo-app-header-height) - var(--civo-website-bar-height));
+}
+
+/* Hover/press feedback on transform-free properties plus `translate`.
+   Duration and easing come from tokens. */
+@utility transition-interactive {
+  transition-property: color, background-color, border-color, opacity, translate;
+  transition-duration: var(--civo-duration-quick);
+  transition-timing-function: var(--civo-ease-standard);
+}
+
+/* Page rhythm: a wrapper sets the multiplier and every Section inside follows. */
+@utility density-tight {
+  --civo-section-density: 0.6;
+}
+
+@utility density-airy {
+  --civo-section-density: 1.25;
 }
 
 /*
@@ -286,9 +337,10 @@ h4 {
   font-family: var(--civo-font-heading);
 }
 
-/* Visible focus states everywhere — accessibility is not optional. */
+/* Visible focus states everywhere — accessibility is not optional.
+   Dark bands set --civo-focus-ring to their foreground colour. */
 :focus-visible {
-  outline: 2px solid var(--civo-color-accent);
+  outline: 2px solid var(--civo-focus-ring, var(--civo-color-focus));
   outline-offset: 2px;
 }
 

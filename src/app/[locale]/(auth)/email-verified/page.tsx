@@ -10,13 +10,13 @@ import {
   parseEmailVerifiedPageParams,
 } from '@modules/auth';
 
+import { AuthFormSkeleton } from '@components/skeletons/auth-form-skeleton';
+
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
 
 import { buildPrivateMetadata } from '@lib/seo';
-
-import { AuthFormSkeleton } from '@/app/_lib/auth-form-skeleton';
 
 interface RouteProps {
   readonly params: Promise<{ locale: string }>;
@@ -31,9 +31,9 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
 }
 
 async function EmailVerifiedContent({ searchParams }: Pick<RouteProps, 'searchParams'>) {
-  const { hasFailed } = parseEmailVerifiedPageParams(await searchParams);
+  const { hasFailed, invitationToken } = parseEmailVerifiedPageParams(await searchParams);
 
-  return <EmailVerificationResult hasFailed={hasFailed} />;
+  return <EmailVerificationResult hasFailed={hasFailed} invitationToken={invitationToken} />;
 }
 
 export default function EmailVerifiedPage({ searchParams }: RouteProps) {

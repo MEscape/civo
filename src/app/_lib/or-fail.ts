@@ -37,27 +37,3 @@ export async function orFail<T, E extends AppError>(
     unexpected: (cause) => escalate(cause),
   });
 }
-
-/**
- * For a block of a page that may simply be absent: the value, or `null` when the
- * actor may not see it or it is not there. Anything unexpected still reaches
- * the route's error boundary, so a real failure is never turned into an empty block.
- */
-export async function orNull<T, E extends AppError>(
-  pending: AppResult<T, E> | PromiseLike<AppResult<T, E>>,
-): Promise<T | null> {
-  const result = await pending;
-  if (result.isOk()) {
-    return result.value;
-  }
-  return matchAppError(result.error, {
-    validation: () => null,
-    not_found: () => null,
-    forbidden: () => null,
-    conflict: () => null,
-    rate_limited: (cause) => escalate(cause),
-    unauthorized: () => null,
-    infrastructure: (cause) => escalate(cause),
-    unexpected: (cause) => escalate(cause),
-  });
-}

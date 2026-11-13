@@ -1,4 +1,4 @@
-import { AuthFormSkeleton } from '@/app/_lib/auth-form-skeleton';
+import { AuthFormSkeleton } from '@components/skeletons/auth-form-skeleton';
 
 export default function AuthLoading() {
   return <AuthFormSkeleton />;

@@ -7,8 +7,7 @@ import { notFound } from 'next/navigation';
 import { UsersAdministration, isAuthEnabled } from '@modules/auth';
 import { websiteRoutes } from '@modules/website';
 
-import { AdminContainer, PageHeading, Section } from '@components/layout/layout-primitives';
-import { PageSkeleton } from '@components/shared/page-skeleton';
+import { UsersPageSkeleton } from '@components/skeletons/users-page-skeleton';
 
 import { requireLocale } from '@i18n';
 
@@ -30,7 +29,6 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
 async function UsersContent({ params, searchParams }: RouteProps) {
   const { locale: rawLocale, websiteId } = await params;
   const locale = requireLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'auth' });
 
   // Users live in the authentication store, which only exists while sign-in does.
   if (!isAuthEnabled) {
@@ -38,22 +36,18 @@ async function UsersContent({ params, searchParams }: RouteProps) {
   }
 
   return (
-    <AdminContainer>
-      <Section className="space-y-8 py-8">
-        <PageHeading title={t('users.title')} description={t('users.description')} />
-        <UsersAdministration
-          locale={locale}
-          pathname={websiteRoutes.users(websiteId)}
-          searchParams={await searchParams}
-        />
-      </Section>
-    </AdminContainer>
+    <UsersAdministration
+      locale={locale}
+      pathname={websiteRoutes.users(websiteId)}
+      scope={{ kind: 'website', websiteId, globalUsersHref: websiteRoutes.platformUsers() }}
+      searchParams={await searchParams}
+    />
   );
 }
 
 export default function UsersPage(props: RouteProps) {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<UsersPageSkeleton />}>
       <UsersContent {...props} />
     </Suspense>
   );

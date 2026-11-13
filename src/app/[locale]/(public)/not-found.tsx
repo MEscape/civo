@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { NotFoundPanel } from '@components/shared/not-found-panel';
+import { NotFoundPanel } from '@components/page-states/not-found-panel';
 
 import { useTranslations } from '@i18n/client';
 

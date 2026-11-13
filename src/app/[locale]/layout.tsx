@@ -56,6 +56,7 @@ export default async function RootLayout({
       className={`${fontVariables} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* No no-script notice here: public pages work without JavaScript; the auth and admin layouts carry it. */}
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>
     </html>

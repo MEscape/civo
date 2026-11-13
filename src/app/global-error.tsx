@@ -1,6 +1,6 @@
 'use client';
 
-import { RouteErrorPanel } from '@components/shared/route-error-panel';
+import { RouteErrorPanel } from '@components/page-states/route-error-panel';
 
 import { I18N_CONFIG } from '@i18n';
 
@@ -13,12 +13,7 @@ import './globals.css';
  * so neither the locale nor the message provider exists here. It speaks the
  * default locale, whose catalog it reads directly.
  */
-export default function GlobalError({
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function GlobalError({ retry }: { error: unknown; retry: () => void }) {
   const text = messages.routeError;
 
   return (
@@ -28,7 +23,7 @@ export default function GlobalError({
           title={text.title}
           description={text.description}
           retryLabel={text.retry}
-          onRetry={reset}
+          onRetry={retry}
         />
       </body>
     </html>

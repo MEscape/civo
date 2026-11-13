@@ -2,14 +2,11 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
-import { notFound } from 'next/navigation';
+import { AuditAdministration } from '@modules/audit';
+import { websiteRoutes } from '@modules/website';
 
-import { AuditLog, parseAuditParams } from '@modules/audit';
-import { websiteQueries, websiteRoutes } from '@modules/website';
-
-import { AdminContainer, PageHeading, Section } from '@components/layout/layout-primitives';
-import { PageSkeleton } from '@components/shared/page-skeleton';
-import { RefreshOnFocus } from '@components/shared/refresh-on-focus';
+import { AdminPage, AdminPageHeader } from '@components/layout/admin-page';
+import { AuditPageSkeleton } from '@components/skeletons/audit-page-skeleton';
 
 import { requireLocale } from '@i18n';
 
@@ -17,10 +14,7 @@ import { getTranslations } from '@i18n/server';
 
 import { buildPrivateMetadata } from '@lib/seo';
 
-import { loadAuditEventLabels } from '@/app/_lib/audit-event-labels';
-import { loadAuditSubjects } from '@/app/_lib/audit-subjects';
-import { loadMemberNames } from '@/app/_lib/member-names';
-import { orFail } from '@/app/_lib/or-fail';
+import { auditSubjectResolver } from '@/app/_lib/audit-subjects';
 import { getWebsiteAccess } from '@/app/_lib/website-access';
 
 interface RouteProps {
@@ -37,54 +31,28 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
 async function AuditContent({ params, searchParams }: RouteProps) {
   const { locale: rawLocale, websiteId } = await params;
   const locale = requireLocale(rawLocale);
-  const access = await getWebsiteAccess();
-  // Nobody who may not read the trail learns that this page exists.
-  if (!access.maySection('audit')) {
-    notFound();
-  }
-  const { filter, page } = parseAuditParams(await searchParams);
-  const [t, trail] = await Promise.all([
+  const [t, access] = await Promise.all([
     getTranslations({ locale, namespace: 'audit' }),
-    orFail(websiteQueries.getAuditTrail.execute(websiteId, filter, page)),
+    getWebsiteAccess(),
   ]);
-
-  const shown = trail.entries.items;
-  const named = shown.flatMap((entry) => {
-    const subject = entry.details['subjectId'];
-    return [entry.actorId, typeof subject === 'string' ? subject : null];
-  });
-  // Two lookups, each within what one lookup names: the page's people, and everyone the filter offers.
-  // The things the shown entries name are looked up once per kind, for this page only.
-  const [pageNames, memberNames, eventLabels, subjects] = await Promise.all([
-    loadMemberNames(named),
-    loadMemberNames(trail.memberIds),
-    loadAuditEventLabels(locale, [...trail.types, ...shown]),
-    loadAuditSubjects(websiteId, shown),
-  ]);
-  const names = pageNames === null ? null : { ...memberNames, ...pageNames };
 
   return (
-    <AdminContainer>
-      <Section className="space-y-6 py-8">
-        <RefreshOnFocus />
-        <PageHeading title={t('page.title')} description={t('page.description')} />
-        <AuditLog
-          locale={locale}
-          pathname={websiteRoutes.audit(websiteId)}
-          filter={filter}
-          trail={trail}
-          eventLabels={eventLabels}
-          names={names}
-          subjects={subjects}
-        />
-      </Section>
-    </AdminContainer>
+    <AdminPage>
+      <AdminPageHeader title={t('page.title')} description={t('page.description')} />
+      <AuditAdministration
+        locale={locale}
+        pathname={websiteRoutes.audit(websiteId)}
+        scope={{ kind: 'website', websiteId }}
+        searchParams={await searchParams}
+        resolveSubjects={auditSubjectResolver(websiteId, access)}
+      />
+    </AdminPage>
   );
 }
 
 export default function AuditPage(props: RouteProps) {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<AuditPageSkeleton />}>
       <AuditContent {...props} />
     </Suspense>
   );

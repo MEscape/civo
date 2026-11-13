@@ -14,14 +14,14 @@ import {
   parseAcceptInvitationPageParams,
 } from '@modules/auth';
 
+import { AuthFormSkeleton } from '@components/skeletons/auth-form-skeleton';
+
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
 
 import { buildPrivateMetadata } from '@lib/seo';
 
-import { AuthFormSkeleton } from '@/app/_lib/auth-form-skeleton';
-import { loadInvitedOrganisation } from '@/app/_lib/invited-organisation';
 import { orFail } from '@/app/_lib/or-fail';
 
 interface RouteProps {
@@ -51,11 +51,14 @@ async function AcceptInvitationContent({ searchParams }: Pick<RouteProps, 'searc
   return (
     <AcceptInvitationForm
       token={token}
+      requiresExistingAccount={invitation.requiresExistingAccount}
+      canAcceptExistingAccount={invitation.canAcceptExistingAccount}
       invitation={{
         email: invitation.email,
         role: invitation.role,
-        organisation: await loadInvitedOrganisation(invitation.tenantId),
+        organisation: invitation.organisation,
         expiresAt: invitation.expiresAt.toISOString(),
+        invitedBy: invitation.invitedBy,
       }}
     />
   );

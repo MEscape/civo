@@ -1,15 +1,10 @@
 'use client';
 
-import { RouteErrorPanel } from '@components/shared/route-error-panel';
+import { RouteErrorPanel } from '@components/page-states/route-error-panel';
 
 import { useTranslations } from '@i18n/client';
 
-export default function PublicError({
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function PublicError({ retry }: { error: unknown; retry: () => void }) {
   const t = useTranslations('app');
 
   return (
@@ -17,7 +12,7 @@ export default function PublicError({
       title={t('routeError.title')}
       description={t('routeError.description')}
       retryLabel={t('routeError.retry')}
-      onRetry={reset}
+      onRetry={retry}
     />
   );
 }

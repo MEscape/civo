@@ -11,13 +11,13 @@ import {
   parseResetPasswordPageParams,
 } from '@modules/auth';
 
+import { AuthFormSkeleton } from '@components/skeletons/auth-form-skeleton';
+
 import { requireLocale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
 
 import { buildPrivateMetadata } from '@lib/seo';
-
-import { AuthFormSkeleton } from '@/app/_lib/auth-form-skeleton';
 
 interface RouteProps {
   readonly params: Promise<{ locale: string }>;
