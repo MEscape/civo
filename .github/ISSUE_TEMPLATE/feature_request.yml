@@ -1,38 +1,47 @@
-name: Feature Request
-description: Suggest an idea for Civo
+name: Feature
+description: Suggest a new feature or product capability for Civo
 title: "[Feature]: "
-labels: ["enhancement", "triage"]
+labels: ["type:feature", "status:triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for sharing your ideas to improve the Civo project!
+        Keep this focused on one feature that can be built and tested within a few days.
   - type: textarea
     id: problem
     attributes:
-      label: Is your feature request related to a problem?
-      description: A clear and concise description of what the problem is.
-      placeholder: I'm always frustrated when [...]
+      label: Problem / context
+      description: What problem does this solve, and who is affected?
+      placeholder: Users currently cannot ...
     validations:
       required: true
   - type: textarea
     id: solution
     attributes:
-      label: Describe the solution you'd like
-      description: A clear and concise description of what you want to happen.
+      label: Proposed solution
+      description: What should happen? Focus on behavior, not implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true for this feature to be considered done?
+      value: |
+        - [ ] The expected behavior works
     validations:
       required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: Describe alternatives you've considered
-      description: A clear and concise description of any alternative solutions or features you've considered.
+      label: Alternatives considered
+      description: "Optional: note any alternatives worth considering."
     validations:
       required: false
   - type: textarea
     id: additional
     attributes:
-      label: Additional Context
-      description: Add any other context or screenshots about the feature request here.
+      label: Additional context
+      description: "Optional: add relevant rules, dependencies, sketches, or links."
     validations:
       required: false

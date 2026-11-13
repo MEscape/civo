@@ -1,0 +1,33 @@
+name: Epic
+description: A larger goal tracked through related sub-issues
+title: "[Epic]: "
+labels: ["type:epic", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use an epic to group related issues. Track the actual work in sub-issues linked via "Create sub-issue".
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome should this epic deliver?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included, and what is out of scope?
+    validations:
+      required: true
+  - type: textarea
+    id: completion
+    attributes:
+      label: Completion criteria
+      description: How will we know the overall goal has been achieved?
+      value: |
+        - [ ] The goal is achieved
+        - [ ] All required sub-issues are completed
+    validations:
+      required: true

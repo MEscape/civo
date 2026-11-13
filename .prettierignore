@@ -42,6 +42,9 @@ next-env.d.ts
 /coverage/
 /.vitest/
 license-report.json
+# Preserve captured HTTP bytes and tool-owned verification reports.
+/data/fixtures/
+/docs/würzburg/verification/
 
 # ------------------------------------------------------------------------------
 # Database, Prisma & Auto-Generated Contracts
@@ -93,3 +96,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# Coding-assistant tool folders (skills ship their own files)
+/.agents/
+/.claude/

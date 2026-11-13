@@ -1,7 +1,14 @@
 # yaml-language-server: $schema=https://json.schemastore.org/pre-commit-config.json
 # ==============================================================================
 # PRE-COMMIT CONFIGURATION
-# Run `pre-commit install` to set up git hook scripts.
+# Install pre-commit:
+#   pip install pre-commit
+#
+# Set up Git hooks:
+#   pre-commit install
+#
+# Run all hooks manually:
+#   pre-commit run --all-files
 # ==============================================================================
 
 default_stages: [pre-commit]
@@ -46,4 +53,11 @@ repos:
         name: Lint & Auto-Fix (npm run lint:fix)
         entry: npm run lint:fix
         language: system
+        pass_filenames: false
+
+      - id: ai-rules
+        name: Regenerate AI_RULES.md (npm run ai-rules)
+        entry: npm run ai-rules
+        language: system
+        files: ^docs/rules/
         pass_filenames: false
