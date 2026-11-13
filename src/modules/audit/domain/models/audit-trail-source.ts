@@ -1,3 +1,4 @@
+import { isAuditDetailValue } from './audit-entry';
 import { toActorId, toWebsiteId } from './ids';
 
 import type {
@@ -33,23 +34,17 @@ export interface AuditTrailSource<T extends string> {
   readonly isWebsite?: (tenantId: string) => boolean;
 }
 
+interface EventRecord<T extends string> {
+  readonly type: T;
+  readonly websiteId?: unknown;
+  readonly tenantId?: unknown;
+  readonly actorId?: unknown;
+  readonly errorCode?: unknown;
+  readonly [key: string]: unknown;
+}
+
 /** Fields that place an event (where, who), as opposed to the ones that describe it. */
 const PLACEMENT_FIELDS: ReadonlySet<string> = new Set(['type', 'tenantId', 'websiteId', 'actorId']);
-
-function toDetailValue(value: unknown): AuditDetailValue | undefined {
-  if (
-    value === null ||
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
-  ) {
-    return value;
-  }
-  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
-    return value;
-  }
-  return undefined;
-}
 
 function actorOf(actorId: unknown, kind: AuditActorKind): AuditActor {
   if (typeof actorId === 'string') {
@@ -59,6 +54,16 @@ function actorOf(actorId: unknown, kind: AuditActorKind): AuditActor {
   return kind === 'member' ? { kind: 'system' } : { kind };
 }
 
+/** The module's level, raised to `warn` when the event names an error: the same rule as its log line (`auditLevelOf`). */
+function severityOf<T extends string>(
+  levels: Readonly<Record<T, AuditSeverity>>,
+  event: EventRecord<T>,
+): AuditSeverity {
+  return typeof event.errorCode === 'string' && event.errorCode !== ''
+    ? 'warn'
+    : levels[event.type];
+}
+
 /**
  * The trail entry for one module event, or `null` when the trail does not
  * keep it: the policy leaves it out, or it belongs to no website. A tenant is
@@ -66,15 +71,6 @@ function actorOf(actorId: unknown, kind: AuditActorKind): AuditActor {
  * Events are free of content and personal data by their own contract; this
  * keeps only plain values, so nothing structured slips into the trail.
  */
-/** The module's level, raised to `warn` when the event names an error: the same rule as its log line (`auditLevelOf`). */
-function severityOf<T extends string>(
-  levels: Readonly<Record<T, AuditSeverity>>,
-  event: { readonly type: T },
-): AuditSeverity {
-  const { errorCode } = event as { readonly errorCode?: unknown };
-  return typeof errorCode === 'string' && errorCode !== '' ? 'warn' : levels[event.type];
-}
-
 export function toAuditEntry<T extends string>(
   event: { readonly type: T },
   source: AuditTrailSource<T>,
@@ -84,17 +80,17 @@ export function toAuditEntry<T extends string>(
   if (kind === false) {
     return null;
   }
-  const fields = new Map<string, unknown>(Object.entries(event));
-  const website = fields.get('websiteId') ?? fields.get('tenantId');
+
+  const record: EventRecord<T> = event;
+  const website = record.websiteId ?? record.tenantId;
   if (typeof website !== 'string' || !(source.isWebsite?.(website) ?? true)) {
     return null;
   }
 
   const details: Record<string, AuditDetailValue> = {};
-  for (const [name, value] of fields) {
-    const detail = PLACEMENT_FIELDS.has(name) ? undefined : toDetailValue(value);
-    if (detail !== undefined) {
-      details[name] = detail;
+  for (const [name, value] of Object.entries(record)) {
+    if (!PLACEMENT_FIELDS.has(name) && isAuditDetailValue(value)) {
+      details[name] = value;
     }
   }
 
@@ -102,8 +98,8 @@ export function toAuditEntry<T extends string>(
     websiteId: toWebsiteId(website),
     source: source.source,
     type: event.type,
-    severity: severityOf(source.levels, event),
-    actor: actorOf(fields.get('actorId'), kind),
+    severity: severityOf(source.levels, record),
+    actor: actorOf(record.actorId, kind),
     details,
     occurredAt,
   };

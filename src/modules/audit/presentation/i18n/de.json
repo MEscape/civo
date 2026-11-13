@@ -11,10 +11,13 @@
       "release": "Releases",
       "booking": "Buchungen",
       "dataSources": "Datenquellen",
-      "auth": "Benutzer & Zugriff"
+      "auth": "Benutzer & Zugriff",
+      "media": "Medien",
+      "map": "Karten"
     },
     "filters": {
       "membersTruncated": "Im Filter wird nur ein Teil der Personen aus diesem Protokoll angeboten.",
+      "typesTruncated": "Im Filter wird nur ein Teil der Ereignisarten aus diesem Protokoll angeboten.",
       "label": "Protokoll filtern",
       "areas": "Bereiche",
       "areaCount": "{label} ({count})",
@@ -111,7 +114,22 @@
         "count": "Anzahl",
         "reason": "Grund",
         "permission": "Berechtigung",
-        "action": "Aktion"
+        "action": "Aktion",
+        "mapId": "Karte",
+        "roles": "Rollen",
+        "previousRoles": "Bisherige Rollen",
+        "removedRoles": "Entfernte Rollen",
+        "role": "Rolle",
+        "assetId": "Datei",
+        "byteSize": "Größe",
+        "visibility": "Sichtbarkeit",
+        "how": "Wie",
+        "leftOpen": "Betroffene Buchungen",
+        "sections": "Geändert",
+        "parts": "Geändert",
+        "memberId": "Teammitglied",
+        "scope": "Gilt für",
+        "cancelled": "Stornierte Buchungen"
       },
       "values": {
         "outcome": {
@@ -129,7 +147,43 @@
         },
         "reason": {
           "tenantMismatch": "Andere Organisation",
-          "permissionMissing": "Fehlende Berechtigung"
+          "permissionMissing": "Fehlende Berechtigung",
+          "size": "Datei zu groß",
+          "contentType": "Dateityp nicht erlaubt",
+          "signature": "Inhalt passt nicht zum Dateityp"
+        },
+        "role": {
+          "admin": "Administrator",
+          "editor": "Redakteur",
+          "contributor": "Autor",
+          "viewer": "Leser",
+          "employee": "Mitarbeiter",
+          "platformAdmin": "Plattform-Administration"
+        },
+        "how": {
+          "claim": "Selbst übernommen",
+          "assign": "Von einer Leitung zugewiesen",
+          "copy": "Kopiert",
+          "link": "Verknüpft"
+        },
+        "visibility": {
+          "public": "Öffentlich",
+          "private": "Privat"
+        },
+        "scope": {
+          "location": "Dieser Standort",
+          "all": "Alle Standorte"
+        },
+        "section": {
+          "details": "Angaben",
+          "hours": "Öffnungszeiten",
+          "status": "Status",
+          "availability": "Verfügbarkeit",
+          "shared": "Gemeinsame Einstellungen",
+          "local": "Einstellungen dieses Standorts",
+          "setup": "Einrichtung",
+          "absences": "Abwesenheiten",
+          "qualifications": "Qualifikationen"
         }
       },
       "changed": {
@@ -159,6 +213,7 @@
     "errors": {
       "validation": "Das Protokoll konnte mit diesen Angaben nicht gelesen werden.",
       "infrastructure": "Das Protokoll ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.",
+      "forbidden": "Sie dürfen dieses Protokoll nicht lesen.",
       "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
     },
     "validation": {
@@ -167,6 +222,15 @@
     "platform": {
       "title": "Protokoll",
       "description": "Alles, was auf allen Websites festgehalten wurde: was Mitglieder geändert, was Besucher gebucht und wem der Zugriff verweigert wurde. Mit dem Filter auf eine Website eingrenzen."
+    },
+    "across": {
+      "title": "Protokoll Ihrer Websites",
+      "description": "Alles, was auf den Websites festgehalten wurde, deren Protokoll Sie lesen dürfen. Mit dem Filter auf eine Website eingrenzen.",
+      "truncated": "Sie dürfen das Protokoll von mehr Websites lesen, als diese Seite abdeckt. Einträge der übrigen werden hier nicht gezeigt; öffnen Sie das Protokoll der jeweiligen Website, um sie zu lesen."
+    },
+    "columns": {
+      "event": "Ereignis",
+      "area": "Bereich"
     }
   }
 }

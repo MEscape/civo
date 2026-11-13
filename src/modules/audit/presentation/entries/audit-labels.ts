@@ -1,8 +1,5 @@
-import type { getTranslations } from '@i18n/server';
-
 import type { AuditEntryView, AuditSource } from '../../application/contracts/audit-views';
-
-type Translator = Awaited<ReturnType<typeof getTranslations<'audit'>>>;
+import type { AuditTranslator } from '../translation/translator';
 
 /** The catalog key of each area's name; module names are not valid message keys. */
 export const SOURCE_MESSAGE_KEYS = {
@@ -12,6 +9,8 @@ export const SOURCE_MESSAGE_KEYS = {
   booking: 'sources.booking',
   'data-sources': 'sources.dataSources',
   auth: 'sources.auth',
+  media: 'sources.media',
+  map: 'sources.map',
 } as const satisfies Record<AuditSource, `sources.${string}`>;
 
 /**
@@ -19,7 +18,7 @@ export const SOURCE_MESSAGE_KEYS = {
  * a former member, and without sign-in (no accounts to name) just "member".
  */
 export function actorLabel(
-  t: Translator,
+  t: AuditTranslator,
   entry: Pick<AuditEntryView, 'actorKind' | 'actorId'>,
   names: Readonly<Record<string, string>> | null,
 ): string {

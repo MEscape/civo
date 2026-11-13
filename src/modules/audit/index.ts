@@ -1,14 +1,30 @@
 /**
  * Server-side public API of the audit module: the durable trail every module
- * feeds through `withAuditTrail` in its composition root, and the queries the
- * website module reads it with after authorizing the reader. Browser code
+ * feeds through `withAuditTrail` in its composition root, and the queries that read it. Every
+ * query authorizes the reader itself, through the `AuditAccess` port the application's
+ * composition boundary supplies. Browser code
  * imports from `./client` instead.
  */
 
-export { auditQueries, startAuditRetention, withAuditTrail } from './composition';
+export {
+  auditQueries,
+  createAuditQueries,
+  getAuditQueries,
+  setAuditAccessAdapter,
+  startAuditRetention,
+  withAuditTrail,
+} from './composition';
+export type { MemberNamesResolver } from './composition';
 
+export { toWebsiteId } from './domain/models/ids';
+export { AuditAdministration } from './presentation/components/audit-administration';
+export type { AuditAdministrationProps } from './presentation/components/audit-administration';
+export type {
+  AuditScope,
+  ResolveAuditSubjects,
+} from './presentation/loaders/load-audit-administration';
 export { AuditLog } from './presentation/components/audit-log';
-export { AuditDigestCard } from './presentation/components/audit-digest-card';
+export { AuditOverview } from './presentation/components/audit-overview';
 export { parseAuditParams } from './presentation/schemas/audit-filter-schema';
 
 export { default as enAudit } from './presentation/i18n/en.json';
@@ -23,6 +39,9 @@ export {
   subjectIdsOf,
 } from './application/contracts/audit-views';
 export type {
+  AuditAccess,
+  AuditAccessError,
+  AuditAcrossWebsitesView,
   AuditActorFilter,
   AuditActorKind,
   AuditDayView,
@@ -33,6 +52,7 @@ export type {
   AuditFilter,
   AuditPageOptions,
   AuditPeriod,
+  AuditReach,
   AuditSeverity,
   AuditSource,
   AuditSubjectIds,
@@ -43,4 +63,5 @@ export type {
   AuditTrailSource,
   AuditTrailView,
   AuditTypeCountView,
+  ReadableWebsites,
 } from './application/contracts/audit-views';

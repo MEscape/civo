@@ -16,6 +16,7 @@ export type ValidKeys = NestedKeyOf<MessageCatalog['audit']>;
 /** Codes -> translation keys. `satisfies` makes a new code fail to compile until it has a message. */
 export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
+  [ERRORS.accessDenied]: fieldPath('errors', 'forbidden'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
   [VALIDATION.idInvalid]: fieldPath('validation', 'idInvalid'),
 } as const satisfies Record<AuditCode, ValidKeys>;
@@ -28,7 +29,11 @@ function isAuditCode(code: string): code is AuditCode {
   return Object.hasOwn(MESSAGE_KEY_BY_CODE, code);
 }
 
-/** Codes from other modules are unknown here and get the generic message. */
+/**
+ * Codes from other modules are unknown here and get the generic message.
+ *
+ * @keep every module maps its error codes to message keys with this name (__tests__/architecture/messages.test.ts)
+ */
 export function messageKeyForCode(code: string): MessageKey {
   return isAuditCode(code) ? MESSAGE_KEY_BY_CODE[code] : GENERIC_ERROR_MESSAGE_KEY;
 }

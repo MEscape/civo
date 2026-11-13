@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AuditSubjects } from '@modules/audit';
 import { subjectIdsOf } from '@modules/audit/domain/models/audit-subject';
-import { factsOf, headlineOf } from '@modules/audit/presentation/components/audit-details';
+import { factsOf, headlineOf } from '@modules/audit/presentation/entries/audit-details';
 
 describe('the things audit entries name', () => {
   it('collects each id once per kind, from every field that names one, and nothing else', () => {
@@ -71,7 +71,13 @@ describe('the details of an audit entry', () => {
       }),
       expect.objectContaining({ kind: 'code', value: 'data_source.unreachable' }),
       expect.objectContaining({ kind: 'number', value: 13 }),
-      expect.objectContaining({ kind: 'changed', names: ['name', 'description'] }),
+      expect.objectContaining({
+        kind: 'list',
+        items: [
+          { text: 'name', key: 'details.changed.name' },
+          { text: 'description', key: 'details.changed.description' },
+        ],
+      }),
       expect.objectContaining({
         kind: 'text',
         value: 'Event',
@@ -86,6 +92,62 @@ describe('the details of an audit entry', () => {
     expect(facts).toEqual([
       expect.objectContaining({ field: 'outcome', tone: 'success' }),
       expect.objectContaining({ field: 'somethingNew', label: null, kind: 'text', value: 'x' }),
+    ]);
+  });
+});
+
+describe('the vocabulary of role and booking details', () => {
+  it('names the roles of a role change instead of showing raw codes', () => {
+    const facts = factsOf(
+      { roles: ['admin', 'employee'], previousRoles: ['viewer', 'futureRole'], subjectId: 'm-1' },
+      {},
+    );
+
+    expect(facts).toEqual([
+      expect.objectContaining({
+        field: 'roles',
+        label: 'details.fields.roles',
+        kind: 'list',
+        items: [
+          { text: 'admin', key: 'details.values.role.admin' },
+          { text: 'employee', key: 'details.values.role.employee' },
+        ],
+      }),
+      expect.objectContaining({
+        field: 'previousRoles',
+        label: 'details.fields.previousRoles',
+        items: [
+          { text: 'viewer', key: 'details.values.role.viewer' },
+          { text: 'futureRole', key: null },
+        ],
+      }),
+      expect.objectContaining({ field: 'subjectId', kind: 'subject', subject: 'member' }),
+    ]);
+  });
+
+  it('words single codes, sizes and the maps and team members an entry names', () => {
+    const facts = factsOf(
+      {
+        role: 'platform_admin',
+        visibility: 'private',
+        byteSize: 2048,
+        mapId: 'map-1',
+        memberId: 'm-2',
+      },
+      {},
+    );
+
+    expect(facts).toEqual([
+      expect.objectContaining({ kind: 'value', value: 'details.values.role.platformAdmin' }),
+      expect.objectContaining({ kind: 'value', value: 'details.values.visibility.private' }),
+      expect.objectContaining({ kind: 'bytes', value: 2048 }),
+      expect.objectContaining({
+        field: 'mapId',
+        kind: 'subject',
+        subject: 'map',
+        label: 'details.fields.mapId',
+      }),
+      expect.objectContaining({ field: 'memberId', kind: 'subject', subject: 'member' }),
     ]);
   });
 });

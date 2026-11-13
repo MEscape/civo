@@ -1,3 +1,5 @@
+import { MS_PER_DAY } from '@lib/utils';
+
 import type { AuditActorKind, AuditSource } from './audit-entry';
 
 /** How far back the trail is read. Relative to now, so a shared address keeps meaning "the last week". */
@@ -6,13 +8,11 @@ export type AuditPeriod = (typeof AUDIT_PERIODS)[number];
 
 export const DEFAULT_AUDIT_PERIOD: AuditPeriod = '30d';
 
-const HOUR_MS = 3_600_000;
-
-const PERIOD_HOURS = {
-  '24h': 24,
-  '7d': 168,
-  '30d': 720,
-  '90d': 2160,
+const PERIOD_DAYS = {
+  '24h': 1,
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
   all: null,
 } as const satisfies Record<AuditPeriod, number | null>;
 
@@ -43,6 +43,6 @@ export const EMPTY_AUDIT_FILTER: AuditFilter = {
 
 /** The first instant the period covers, or `null` for the whole trail. */
 export function sinceOf(period: AuditPeriod, now: Date): Date | null {
-  const hours = PERIOD_HOURS[period];
-  return hours === null ? null : new Date(now.getTime() - hours * HOUR_MS);
+  const days = PERIOD_DAYS[period];
+  return days === null ? null : new Date(now.getTime() - days * MS_PER_DAY);
 }

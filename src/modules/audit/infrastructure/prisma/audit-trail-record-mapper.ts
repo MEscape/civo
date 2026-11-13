@@ -2,13 +2,12 @@ import { instantToDate } from '@lib/db';
 import type { InstantRecord } from '@lib/db';
 import { isJsonRecord, literalGuard } from '@lib/utils';
 
-import { AUDIT_SOURCES } from '../../domain/models/audit-entry';
+import { AUDIT_SOURCES, isAuditDetailValue } from '../../domain/models/audit-entry';
 import { toActorId, toWebsiteId } from '../../domain/models/ids';
 
 import type {
   AuditActor,
   AuditActorKind,
-  AuditDetailValue,
   AuditDetails,
   AuditEntry,
   AuditSeverity,
@@ -61,16 +60,6 @@ function toActor(record: Pick<AuditEntryRecord, 'actorKind' | 'actorId'>): Audit
   return record.actorKind === ACTOR_KIND_RECORD.visitor ? { kind: 'visitor' } : { kind: 'system' };
 }
 
-function isDetailValue(value: unknown): value is AuditDetailValue {
-  return (
-    value === null ||
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean' ||
-    (Array.isArray(value) && value.every((item) => typeof item === 'string'))
-  );
-}
-
 /** Stored details are read as plain values only; anything else is left out rather than trusted. */
 function toDetails(stored: unknown): AuditDetails {
   if (!isJsonRecord(stored)) {
@@ -78,7 +67,7 @@ function toDetails(stored: unknown): AuditDetails {
   }
   return Object.fromEntries(
     Object.entries(stored).flatMap(([name, value]) =>
-      isDetailValue(value) ? [[name, value] as const] : [],
+      isAuditDetailValue(value) ? [[name, value] as const] : [],
     ),
   );
 }

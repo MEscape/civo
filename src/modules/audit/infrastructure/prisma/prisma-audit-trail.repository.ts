@@ -1,10 +1,11 @@
 import { createPersistenceFailures, dateToInstant, db, toJsonValue } from '@lib/db';
+import { infrastructureError } from '@lib/errors';
 import type { InfrastructureAppError } from '@lib/errors';
 import { offsetOf, toPage } from '@lib/pagination';
 import type { Page, PageRequest } from '@lib/pagination';
-import { fromThrowableAsync } from '@lib/result';
+import { err, fromThrowableAsync, ok } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
-import { literalGuard } from '@lib/utils';
+import { isDefined, literalGuard } from '@lib/utils';
 
 import { AUDIT_ERROR_CODES } from '../../domain/errors/audit-errors';
 import { AUDIT_SOURCES } from '../../domain/models/audit-entry';
@@ -45,30 +46,44 @@ function actorWhere(actor: AuditActor | null) {
     : { actorKind: ACTOR_KIND_RECORD[actor.kind] };
 }
 
-/** What a scope adds to a query: its website, or nothing for the platform's. */
-function inScope(scope: AuditScope): { websiteId?: WebsiteId } {
-  return scope.kind === 'website' ? { websiteId: scope.websiteId } : {};
+/**
+ * The entries a scope covers: one website, an authorized allowlist, or (the platform's scope) every
+ * website. Every read starts here, so no query can forget to name its tenants.
+ *
+ * @owner-scope platform The platform scope reads every website and can only be named, never defaulted to: `AuditScope` has no absent value, a website scope pins `websiteId`, and an allowlist pins `websiteId IN (...)` and cannot be empty.
+ */
+function inScope(scope: AuditScope) {
+  const entries = db.orm.public.AuditEntry;
+  switch (scope.kind) {
+    case 'platform':
+      return entries.where({});
+    case 'website':
+      return entries.where({ websiteId: scope.websiteId });
+    case 'websites':
+      return entries.where((entry) => entry.websiteId.in([...scope.websiteIds]));
+  }
 }
 
 /**
  * The entries of the scope that match the criteria; every part maps onto an index's leading columns.
- *
- * @tenant-scope platform The platform scope reads every website and can only be named, never defaulted to: `AuditScope` has no absent value, and a website scope pins `websiteId`.
+ * Only entries of an area this build knows are matched: `toAuditEntry` could not name the others,
+ * so excluding them here keeps the total, the page and the facets describing the same rows.
  */
 function matching(
   scope: AuditScope,
   criteria: Omit<AuditCriteria, 'source' | 'type'> &
     Partial<Pick<AuditCriteria, 'source' | 'type'>>,
 ) {
-  const equal = db.orm.public.AuditEntry.where({
-    ...inScope(scope),
-    ...(criteria.source === undefined || criteria.source === null
-      ? {}
-      : { source: criteria.source }),
-    ...(criteria.type === undefined || criteria.type === null ? {} : { type: criteria.type }),
-    ...(criteria.onlyWarnings ? { severity: SEVERITY_RECORD.warn } : {}),
-    ...actorWhere(criteria.actor),
-  });
+  const equal = inScope(scope)
+    .where((entry) => entry.source.in([...AUDIT_SOURCES]))
+    .where({
+      ...(criteria.source === undefined || criteria.source === null
+        ? {}
+        : { source: criteria.source }),
+      ...(criteria.type === undefined || criteria.type === null ? {} : { type: criteria.type }),
+      ...(criteria.onlyWarnings ? { severity: SEVERITY_RECORD.warn } : {}),
+      ...actorWhere(criteria.actor),
+    });
   const { since } = criteria;
   return since === null
     ? equal
@@ -77,8 +92,8 @@ function matching(
 
 /**
  * Prisma-backed trail, the only place that touches `db` for it. Every read
- * is scoped to one website and bounded; failures are infrastructure only and
- * logged once, here.
+ * names its scope (one website, an authorized allowlist, or the platform) and is
+ * bounded; failures are infrastructure only and logged once, here.
  */
 export class PrismaAuditTrailRepository implements AuditTrailRepository {
   append(entry: NewAuditEntry): AppResultAsync<void, InfrastructureAppError> {
@@ -114,13 +129,19 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
         .limit(page.pageSize)
         .offset(offsetOf(page))
         .all();
-      return { records, total: total.total };
-    }, failures.infraOnly('list')).map(({ records, total }) =>
-      toPage(
-        records.map(toAuditEntry).filter((entry): entry is AuditEntry => entry !== null),
-        total,
-        page,
-      ),
+      const entries = records.map(toAuditEntry).filter(isDefined);
+      // `matching` excludes the areas the mapper cannot name, so a shorter page would mean the two
+      // disagree: fail instead of showing fewer entries than the total promises.
+      return { entries, total: total.total, isMapped: entries.length === records.length };
+    }, failures.infraOnly('list')).andThen(({ entries, total, isMapped }) =>
+      isMapped
+        ? ok(toPage(entries, total, page))
+        : err(
+            infrastructureError(
+              'audit.entry_unmappable',
+              'An audit entry matched the query but could not be mapped.',
+            ),
+          ),
     );
   }
 
@@ -128,23 +149,28 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
     scope: AuditScope,
     criteria: Omit<AuditCriteria, 'source' | 'type'>,
     limit: number,
-  ): AppResultAsync<readonly AuditTypeCount[], InfrastructureAppError> {
+  ): AppResultAsync<
+    { readonly items: readonly AuditTypeCount[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  > {
     return fromThrowableAsync(
       async () =>
         matching(scope, criteria)
           .groupBy('source', 'type')
           .orderBy([(entry) => entry.source.asc(), (entry) => entry.type.asc()])
-          .limit(limit)
+          // One more than asked: the extra row is how a cut-off is told from an exact fit.
+          .limit(limit + 1)
           .aggregate((aggregate) => ({ count: aggregate.count() })),
       failures.infraOnly('countByType'),
-    ).map((rows) =>
-      rows.flatMap(({ source, type, count }) =>
-        isSource(source) ? [{ source, type, count }] : [],
-      ),
-    );
+    ).map((rows) => ({
+      items: rows
+        .slice(0, limit)
+        .flatMap(({ source, type, count }) => (isSource(source) ? [{ source, type, count }] : [])),
+      isTruncated: rows.length > limit,
+    }));
   }
 
-  /** @tenant-scope platform The scope names the website, or the platform's own: see `matching`. */
+  /** @owner-scope platform The scope names the website, an authorized allowlist, or the platform's own: see `inScope`. */
   listMemberIds(
     scope: AuditScope,
     limit: number,
@@ -154,10 +180,8 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
   > {
     return fromThrowableAsync(
       async () =>
-        db.orm.public.AuditEntry.where({
-          ...inScope(scope),
-          actorKind: ACTOR_KIND_RECORD.member,
-        })
+        inScope(scope)
+          .where({ actorKind: ACTOR_KIND_RECORD.member })
           .groupBy('actorId')
           .orderBy((entry) => entry.actorId.asc())
           .limit(limit + 1)
@@ -195,7 +219,7 @@ export class PrismaAuditTrailRepository implements AuditTrailRepository {
     }, failures.infraOnly('countPerDay'));
   }
 
-  /** @tenant-scope platform Retention is a job of the platform: it removes old entries of every website. */
+  /** @owner-scope platform Retention is a job of the platform: it removes old entries of every website. */
   deleteOlderThan(cutoff: Date): AppResultAsync<number, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>

@@ -8,6 +8,8 @@ export const AUDIT_SOURCES = [
   'booking',
   'data-sources',
   'auth',
+  'media',
+  'map',
 ] as const;
 export type AuditSource = (typeof AUDIT_SOURCES)[number];
 
@@ -28,6 +30,17 @@ export type AuditActorKind = AuditActor['kind'];
 /** What an event carries besides its type: ids, counts, codes and lists of field names; never content. */
 export type AuditDetailValue = string | number | boolean | null | readonly string[];
 export type AuditDetails = Readonly<Record<string, AuditDetailValue>>;
+
+/** Event ingestion and persistence reads accept the same plain detail values. */
+export function isAuditDetailValue(value: unknown): value is AuditDetailValue {
+  return (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+  );
+}
 
 /** One recorded event of one website. */
 export interface AuditEntry {

@@ -11,10 +11,13 @@
       "release": "Releases",
       "booking": "Bookings",
       "dataSources": "Data sources",
-      "auth": "Users & access"
+      "auth": "Users & access",
+      "media": "Media",
+      "map": "Maps"
     },
     "filters": {
       "membersTruncated": "Only some of the people in this log are offered in the filter.",
+      "typesTruncated": "Only some of the event types in this log are offered in the filter.",
       "label": "Filter the audit log",
       "areas": "Areas",
       "areaCount": "{label} ({count})",
@@ -111,7 +114,22 @@
         "count": "Count",
         "reason": "Reason",
         "permission": "Permission",
-        "action": "Action"
+        "action": "Action",
+        "mapId": "Map",
+        "roles": "Roles",
+        "previousRoles": "Previous roles",
+        "removedRoles": "Removed roles",
+        "role": "Role",
+        "assetId": "File",
+        "byteSize": "Size",
+        "visibility": "Visibility",
+        "how": "How",
+        "leftOpen": "Bookings affected",
+        "sections": "Changed",
+        "parts": "Changed",
+        "memberId": "Team member",
+        "scope": "Applies to",
+        "cancelled": "Bookings cancelled"
       },
       "values": {
         "outcome": {
@@ -129,7 +147,43 @@
         },
         "reason": {
           "tenantMismatch": "Other organisation",
-          "permissionMissing": "Missing permission"
+          "permissionMissing": "Missing permission",
+          "size": "File too large",
+          "contentType": "File type not allowed",
+          "signature": "Content does not match the file type"
+        },
+        "role": {
+          "admin": "Administrator",
+          "editor": "Editor",
+          "contributor": "Contributor",
+          "viewer": "Viewer",
+          "employee": "Employee",
+          "platformAdmin": "Platform administrator"
+        },
+        "how": {
+          "claim": "Claimed by the employee",
+          "assign": "Assigned by a manager",
+          "copy": "Copied",
+          "link": "Linked"
+        },
+        "visibility": {
+          "public": "Public",
+          "private": "Private"
+        },
+        "scope": {
+          "location": "This location",
+          "all": "All locations"
+        },
+        "section": {
+          "details": "Details",
+          "hours": "Opening hours",
+          "status": "Status",
+          "availability": "Availability",
+          "shared": "Shared settings",
+          "local": "Settings of this location",
+          "setup": "Set-up",
+          "absences": "Absences",
+          "qualifications": "Qualifications"
         }
       },
       "changed": {
@@ -159,6 +213,7 @@
     "errors": {
       "validation": "The audit log could not be read with these values.",
       "infrastructure": "The audit log is unavailable right now. Please try again.",
+      "forbidden": "You are not allowed to read this audit log.",
       "unexpected": "Something went wrong. Please try again."
     },
     "validation": {
@@ -167,6 +222,15 @@
     "platform": {
       "title": "Audit log",
       "description": "Everything recorded on every website: what members changed, what visitors booked, and who was refused access. Narrow it to one website with the filter."
+    },
+    "across": {
+      "title": "Audit log of your websites",
+      "description": "Everything recorded on the websites you may read the audit log of. Narrow it to one website with the filter.",
+      "truncated": "You may read the audit log of more websites than this page covers. Entries of the others are not shown here; open a website's own audit log to read them."
+    },
+    "columns": {
+      "event": "Event",
+      "area": "Area"
     }
   }
 }

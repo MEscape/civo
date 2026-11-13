@@ -1,4 +1,5 @@
 import type { Page } from '@lib/pagination';
+import type { AppResultAsync } from '@lib/result';
 
 import type {
   AuditActorKind,
@@ -6,9 +7,11 @@ import type {
   AuditSeverity,
   AuditSource,
 } from '../../domain/models/audit-entry';
-import type { AuditPeriod } from '../../domain/models/audit-filter';
+import type { AuditFilter, AuditPeriod } from '../../domain/models/audit-filter';
 import type { AuditSubjectKind } from '../../domain/models/audit-subject';
+import type { AuditDayCount, AuditTypeCount } from '../../domain/ports/audit-trail.repository';
 
+export { AUDIT_SOURCES } from '../../domain/models/audit-entry';
 export type {
   AuditActorKind,
   AuditDetails,
@@ -16,20 +19,27 @@ export type {
   AuditSeverity,
   AuditSource,
 } from '../../domain/models/audit-entry';
+export {
+  AUDIT_PERIODS,
+  DEFAULT_AUDIT_PERIOD,
+  EMPTY_AUDIT_FILTER,
+} from '../../domain/models/audit-filter';
 export type { AuditActorFilter, AuditFilter, AuditPeriod } from '../../domain/models/audit-filter';
-export type { AuditTrailPolicy, AuditTrailSource } from '../../domain/models/audit-trail-source';
-export { AUDIT_SOURCES } from '../../domain/models/audit-entry';
 export {
   AUDIT_SUBJECT_KINDS,
   subjectIdsOf,
   subjectKindOf,
 } from '../../domain/models/audit-subject';
 export type { AuditSubjectIds, AuditSubjectKind } from '../../domain/models/audit-subject';
-export {
-  AUDIT_PERIODS,
-  DEFAULT_AUDIT_PERIOD,
-  EMPTY_AUDIT_FILTER,
-} from '../../domain/models/audit-filter';
+export type { AuditTrailPolicy, AuditTrailSource } from '../../domain/models/audit-trail-source';
+export type {
+  AuditAccess,
+  AuditAccessError,
+  ReadableWebsites,
+} from '../../domain/ports/audit-access.port';
+
+export type AuditTypeCountView = AuditTypeCount;
+export type AuditDayView = AuditDayCount;
 
 /** The page asked for, as the address carries it: untrusted text, resolved by the query. */
 export interface AuditPageOptions {
@@ -70,17 +80,13 @@ export type AuditSubjects = Readonly<
   Partial<Record<AuditSubjectKind, Readonly<Record<string, AuditSubjectView>>>>
 >;
 
-export interface AuditTypeCountView {
-  readonly source: AuditSource;
-  readonly type: string;
-  readonly count: number;
-}
-
 /** The audit screen in one read: the page of entries, and what the filter can offer next to it. */
 export interface AuditTrailView {
   readonly entries: Page<AuditEntryView>;
   /** Matching entries per type in the chosen period, regardless of the area and type chosen. */
   readonly types: readonly AuditTypeCountView[];
+  /** There are more event types in the trail than the filter offers. */
+  readonly isTypesTruncated: boolean;
   /** Everyone who appears in the trail, for the "who" filter. */
   readonly memberIds: readonly string[];
   /** There are more people in the trail than the filter offers. */
@@ -89,12 +95,23 @@ export interface AuditTrailView {
   readonly readAt: Date;
 }
 
-/** One day of the overview's chart. */
-export interface AuditDayView {
-  /** The UTC day, `YYYY-MM-DD`. */
-  readonly day: string;
-  readonly total: number;
-  readonly warnings: number;
+/**
+ * How far a reader's trail reaches when no website is chosen: `platform` is every website (a
+ * platform administrator), `websites` only the ones the reader may read the log of.
+ */
+export type AuditReach = 'platform' | 'websites';
+
+/** The trail across websites: what a reader may read of it, and the websites they can narrow it to. */
+export interface AuditAcrossWebsitesView extends AuditTrailView {
+  readonly reach: AuditReach;
+  /** The websites the reader may name in the filter (the whole platform's, or the reader's own). */
+  readonly websites: ReadonlyArray<{ readonly id: string; readonly name: string }>;
+  /**
+   * The reader may read more websites than `websites` names. For a `websites` reach the entries of
+   * the websites left out are missing from the unfiltered trail too; for the platform's only the
+   * names offered in the filter are cut, never the entries.
+   */
+  readonly isWebsitesTruncated: boolean;
 }
 
 /** The overview's glance at the trail. */
@@ -106,4 +123,24 @@ export interface AuditDigestView {
   readonly warnings: number;
   /** The audit page's period that shows the same days. */
   readonly period: AuditPeriod;
+}
+
+/** Optional identity enrichment; implementations retain their own authorization and lookup limits. */
+export type MemberNamesResolver = (memberIds: readonly string[]) => AppResultAsync<{
+  readonly names: ReadonlyArray<{ readonly id: string; readonly name: string }>;
+}>;
+
+/** Readers needed by the audit administration screen. */
+export interface AuditReaders {
+  readonly getAuditTrail: {
+    execute(
+      websiteId: string,
+      filter: AuditFilter,
+      page: AuditPageOptions,
+    ): AppResultAsync<AuditTrailView>;
+  };
+  readonly getAuditTrailAcrossWebsites: {
+    execute(filter: AuditFilter, page: AuditPageOptions): AppResultAsync<AuditAcrossWebsitesView>;
+  };
+  readonly resolveMemberNames?: MemberNamesResolver;
 }

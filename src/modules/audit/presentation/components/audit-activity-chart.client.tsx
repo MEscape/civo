@@ -53,7 +53,7 @@ function DayTooltip({ active, payload }: DayTooltipProps) {
  */
 export function AuditActivityChart({ days, names }: AuditActivityChartProps) {
   return (
-    <div aria-hidden="true" className="h-32 w-full">
+    <div aria-hidden="true" className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={[...days]}

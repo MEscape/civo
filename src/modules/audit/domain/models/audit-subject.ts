@@ -3,6 +3,7 @@ import type { AuditDetails } from './audit-entry';
 /** The kinds of things of a website an entry can name by id. Closed: a new one is added here on purpose. */
 export const AUDIT_SUBJECT_KINDS = [
   'page',
+  'map',
   'dataSource',
   'dataset',
   'release',
@@ -23,6 +24,7 @@ export type AuditSubjectKind = (typeof AUDIT_SUBJECT_KINDS)[number];
  */
 export const AUDIT_SUBJECT_FIELDS = {
   pageId: 'page',
+  mapId: 'map',
   dataSourceId: 'dataSource',
   datasetId: 'dataset',
   releaseId: 'release',
@@ -34,6 +36,7 @@ export const AUDIT_SUBJECT_FIELDS = {
   resourceId: 'resource',
   bookingId: 'booking',
   subjectId: 'member',
+  memberId: 'member',
   invitationId: 'invitation',
 } as const satisfies Readonly<Record<string, AuditSubjectKind>>;
 
@@ -55,11 +58,14 @@ export function subjectIdsOf(
     for (const [field, value] of Object.entries(details)) {
       const kind = subjectKindOf(field);
       if (kind !== null && typeof value === 'string' && value !== '') {
-        const ids = found.get(kind) ?? new Set<string>();
+        let ids = found.get(kind);
+        if (ids === undefined) {
+          ids = new Set<string>();
+          found.set(kind, ids);
+        }
         ids.add(value);
-        found.set(kind, ids);
       }
     }
   }
-  return new Map([...found].map(([kind, ids]) => [kind, [...ids]]));
+  return new Map(Array.from(found, ([kind, ids]) => [kind, Array.from(ids)]));
 }

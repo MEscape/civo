@@ -16,6 +16,25 @@ export interface AuditCriteria {
   readonly onlyWarnings: boolean;
 }
 
+/** Criteria shared by entry listing and event-type facet counting. */
+export type AuditFacetCriteria = Omit<AuditCriteria, 'source' | 'type'>;
+
+/** Default criteria matching all entries without restriction. */
+export const UNFILTERED_AUDIT_CRITERIA: AuditCriteria = {
+  source: null,
+  type: null,
+  actor: null,
+  since: null,
+  onlyWarnings: false,
+};
+
+/** A bounded list returned by a facet query, flagging whether items were cut at the limit. */
+// @truncation none every bounded facet query returns a TruncatedAuditList, which carries `isTruncated`
+export interface TruncatedAuditList<T> {
+  readonly items: readonly T[];
+  readonly isTruncated: boolean;
+}
+
 /** How many entries of one type match; the facets of the filter. */
 export interface AuditTypeCount {
   readonly source: AuditSource;
@@ -44,13 +63,14 @@ export interface AuditTrailRepository {
   /**
    * Matching entries per event type, ignoring the source and type of the
    * criteria, so a reader sees what else there is before narrowing. Bounded
-   * by `limit`: there are only as many types as the modules declare.
+   * by `limit`; `isTruncated` says there are more types than that, so the
+   * facets are never presented as complete when they are not.
    */
   countByType(
     scope: AuditScope,
-    criteria: Omit<AuditCriteria, 'source' | 'type'>,
+    criteria: AuditFacetCriteria,
     limit: number,
-  ): AppResultAsync<readonly AuditTypeCount[], InfrastructureAppError>;
+  ): AppResultAsync<TruncatedAuditList<AuditTypeCount>, InfrastructureAppError>;
 
   /**
    * The members who appear in the scope's trail at all.
@@ -59,10 +79,7 @@ export interface AuditTrailRepository {
   listMemberIds(
     scope: AuditScope,
     limit: number,
-  ): AppResultAsync<
-    { readonly items: readonly ActorId[]; readonly isTruncated: boolean },
-    InfrastructureAppError
-  >;
+  ): AppResultAsync<TruncatedAuditList<ActorId>, InfrastructureAppError>;
 
   /** Entries and warnings per UTC day since an instant; days without an entry are absent. */
   countPerDay(

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { pageParamsSchema } from '@lib/pagination';
+
 import {
   AUDIT_PERIODS,
   AUDIT_SOURCES,
@@ -20,7 +22,7 @@ const MEMBER_PREFIX = 'member:';
  * every one falls back instead of failing: a hand-edited address shows the
  * unfiltered trail, not an error page.
  */
-export const auditParamsSchema = z.object({
+export const auditParamsSchema = pageParamsSchema.extend({
   website: z.string().max(ACTOR_ID_MAX).optional().catch(undefined),
   area: z.enum(AUDIT_SOURCES).optional().catch(undefined),
   event: z.string().max(EVENT_TYPE_MAX).regex(EVENT_TYPE_PATTERN).optional().catch(undefined),
@@ -36,8 +38,6 @@ export const auditParamsSchema = z.object({
     .catch(undefined),
   period: z.enum(AUDIT_PERIODS).optional().catch(undefined),
   warnings: z.literal('1').optional().catch(undefined),
-  page: z.string().optional().catch(undefined),
-  pageSize: z.string().optional().catch(undefined),
 });
 
 /** The "who" choice as the address and the filter form carry it. */
