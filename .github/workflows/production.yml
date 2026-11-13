@@ -1,8 +1,9 @@
 # ==============================================================================
-# CIVO - PRODUCTION DEPLOYMENT PIPELINE
-# Re-validates full CI on `main`, builds the Vercel production artifact first,
-# applies database migrations (`app` & `auth`), deploys prebuilt output, and
-# runs post-deploy health & schema contract verification.
+# CIVO - PRODUCTION DEPLOYMENT PIPELINE (Oracle Cloud)
+# On `main`: full CI on the exact commit, one immutable arm64 image, database migrations, then the
+# image goes to the Oracle host, which swaps it in only once it is healthy. An external health check
+# through Cloudflare follows; if it fails the previous release is restored.
+# Setup and operations: docs/deployment/README.md
 # ==============================================================================
 
 name: Production
@@ -15,15 +16,16 @@ on:
 permissions:
   contents: read
 
-# Never run two production deployments at once.
-# Never cancel a deployment halfway through migration/deploy.
+# Never run two production deployments at once, and never cancel one halfway through a migration.
+# A newer push queues behind the running one and replaces any run still waiting, so an older
+# commit can never overtake a newer one.
 concurrency:
   group: production-deploy
   cancel-in-progress: false
 
 jobs:
   # ----------------------------------------------------------------------------
-  # 1. Pre-Deploy CI Gate (Exact Commit Verification)
+  # 1. Pre-deploy CI gate (exact commit)
   # ----------------------------------------------------------------------------
   ci:
     name: CI
@@ -31,40 +33,46 @@ jobs:
     uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
-      # Nested license job posts PR comments; a called workflow cannot exceed its caller's permissions.
+      # The nested license job posts PR comments; a called workflow cannot exceed its caller.
       pull-requests: write
 
   # ----------------------------------------------------------------------------
-  # 2. Build, Migrate, Deploy & Smoke-Test
+  # 2. Immutable image of this commit
+  # ----------------------------------------------------------------------------
+  image:
+    name: Image
+    needs: ci
+    uses: ./.github/workflows/image.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      ref: ${{ github.sha }}
+      app-url: ${{ vars.PRODUCTION_URL }}
+
+  # ----------------------------------------------------------------------------
+  # 3. Migrate, deploy, verify, roll back on failure
   # ----------------------------------------------------------------------------
   deploy:
     name: Migrate & deploy
-    needs: ci
-    if: github.ref == 'refs/heads/main'
+    needs: image
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
-    # Configure this environment in GitHub:
-    # - deployment branch: main
-    # - optional required reviewers
-    # - production secrets
+    # Configure this environment in GitHub: deployment branch `main`, optional required reviewers,
+    # secrets OCI_SSH_KEY, PRODUCTION_DATABASE_URL and PRODUCTION_AUTH_DATABASE_URL.
     environment:
       name: production
-      url: ${{ steps.deploy.outputs.url }}
+      url: ${{ vars.PRODUCTION_URL }}
 
     permissions:
       contents: read
+      # The host pulls the image with this token, which dies with the job.
+      packages: read
 
     env:
-      VERCEL_CLI_VERSION: "41.4.0"
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-
-      # Direct production connections used by migrations.
-      # These are separate from the least-privilege runtime connections.
-      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-      AUTH_DATABASE_URL: ${{ secrets.PRODUCTION_AUTH_DATABASE_URL }}
+      IMAGE: ${{ needs.image.outputs.image }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
 
     steps:
       - uses: actions/checkout@v5
@@ -73,64 +81,83 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # Ensure Prisma client & contracts exist since `--ignore-scripts` skips postinstall.
+      # `--ignore-scripts` skips postinstall, so the Prisma client and contracts are emitted here.
       - name: Generate Prisma client & contracts
         run: npm run db:generate
 
-      # Make sure the migrations being deployed are the reviewed migrations.
+      # The migrations being deployed are the reviewed ones.
       - name: Check migration files
         run: npm run db:migrate:check
 
-      # 1) BUILD FIRST.
-      # A broken build must never leave either database migrated.
-      - name: Pull Vercel production settings
-        run: npx --yes "vercel@${VERCEL_CLI_VERSION}" pull --yes --environment=production --token="$VERCEL_TOKEN"
-
-      - name: Build production artifact
-        run: npx --yes "vercel@${VERCEL_CLI_VERSION}" build --prod --token="$VERCEL_TOKEN"
-
-      # 2) MIGRATE APPLICATION DATABASE.
-      - name: Show application migration status
-        run: npm run db:migrate:status
-
-      - name: Apply application migrations
-        run: npm run db:migrate:app
-
-      # 3) MIGRATE AUTH DATABASE.
-      - name: Apply auth migrations
-        run: npm run db:migrate:auth
-
-      # 4) DEPLOY THE PREBUILT ARTIFACT.
-      - name: Deploy to Vercel
-        id: deploy
-        run: |
-          url="$(npx --yes "vercel@${VERCEL_CLI_VERSION}" deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-
-      # 5) VERIFY DEPLOYMENT.
-      - name: Smoke test
+      # 1) MIGRATE. The image is already built and pushed, so a broken build never touches a database.
+      # Direct owner connections; the running application uses a separate least-privilege role.
+      - name: Migrate databases
         env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
-          # Optional Vercel Deployment Protection bypass.
-          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          AUTH_DATABASE_URL: ${{ secrets.PRODUCTION_AUTH_DATABASE_URL }}
         run: |
-          args=(-fsS --max-time 10)
-
-          if [ -n "$BYPASS" ]; then
-            args+=(-H "x-vercel-protection-bypass: $BYPASS")
+          if [ -z "$DATABASE_URL" ] || [ -z "$AUTH_DATABASE_URL" ]; then
+            echo "::error::PRODUCTION_DATABASE_URL and PRODUCTION_AUTH_DATABASE_URL must be set in the production environment."
+            exit 1
           fi
+          npm run db:migrate:status
+          npm run db:migrate:app
+          npm run db:migrate:auth
 
-          for i in $(seq 1 12); do
-            if curl "${args[@]}" "$DEPLOY_URL/api/health"; then
+      # 2) DEPLOY. The host starts the new container beside the live one and switches only when it is
+      # healthy. A release that never turns healthy leaves the live one running and this step fails.
+      - uses: ./.github/actions/oci-ssh
+        with:
+          host: ${{ vars.OCI_HOST }}
+          private-key: ${{ secrets.OCI_SSH_KEY }}
+          known-hosts: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+
+      - name: Deploy to the Oracle host
+        id: deploy
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s\n%s\n' "$GITHUB_ACTOR" "$REGISTRY_TOKEN" |
+            ssh civo-host "deploy-prod $GITHUB_SHA $IMAGE"
+
+      # 3) VERIFY from outside, through Cloudflare.
+      - name: Verify the release
+        id: verify
+        run: |
+          current=$(ssh civo-host status | sed -n 's/^prod\.current=//p')
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "::error::The host reports '$current' as current, expected $GITHUB_SHA."
+            exit 1
+          fi
+          for i in $(seq 1 24); do
+            if curl -fsS --max-time 10 "$PRODUCTION_URL/api/health" | grep -q '"status":"ok"'; then
+              echo "Healthy after $i attempt(s)."
               exit 0
             fi
             sleep 5
           done
-
-          echo "::error::Smoke test failed for $DEPLOY_URL."
-          echo "::error::Roll back with 'vercel rollback'."
+          echo "::error::$PRODUCTION_URL/api/health did not answer ok."
           exit 1
 
-      # Verify the application database against the committed Prisma contract.
+      # The release passed the host's own health check but not the one from outside: restore the
+      # previous one. The database is NOT rolled back; migrations are expand-only by policy.
+      - name: Roll back to the previous release
+        if: failure() && steps.deploy.outcome == 'success' && steps.verify.outcome == 'failure'
+        run: ssh civo-host rollback-prod
+
+      # The application database matches the committed Prisma contract.
       - name: Verify application database
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: npm run db:verify
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Production"
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Image: \`$IMAGE\`"
+            echo "- URL: $PRODUCTION_URL"
+            echo "- Deploy: ${{ steps.deploy.outcome }}, verify: ${{ steps.verify.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"

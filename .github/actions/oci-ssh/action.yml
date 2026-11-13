@@ -1,0 +1,58 @@
+# ==============================================================================
+# CIVO - SSH ACCESS TO THE ORACLE HOST
+# Writes the deploy key and the pinned host key, and defines `ssh civo-host`. The key is a forced-command
+# key: whatever is typed after `ssh civo-host`, the host runs deploy/bin/civo-remote with the
+# role fixed by that key. The host key is checked against the pinned line, never learned.
+# ==============================================================================
+
+name: SSH access to the Oracle host
+description: Configures `ssh civo-host` with a deploy key and a pinned host key.
+
+inputs:
+  host:
+    description: Public address of the Oracle host.
+    required: true
+  private-key:
+    description: Private deploy key (prod or preview role).
+    required: true
+  known-hosts:
+    description: The host's public key line(s), as printed by `ssh-keyscan -t ed25519 <host>`.
+    required: true
+  user:
+    description: Login of the deploy user.
+    default: civo-deploy
+
+runs:
+  using: composite
+  steps:
+    - name: Configure ssh
+      shell: bash
+      env:
+        CIVO_HOST: ${{ inputs.host }}
+        CIVO_USER: ${{ inputs.user }}
+        CIVO_KEY: ${{ inputs.private-key }}
+        CIVO_KNOWN_HOSTS: ${{ inputs.known-hosts }}
+      run: |
+        for v in CIVO_HOST CIVO_KEY CIVO_KNOWN_HOSTS; do
+          if [ -z "${!v}" ]; then
+            echo "::error::$v is empty. See docs/deployment/README.md for the variables and secrets to set."
+            exit 1
+          fi
+        done
+        install -d -m 700 ~/.ssh
+        printf '%s\n' "$CIVO_KEY" > ~/.ssh/civo_deploy
+        chmod 600 ~/.ssh/civo_deploy
+        printf '%s\n' "$CIVO_KNOWN_HOSTS" > ~/.ssh/civo_known_hosts
+        cat > ~/.ssh/config <<EOF
+        Host civo-host
+          HostName $CIVO_HOST
+          User $CIVO_USER
+          IdentityFile ~/.ssh/civo_deploy
+          IdentitiesOnly yes
+          UserKnownHostsFile ~/.ssh/civo_known_hosts
+          StrictHostKeyChecking yes
+          BatchMode yes
+          ConnectTimeout 20
+          ServerAliveInterval 15
+          ServerAliveCountMax 8
+        EOF

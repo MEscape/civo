@@ -42,6 +42,7 @@ Dockerfile*
 docker-compose*.yml
 .dockerignore
 docker/
+deploy/
 vercel.json
 .nvmrc
 components.json

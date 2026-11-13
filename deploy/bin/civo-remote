@@ -1,0 +1,410 @@
+#!/usr/bin/env bash
+# civo-remote: the only thing the deploy keys can run on the Oracle host.
+#
+# sshd starts it as a forced command (written by deploy/host/bootstrap.sh):
+#
+#   command="/opt/civo/bin/civo-remote prod",restrict ssh-ed25519 AAAA...
+#
+# The role (prod | preview) is fixed by the key. The verb and its arguments come from the client
+# and are validated here; a secret never travels in an argument, only on stdin. The script is
+# installed by hand from main and is never replaced by CI, so a pull request cannot change what
+# the preview key may execute.
+#
+#   prod key      deploy-prod <sha> <image>   rollback-prod   status
+#   preview key   deploy-preview <pr> <sha> <image>   remove-preview <pr>   list-previews   status
+#   admin (local) all of the above, plus: reconcile
+#
+# stdin of the deploy verbs: line 1 registry user, line 2 registry token (a short-lived
+# GITHUB_TOKEN), then for deploy-preview the lines KEY=VALUE for DATABASE_URL and AUTH_DATABASE_URL.
+set -Eeuo pipefail
+umask 077
+
+CIVO_HOME="${CIVO_HOME:-/opt/civo}"
+CONF="$CIVO_HOME/etc/host.conf"
+STATE="$CIVO_HOME/state"
+ENV_DIR="$CIVO_HOME/env"
+
+die() {
+  printf 'civo-remote: %s\n' "$*" >&2
+  exit 1
+}
+log() { printf 'civo-remote: %s\n' "$*"; }
+
+# ------------------------------------------------------------------------------
+# Validation. Everything a client can influence passes through one of these.
+# ------------------------------------------------------------------------------
+valid_sha() { [[ ${1:-} =~ ^[0-9a-f]{40}$ ]]; }
+valid_pr() { [[ ${1:-} =~ ^[1-9][0-9]{0,6}$ ]]; }
+# An image is addressed by digest, in the one repository this host serves.
+valid_image() { [[ ${1:-} =~ ^[a-z0-9.-]+(:[0-9]{1,5})?(/[a-z0-9._-]+)+@sha256:[0-9a-f]{64}$ ]] && [[ $1 == "$IMAGE_REPO"@* ]]; }
+valid_command_line() { [[ ${1:-} =~ ^[A-Za-z0-9\ :/@._-]*$ ]]; }
+
+# authorize <role> <verb>
+authorize() {
+  case "$1:$2" in
+    prod:deploy-prod | prod:rollback-prod | prod:status) return 0 ;;
+    preview:deploy-preview | preview:remove-preview | preview:list-previews | preview:status) return 0 ;;
+    admin:*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# ------------------------------------------------------------------------------
+# Docker helpers. Instance names are `prod` or `pr-<n>`; nothing else reaches them.
+# ------------------------------------------------------------------------------
+net_of() { printf 'civo-net-%s' "$1"; }
+alias_of() { printf 'civo-%s' "$1"; }
+
+is_connected() { # <network> <container>
+  docker inspect -f '{{range $k, $_ := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}' "$2" 2>/dev/null | grep -qx "$1"
+}
+
+# The reverse proxy (and, for previews, the mail catcher) joins each instance's own network, so an
+# instance can reach nothing but the internet, and no instance can reach another.
+attach_shared() { # <network> <instance>
+  local net=$1 name=$2
+  docker inspect civo-caddy >/dev/null 2>&1 || die 'the edge is not running (civo-caddy); see docs/deployment/oracle-bootstrap.md'
+  is_connected "$net" civo-caddy || docker network connect "$net" civo-caddy
+  if [[ $name == pr-* ]] && docker inspect civo-mailpit >/dev/null 2>&1; then
+    is_connected "$net" civo-mailpit || docker network connect --alias mailpit "$net" civo-mailpit
+  fi
+}
+
+detach_shared() { # <network>
+  local net=$1 c
+  for c in civo-caddy civo-mailpit; do
+    if docker inspect "$c" >/dev/null 2>&1 && is_connected "$net" "$c"; then
+      docker network disconnect "$net" "$c" || true
+    fi
+  done
+}
+
+wait_healthy() { # <container>
+  local c=$1 deadline=$((SECONDS + HEALTH_TIMEOUT)) s
+  while ((SECONDS < deadline)); do
+    s=$(docker inspect -f '{{if .State.Running}}{{.State.Health.Status}}{{else}}exited{{end}}' "$c" 2>/dev/null || echo gone)
+    case $s in
+      healthy) return 0 ;;
+      exited | gone | unhealthy) return 1 ;;
+    esac
+    sleep 2
+  done
+  return 1
+}
+
+# deploy_instance <name> <sha> <image> <memory> <cpus> <heap-mb> [extra docker run args...]
+#
+# Starts the new container beside the live one, waits until it is healthy, and only then gives it
+# the network alias the proxy resolves. A release that never turns healthy is removed and the live
+# one is left untouched. The previous prod container is kept (stopped) so its image survives
+# pruning and a rollback needs no registry.
+deploy_instance() {
+  local name=$1 sha=$2 image=$3 mem=$4 cpus=$5 heap=$6
+  shift 6
+  local net alias cname old=''
+  net=$(net_of "$name")
+  alias=$(alias_of "$name")
+  cname="civo-$name-${sha:0:12}-$(date +%s)"
+  mkdir -p "$STATE/$name"
+  [[ -f $STATE/$name/container ]] && old=$(<"$STATE/$name/container")
+
+  # Callers test this function in an `if`, which switches errexit off inside it: every step that
+  # must stop the deploy says so itself.
+  docker network inspect "$net" >/dev/null 2>&1 || docker network create --label civo.managed=true "$net" >/dev/null || return 1
+  attach_shared "$net" "$name" || return 1
+
+  docker run -d --name "$cname" --network "$net" \
+    --label civo.managed=true --label "civo.instance=$name" --label "civo.sha=$sha" \
+    --restart unless-stopped --init \
+    --memory "$mem" --memory-swap "$mem" --cpus "$cpus" --pids-limit 512 \
+    --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+    --tmpfs /app/.next/cache:rw,noexec,nosuid,size=256m,uid=1000,gid=1000 \
+    --cap-drop ALL --security-opt no-new-privileges:true \
+    --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
+    --health-interval 5s --health-timeout 5s --health-start-period 15s --health-retries 6 \
+    -e "NODE_OPTIONS=--max-old-space-size=$heap" \
+    "$@" "$image" >/dev/null || return 1
+
+  if ! wait_healthy "$cname"; then
+    log "release $sha did not become healthy; the live release is untouched. Last log lines:"
+    docker logs --tail 60 "$cname" 2>&1 | sed 's/^/  | /' >&2 || true
+    docker rm -f "$cname" >/dev/null 2>&1 || true
+    return 1
+  fi
+
+  # Reconnect with the alias: the proxy now resolves the new container as well as the old one.
+  docker network disconnect "$net" "$cname" || return 1
+  docker network connect --alias "$alias" "$net" "$cname" || {
+    docker rm -f "$cname" >/dev/null 2>&1
+    return 1
+  }
+
+  if [[ -n $old ]] && docker inspect "$old" >/dev/null 2>&1; then
+    if is_connected "$net" "$old"; then docker network disconnect "$net" "$old" || true; fi
+    docker stop -t 30 "$old" >/dev/null || true
+    if [[ $name == prod ]]; then
+      docker rm -f civo-prod-previous >/dev/null 2>&1 || true
+      docker rename "$old" civo-prod-previous
+      docker update --restart=no civo-prod-previous >/dev/null
+    else
+      docker rm -f "$old" >/dev/null
+    fi
+  fi
+  printf '%s\n' "$cname" >"$STATE/$name/container" || return 1
+}
+
+remove_instance() { # <name>
+  local name=$1 net
+  net=$(net_of "$name")
+  docker ps -aq --filter "label=civo.instance=$name" | xargs -r docker rm -f >/dev/null
+  detach_shared "$net"
+  docker network rm "$net" >/dev/null 2>&1 || true
+}
+
+list_preview_names() {
+  {
+    docker ps -a --filter label=civo.managed=true --format '{{.Label "civo.instance"}}'
+    docker network ls --filter label=civo.managed=true --format '{{.Name}}' | sed -n 's/^civo-net-//p'
+    ls "$STATE/previews" 2>/dev/null
+  } | { grep -E '^pr-[1-9][0-9]{0,6}$' || true; } | sort -u
+}
+
+# ------------------------------------------------------------------------------
+# Registry access: a short-lived token, a throwaway docker config, nothing kept on disk.
+# ------------------------------------------------------------------------------
+read_credentials() {
+  local user='' token=''
+  IFS= read -r user || die 'registry user missing on stdin'
+  IFS= read -r token || die 'registry token missing on stdin'
+  [[ $user =~ ^[A-Za-z0-9][A-Za-z0-9-]{0,38}(\[bot\])?$ ]] || die 'invalid registry user'
+  [[ -n $token ]] || die 'empty registry token'
+  REGISTRY_USER=$user
+  REGISTRY_TOKEN=$token
+}
+
+pull_image() { # <image>
+  local registry=${IMAGE_REPO%%/*}
+  DOCKER_CONFIG=$(mktemp -d)
+  export DOCKER_CONFIG
+  trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+  # Callers test this function in an `if`, which switches errexit off inside it.
+  printf '%s' "$REGISTRY_TOKEN" | docker login "$registry" -u "$REGISTRY_USER" --password-stdin >/dev/null || return 1
+  docker pull --quiet "$1" >/dev/null || return 1
+  rm -rf -- "$DOCKER_CONFIG"
+  unset DOCKER_CONFIG REGISTRY_TOKEN
+  trap - EXIT
+}
+
+# Reads the remaining stdin (KEY=VALUE lines) into <file>; only the two database URLs are accepted.
+read_preview_env() { # <file>
+  local out=$1 line key value seen=''
+  : >"$out"
+  while IFS= read -r line; do
+    [[ -n $line ]] || continue
+    key=${line%%=*}
+    value=${line#*=}
+    case $key in
+      DATABASE_URL | AUTH_DATABASE_URL) ;;
+      *) die "unexpected variable on stdin: $key" ;;
+    esac
+    [[ $value =~ ^postgres(ql)?://[^[:space:]]+$ ]] || die "$key is not a postgres URL"
+    printf '%s=%s\n' "$key" "$value" >>"$out"
+    seen+=" $key"
+  done
+  [[ $seen == *DATABASE_URL* && $seen == *AUTH_DATABASE_URL* ]] || die 'DATABASE_URL and AUTH_DATABASE_URL are both required on stdin'
+}
+
+acquire_lock() {
+  mkdir -p "$STATE"
+  exec 9>"$STATE/lock"
+  flock -w 900 9 || die 'another deployment holds the lock'
+}
+
+# ------------------------------------------------------------------------------
+# Verbs
+# ------------------------------------------------------------------------------
+cmd_deploy_prod() {
+  local sha=${1:-} image=${2:-}
+  valid_sha "$sha" || die 'invalid sha'
+  valid_image "$image" || die 'invalid image'
+  [[ -f $ENV_DIR/prod.env ]] || die "$ENV_DIR/prod.env is missing"
+  read_credentials
+  acquire_lock
+  pull_image "$image" || die "could not pull $image"
+
+  local prev_sha='' prev_image=''
+  [[ -f $STATE/prod/current ]] && prev_sha=$(<"$STATE/prod/current")
+  [[ -f $STATE/prod/current.image ]] && prev_image=$(<"$STATE/prod/current.image")
+
+  if ! deploy_instance prod "$sha" "$image" "$PROD_MEMORY" "$PROD_CPUS" "$PROD_HEAP_MB" \
+    --env-file "$ENV_DIR/prod.env"; then
+    record_release failed "$sha" "$image"
+    die "production deploy of $sha failed; still serving ${prev_sha:-nothing}"
+  fi
+  if [[ -n $prev_sha ]]; then
+    printf '%s\n' "$prev_sha" >"$STATE/prod/previous"
+    printf '%s\n' "$prev_image" >"$STATE/prod/previous.image"
+  fi
+  printf '%s\n' "$sha" >"$STATE/prod/current"
+  printf '%s\n' "$image" >"$STATE/prod/current.image"
+  record_release deployed "$sha" "$image"
+  prune_images
+  log "DEPLOYED prod $sha"
+}
+
+cmd_rollback_prod() {
+  [[ -f $STATE/prod/previous && -f $STATE/prod/previous.image ]] || die 'no previous release recorded'
+  local sha image cur_sha cur_image
+  sha=$(<"$STATE/prod/previous")
+  image=$(<"$STATE/prod/previous.image")
+  cur_sha=$(<"$STATE/prod/current")
+  cur_image=$(<"$STATE/prod/current.image")
+  { valid_sha "$sha" && valid_image "$image"; } || die 'recorded previous release is malformed'
+  acquire_lock
+  docker image inspect "$image" >/dev/null 2>&1 || die "image of $sha is no longer on this host"
+
+  deploy_instance prod "$sha" "$image" "$PROD_MEMORY" "$PROD_CPUS" "$PROD_HEAP_MB" \
+    --env-file "$ENV_DIR/prod.env" || die "rollback to $sha failed; still serving $cur_sha"
+  printf '%s\n' "$cur_sha" >"$STATE/prod/previous"
+  printf '%s\n' "$cur_image" >"$STATE/prod/previous.image"
+  printf '%s\n' "$sha" >"$STATE/prod/current"
+  printf '%s\n' "$image" >"$STATE/prod/current.image"
+  record_release rolled-back "$sha" "$image"
+  log "ROLLED BACK prod to $sha (from $cur_sha)"
+}
+
+cmd_deploy_preview() {
+  local pr=${1:-} sha=${2:-} image=${3:-}
+  valid_pr "$pr" || die 'invalid pull request number'
+  valid_sha "$sha" || die 'invalid sha'
+  valid_image "$image" || die 'invalid image'
+  [[ -f $ENV_DIR/preview.env ]] || die "$ENV_DIR/preview.env is missing"
+  local name="pr-$pr" dir="$STATE/previews/pr-$pr" tmp
+  read_credentials
+  tmp=$(mktemp)
+  read_preview_env "$tmp"
+  acquire_lock
+
+  local existed=1
+  if ! printf '%s\n' "$(list_preview_names)" | grep -qx "$name"; then
+    existed=0
+    local count
+    count=$(list_preview_names | grep -c . || true)
+    ((count < MAX_PREVIEWS)) || {
+      rm -f "$tmp"
+      die "preview limit reached ($count of $MAX_PREVIEWS); close a pull request or raise MAX_PREVIEWS"
+    }
+  fi
+  mkdir -p "$dir"
+  mv "$tmp" "$dir/db.env"
+
+  if ! { pull_image "$image" &&
+    deploy_instance "$name" "$sha" "$image" "$PREVIEW_MEMORY" "$PREVIEW_CPUS" "$PREVIEW_HEAP_MB" \
+      --env-file "$ENV_DIR/preview.env" --env-file "$dir/db.env" \
+      -e "NEXT_PUBLIC_APP_URL=https://$name.$PREVIEW_SUFFIX"; }; then
+    # A preview that never came up must not keep one of the MAX_PREVIEWS slots.
+    if ((!existed)); then
+      remove_instance "$name"
+      rm -rf -- "$dir"
+    fi
+    die "preview $name failed at $sha"
+  fi
+  printf '%s\n' "$sha" >"$dir/sha"
+  printf '%s\n' "$image" >"$dir/image"
+  prune_images
+  log "DEPLOYED $name $sha https://$name.$PREVIEW_SUFFIX"
+}
+
+cmd_remove_preview() {
+  local pr=${1:-}
+  valid_pr "$pr" || die 'invalid pull request number'
+  acquire_lock
+  remove_instance "pr-$pr"
+  rm -rf -- "$STATE/previews/pr-$pr"
+  log "REMOVED pr-$pr"
+}
+
+cmd_list_previews() { list_preview_names; }
+
+cmd_status() {
+  local f
+  for f in current previous; do
+    [[ -f $STATE/prod/$f ]] && printf 'prod.%s=%s\n' "$f" "$(<"$STATE/prod/$f")"
+  done
+  local name
+  for name in $(list_preview_names); do
+    printf 'preview.%s=%s\n' "$name" "$(cat "$STATE/previews/$name/sha" 2>/dev/null || echo none)"
+  done
+  return 0
+}
+
+# Re-attaches the proxy and the mail catcher to every instance network after the edge was recreated.
+cmd_reconcile() {
+  local net name
+  for net in $(docker network ls --filter label=civo.managed=true --format '{{.Name}}'); do
+    name=${net#civo-net-}
+    attach_shared "$net" "$name"
+    log "attached $net"
+  done
+}
+
+record_release() { # <result> <sha> <image>
+  mkdir -p "$STATE/prod"
+  printf '%s %s %s %s\n' "$(date -u +%FT%TZ)" "$1" "$2" "$3" >>"$STATE/prod/releases.log"
+}
+
+# Old preview images go; the live and previous prod images stay because containers still use them.
+prune_images() {
+  docker image prune -af --filter 'until=24h' >/dev/null 2>&1 || true
+}
+
+load_conf() {
+  [[ -r $CONF ]] || die "$CONF is missing"
+  # shellcheck disable=SC1090
+  source "$CONF"
+  : "${IMAGE_REPO:?}" "${PREVIEW_SUFFIX:?}"
+  MAX_PREVIEWS=${MAX_PREVIEWS:-4}
+  PROD_MEMORY=${PROD_MEMORY:-2g}
+  PROD_CPUS=${PROD_CPUS:-1.5}
+  PROD_HEAP_MB=${PROD_HEAP_MB:-1536}
+  PREVIEW_MEMORY=${PREVIEW_MEMORY:-768m}
+  PREVIEW_CPUS=${PREVIEW_CPUS:-0.5}
+  PREVIEW_HEAP_MB=${PREVIEW_HEAP_MB:-512}
+  HEALTH_TIMEOUT=${HEALTH_TIMEOUT:-120}
+  [[ $IMAGE_REPO =~ ^[a-z0-9.-]+(:[0-9]{1,5})?(/[a-z0-9._-]+)+$ ]] || die 'IMAGE_REPO is malformed'
+  [[ $MAX_PREVIEWS =~ ^[0-9]+$ ]] || die 'MAX_PREVIEWS is malformed'
+}
+
+main() {
+  local role=${1:-}
+  shift || true
+  [[ $role =~ ^(prod|preview|admin)$ ]] || die 'role missing: the forced command must name prod or preview'
+
+  local -a argv
+  if [[ $role == admin ]]; then
+    argv=("$@")
+  else
+    valid_command_line "${SSH_ORIGINAL_COMMAND:-}" || die 'the command contains characters that are not allowed'
+    read -r -a argv <<<"${SSH_ORIGINAL_COMMAND:-}"
+  fi
+  local verb=${argv[0]:-}
+  [[ -n $verb ]] || die 'no command given'
+  authorize "$role" "$verb" || die "the $role key may not run '$verb'"
+
+  load_conf
+  case $verb in
+    deploy-prod) cmd_deploy_prod "${argv[@]:1}" ;;
+    rollback-prod) cmd_rollback_prod ;;
+    deploy-preview) cmd_deploy_preview "${argv[@]:1}" ;;
+    remove-preview) cmd_remove_preview "${argv[@]:1}" ;;
+    list-previews) cmd_list_previews ;;
+    status) cmd_status ;;
+    reconcile) cmd_reconcile ;;
+    *) die "unknown command '$verb'" ;;
+  esac
+}
+
+# `CIVO_SOURCE_ONLY=1 source civo-remote` loads the functions for deploy/test/civo-remote.test.sh.
+if [[ -z ${CIVO_SOURCE_ONLY:-} ]]; then
+  main "$@"
+fi

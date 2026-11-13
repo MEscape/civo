@@ -1,0 +1,138 @@
+# ==============================================================================
+# CIVO - PREVIEW CLEANUP
+# `close`: when a pull request closes or merges, its container, its network and its Neon branch go.
+# `sweep`: every night, anything left behind by a failed or missed cleanup goes too: previews of
+# pull requests that are no longer open. Both are idempotent and safe on a half-created preview.
+# Runs the default branch's code only; nothing of the pull request is checked out.
+# ==============================================================================
+
+name: Preview cleanup
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # A pull request closed
+  # ----------------------------------------------------------------------------
+  close:
+    name: Remove preview
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    # Waits for a deployment of the same pull request that is still running, so the cleanup is
+    # the last word, and replaces one that is only waiting.
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
+
+    env:
+      PR: ${{ github.event.pull_request.number }}
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/oci-ssh
+        with:
+          host: ${{ vars.OCI_HOST }}
+          private-key: ${{ secrets.OCI_SSH_KEY }}
+          known-hosts: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+
+      # Even when the Neon step fails, the host has been cleaned; the nightly sweep retries Neon.
+      - name: Remove the container and its network
+        run: ssh civo-host "remove-preview $PR"
+
+      - name: Delete the Neon branch
+        run: bash .github/scripts/neon-branches.sh delete-preview "$PR"
+
+      - name: Update the comment
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          JOB_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const marker = '<!-- civo-preview -->';
+            const ok = process.env.JOB_STATUS === 'success';
+            const body = `${marker}\n${ok ? 'Preview removed (container and database branch).' : 'Preview cleanup failed; the nightly sweep will retry.'}`;
+            const { owner, repo } = context.repo;
+            const issue_number = Number(process.env.PR);
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find((c) => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            }
+
+  # ----------------------------------------------------------------------------
+  # Nightly: previews whose pull request is no longer open
+  # ----------------------------------------------------------------------------
+  sweep:
+    name: Sweep stale previews
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    concurrency:
+      group: preview-sweep
+      cancel-in-progress: false
+
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: read
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/oci-ssh
+        with:
+          host: ${{ vars.OCI_HOST }}
+          private-key: ${{ secrets.OCI_SSH_KEY }}
+          known-hosts: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+
+      - name: Remove previews of closed pull requests
+        run: |
+          # Union of what the host runs and what Neon holds, as bare pull request numbers.
+          prs=$( { ssh civo-host list-previews | sed -n 's/^pr-//p'; bash .github/scripts/neon-branches.sh list-previews; } | sort -un)
+          failed=0
+          for pr in $prs; do
+            state=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$pr" --jq .state 2>/dev/null || echo unknown)
+            case $state in
+              open) echo "pr-$pr: open, kept" ;;
+              closed)
+                echo "pr-$pr: closed, removing"
+                ssh civo-host "remove-preview $pr" || failed=1
+                bash .github/scripts/neon-branches.sh delete-preview "$pr" || failed=1
+                ;;
+              *) echo "::warning::pr-$pr: state '$state', kept" ;;
+            esac
+          done
+          exit $failed

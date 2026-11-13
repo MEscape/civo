@@ -1,0 +1,59 @@
+# Reverse proxy of the Oracle host. Reached only through Cloudflare:
+#   1. the Oracle network security group admits port 443 from Cloudflare's address ranges only, and
+#   2. every connection must present Cloudflare's Authenticated Origin Pull client certificate.
+# The certificate below is a Cloudflare Origin CA certificate; the zone runs in Full (strict) mode.
+# Instances are found by name on their own Docker networks, so deploying or removing one needs no
+# change to this file and no reload.
+{
+	admin off
+	auto_https off
+	servers {
+		strict_sni_host on
+	}
+}
+
+(origin_tls) {
+	tls /certs/origin.pem /certs/origin.key {
+		client_auth {
+			mode require_and_verify
+			trust_pool file /certs/cloudflare-origin-pull-ca.pem
+		}
+	}
+}
+
+# {args[0]} is the upstream host name; the application listens on 3000.
+(app) {
+	request_body {
+		max_size 10MB
+	}
+	reverse_proxy {args[0]}:3000 {
+		lb_try_duration 5s
+		lb_try_interval 250ms
+	}
+}
+
+(errors) {
+	handle_errors {
+		respond "{http.error.status_code} {http.error.status_text}" {http.error.status_code}
+	}
+}
+
+https://{$PROD_HOST} {
+	import origin_tls
+	import errors
+	import app civo-prod
+}
+
+https://*.{$PREVIEW_SUFFIX} {
+	import origin_tls
+	import errors
+	header X-Robots-Tag "noindex, nofollow"
+
+	@preview header_regexp pr Host ^pr-([1-9][0-9]{0,6})\.
+	handle @preview {
+		import app civo-pr-{re.pr.1}
+	}
+	handle {
+		respond "404 Not Found" 404
+	}
+}

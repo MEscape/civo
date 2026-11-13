@@ -1,0 +1,89 @@
+# ==============================================================================
+# CIVO - IMMUTABLE IMAGE BUILD
+# Builds the `runner` image of one commit for linux/arm64 (the Oracle Ampere host) and pushes it to
+# the GitHub Container Registry tagged with the commit SHA. Callers deploy the returned digest, so
+# what runs on the host is exactly what was built here.
+#
+# Runner: `IMAGE_BUILD_RUNNER` (repository variable). Unset = ubuntu-24.04 with QEMU emulation, which
+# works everywhere but is slow. Public repositories can set it to ubuntu-24.04-arm for a native
+# build; standard arm64 runners are free for public repositories only.
+# ==============================================================================
+
+name: Image
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Full commit SHA to build.
+        type: string
+        required: true
+      app-url:
+        description: Origin the build is served from (NEXT_PUBLIC_APP_URL).
+        type: string
+        required: true
+    outputs:
+      image:
+        description: Pushed image by digest (ghcr.io/<owner>/<repo>@sha256:...).
+        value: ${{ jobs.build.outputs.image }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build arm64 image
+    runs-on: ${{ vars.IMAGE_BUILD_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.name.outputs.repository }}@${{ steps.build.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Image repository
+        id: name
+        run: echo "repository=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      # docker/* actions are pinned to a commit: they handle the registry token.
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+        if: runner.arch != 'ARM64'
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          target: runner
+          platforms: linux/arm64
+          push: true
+          # One tag per commit. `latest` is never pushed: nothing may deploy "whatever is newest".
+          tags: ${{ steps.name.outputs.repository }}:${{ inputs.ref }}
+          # Links the package to this repository, so the workflow token can pull it back.
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ inputs.ref }}
+          # NEXT_PUBLIC_* values are public by definition and are inlined into the client bundle.
+          build-args: |
+            NEXT_PUBLIC_APP_URL=${{ inputs.app-url }}
+            NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=${{ vars.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN }}
+            NEXT_PUBLIC_MAPBOX_STYLE_URL=${{ vars.NEXT_PUBLIC_MAPBOX_STYLE_URL }}
+          provenance: false
+          cache-from: type=gha,scope=image-arm64
+          cache-to: type=gha,scope=image-arm64,mode=max

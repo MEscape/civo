@@ -63,6 +63,8 @@ CMD ["npm", "run", "db:migrate"]
 FROM base AS builder
 
 ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=""
+ARG NEXT_PUBLIC_MAPBOX_STYLE_URL=""
 
 # NEXT_PUBLIC_* values are inlined into the client bundle at build time.
 # Never pass private keys or runtime secrets as build arguments.
@@ -78,7 +80,10 @@ RUN npm run db:generate
 
 # Build Next.js standalone output using scoped, ephemeral build-only placeholders.
 # Scoped to this single RUN instruction so they never persist in image ENV layers.
+# An empty optional public value must be unset, not empty: the schema rejects an empty string.
 RUN --mount=type=cache,target=/app/.next/cache \
+    [ -n "$NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN" ] || unset NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN; \
+    [ -n "$NEXT_PUBLIC_MAPBOX_STYLE_URL" ] || unset NEXT_PUBLIC_MAPBOX_STYLE_URL; \
     DATABASE_URL="postgresql://build:build@localhost:5432/build" \
     AUTH_ENABLED="true" \
     AUTH_SECRET="build-placeholder-not-a-secret-0000000000" \
@@ -88,6 +93,11 @@ RUN --mount=type=cache,target=/app/.next/cache \
     MAIL_FROM="build@example.invalid" \
     UPSTASH_REDIS_REST_URL="https://build-placeholder.upstash.invalid" \
     UPSTASH_REDIS_REST_TOKEN="build-placeholder-not-a-secret" \
+    RATE_LIMIT_CLIENT_ADDRESS_SOURCE="cloudflare" \
+    STORAGE_S3_ENDPOINT="https://build-placeholder.storage.invalid" \
+    STORAGE_S3_ACCESS_KEY_ID="build-placeholder" \
+    STORAGE_S3_SECRET_ACCESS_KEY="build-placeholder-not-a-secret" \
+    STORAGE_S3_PRIVATE_BUCKET="build-placeholder" \
     npm run build
 
 # ------------------------------------------------------------------------------

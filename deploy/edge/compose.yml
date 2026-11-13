@@ -1,0 +1,58 @@
+name: civo-edge
+
+# The two long-lived containers of the Oracle host. Applications are not part of this file: each
+# production release and each preview is started by deploy/bin/civo-remote on a network of its own,
+# and the proxy (and, for previews, the mail catcher) is connected to that network.
+#
+#   cd /opt/civo/edge && docker compose up -d && sudo /opt/civo/bin/civo-remote admin reconcile
+#
+# Recreating a container drops those extra networks; `reconcile` puts them back.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: civo-caddy
+    restart: unless-stopped
+    # host.conf supplies PROD_HOST and PREVIEW_SUFFIX to the Caddyfile.
+    env_file: [/opt/civo/etc/host.conf]
+    ports:
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/certs:ro
+      - caddy-data:/data
+    tmpfs:
+      - /config
+      - /tmp
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  # Every mail a preview sends lands here and leaves the host never. The web UI is bound to the
+  # loopback address; read it through `ssh -L 8025:127.0.0.1:8025 <admin user>@<host>`.
+  mailpit:
+    image: axllent/mailpit:v1
+    container_name: civo-mailpit
+    restart: unless-stopped
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: "500"
+    ports:
+      - "127.0.0.1:8025:8025"
+    volumes:
+      - mailpit-data:/data
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    mem_limit: 128m
+    logging: *logging
+
+volumes:
+  caddy-data:
+  mailpit-data:

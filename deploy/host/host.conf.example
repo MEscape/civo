@@ -1,0 +1,26 @@
+# /opt/civo/etc/host.conf: settings of this host. Read by civo-remote (sourced) and by the proxy
+# container (env_file), so: plain KEY=value, no quotes, no spaces around "=", no secrets.
+
+# The container registry repository the host may pull from, lower case. Images are pulled by digest.
+IMAGE_REPO=ghcr.io/OWNER/REPOSITORY
+
+# Public host name of production, as Cloudflare serves it.
+PROD_HOST=app.example.com
+
+# Previews are served as pr-<number>.<PREVIEW_SUFFIX>. Keep this a registrable domain (example.com),
+# not a deeper one: Cloudflare's free Universal SSL certificate covers the apex and one label only.
+PREVIEW_SUFFIX=example.com
+
+# Previews running at once. 4 fits the 12 GB of the Always Free Ampere A1 allowance next to production.
+MAX_PREVIEWS=4
+
+# Resource limits of one container, and Node's heap ceiling inside it (MB, below the memory limit).
+PROD_MEMORY=2g
+PROD_CPUS=1.5
+PROD_HEAP_MB=1536
+PREVIEW_MEMORY=768m
+PREVIEW_CPUS=0.5
+PREVIEW_HEAP_MB=512
+
+# Seconds a new container gets to become healthy before the release is abandoned.
+HEALTH_TIMEOUT=120

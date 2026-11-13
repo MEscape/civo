@@ -1,130 +1,193 @@
-# ==============================================================================
-# CIVO - DOCKER COMPOSE CONFIGURATION
-# Orchestrates local infrastructure (PostgreSQL, Redis, MailHog) and optional
-# production-profile containers (Database Migrator & Next.js App Runner).
-# All container environment variables are loaded strictly via `.env.docker`.
-# ==============================================================================
-
 name: civo
 
-# ------------------------------------------------------------------------------
-# Shared Service Templates (YAML Anchors)
-# ------------------------------------------------------------------------------
-x-common-env: &common-env
+# Local stand-ins for the services the application runs against in production:
+#
+#   postgres      -> Neon PostgreSQL
+#   redis         -> Upstash Redis (rate limits), reached through redis-rest
+#   redis-rest    -> Upstash's REST API in front of Redis, so the app uses the same client locally
+#   seaweedfs     -> Neon Object Storage (S3 protocol, path-style addressing, SigV4)
+#   mailpit       -> the SMTP relay (catches every mail, nothing leaves the machine)
+#
+# `npm run dev` runs on the host and reads `.env`; Compose reads `.env.docker` (create it from
+# `.env.docker.example`). The two files share credentials, which `.env.docker.example` spells out.
+#
+#   docker compose up -d postgres redis-rest seaweedfs-init mailpit
+#
+# Only services that read these values get them: a secret in a container that never uses it is
+# exposure for nothing.
+x-env: &env
   env_file:
     - .env.docker
 
-x-logging: &default-logging
-  driver: "json-file"
+x-logging: &logging
+  driver: json-file
   options:
-    max-size: "10m"
+    max-size: 10m
     max-file: "3"
 
 services:
-  # ----------------------------------------------------------------------------
-  # PostgreSQL Database
-  # ----------------------------------------------------------------------------
   postgres:
-    <<: *common-env
-    image: postgres:alpine
+    <<: *env
+    image: postgres:18-alpine
     container_name: civo-postgres
     restart: unless-stopped
+    # Bound to loopback so the dev database is not reachable from the local network.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
-      - civo-postgres-data:/var/lib/postgresql/data
+      # Postgres 18+ keeps its versioned data directory under /var/lib/postgresql, not .../data.
+      - civo-postgres-data:/var/lib/postgresql
       - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
-    networks:
-      - civo-network
-    logging: *default-logging
+    networks: [civo-network]
+    logging: *logging
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d$$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
-  # ----------------------------------------------------------------------------
-  # MailHog (Local SMTP Server & Web Inbox)
-  # ----------------------------------------------------------------------------
-  mailhog:
-    <<: *common-env
-    image: mailhog/mailhog:latest
-    container_name: civo-mailhog
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: civo-mailpit
     restart: unless-stopped
+    environment:
+      # Persisted so test mails survive a restart; capped so the file cannot grow unbounded.
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: "500"
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
-    networks:
-      - civo-network
-    logging: *default-logging
+      - "127.0.0.1:10225:1025" # SMTP
+      - "127.0.0.1:8025:8025" # Web UI
+    volumes:
+      - civo-mailpit-data:/data
+    networks: [civo-network]
+    logging: *logging
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8025/ || exit 1"]
+      # The image is scratch-based (no shell, no wget); the binary ships its own probe.
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ----------------------------------------------------------------------------
-  # Redis (In-Memory Rate-Limit Store)
-  # ----------------------------------------------------------------------------
+  # Where the rate-limit counters live. Never reached by the application directly: see redis-rest.
   redis:
-    <<: *common-env
-    image: redis:alpine
+    image: redis:8-alpine
     container_name: civo-redis
     restart: unless-stopped
     volumes:
       - civo-redis-data:/data
-    networks:
-      - civo-network
-    logging: *default-logging
+    networks: [civo-network]
+    logging: *logging
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ----------------------------------------------------------------------------
-  # Serverless Redis HTTP Proxy (Upstash REST Emulator)
-  # ----------------------------------------------------------------------------
+  # Speaks the Upstash REST protocol (UPSTASH_REDIS_REST_URL / _TOKEN), so the application uses the
+  # same client locally and in production. SRH_TOKEN in `.env.docker` is the bearer token.
   redis-rest:
-    <<: *common-env
+    <<: *env
     image: hiett/serverless-redis-http:latest
     container_name: civo-redis-rest
     restart: unless-stopped
     ports:
-      - "8079:80"
-    networks:
-      - civo-network
-    logging: *default-logging
+      - "127.0.0.1:8079:80"
+    networks: [civo-network]
+    logging: *logging
     depends_on:
       redis:
         condition: service_healthy
 
-  # ----------------------------------------------------------------------------
-  # Database Migrations (One-Off Runner — Production Profile)
-  # ----------------------------------------------------------------------------
+  # S3-compatible stand-in for Neon Object Storage, so the app signs and uploads the same way
+  # locally. SeaweedFS rather than MinIO: MinIO's community edition no longer ships images and its
+  # repository is archived.
+  seaweedfs:
+    <<: *env
+    image: chrislusf/seaweedfs:latest
+    container_name: civo-seaweedfs
+    restart: unless-stopped
+    # The credentials come from `.env.docker` and are written to a config file at start, so the app
+    # and the store cannot drift apart. The `civo` identity may do everything; `anonymous` may only
+    # read the public bucket, which is what makes STORAGE_PUBLIC_BASE_URL work (Neon's `public_read`
+    # buckets behave the same). The volume size limit keeps a dev disk from being preallocated in
+    # 30 GB chunks.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        printf '{"identities":[{"name":"civo","credentials":[{"accessKey":"%s","secretKey":"%s"}],"actions":["Admin","Read","Write","List","Tagging"]},{"name":"anonymous","actions":["Read:%s"]}]}' \
+          "$$STORAGE_S3_ACCESS_KEY_ID" "$$STORAGE_S3_SECRET_ACCESS_KEY" "$$STORAGE_S3_PUBLIC_BUCKET" > /tmp/s3.json
+        exec weed server -dir=/data -ip.bind=0.0.0.0 -master.volumeSizeLimitMB=128 \
+          -s3 -s3.port=8333 -s3.config=/tmp/s3.json
+    # Published to the host because browsers upload to presigned URLs directly.
+    ports:
+      - "127.0.0.1:8333:8333"
+    volumes:
+      - civo-seaweedfs-data:/data
+    networks: [civo-network]
+    logging: *logging
+    healthcheck:
+      # The S3 root answers 403 without credentials, which a health probe would count as down;
+      # the embedded master is up exactly when the process is.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9333/cluster/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Creates both buckets once. S3 stores do not create them on first write, and the app would fail
+  # its first upload otherwise.
+  seaweedfs-init:
+    <<: *env
+    image: amazon/aws-cli:latest
+    container_name: civo-seaweedfs-init
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        export AWS_ACCESS_KEY_ID="$$STORAGE_S3_ACCESS_KEY_ID" \
+               AWS_SECRET_ACCESS_KEY="$$STORAGE_S3_SECRET_ACCESS_KEY" \
+               AWS_DEFAULT_REGION="$${STORAGE_S3_REGION:-auto}"
+        endpoint="http://seaweedfs:8333"
+        for bucket in "$$STORAGE_S3_PUBLIC_BUCKET" "$$STORAGE_S3_PRIVATE_BUCKET"; do
+          created=false
+          for attempt in $$(seq 1 30); do
+            if aws --endpoint-url "$$endpoint" s3api head-bucket --bucket "$$bucket" 2>/dev/null \
+              || aws --endpoint-url "$$endpoint" s3api create-bucket --bucket "$$bucket" >/dev/null; then
+              created=true
+              break
+            fi
+            sleep 2
+          done
+          [ "$$created" = true ] || exit 1
+        done
+    networks: [civo-network]
+    logging: *logging
+    depends_on:
+      seaweedfs:
+        condition: service_healthy
+
   migrate:
-    <<: *common-env
-    profiles: ["production"]
+    <<: *env
+    profiles: [production]
     build:
       context: .
       dockerfile: Dockerfile
       target: migrator
     container_name: civo-migrate
     restart: "no"
-    networks:
-      - civo-network
-    logging: *default-logging
+    networks: [civo-network]
+    logging: *logging
     depends_on:
       postgres:
         condition: service_healthy
 
-  # ----------------------------------------------------------------------------
-  # Next.js Application Server (Production Profile)
-  # ----------------------------------------------------------------------------
+  # The production image, for checking the build. It runs with NODE_ENV=production, so the
+  # configuration refuses what only the local stand-ins offer (http endpoints, AUTH_ENABLED=false,
+  # RATE_LIMIT_ENABLED=false); give it real https services in `.env.docker` to start it.
   app:
-    <<: *common-env
-    profiles: ["production"]
+    <<: *env
+    profiles: [production]
     build:
       context: .
       dockerfile: Dockerfile
@@ -133,47 +196,45 @@ services:
         NEXT_PUBLIC_APP_URL: http://localhost:3000
     container_name: civo-app
     restart: unless-stopped
+    # Runs as PID 1 otherwise, where SIGTERM is ignored and shutdown waits for the kill timeout.
     init: true
     ports:
       - "3000:3000"
-    networks:
-      - civo-network
-    logging: *default-logging
+    networks: [civo-network]
+    logging: *logging
     depends_on:
       postgres:
         condition: service_healthy
-      mailhog:
+      mailpit:
         condition: service_healthy
       redis-rest:
         condition: service_started
+      seaweedfs-init:
+        condition: service_completed_successfully
       migrate:
         condition: service_completed_successfully
     healthcheck:
       test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 30s
       timeout: 5s
       start_period: 20s
       retries: 3
 
-# ------------------------------------------------------------------------------
-# Networks
-# ------------------------------------------------------------------------------
 networks:
   civo-network:
     name: civo-network
     driver: bridge
 
-# ------------------------------------------------------------------------------
-# Persistent Volumes
-# ------------------------------------------------------------------------------
 volumes:
   civo-postgres-data:
     name: civo-postgres-data
   civo-redis-data:
     name: civo-redis-data
+  civo-mailpit-data:
+    name: civo-mailpit-data
+  civo-seaweedfs-data:
+    name: civo-seaweedfs-data
