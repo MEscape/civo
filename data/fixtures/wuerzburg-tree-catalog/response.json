@@ -1,0 +1,41 @@
+{
+  "@type": "Dataset",
+  "name": "Baumkataster der Stadt Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/baumkataster_stadt_wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-04-05T11:20:42.243000+00:00",
+  "dateModified": "2026-06-30T07:01:40.781000+00:00",
+  "keywords": [
+    "Klima",
+    "Umwelt",
+    "Kataster",
+    "Baumkataster",
+    "Bäume",
+    "Parkbäume",
+    "Gartenamt",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/baumkataster_stadt_wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/baumkataster_stadt_wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/baumkataster_stadt_wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/baumkataster_stadt_wuerzburg/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

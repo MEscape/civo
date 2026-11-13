@@ -1,0 +1,97 @@
+{
+  "title": "Rathaus - Allgemeine Informationen zum Bürgerbüro",
+  "links": [
+    {
+      "label": "Serviceleistungen A-Z",
+      "url": "https://www.wuerzburg.de/rathaus/serviceleistungen-a-z"
+    },
+    {
+      "label": "Serviceleistungen nach Lebenslagen",
+      "url": "https://www.wuerzburg.de/rathaus/serviceleistungen-nach-lebenslagen"
+    },
+    {
+      "label": "Terminvereinbarung",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/terminvereinbarung"
+    },
+    {
+      "label": "Meldewesen",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/meldewesen"
+    },
+    {
+      "label": "Termine & News",
+      "url": "https://www.wuerzburg.de/themen/umwelt-klima/abfall-und-stadtreinigung/termine-news"
+    },
+    {
+      "label": "> alle Informationen zum Thema Ausweis, Reisepass, Dokumente",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/r_517740"
+    },
+    {
+      "label": "> alle Informationen zum Thema Meldewesen",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/r_517760"
+    },
+    {
+      "label": "> alle Informationen zum Thema Ausweise, Reisepass, Dokumente",
+      "url": "https://r_15054/"
+    },
+    {
+      "label": "> alle Informationen zum Thema Meldewesen",
+      "url": "https://r_15017/"
+    }
+  ],
+  "facts": {
+    "openingHours": [
+      {
+        "desk": "Öffnungszeiten des Informationsschalters des Bürgerbüros",
+        "days": [
+          "Montag 07:20 Uhr - 13:00 Uhr, 14:00 Uhr - 15:00 Uhr,",
+          "Dienstag 07:20 Uhr - 12:00 Uhr, 13:00 Uhr - 16:00 Uhr,",
+          "Mittwoch 07:20 Uhr - 13:00 Uhr, Mittwoch Nachmittag geschlossen",
+          "Donnerstag 07:30 - 12:00 Uhr, 13:30 Uhr - 18:00 Uhr,",
+          "Freitag 07:20 Uhr - 12:00 Uhr"
+        ]
+      },
+      {
+        "desk": "Öffnungszeiten für Passausgabe (Zimmer 34) sowie Führerscheinausgabe (Zimmer 36) des Bürgerbüros",
+        "days": [
+          "Montag 07:20 Uhr - 13:00 Uhr, Montag Nachmittag geschlossen",
+          "Dienstag 07:20 Uhr - 12:00 Uhr, 13:15 Uhr - 16:00 Uhr,",
+          "Mittwoch 07:20 Uhr - 13:00 Uhr, Mittwoch Nachmittag geschlossen",
+          "Donnerstag 07:30 - 12:00 Uhr, 13:30 Uhr - 18:00 Uhr,",
+          "Freitag 07:20 Uhr - 12:00 Uhr"
+        ]
+      },
+      {
+        "desk": "Öffnungszeiten des Händlerschalters des Bürgerbüros bzw. des Händlerschalters der Zulassungsstelle",
+        "days": [
+          "Montag 07:00 Uhr - 12:30 Uhr, Montag Nachmittag geschlossen",
+          "Dienstag 07:00 Uhr - 11:30 Uhr, Dienstag Nachmittag geschlossen",
+          "Mittwoch 07:00 Uhr - 12:30 Uhr, Mittwoch Nachmittag geschlossen",
+          "Donnerstag 07:00 - 11:30 Uhr, Donnerstag Nachmittag geschlossen",
+          "Freitag 07:00 - 11:30 Uhr, Freitag Nachmittag geschlossen"
+        ]
+      }
+    ],
+    "closedOn": [
+      "gesetzlichen Feiertagen,",
+      "am Faschingsdienstag,",
+      "an Heiligabend,",
+      "an Silvester,",
+      "sowie an Montagen nach einer Wahl bzw. Abstimmung."
+    ],
+    "questions": [
+      "Wie vereinbare ich einen Termin im Bürgerbüro / im Einwohnermeldeamt / in der Zulassungsstelle / in der Führerscheinstelle?",
+      "Wie storniere ich einen Termin im Bürgerbüro / im Einwohnermeldeamt / in der Zulassungsstelle / in der Führerscheinstelle?",
+      "Für welche Leistungen ist ein Termin im Bürgerbüro nötig?",
+      "Für welche Leistungen ist kein Termin im Bürgerbüro notwendig?",
+      "Wie kann ich im Bürgerbüro bezahlen?"
+    ],
+    "payment": [
+      "bar am Kassenautomaten,",
+      "mit Karte (girocard, MasterCard®, Maestro, Visa, V Pay) oder",
+      "per Smartphone (Apple Pay oder die App \"Mobiles Bezahlen\" für Android-Geräte)."
+    ],
+    "mailboxes": [
+      "gewerbemeldung@stadt.wuerzburg.de"
+    ]
+  }
+}

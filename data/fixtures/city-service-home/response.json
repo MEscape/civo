@@ -1,0 +1,124 @@
+{
+  "title": "Bürgerbüro Würzburg - Personalausweis, Anmeldung & mehr | Stadt Würzburg - Bürgerbüro",
+  "links": [
+    {
+      "label": "Serviceleistungen A-Z",
+      "url": "https://www.wuerzburg.de/rathaus/serviceleistungen-a-z"
+    },
+    {
+      "label": "Serviceleistungen nach Lebenslagen",
+      "url": "https://www.wuerzburg.de/rathaus/serviceleistungen-nach-lebenslagen"
+    },
+    {
+      "label": "Terminvereinbarung",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/terminvereinbarung"
+    },
+    {
+      "label": "Meldewesen",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/meldewesen"
+    },
+    {
+      "label": "Termine & News",
+      "url": "https://www.wuerzburg.de/themen/umwelt-klima/abfall-und-stadtreinigung/termine-news"
+    },
+    {
+      "label": "Elektronische Wohnsitzanmeldung online",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/service/543221.Elektronische-Wohnsitzanmeldung-online.html"
+    },
+    {
+      "label": "Vereinbaren Sie online einen Termin...",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/terminvereinbarung"
+    },
+    {
+      "label": "Terminvereinbarung erforderlich!",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/terminvereinbarung"
+    },
+    {
+      "label": "Öffnungszeiten",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/allgemeine-informationen-zum-buergerbuero/543201.Infos-zum-Buergerbuero.html#%C3%96ffnungszeiten%20des%20B%C3%BCrgerb%C3%BCros"
+    },
+    {
+      "label": "Termin vereinbaren und stornieren",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/allgemeine-informationen-zum-buergerbuero/543201.Infos-zum-Buergerbuero.html#Termin-vereinbaren-und-Termin-stornieren"
+    },
+    {
+      "label": "Dafür brauchen Sie einen Termin",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/allgemeine-informationen-zum-buergerbuero/543201.Infos-zum-Buergerbuero.html#Fuer-diese-Leistungen-brauchen-Sie-einen-Termin"
+    },
+    {
+      "label": "Personalausweis",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/ausweiseunddokumente/531127.Ausweise-und-Dokumente.html#Personalausweise"
+    },
+    {
+      "label": "Reisepass",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/ausweiseunddokumente/531127.Ausweise-und-Dokumente.html#Reisepass"
+    },
+    {
+      "label": "Meldewesen",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/meldewesen"
+    },
+    {
+      "label": "Öffnungszeiten",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/index.html#collapse2"
+    },
+    {
+      "label": "Online Termin vereinbaren",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/terminvereinbarung"
+    }
+  ],
+  "facts": {
+    "openingHours": [],
+    "closedOn": [
+      "Termin vereinbaren",
+      "Terminvereinbarung erforderlich!",
+      "Die Leistungen des Bürgerbüros erfolgen nur nach Terminvereinbarung und ersparen Ihnen dadurch lange Wartezeiten. Allerdings stehen passende Termine nicht immer zur Verfügung, nutzen Sie deshalb gerne unsere Online-Dienstleistungen. Sollten keine Termine zur Auswahl stehen, sind bereits alle Termine vergeben.",
+      "Tipp:",
+      "Zusätzliche Termine für den laufenden Monat, die Woche – aber auch tagesaktuelle - werden regelmäßig früh zwischen 07:15 - 07:30 Uhr freigegeben, sofern ausreichend Personalkapazitäten vorhanden sind. Vielen Dank für Ihr Verständnis.",
+      "Bitte beachten!",
+      "Service",
+      "Allgemeine Infos",
+      "Öffnungszeiten",
+      "Termin vereinbaren und stornieren",
+      "Dafür brauchen Sie einen Termin",
+      "Bezahlmöglichkeiten",
+      "Alle Services",
+      "Ausweise, Dokumente",
+      "Ausweise kompakt",
+      "Personalausweis",
+      "Reisepass",
+      "Alle Services",
+      "Bewohnerparkausweis",
+      "Was ist ein Bewohnerparkausweis?",
+      "Welche Parkzonen für Bewohner gibt es?",
+      "Was kostet ein Bewohnerparkausweis?",
+      "Alle Services",
+      "Meldewesen",
+      "An-, Um- und Abmeldung",
+      "Melde- und Abmeldebestätigung",
+      "Melderegisterauskunft",
+      "Erstattung Semesterticket",
+      "Meldebescheinigung",
+      "Alle Services",
+      "Führerschein",
+      "Online-Beantragung Karteikartenabschrift",
+      "Erstantrag und Erweiterungen",
+      "Ersatz und Neuantrag",
+      "Umschreibungen",
+      "Verlängerungen"
+    ],
+    "questions": [
+      "Was ist ein Bewohnerparkausweis?",
+      "Welche Parkzonen für Bewohner gibt es?",
+      "Was kostet ein Bewohnerparkausweis?",
+      "Was ist die neue eID-Karte?",
+      "Worauf muss ich achten?",
+      "Was muss ich mitbringen?",
+      "Wie lange dauert die Bearbeitung?",
+      "Was kostet die eID-Karte?"
+    ],
+    "payment": [],
+    "mailboxes": [
+      "buergerbuero@stadt.wuerzburg.de"
+    ]
+  }
+}

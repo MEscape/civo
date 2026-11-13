@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "mach-mit_alle",
+  "url": "https://opendata.wuerzburg.de/explore/assets/mach-mit_alle0/",
+  "license": "http://dcat-ap.de/def/licenses/dl-zero-de/2.0",
+  "dateCreated": "2025-02-10T10:18:47.394000+00:00",
+  "dateModified": "2025-02-10T10:18:47+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mach-mit_alle0/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mach-mit_alle0/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mach-mit_alle0/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

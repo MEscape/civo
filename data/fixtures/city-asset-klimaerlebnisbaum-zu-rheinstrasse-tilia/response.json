@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Klimaerlebnisbaum - Zu Rheinstraße - Tilia",
+  "url": "https://opendata.wuerzburg.de/explore/assets/klimaerlebnisbaum-zu-rheinstrasse-tilia/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2024-07-02T12:41:38.192000+00:00",
+  "dateModified": "2026-11-01T16:50:04.137000+00:00",
+  "keywords": [
+    "Baum",
+    "Klima",
+    "Temperatur",
+    "Luftfeuchte",
+    "Baumstamm",
+    "Saftfluss",
+    "Bodenwasser",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-zu-rheinstrasse-tilia/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-zu-rheinstrasse-tilia/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-zu-rheinstrasse-tilia/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

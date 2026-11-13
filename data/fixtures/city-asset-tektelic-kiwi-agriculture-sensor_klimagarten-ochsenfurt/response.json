@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Bodentemperatur und Bodenfeuchte Mitmachgarten Ochsenfurt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/tektelic-kiwi-agriculture-sensor_klimagarten-ochsenfurt/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-05-07T09:38:09.450000+00:00",
+  "dateModified": "2025-05-07T09:38:09+00:00",
+  "keywords": [
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/tektelic-kiwi-agriculture-sensor_klimagarten-ochsenfurt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/tektelic-kiwi-agriculture-sensor_klimagarten-ochsenfurt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/tektelic-kiwi-agriculture-sensor_klimagarten-ochsenfurt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "@type": "Dataset",
+  "name": "WVV/STW/MFN: Energiedaten Verbrauch",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wvv_mfn_energiedaten_verbrauch/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2022-03-16T05:48:03.768000+00:00",
+  "dateModified": "2022-03-16T05:48:03+00:00",
+  "keywords": [
+    "ENER",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_verbrauch/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_verbrauch/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_verbrauch/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_verbrauch/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

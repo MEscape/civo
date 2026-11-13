@@ -1,0 +1,39 @@
+{
+  "id": "dwd-opendata-index",
+  "name": "dwd-opendata-index",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://opendata.dwd.de/",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:24:40.830Z",
+  "httpStatus": 200,
+  "contentType": "text/html",
+  "sample": "data/fixtures/dwd-opendata-index/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.dwd.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:24:38 GMT",
+    "content-type": "text/html",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "bytes": 869,
+  "sha256": "5e479b2175557365a975aaabcb626c652fc16f0312169bb211319cfb59598cc0",
+  "projection": "Document HTML with script elements removed; original response hash retained separately",
+  "sampleSha256": "5e479b2175557365a975aaabcb626c652fc16f0312169bb211319cfb59598cc0"
+}

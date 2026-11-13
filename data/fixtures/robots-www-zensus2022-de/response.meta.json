@@ -1,0 +1,16 @@
+{
+  "url": "https://www.zensus2022.de/robots.txt",
+  "status": 302,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:28 GMT",
+    "server": "Apache",
+    "content-length": "258",
+    "location": "https://www.destatis.de/zensus2022",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "same-origin",
+    "content-type": "text/html; charset=iso-8859-1"
+  },
+  "fetchedAt": "2026-11-06T07:37:28.359Z"
+}

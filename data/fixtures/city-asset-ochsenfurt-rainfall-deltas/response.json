@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Ochsenfurt Rainfall Deltas",
+  "url": "https://opendata.wuerzburg.de/explore/assets/ochsenfurt-rainfall-deltas/",
+  "license": null,
+  "dateCreated": "2026-07-02T09:34:44.492000+00:00",
+  "dateModified": "2026-07-02T09:34:44+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/ochsenfurt-rainfall-deltas/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/ochsenfurt-rainfall-deltas/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/ochsenfurt-rainfall-deltas/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

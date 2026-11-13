@@ -1,0 +1,34 @@
+{
+  "@type": "Dataset",
+  "name": "Historische Wetterdaten kompakt 1979-2021",
+  "url": "https://opendata.wuerzburg.de/explore/assets/historische-wetterdaten-kompakt-1979-2021/",
+  "license": "http://dcat-ap.de/def/licenses/odbl",
+  "dateCreated": "2021-09-14T20:16:18.035000+00:00",
+  "dateModified": "2021-09-14T20:06:21+00:00",
+  "keywords": [
+    "wetter",
+    "wetter, weather, temperatur",
+    "Historie",
+    "Temperatur",
+    "Niederschlag",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/historische-wetterdaten-kompakt-1979-2021/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/historische-wetterdaten-kompakt-1979-2021/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/historische-wetterdaten-kompakt-1979-2021/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

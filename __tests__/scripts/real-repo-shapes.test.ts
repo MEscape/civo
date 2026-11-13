@@ -99,13 +99,11 @@ describe('the real repository still has the shape the generators expect', () => 
     expect(existsSync(join(REAL_ROOT, 'src/modules/zz-probe'))).toBe(false);
   });
 
-  it('can still extend the website module, the reference for the standard shape', async () => {
-    const output = await runUseCase(['zz-probe-thing', '-m', 'website', '--dry-run'], {
-      root: REAL_ROOT,
-    });
+  it('refuses the website module, whose loader is a plain function, and writes nothing', async () => {
+    await expect(
+      runUseCase(['zz-probe-thing', '-m', 'website', '--dry-run'], { root: REAL_ROOT }),
+    ).rejects.toThrow(/not a standard business module/);
 
-    expect(output).toContain('Would create 1 file(s):');
-    expect(output).toContain('Would edit 1 file(s):');
     expect(
       existsSync(join(REAL_ROOT, 'src/modules/website/application/commands/zz-probe-thing.ts')),
     ).toBe(false);

@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Hauptwohnsitz Ausländer Altersgruppen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/hauptwohnsitz_altersgruppen_weiblich_metadaten-kopieren/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T08:08:47.067000+00:00",
+  "dateModified": "2026-03-26T09:22:22.405000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Gesamtstadt",
+    "Hauptwohnsitz",
+    "Ausländer",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_altersgruppen_weiblich_metadaten-kopieren/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_altersgruppen_weiblich_metadaten-kopieren/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_altersgruppen_weiblich_metadaten-kopieren/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

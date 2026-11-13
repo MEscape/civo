@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Wasserfüllstand Mitmachgarten Ochsenfurt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/milesight-em500_klimagarten-ochsenfurt/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-05-07T10:08:56.635000+00:00",
+  "dateModified": "2025-05-07T10:08:56+00:00",
+  "keywords": [
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/milesight-em500_klimagarten-ochsenfurt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/milesight-em500_klimagarten-ochsenfurt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/milesight-em500_klimagarten-ochsenfurt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

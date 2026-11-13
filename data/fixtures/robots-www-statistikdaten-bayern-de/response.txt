@@ -1,0 +1,22 @@
+# robots.txt zu https://www.statistikdaten.bayern.de/
+
+User-agent: *                    # Allen Crawlern
+Disallow: /genesis/online/data   # Alles INNERHALB verweigern
+
+User-agent: *                    # Allen Crawlern
+Disallow: /genesis/online/   	 # Alles INNERHALB verweigern
+
+User-agent: 008                  # Dem Crawler "80legs"
+Disallow:  /genesis/online/data  # Alles INNERHALB verweigern
+
+User-agent: sitebot              # Dem Crawler "sitebot"
+Disallow:  /genesis/online/data  # Alles INNERHALB verweigern
+
+User-agent: facebookexternalhit  # Dem Crawler "FacebookExternalHit"
+Disallow:  /genesis/             # Alles INNERHALB verweigern
+
+User-agent: meta-externalagent   # Dem Crawler "Meta-ExternalAgent"
+Disallow:  /genesis/		 # Alles INNERHALB verweigern
+
+User-agent: meta-externalagent   # Dem Crawler "Meta-ExternalAgent"
+Disallow:  /genesisWS/		 # Alles INNERHALB verweigern

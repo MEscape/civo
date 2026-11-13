@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Bevölkerungsprognose - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/prognose/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:32:50.644000+00:00",
+  "dateModified": "2026-03-14T23:00:03.740000+00:00",
+  "keywords": [
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/prognose/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/prognose/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/prognose/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

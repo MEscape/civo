@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Museen in Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/museen/",
+  "license": "http://dcat-ap.de/def/licenses/odbl",
+  "dateCreated": "2019-11-12T13:36:21+00:00",
+  "dateModified": "2019-12-04T11:30:14.181000+00:00",
+  "keywords": [
+    "museum",
+    "baroque",
+    "EDUC",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/museen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/museen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/museen/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/museen/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

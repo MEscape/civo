@@ -1,0 +1,16 @@
+{
+  "url": "https://overpass-api.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:10:32 GMT",
+    "content-type": "text/plain",
+    "content-length": "114",
+    "last-modified": "Tue, 03 Nov 2026 18:08:47 GMT",
+    "connection": "keep-alive",
+    "etag": "\"6aea232f-72\"",
+    "cache-control": "public, max-age=300",
+    "accept-ranges": "bytes"
+  },
+  "fetchedAt": "2026-11-09T06:10:34.964Z"
+}

@@ -1,0 +1,6 @@
+{
+  "scope": "Local development worker; deployment service and monitoring not established",
+  "pid": 29552,
+  "startedAt": "2026-11-06T21:25:23.6972830Z",
+  "command": "node scripts/wuerzburg/watch-sources.mjs"
+}

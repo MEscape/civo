@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-11-06T13:24:09.478Z",
+  "results": [
+    {
+      "viewport": "desktop",
+      "service": true,
+      "calendar": true,
+      "hold": true,
+      "validation": true,
+      "confirmed": true,
+      "rescheduled": true,
+      "cancelled": true
+    },
+    {
+      "viewport": "mobile",
+      "service": true,
+      "calendar": true,
+      "hold": true,
+      "validation": true,
+      "confirmed": true,
+      "rescheduled": true,
+      "cancelled": true
+    }
+  ]
+}

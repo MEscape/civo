@@ -1,0 +1,26 @@
+{
+  "id": "dwd-warnings",
+  "name": "dwd-warnings",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json",
+  "entityShapes": [
+    "Notice"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:40.767Z",
+  "httpStatus": null,
+  "contentType": null,
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "robots.txt disallows this path; request not sent",
+  "robots": "https://www.dwd.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified"
+}

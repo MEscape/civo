@@ -1,0 +1,36 @@
+{
+  "capturedAt": "2026-11-09T19:43:14.359Z",
+  "results": [
+    {
+      "role": "admin",
+      "passed": true,
+      "path": "/de/websites/3b0f6f2e-8a51-4c9d-9e27-5d1a7c4b2f80"
+    },
+    {
+      "role": "viewer",
+      "passed": true,
+      "path": "/de/websites"
+    },
+    {
+      "role": "editor",
+      "passed": true,
+      "path": "/de/websites"
+    },
+    {
+      "role": "contributor",
+      "passed": true,
+      "path": "/de/websites"
+    },
+    {
+      "role": "employee",
+      "passed": true,
+      "path": "/de/bookings/3b0f6f2e-8a51-4c9d-9e27-5d1a7c4b2f80"
+    },
+    {
+      "role": "platform_admin",
+      "passed": true,
+      "path": "/de/websites/3b0f6f2e-8a51-4c9d-9e27-5d1a7c4b2f80"
+    }
+  ],
+  "limitation": "Authentication and landing page only; role-specific write denials and cross-tenant access not exercised."
+}

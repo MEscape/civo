@@ -1,0 +1,30 @@
+{
+  "@type": "Dataset",
+  "name": "Wohnen - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wohnen/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:33:00.107000+00:00",
+  "dateModified": "2026-11-05T23:01:44.160000+00:00",
+  "keywords": [
+    "REGI",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wohnen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wohnen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wohnen/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

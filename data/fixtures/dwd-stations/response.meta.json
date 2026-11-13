@@ -1,0 +1,35 @@
+{
+  "id": "dwd-stations",
+  "name": "dwd-stations",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/TU_Stundenwerte_Beschreibung_Stationen.txt",
+  "entityShapes": [
+    "Place"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:07.959Z",
+  "httpStatus": 404,
+  "contentType": "text/html",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "HTTP 404",
+  "robots": "https://opendata.dwd.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:37:08 GMT",
+    "content-type": "text/html",
+    "content-length": "146",
+    "connection": "keep-alive",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "bytes": 146,
+  "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0"
+}

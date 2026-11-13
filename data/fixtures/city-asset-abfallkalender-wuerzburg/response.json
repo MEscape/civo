@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Abfallkalender Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/abfallkalender-wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2022-05-30T12:01:00.457000+00:00",
+  "dateModified": "2026-11-06T09:05:41.991000+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/abfallkalender-wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/abfallkalender-wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/abfallkalender-wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

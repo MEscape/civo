@@ -1,0 +1,37 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Auslaender Durchschnittsalter",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_auslaender_durchschnittsalter/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T09:00:59.186000+00:00",
+  "dateModified": "2026-03-26T09:31:02.210000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Hauptwohnsitz",
+    "Ausländer",
+    "Stadtbezirk",
+    "Durchschnittsalter",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_auslaender_durchschnittsalter/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_auslaender_durchschnittsalter/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_auslaender_durchschnittsalter/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

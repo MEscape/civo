@@ -1,0 +1,35 @@
+{
+  "id": "bayern-geodata",
+  "name": "bayern-geodata",
+  "publisher": "Bayerische Vermessungsverwaltung",
+  "url": "https://geoservices.bayern.de/wms/v2/ogc_dop80_oa.cgi?SERVICE=WMS&REQUEST=GetCapabilities",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:18.478Z",
+  "httpStatus": 404,
+  "contentType": "text/html; charset=iso-8859-1",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "HTTP 404",
+  "robots": "https://geoservices.bayern.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:18 GMT",
+    "server": "CERN httpd",
+    "content-length": "196",
+    "content-type": "text/html; charset=iso-8859-1",
+    "strict-transport-security": "max-age=31536000",
+    "connection": "close"
+  },
+  "bytes": 196,
+  "sha256": "80c3fe2ae1062abf56456f52518bd670f9ec3917b7f85e152b347ac6b6faf880"
+}

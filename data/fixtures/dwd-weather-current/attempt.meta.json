@@ -1,0 +1,41 @@
+{
+  "id": "dwd-weather-current",
+  "name": "dwd-weather-current",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://opendata.dwd.de/weather/weather_reports/poi/10655-BEOB.csv",
+  "entityShapes": [
+    "Observation"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:24:10.774Z",
+  "httpStatus": 200,
+  "contentType": "application/octet-stream",
+  "sample": "data/fixtures/dwd-weather-current/response.txt",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.dwd.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:24:08 GMT",
+    "content-type": "application/octet-stream",
+    "content-length": "7021",
+    "last-modified": "Mon, 09 Nov 2026 05:38:53 GMT",
+    "connection": "keep-alive",
+    "etag": "\"6af15c6d-1b6d\"",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000",
+    "accept-ranges": "bytes"
+  },
+  "bytes": 7021,
+  "sha256": "872961011eb0404b4192a38e9b4c03ede8fa3fd8b670637903fd135f9468e722",
+  "sampleSha256": "872961011eb0404b4192a38e9b4c03ede8fa3fd8b670637903fd135f9468e722"
+}

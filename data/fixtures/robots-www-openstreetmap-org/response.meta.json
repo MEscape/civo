@@ -1,0 +1,23 @@
+{
+  "url": "https://www.openstreetmap.org/robots.txt",
+  "status": 200,
+  "headers": {
+    "connection": "keep-alive",
+    "content-length": "891",
+    "server": "Apache",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "last-modified": "Mon, 21 Sep 2026 17:51:39 GMT",
+    "etag": "\"37b-65c01e6ed19e8\"",
+    "accept-ranges": "bytes",
+    "content-type": "text/plain; charset=utf-8",
+    "date": "Fri, 06 Nov 2026 12:38:03 GMT",
+    "via": "1.1 varnish",
+    "x-served-by": "cache-ams-eham8680037-AMS",
+    "x-cache": "MISS",
+    "x-cache-hits": "0",
+    "x-timer": "S1793968683.062920,VS0,VE10",
+    "vary": "Accept-Encoding",
+    "alt-svc": "h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400"
+  },
+  "fetchedAt": "2026-11-06T12:38:03.713Z"
+}

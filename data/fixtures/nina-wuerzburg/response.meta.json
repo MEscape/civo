@@ -1,0 +1,40 @@
+{
+  "id": "nina-wuerzburg",
+  "name": "nina-wuerzburg",
+  "publisher": "Bundesamt für Bevölkerungsschutz und Katastrophenhilfe",
+  "url": "https://warnung.bund.de/api31/dashboard/096630000000.json",
+  "entityShapes": [
+    "Notice"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:42.336Z",
+  "httpStatus": 200,
+  "contentType": "application/json",
+  "sample": "data/fixtures/nina-wuerzburg/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://warnung.bund.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "myracloud",
+    "date": "Mon, 09 Nov 2026 06:10:40 GMT",
+    "content-type": "application/json",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "etag": "\"1789055823506\"",
+    "last-modified": "Thu, 10 Sep 2026 15:57:03 GMT",
+    "cache-control": "max-age=10",
+    "x-cdn": "1"
+  },
+  "bytes": 2,
+  "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "sampleSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

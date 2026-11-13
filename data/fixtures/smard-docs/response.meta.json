@@ -1,0 +1,40 @@
+{
+  "id": "smard-docs",
+  "name": "smard-docs",
+  "publisher": "Bundesnetzagentur",
+  "url": "https://www.smard.de/home/downloadcenter/download-marktdaten/",
+  "entityShapes": [
+    "Series"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:35.836Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=UTF-8",
+  "sample": "data/fixtures/smard-docs/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.smard.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "cache-control": "no-store",
+    "content-language": "de",
+    "content-security-policy-report-only": "default-src 'self'; connect-src 'self' *.engagement.coremedia.cloud *.byside.com wss://*.engagement.coremedia.cloud wss://*.byside.com; script-src 'self' *.engagement.coremedia.cloud 'unsafe-inline'; style-src 'self' *.engagement.coremedia.cloud 'unsafe-inline'; img-src 'self' *.engagement.coremedia.cloud data:;",
+    "content-type": "text/html;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 07:37:36 GMT",
+    "vary": "Access-Control-Request-Headers",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "x-xss-protection": "0",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 25797,
+  "sha256": "5d87f9af17f410dea5e5c392e612b3e25550138d7e804dd294c518a91fd9ac9b"
+}

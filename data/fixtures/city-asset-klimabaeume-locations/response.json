@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Klimaerlebnisbäume Locations",
+  "url": "https://opendata.wuerzburg.de/explore/assets/klimabaeume-locations/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2021-02-18T21:11:11.692000+00:00",
+  "dateModified": "2021-02-18T21:09:57+00:00",
+  "keywords": [
+    "Klimaerlebnisbäume",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimabaeume-locations/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimabaeume-locations/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimabaeume-locations/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimabaeume-locations/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

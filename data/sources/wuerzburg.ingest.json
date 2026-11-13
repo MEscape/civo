@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "websiteId": "3b0f6f2e-8a51-4c9d-9e27-5d1a7c4b2f80",
+  "robotsOverride": "Explicit user instruction, 2026-11-06; public requests only, source terms and access controls remain in force",
+  "sources": [
+    {
+      "id": "pegel-main",
+      "refreshSeconds": 900
+    },
+    {
+      "id": "pegel-wuerzburg-day",
+      "refreshSeconds": 900
+    },
+    {
+      "id": "city-window-parkplatzdaten_wuerzburg",
+      "refreshSeconds": 300
+    },
+    {
+      "id": "city-window-fahrradzaehlung-tagesdaten-alle-zaehlstationen",
+      "refreshSeconds": 3600
+    },
+    {
+      "id": "city-window-stadtbezirke",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-window-bicycle_counter_sites",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-window-barrierefreie-toiletten-im-stadtgebiet-wuerzburg",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-window-klimabaeume-locations",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-window-baumkataster_stadt_wuerzburg",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-window-wetterstation-ludwigkai",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-complete-fahrradstellplaetze-stadt-wuerzburg",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-complete-abfallkalender-wuerzburg",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-service-home",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "wikidata-rathaus",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-service-info",
+      "refreshSeconds": 86400
+    },
+    {
+      "id": "city-window-stadtbezirke_hauptwohnsitz",
+      "refreshSeconds": 86400
+    }
+  ]
+}

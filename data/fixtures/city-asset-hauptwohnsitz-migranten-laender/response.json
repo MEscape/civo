@@ -1,0 +1,41 @@
+{
+  "@type": "Dataset",
+  "name": "Hauptwohnsitz Migranten Länder",
+  "url": "https://opendata.wuerzburg.de/explore/assets/hauptwohnsitz-migranten-laender/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2025-03-18T08:49:11.860000+00:00",
+  "dateModified": "2026-04-08T06:11:32.409000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Gesamtstadt",
+    "Hauptwohnsitz",
+    "Migrationshintergrund",
+    "Deutsche mit Migrationshintergrund",
+    "Migranten",
+    "Kontinente",
+    "Ländergruppen",
+    "Ausländer",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz-migranten-laender/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz-migranten-laender/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz-migranten-laender/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

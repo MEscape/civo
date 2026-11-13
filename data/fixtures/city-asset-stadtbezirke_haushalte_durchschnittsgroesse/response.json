@@ -1,0 +1,37 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Haushalte Durchschnittsgröße",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_haushalte_durchschnittsgroesse/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T13:23:38.783000+00:00",
+  "dateModified": "2026-03-26T10:26:58.150000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Haushalte",
+    "Haushaltsgröße",
+    "Stadtbezirk",
+    "Durchschnitt",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_haushalte_durchschnittsgroesse/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_haushalte_durchschnittsgroesse/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_haushalte_durchschnittsgroesse/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

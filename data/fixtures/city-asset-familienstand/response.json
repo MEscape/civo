@@ -1,0 +1,31 @@
+{
+  "@type": "Dataset",
+  "name": "Familienstand - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/familienstand/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:33:03.494000+00:00",
+  "dateModified": "2026-11-05T23:01:47.823000+00:00",
+  "keywords": [
+    "Bevölkerung",
+    "Ehe",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/familienstand/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/familienstand/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/familienstand/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

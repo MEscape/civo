@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie F _ Digitalisierung - IT Infrastruktur",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-f-digitalisierung-it-infrastruktur/",
+  "license": null,
+  "dateCreated": "2025-11-12T14:04:08.910000+00:00",
+  "dateModified": "2025-11-12T14:04:08+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-f-digitalisierung-it-infrastruktur/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-f-digitalisierung-it-infrastruktur/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-f-digitalisierung-it-infrastruktur/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

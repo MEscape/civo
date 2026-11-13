@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "PeopleCounter Stabue Hubland",
+  "url": "https://opendata.wuerzburg.de/explore/assets/peoplecounter-stabue-hubland/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-06-27T11:52:18.277000+00:00",
+  "dateModified": "2025-06-27T11:52:18+00:00",
+  "keywords": [
+    "EDUC",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/peoplecounter-stabue-hubland/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/peoplecounter-stabue-hubland/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/peoplecounter-stabue-hubland/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

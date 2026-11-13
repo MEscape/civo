@@ -1,0 +1,26 @@
+{
+  "id": "city-records-stadtbezirke_hauptwohnsitz",
+  "name": "city-records-stadtbezirke_hauptwohnsitz",
+  "publisher": "Stadt Würzburg",
+  "url": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_hauptwohnsitz/records?limit=3",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "attribution": null,
+  "fetchedAt": "2026-11-09T19:05:25.774Z",
+  "httpStatus": null,
+  "contentType": null,
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "robots.txt disallows this path; request not sent",
+  "robots": "https://opendata.wuerzburg.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified"
+}

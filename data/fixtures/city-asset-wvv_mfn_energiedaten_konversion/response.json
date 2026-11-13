@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "WVV/MFN: Energiedaten zu Konversion",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wvv_mfn_energiedaten_konversion/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2022-03-17T09:53:56.514000+00:00",
+  "dateModified": "2022-03-17T09:54:29+00:00",
+  "keywords": [
+    "ENER",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_konversion/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_konversion/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wvv_mfn_energiedaten_konversion/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

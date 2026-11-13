@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Verwaltungshaushalt Stadt Würzburg - 2021, 2022",
+  "url": "https://opendata.wuerzburg.de/explore/assets/verwaltungshaushalt/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2021-08-09T09:19:28.457000+00:00",
+  "dateModified": "2024-08-27T12:03:01.878000+00:00",
+  "keywords": [
+    "GOVE",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/verwaltungshaushalt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/verwaltungshaushalt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/verwaltungshaushalt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

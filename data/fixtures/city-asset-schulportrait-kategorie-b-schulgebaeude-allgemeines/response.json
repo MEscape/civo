@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie B _ Schulgebäude - Allgemeines",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-b-schulgebaeude-allgemeines/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:47:47.400000+00:00",
+  "dateModified": "2025-11-12T13:47:47+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-b-schulgebaeude-allgemeines/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-b-schulgebaeude-allgemeines/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-b-schulgebaeude-allgemeines/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "url": "https://gbfs.nextbike.net/robots.txt",
+  "status": 404,
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:37:56 GMT",
+    "content-type": "text/html; charset=iso-8859-1",
+    "content-length": "236",
+    "connection": "keep-alive",
+    "access-control-allow-origin": "*"
+  },
+  "fetchedAt": "2026-11-06T07:37:57.224Z"
+}

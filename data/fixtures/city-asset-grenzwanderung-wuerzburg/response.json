@@ -1,0 +1,34 @@
+{
+  "@type": "Dataset",
+  "name": "Grenzwanderungen Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/grenzwanderung-wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2020-09-29T12:18:06.280000+00:00",
+  "dateModified": "2020-09-29T12:14:41+00:00",
+  "keywords": [
+    "EDUC",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-wuerzburg/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

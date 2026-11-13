@@ -1,0 +1,107 @@
+{
+  "capturedAt": "2026-11-09T21:35:38.843Z",
+  "results": [
+    {
+      "mode": "forced-colors/reduced-motion",
+      "check": "Keyboard Tab and Enter move from skip link to main",
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "/",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 2922,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "buergerservice",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 1836,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "buergerservice/termine",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 415,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "buergerservice/abfall",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 983,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "mobilitaet",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 4824,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "umwelt-klima",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 2053,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "stadt-in-zahlen",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 2649,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "rathaus-politik",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 824,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "kontakt",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 1840,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "impressum",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 295,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "datenschutz",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 303,
+      "passed": true
+    },
+    {
+      "mode": "no JavaScript / 320px",
+      "page": "barrierefreiheit",
+      "status": 200,
+      "hiddenSegments": 0,
+      "visibleChars": 295,
+      "passed": true
+    }
+  ],
+  "limitation": "Automated Chromium emulation and skip-link keyboard check only; no manual screen-reader, full interactive-map keyboard, or visual forced-color review."
+}

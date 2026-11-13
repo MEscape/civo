@@ -1,0 +1,32 @@
+{
+  "@type": "Dataset",
+  "name": "Sozialmonitoring - Pflege",
+  "url": "https://opendata.wuerzburg.de/explore/assets/sozialmonitoring-pflegeplaetze/",
+  "license": null,
+  "dateCreated": "2024-05-24T12:22:01.905000+00:00",
+  "dateModified": "2025-06-06T15:50:36+00:00",
+  "keywords": [
+    "soziales",
+    "pflegeplaetze",
+    "pflege",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-pflegeplaetze/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-pflegeplaetze/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-pflegeplaetze/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

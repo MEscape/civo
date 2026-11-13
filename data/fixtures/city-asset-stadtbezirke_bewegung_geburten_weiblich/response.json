@@ -1,0 +1,38 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Bewegung Geburten weiblich",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_bewegung_geburten_weiblich/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T09:15:03.782000+00:00",
+  "dateModified": "2026-03-26T09:52:46.062000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Stadtbezirk",
+    "Würzburg",
+    "Hauptwohnsitz",
+    "Geburten",
+    "Geschlecht",
+    "weiblich",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_bewegung_geburten_weiblich/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_bewegung_geburten_weiblich/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_bewegung_geburten_weiblich/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

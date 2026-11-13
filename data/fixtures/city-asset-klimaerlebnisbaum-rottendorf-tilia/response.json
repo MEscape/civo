@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Klimaerlebnisbaum - Rottendorf - Tilia",
+  "url": "https://opendata.wuerzburg.de/explore/assets/klimaerlebnisbaum-rottendorf-tilia/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-07-02T12:41:36.118000+00:00",
+  "dateModified": "2025-08-05T06:55:44.946000+00:00",
+  "keywords": [
+    "Baum",
+    "Klima",
+    "Temperatur",
+    "Luftfeuchte",
+    "Baumstamm",
+    "Saftfluss",
+    "Bodenwasser",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-rottendorf-tilia/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-rottendorf-tilia/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-rottendorf-tilia/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Fahrrad Zählung Zählstellen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/bicycle_counter_sites/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2021-12-07T15:06:00.494000+00:00",
+  "dateModified": "2026-11-05T23:03:07.236000+00:00",
+  "keywords": [
+    "Cycle",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bicycle_counter_sites/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bicycle_counter_sites/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bicycle_counter_sites/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bicycle_counter_sites/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

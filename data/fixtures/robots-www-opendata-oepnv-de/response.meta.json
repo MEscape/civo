@@ -1,0 +1,18 @@
+{
+  "url": "https://www.opendata-oepnv.de/robots.txt",
+  "status": 404,
+  "headers": {
+    "server": "nginx/1.24.0 (Ubuntu)",
+    "date": "Fri, 06 Nov 2026 07:37:41 GMT",
+    "content-type": "text/html; charset=utf-8",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "x-powered-by": "PHP/8.3.36",
+    "x-frame-options": "SAMEORIGIN",
+    "x-content-type-options": "nosniff",
+    "x-xss-protection": "1; mode=block",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload"
+  },
+  "fetchedAt": "2026-11-06T07:37:41.602Z"
+}

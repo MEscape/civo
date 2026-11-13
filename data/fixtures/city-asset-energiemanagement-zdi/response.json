@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Energiemanagement-ZDI",
+  "url": "https://opendata.wuerzburg.de/explore/assets/energiemanagement-zdi/",
+  "license": null,
+  "dateCreated": "2025-06-13T15:19:07.675000+00:00",
+  "dateModified": "2025-06-13T15:19:07+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/energiemanagement-zdi/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/energiemanagement-zdi/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/energiemanagement-zdi/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

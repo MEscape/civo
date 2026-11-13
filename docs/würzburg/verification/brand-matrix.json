@@ -1,0 +1,86 @@
+{
+  "capturedAt": "2026-11-06T21:14:31.910Z",
+  "method": "Existing themeToCssVariables tokens injected into the actual theme wrapper; axe text contrast at desktop with reduced motion. UI/focus contrast and persisted theme mutation not exercised.",
+  "results": [
+    {
+      "page": "/",
+      "brand": "wuerzburg",
+      "violations": []
+    },
+    {
+      "page": "/",
+      "brand": "light",
+      "violations": []
+    },
+    {
+      "page": "/",
+      "brand": "dark",
+      "violations": []
+    },
+    {
+      "page": "/",
+      "brand": "saturated",
+      "violations": []
+    },
+    {
+      "page": "mobilitaet",
+      "brand": "wuerzburg",
+      "violations": []
+    },
+    {
+      "page": "mobilitaet",
+      "brand": "light",
+      "violations": []
+    },
+    {
+      "page": "mobilitaet",
+      "brand": "dark",
+      "violations": []
+    },
+    {
+      "page": "mobilitaet",
+      "brand": "saturated",
+      "violations": []
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "brand": "wuerzburg",
+      "violations": []
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "brand": "light",
+      "violations": []
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "brand": "dark",
+      "violations": []
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "brand": "saturated",
+      "violations": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "brand": "wuerzburg",
+      "violations": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "brand": "light",
+      "violations": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "brand": "dark",
+      "violations": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "brand": "saturated",
+      "violations": []
+    }
+  ]
+}

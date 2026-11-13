@@ -1,0 +1,37 @@
+{
+  "@type": "Dataset",
+  "name": "Monatsübersicht der Passantenzählung in Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/passantenzaehlung_wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-02-06T13:33:44.415000+00:00",
+  "dateModified": "2023-02-06T13:34:54+00:00",
+  "keywords": [
+    "passanten",
+    "sensor",
+    "zählung",
+    "kaiserstraße",
+    "spiegelstraße",
+    "schönbornstraße",
+    "passantenaufkommen",
+    "passantenzählung",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

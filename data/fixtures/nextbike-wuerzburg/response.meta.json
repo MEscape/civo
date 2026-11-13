@@ -1,0 +1,44 @@
+{
+  "id": "nextbike-wuerzburg",
+  "name": "nextbike-wuerzburg",
+  "publisher": "nextbike GmbH",
+  "url": "https://maps.nextbike.net/maps/nextbike-live.json?lat=49.7913&lng=9.9534&distance=6000&limit=10",
+  "entityShapes": [
+    "Place"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:47.162Z",
+  "httpStatus": 200,
+  "contentType": "application/json; charset=utf-8",
+  "sample": "data/fixtures/nextbike-wuerzburg/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://maps.nextbike.net/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:10:45 GMT",
+    "content-type": "application/json; charset=utf-8",
+    "content-length": "16",
+    "connection": "keep-alive",
+    "x-nextbike-hostname": "ps1cowormap0008",
+    "x-nextbike-instance": "worker-1",
+    "access-control-allow-origin": "*",
+    "etag": "W/\"10-rE+Yd4lhA8zFSZjEGhJwct2glC4\"",
+    "expires": "Mon, 09 Nov 2026 06:10:44 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+    "referrer-policy": "unsafe-url",
+    "strict-transport-security": "max-age=63072000;"
+  },
+  "bytes": 16,
+  "sha256": "e011e27af8fa509db8ce6655b84c89556fa562eea6897e0c3c6ae5e1ca8d6269",
+  "sampleSha256": "e011e27af8fa509db8ce6655b84c89556fa562eea6897e0c3c6ae5e1ca8d6269"
+}

@@ -1,0 +1,38 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Deutsche mit Migrationshintergrund weiblich",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_deutsche_mit_migrationshintergrund_weiblich/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T10:24:44.397000+00:00",
+  "dateModified": "2026-03-26T10:15:18.600000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Hauptwohnsitz",
+    "Migrationshintergrund",
+    "Deutsche",
+    "Stadtbezirk",
+    "Geschlecht",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_deutsche_mit_migrationshintergrund_weiblich/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_deutsche_mit_migrationshintergrund_weiblich/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_deutsche_mit_migrationshintergrund_weiblich/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

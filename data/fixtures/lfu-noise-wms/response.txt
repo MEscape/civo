@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:esri_wms="http://www.esri.com/wms" version="1.3.0">
+	<Service>
+		<Name>WMS</Name>
+		<Title><![CDATA[Lärm an Hauptverkehrsstraßen]]></Title>
+		<Abstract><![CDATA[Der Dienst stellt die Berechnungsergebnisse der Umgebungslärmkartierung 2017 an den Hauptverkehrsstraßen in Bayern dar. Außerhalb von Ballungsräumen sind dies alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2015 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Innerhalb von Ballungsräumen sind dies alle Straßen mit einer DTV von mehr als 8.200 Kfz pro Tag.]]></Abstract>
+		<KeywordList>
+			<Keyword><![CDATA[Umgebungslärm]]></Keyword>
+			<Keyword><![CDATA[ Hauptverkehrsstraße]]></Keyword>
+			<Keyword><![CDATA[ Straßenverkehrslärm]]></Keyword>
+			<Keyword><![CDATA[ Pegel LDEN]]></Keyword>
+			<Keyword><![CDATA[ Pegel LNight]]></Keyword>
+			<Keyword><![CDATA[ Isophone LDEN=67 dB(A)]]></Keyword>
+			<Keyword><![CDATA[ Isophone LNight=57 dB(A)]]></Keyword>
+			<Keyword><![CDATA[ Lärmschutzeinrichtung]]></Keyword>
+			<Keyword><![CDATA[ Lärmschutzwall]]></Keyword>
+			<Keyword><![CDATA[ Lärmschutzwand]]></Keyword>
+			<Keyword><![CDATA[ Wall-Wandkombination]]></Keyword>
+		</KeywordList>
+		<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?"/>
+		<ContactInformation>
+			<ContactPersonPrimary>
+				<ContactPerson/>
+				<ContactOrganization><![CDATA[Bayerisches Landesamt für Umwelt]]></ContactOrganization>
+			</ContactPersonPrimary>
+			<ContactPosition><![CDATA[Datenstelle]]></ContactPosition>
+			<ContactAddress>
+				<AddressType><![CDATA[postal]]></AddressType>
+				<Address><![CDATA[Bürgermeister-Ulrich-Straße 160]]></Address>
+				<City><![CDATA[Augsburg]]></City>
+				<StateOrProvince><![CDATA[DE-BY]]></StateOrProvince>
+				<PostCode><![CDATA[86179]]></PostCode>
+				<Country><![CDATA[DE]]></Country>
+			</ContactAddress>
+			<ContactVoiceTelephone><![CDATA[+49-821-9071-0]]></ContactVoiceTelephone>
+			<ContactFacsimileTelephone/>
+			<ContactElectronicMailAddress><![CDATA[datenstelle@lfu.bayern.de]]></ContactElectronicMailAddress>
+		</ContactInformation>
+		<Fees><![CDATA[Der Datensatz/Dienst steht unter der Lizenz: Creative Commons Namensnennung 4.0 International (CC BY 4.0). Die Namensnennung des Bayerischen Landesamtes für Umwelt als Rechteinhaber hat in folgender Weise zu erfolgen: "Datenquelle: Bayerisches Landesamt für Umwelt, www.lfu.bayern.de".]]></Fees>
+		<AccessConstraints><![CDATA[Es gelten keine Zugriffsbeschränkungen.]]></AccessConstraints>
+		<MaxWidth>4096</MaxWidth>
+		<MaxHeight>4096</MaxHeight>
+	</Service>
+	<Capability>
+		<Request>
+			<GetCapabilities>
+				<Format>application/vnd.ogc.wms_xml</Format>
+				<Format>text/xml</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</GetCapabilities>
+			<GetMap>
+				<Format>image/bmp</Format>
+				<Format>image/jpeg</Format>
+				<Format>image/tiff</Format>
+				<Format>image/png</Format>
+				<Format>image/png8</Format>
+				<Format>image/png24</Format>
+				<Format>image/png32</Format>
+				<Format>image/gif</Format>
+				<Format>image/svg+xml</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</GetMap>
+			<GetFeatureInfo>
+				<Format>application/vnd.esri.wms_raw_xml</Format>
+				<Format>application/vnd.esri.wms_featureinfo_xml</Format>
+				<Format>application/vnd.ogc.wms_xml</Format>
+				<Format>application/geojson</Format>
+				<Format>text/xml</Format>
+				<Format>text/html</Format>
+				<Format>text/plain</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</GetFeatureInfo>
+			<esri_wms:GetStyles>
+				<Format>application/vnd.ogc.sld+xml</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</esri_wms:GetStyles>
+		</Request>
+		<Exception>
+			<Format>application/vnd.ogc.se_xml</Format>
+			<Format>application/vnd.ogc.se_inimage</Format>
+			<Format>application/vnd.ogc.se_blank</Format>
+			<Format>text/xml</Format>
+			<Format>XML</Format>
+		</Exception>
+		<Layer>
+			<Title><![CDATA[Lärm an Hauptverkehrsstraßen]]></Title>
+			<Abstract><![CDATA[Der Dienst stellt die Berechnungsergebnisse der Umgebungslärmkartierung 2017 an den Hauptverkehrsstraßen in Bayern dar. Außerhalb von Ballungsräumen sind dies alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2015 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Innerhalb von Ballungsräumen sind dies alle Straßen mit einer DTV von mehr als 8.200 Kfz pro Tag.]]></Abstract>
+			<CRS>CRS:84</CRS>
+			<CRS>EPSG:4326</CRS>
+			<CRS>EPSG:4258</CRS>
+			<CRS>EPSG:31467</CRS>
+			<CRS>EPSG:31468</CRS>
+			<CRS>EPSG:25832</CRS>
+			<CRS>EPSG:25833</CRS>
+			<CRS>EPSG:3857</CRS>
+			<CRS>EPSG:31258</CRS>
+			<EX_GeographicBoundingBox>
+				<westBoundLongitude>8.799200</westBoundLongitude>
+				<eastBoundLongitude>14.055682</eastBoundLongitude>
+				<southBoundLatitude>47.156072</southBoundLatitude>
+				<northBoundLatitude>50.670961</northBoundLatitude>
+			</EX_GeographicBoundingBox>
+			<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+			<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+			<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+			<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+			<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+			<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+			<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+			<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+			<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+			<Layer queryable="1">
+				<Name>mroadbyln2022</Name>
+				<Title><![CDATA[Hauptverkehrsstraßen (außerhalb Ballungsräume) LNight 2022]]></Title>
+				<Abstract><![CDATA[Die Daten beinhalten die Berechnungsergebnisse der Umgebungslärmkartierung 2022 an den Hauptverkehrsstraßen außerhalb der Ballungsräume in Bayern. Dies sind alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2019 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Die Lärmberechnungen erfolgen gemäß der "Berechnungsmethode für den Umgebungslärm von bodennahen Quellen (Straßen, Schienenwege, Industrie und Gewerbe) (BUB)". Die Lärmindizes LDEN und LNight in dB(A) werden als Maß für die allgemeine Belästigung bzw. als Maß für die Störungen des Schlafes verwendet. Der Pegel LDEN ist ein über 24 Stunden gemittelter Immissionspegel, der aus den Pegeln LDay, LEvening und LNight für die Beurteilungszeiten Tag (6:00-18:00 Uhr), Abend (18:00-22:00 Uhr) und Nacht (22:00-6:00 Uhr) ermittelt wird. Durch Gewichtsfaktoren von 5 dB(A) für die vierstündige Abendzeit und 10 dB(A) für die achtstündige Nachtzeit wird die erhöhte Lärmempfindlichkeit in diesen Zeiten berücksichtigt. Der Layer stellt die Lärmbelastung an Hauptverkehrsstraßen ausgedrückt durch den Lärmindex LNight gemäß EG-Umgebungslärmrichtlinie dar.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.799200</westBoundLongitude>
+					<eastBoundLongitude>14.055682</eastBoundLongitude>
+					<southBoundLatitude>47.156072</southBoundLatitude>
+					<northBoundLatitude>50.670961</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+				<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+				<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+				<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+				<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+				<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/ad92deb7-65cd-4029-8ee5-63e50d189423</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=4fc40ad4-01f1-4f5a-8c0f-d881e53a99db"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[mroadbyln2022]]></Title>
+					<LegendURL width="126" height="108">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=mroadbyln2022" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+			</Layer>
+			<Layer queryable="1">
+				<Name>mroadbylden2022</Name>
+				<Title><![CDATA[Hauptverkehrsstraßen (außerhalb Ballungsräume) LDEN 2022]]></Title>
+				<Abstract><![CDATA[Die Daten beinhalten die Berechnungsergebnisse der Umgebungslärmkartierung 2022 an den Hauptverkehrsstraßen außerhalb der Ballungsräume in Bayern. Dies sind alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2019 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Die Lärmberechnungen erfolgen gemäß der "Berechnungsmethode für den Umgebungslärm von bodennahen Quellen (Straßen, Schienenwege, Industrie und Gewerbe) (BUB)". Die Lärmindizes LDEN und LNight in dB(A) werden als Maß für die allgemeine Belästigung bzw. als Maß für die Störungen des Schlafes verwendet. Der Pegel LDEN ist ein über 24 Stunden gemittelter Immissionspegel, der aus den Pegeln LDay, LEvening und LNight für die Beurteilungszeiten Tag (6:00-18:00 Uhr), Abend (18:00-22:00 Uhr) und Nacht (22:00-6:00 Uhr) ermittelt wird. Durch Gewichtsfaktoren von 5 dB(A) für die vierstündige Abendzeit und 10 dB(A) für die achtstündige Nachtzeit wird die erhöhte Lärmempfindlichkeit in diesen Zeiten berücksichtigt. Der Layer stellt die Lärmbelastung an Hauptverkehrsstraßen ausgedrückt durch den Lärmindex LDEN gemäß EG-Umgebungslärmrichtlinie dar.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.799200</westBoundLongitude>
+					<eastBoundLongitude>14.055682</eastBoundLongitude>
+					<southBoundLatitude>47.156072</southBoundLatitude>
+					<northBoundLatitude>50.670961</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+				<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+				<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+				<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+				<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+				<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/f7d55310-87dc-43b7-b67b-7b7d1d1ff6e8</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=ce27ac01-2dc7-4955-a2c3-49bc1c29d6e3"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[mroadbylden2022]]></Title>
+					<LegendURL width="126" height="108">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=mroadbylden2022" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+			</Layer>
+			<Layer queryable="1">
+				<Name>mroadbylden2017</Name>
+				<Title><![CDATA[Hauptverkehrsstraßen (incl. Ballungsräume) LDEN 2017]]></Title>
+				<Abstract><![CDATA[Die Daten beinhalten die Berechnungsergebnisse der Umgebungslärmkartierung 2017 an den Hauptverkehrsstraßen in Bayern. Außerhalb von Ballungsräumen sind dies alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2015 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Innerhalb von Ballungsräumen sind dies alle Straßen mit einer DTV von mehr als 8.200 Kfz pro Tag. Die Lärmindizes LDEN und LNight in dB(A) werden als Maß für die allgemeine Belästigung bzw. als Maß für die Störungen des Schlafes verwendet. Der Pegel LDEN ist ein über 24 Stunden gemittelter Immissionspegel, der aus den Pegeln LDay, LEvening und LNight für die Beurteilungszeiten Tag (6:00-18:00 Uhr), Abend (18:00-22:00 Uhr) und Nacht (22:00-6:00 Uhr) ermittelt wird. Durch Gewichtsfaktoren von 5 dB(A) für die vierstündige Abendzeit und 10 dB(A) für die achtstündige Nachtzeit wird die erhöhte Lärmempfindlichkeit in diesen Zeiten berücksichtigt. Der Layer stellt die Lärmbelastung an Hauptverkehrsstraßen ausgedrückt durch den Lärmindex LDEN gemäß EG-Umgebungslärmrichtlinie dar.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.799200</westBoundLongitude>
+					<eastBoundLongitude>14.055682</eastBoundLongitude>
+					<southBoundLatitude>47.156072</southBoundLatitude>
+					<northBoundLatitude>50.670961</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+				<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+				<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+				<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+				<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+				<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/dc9a3a11-1d16-412a-8468-83308dce6cd6</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=8a06980b-427f-4eb1-b31b-4205f73bb1bb"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[mroadbylden2017]]></Title>
+					<LegendURL width="126" height="108">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=mroadbylden2017" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+			</Layer>
+			<Layer queryable="1">
+				<Name>mroadbyln2017</Name>
+				<Title><![CDATA[Hauptverkehrsstraßen (incl. Ballungsräume) LNight 2017]]></Title>
+				<Abstract><![CDATA[Die Daten beinhalten die Berechnungsergebnisse der Umgebungslärmkartierung 2017 an den Hauptverkehrsstraßen in Bayern. Außerhalb von Ballungsräumen sind dies alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2015 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Innerhalb von Ballungsräumen sind dies alle Straßen mit einer DTV von mehr als 8.200 Kfz pro Tag. Die Lärmindizes LDEN und LNight in dB(A) werden als Maß für die allgemeine Belästigung bzw. als Maß für die Störungen des Schlafes verwendet. Der Pegel LDEN ist ein über 24 Stunden gemittelter Immissionspegel, der aus den Pegeln LDay, LEvening und LNight für die Beurteilungszeiten Tag (6:00-18:00 Uhr), Abend (18:00-22:00 Uhr) und Nacht (22:00-6:00 Uhr) ermittelt wird. Durch Gewichtsfaktoren von 5 dB(A) für die vierstündige Abendzeit und 10 dB(A) für die achtstündige Nachtzeit wird die erhöhte Lärmempfindlichkeit in diesen Zeiten berücksichtigt. Der Layer stellt die Lärmbelastung an Hauptverkehrsstraßen ausgedrückt durch den Lärmindex LNight gemäß EG-Umgebungslärmrichtlinie dar.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.799200</westBoundLongitude>
+					<eastBoundLongitude>14.055682</eastBoundLongitude>
+					<southBoundLatitude>47.156072</southBoundLatitude>
+					<northBoundLatitude>50.670961</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+				<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+				<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+				<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+				<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+				<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/411d9c16-2f0c-477d-8f73-d71785963971</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=5bb2fbda-0677-46d5-909f-7e3d51e7450b"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[mroadbyln2017]]></Title>
+					<LegendURL width="126" height="126">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=mroadbyln2017" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+			</Layer>
+			<Layer queryable="1">
+				<Name>lsemroadby2022</Name>
+				<Title><![CDATA[Lärmschutzeinrichtungen 2022]]></Title>
+				<Abstract><![CDATA[ Die Daten beinhalten die Berechnungsergebnisse der Umgebungslärmkartierung 2022 an den Hauptverkehrsstraßen außerhalb von Ballungsräumen in Bayern. Dies sind alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2019 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Die Lärmindizes LDEN und LNight in dB(A) werden als Maß für die allgemeine Belästigung bzw. als Maß für die Störungen des Schlafes verwendet. Der Pegel LDEN ist ein über 24 Stunden gemittelter Immissionspegel, der aus den Pegeln LDay, LEvening und LNight für die Beurteilungszeiten Tag (6:00-18:00 Uhr), Abend (18:00-22:00 Uhr) und Nacht (22:00-6:00 Uhr) ermittelt wird. Durch Gewichtsfaktoren von 5 dB(A) für die vierstündige Abendzeit und 10 dB(A) für die achtstündige Nachtzeit wird die erhöhte Lärmempfindlichkeit in diesen Zeiten berücksichtigt. Der Layer stellt die Lärmschutzeinrichtungen an den Hauptverkehrsstraßen außerhalb von Ballungsräumen dar. Dies können Lärmschutzwälle, -wände, Wall-Wandkombinationen oder Einschnittslagen sein.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.799200</westBoundLongitude>
+					<eastBoundLongitude>14.055682</eastBoundLongitude>
+					<southBoundLatitude>47.156072</southBoundLatitude>
+					<northBoundLatitude>50.670961</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+				<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+				<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+				<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+				<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+				<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/e527ed5c-3ef7-43ff-b980-7f16c8be1e17</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=fbd02133-fd7f-4428-b198-26ff4d6559ab"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[lsemroadby2022]]></Title>
+					<LegendURL width="18" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=lsemroadby2022" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+			</Layer>
+			<Layer queryable="1">
+				<Name>lsemroadby2017</Name>
+				<Title><![CDATA[Lärmschutzeinrichtungen 2017]]></Title>
+				<Abstract><![CDATA[Die Daten beinhalten die Berechnungsergebnisse der Umgebungslärmkartierung 2017 an den Hauptverkehrsstraßen in Bayern. Außerhalb von Ballungsräumen sind dies alle Autobahnen, Bundes- und Staatsstraßen, die gemäß Verkehrszählung 2015 eine Verkehrsbelastung von mehr als 3 Mio. Kraftfahrzeugen pro Jahr aufweisen. Dies entspricht einer durchschnittlichen täglichen Verkehrsstärke (DTV) von mehr als 8.200 Kfz pro Tag. Innerhalb von Ballungsräumen sind dies alle Straßen mit einer DTV von mehr als 8.200 Kfz pro Tag. Die Lärmindizes LDEN und LNight in dB(A) werden als Maß für die allgemeine Belästigung bzw. als Maß für die Störungen des Schlafes verwendet. Der Pegel LDEN ist ein über 24 Stunden gemittelter Immissionspegel, der aus den Pegeln LDay, LEvening und LNight für die Beurteilungszeiten Tag (6:00-18:00 Uhr), Abend (18:00-22:00 Uhr) und Nacht (22:00-6:00 Uhr) ermittelt wird. Durch Gewichtsfaktoren von 5 dB(A) für die vierstündige Abendzeit und 10 dB(A) für die achtstündige Nachtzeit wird die erhöhte Lärmempfindlichkeit in diesen Zeiten berücksichtigt. Der Layer stellt die Lärmschutzeinrichtungen an den Hauptverkehrsstraßen dar. Dies können Lärmschutzwälle, -wände, Wall-Wandkombinationen oder Einschnittlagen sein.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.799200</westBoundLongitude>
+					<eastBoundLongitude>14.055682</eastBoundLongitude>
+					<southBoundLatitude>47.156072</southBoundLatitude>
+					<northBoundLatitude>50.670961</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.799200" miny="47.156072" maxx="14.055682" maxy="50.670961"/>
+				<BoundingBox CRS="EPSG:4326" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31468" minx="5228394.794389" miny="4273565.051415" maxx="5614905.765511" maxy="4645354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="47.156072" miny="8.799200" maxx="50.670961" maxy="14.055682"/>
+				<BoundingBox CRS="EPSG:31467" minx="5224066.217462" miny="3485793.341985" maxx="5625097.237568" maxy="3872699.306217"/>
+				<BoundingBox CRS="EPSG:25832" minx="485797.291940" miny="5222508.207136" maxx="872595.460744" maxy="5623424.214254"/>
+				<BoundingBox CRS="EPSG:25833" minx="46271.134167" miny="5225619.424892" maxx="433244.928546" maxy="5626717.134006"/>
+				<BoundingBox CRS="EPSG:3857" minx="983711.354895" miny="5971538.554290" maxx="1555755.611862" maxy="6560415.590054"/>
+				<BoundingBox CRS="EPSG:31258" minx="128058.169895" miny="231514.373825" maxx="497277.336120" maxy="618127.435555"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/1481e2f4-3ba2-4eea-88c7-2361ed042509</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=3703c4c9-77ac-48ea-bf12-76154f2f2970"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[lsemroadby2017]]></Title>
+					<LegendURL width="18" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=lsemroadby2017" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+			</Layer>
+		</Layer>
+	</Capability>
+</WMS_Capabilities>

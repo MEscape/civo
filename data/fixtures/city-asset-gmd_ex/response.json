@@ -1,0 +1,34 @@
+{
+  "@type": "Dataset",
+  "name": "gmd_ex",
+  "url": "https://opendata.wuerzburg.de/explore/assets/gmd_ex/",
+  "license": null,
+  "dateCreated": "2020-12-23T12:22:25.122000+00:00",
+  "dateModified": "2020-12-23T12:09:41+00:00",
+  "keywords": [
+    "REGI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gmd_ex/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gmd_ex/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gmd_ex/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gmd_ex/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

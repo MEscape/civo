@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Klimaerlebnisbaum - Paradeplatz - Tilia",
+  "url": "https://opendata.wuerzburg.de/explore/assets/klimaerlebnisbaum-paradeplatz-tilia/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-07-02T12:41:33.081000+00:00",
+  "dateModified": "2025-08-05T07:06:06.323000+00:00",
+  "keywords": [
+    "Baum",
+    "Klima",
+    "Temperatur",
+    "Luftfeuchte",
+    "Baumstamm",
+    "Saftfluss",
+    "Bodenwasser",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-paradeplatz-tilia/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-paradeplatz-tilia/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/klimaerlebnisbaum-paradeplatz-tilia/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "pegel-docs",
+  "name": "pegel-docs",
+  "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+  "url": "https://www.pegelonline.wsv.de/webservice/dokuRestapi",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:36:58.024Z",
+  "httpStatus": 301,
+  "contentType": "text/html; charset=iso-8859-1",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Redirect requires separate robots review: https://pegelonline.wsv.de/webservice/dokuRestapi",
+  "robots": "https://www.pegelonline.wsv.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:36:58 GMT",
+    "server": "Apache",
+    "location": "https://pegelonline.wsv.de/webservice/dokuRestapi",
+    "content-length": "257",
+    "content-type": "text/html; charset=iso-8859-1",
+    "strict-transport-security": "max-age=31536000; includeSubDomains"
+  },
+  "bytes": 257,
+  "sha256": "88e235d17541b000f4c80c98e9fb4dc5e7a6c2a316cc80452f1b77fb021f93bd"
+}

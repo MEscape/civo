@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /gdz_geoviewserver/
+Disallow: /gdz_geoviewserv/

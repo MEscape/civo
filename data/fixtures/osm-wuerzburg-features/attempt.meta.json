@@ -1,0 +1,26 @@
+{
+  "id": "osm-wuerzburg-features",
+  "name": "osm-wuerzburg-features",
+  "publisher": "OpenStreetMap contributors",
+  "url": "https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A20%5D%3B(node%5Bamenity%3Ddrinking_water%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bnode%5Bamenity%3Dtoilets%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bnode%5Bemergency%3Ddefibrillator%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bway%5Bhighway%3Dcycleway%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bway%5Bleisure%3Dpark%5D(49.75%2C9.88%2C49.83%2C10.02)%3B)%3Bout%20body%20geom%20120%3B",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:34.971Z",
+  "httpStatus": null,
+  "contentType": null,
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "robots.txt disallows this path; request not sent",
+  "robots": "https://overpass-api.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified"
+}

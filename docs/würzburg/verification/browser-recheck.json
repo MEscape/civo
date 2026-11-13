@@ -1,0 +1,427 @@
+{
+  "capturedAt": "2026-11-06T21:25:05.076Z",
+  "origin": "http://localhost:3000",
+  "thirdPartyRequests": [],
+  "results": [
+    {
+      "page": "mobilitaet",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 6440
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4764
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0.01782804119903466,
+        "lcp": 7168
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "kontakt",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4868
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 9568
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5940
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 7232
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "kontakt",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4332
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 9196
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5920
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 7244
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "kontakt",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4476
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0.015279776334495739,
+        "lcp": 10396
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5644
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 6980
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "kontakt",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2772
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 8284
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 7188
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4784
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "kontakt",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 6988
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    }
+  ]
+}

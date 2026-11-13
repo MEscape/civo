@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Kraftfahrzeuge - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/kfz/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:32:35.552000+00:00",
+  "dateModified": "2026-11-05T23:01:43.763000+00:00",
+  "keywords": [
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/kfz/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/kfz/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/kfz/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

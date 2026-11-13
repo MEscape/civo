@@ -1,0 +1,42 @@
+{
+  "id": "delfi",
+  "name": "delfi",
+  "publisher": "DELFI",
+  "url": "https://www.opendata-oepnv.de/",
+  "entityShapes": [
+    "Schedule"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:41.605Z",
+  "httpStatus": 301,
+  "contentType": "text/html; charset=UTF-8",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Redirect requires separate robots review: https://www.opendata-oepnv.de/ht/de/willkommen",
+  "robots": "https://www.opendata-oepnv.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx/1.24.0 (Ubuntu)",
+    "date": "Fri, 06 Nov 2026 07:37:41 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "x-powered-by": "PHP/8.3.36",
+    "x-redirect-by": "TYPO3 Redirect 5",
+    "location": "https://www.opendata-oepnv.de/ht/de/willkommen",
+    "x-frame-options": "SAMEORIGIN",
+    "x-content-type-options": "nosniff",
+    "x-xss-protection": "1; mode=block",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload"
+  },
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

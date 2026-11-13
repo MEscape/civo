@@ -1,0 +1,43 @@
+{
+  "id": "wvv",
+  "name": "wvv",
+  "publisher": "Würzburger Versorgungs- und Verkehrs-GmbH",
+  "url": "https://www.wvv.de/mobilitaet/",
+  "entityShapes": [
+    "Schedule"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:43.423Z",
+  "httpStatus": 200,
+  "contentType": "text/html",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.wvv.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:43 GMT",
+    "server": "Apache",
+    "strict-transport-security": "max-age=63072000; includeSubDomains",
+    "x-content-type-options": "nosniff",
+    "last-modified": "Fri, 06 Nov 2026 07:15:38 GMT",
+    "etag": "\"16b08-65f966118660c\"",
+    "accept-ranges": "bytes",
+    "content-length": "92936",
+    "vary": "Accept-Encoding",
+    "x-frame-options": "sameorigin",
+    "content-security-policy": "frame-ancestors 'self' https://cms.wvv.de https://cms-dev.wvv.de;",
+    "x-permitted-cross-domain-policies": "none",
+    "access-control-allow-origin": "*",
+    "content-type": "text/html"
+  },
+  "bytes": 92936,
+  "sha256": "abab0daff330c0e609a4abfd120e32e2f130a85a78ef95d452b6041e9de2357b"
+}

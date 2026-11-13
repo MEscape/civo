@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "Programm Umsonst und Draussen Festival",
+  "url": "https://opendata.wuerzburg.de/explore/assets/programm-ud/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2021-07-20T16:26:30.205000+00:00",
+  "dateModified": "2026-06-20T09:30:05.889000+00:00",
+  "keywords": [
+    "eintrittsfrei",
+    "kultur",
+    "jugend",
+    "EDUC",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/programm-ud/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/programm-ud/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/programm-ud/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

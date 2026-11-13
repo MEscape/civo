@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie D _ Schulfamilie - Schüler und Klassen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-d-schulfamilie-schueler-und-klassen/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:59:11.894000+00:00",
+  "dateModified": "2025-11-12T13:59:11+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-d-schulfamilie-schueler-und-klassen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-d-schulfamilie-schueler-und-klassen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-d-schulfamilie-schueler-und-klassen/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

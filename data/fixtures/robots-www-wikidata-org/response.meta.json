@@ -1,0 +1,28 @@
+{
+  "url": "https://www.wikidata.org/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:16:24 GMT",
+    "cache-control": "s-maxage=3600, must-revalidate, max-age=0",
+    "server": "ATS/9.2.16",
+    "x-content-type-options": "nosniff",
+    "x-article-id": "16264857",
+    "x-wiki-id": "wikidatawiki",
+    "last-modified": "Fri, 30 Oct 2026 13:58:26 GMT",
+    "content-type": "text/plain; charset=utf-8",
+    "age": "103",
+    "accept-ranges": "bytes",
+    "vary": "Accept-Encoding",
+    "x-cache": "cp3067 hit, cp3067 hit/4",
+    "x-cache-status": "hit-front",
+    "strict-transport-security": "max-age=106384710; includeSubDomains; preload",
+    "report-to": "{ \"group\": \"wm_nel\", \"max_age\": 604800, \"endpoints\": [{ \"url\": \"https://intake-logging.wikimedia.org/v1/events?stream=w3c.reportingapi.network_error&schema_uri=/w3c/reportingapi/network_error/1.0.0\" }] }",
+    "nel": "{ \"report_to\": \"wm_nel\", \"max_age\": 604800, \"failure_fraction\": 0.05, \"success_fraction\": 0.0}",
+    "x-client-ip": "194.45.38.130",
+    "content-length": "15896",
+    "x-request-id": "f4184e0b-5ebd-47bc-8349-faa26d1ef1d6",
+    "x-analytics": "",
+    "server-timing": "cache;desc=\"hit-front\", host;desc=\"cp3067\",co_id;desc=\"1044340540\""
+  },
+  "fetchedAt": "2026-11-06T21:18:08.710Z"
+}

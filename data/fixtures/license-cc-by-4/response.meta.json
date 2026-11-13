@@ -1,0 +1,44 @@
+{
+  "id": "license-cc-by-4",
+  "name": "license-cc-by-4",
+  "publisher": "Creative Commons",
+  "url": "https://creativecommons.org/licenses/by/4.0/deed.de",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T19:18:19.375Z",
+  "httpStatus": 200,
+  "contentType": "text/html",
+  "sample": "data/fixtures/license-cc-by-4/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://creativecommons.org/robots.txt",
+  "robotsPolicy": "Advisory rules recorded; explicit user instruction permits public API probes",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 19:18:18 GMT",
+    "content-type": "text/html",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "server": "cloudflare",
+    "last-modified": "Thu, 01 Oct 2026 17:09:56 GMT",
+    "cf-cache-status": "HIT",
+    "age": "4096",
+    "vary": "Accept-Encoding",
+    "content-language": "de",
+    "access-control-allow-origin": "*",
+    "cf-ray": "a566717e5958b968-AMS"
+  },
+  "bytes": 32960,
+  "sha256": "45dff7ab704da7e3f65904fbc38ad4dabf4c8e9c4101b85aaf6f7a955ae5ef0e",
+  "projection": "Document HTML with script elements removed; original response hash retained separately",
+  "sampleSha256": "47e49646ba01739376d313224c89b8dbb5ec48b3c5400a798c5644681bb26271"
+}

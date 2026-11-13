@@ -1,0 +1,49 @@
+{
+  "id": "pegel-wuerzburg-day",
+  "name": "pegel-wuerzburg-day",
+  "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+  "url": "https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/915d76e1-3bf9-4e37-9a9a-4d144cd771cc/W/measurements.json?start=P1D",
+  "entityShapes": [
+    "Series"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-07T16:58:53.772Z",
+  "httpStatus": 200,
+  "contentType": "application/json;charset=UTF-8",
+  "sample": "data/fixtures/pegel-wuerzburg-day/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.pegelonline.wsv.de/robots.txt",
+  "robotsPolicy": "Advisory rules recorded; explicit user instruction permits public API probes",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Sat, 07 Nov 2026 16:58:52 GMT",
+    "server": "Apache",
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET,OPTIONS",
+    "cache-control": "no-transform",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "x-xss-protection": "1; mode=block",
+    "x-frame-options": "SAMEORIGIN",
+    "x-content-type-options": "nosniff",
+    "content-type": "application/json;charset=UTF-8",
+    "vary": "Accept-Encoding",
+    "content-security-policy": "object-src 'none'; img-src 'self' https://pegelonline.wsv.de/ https://via.bund.de/ https://www.wettergefahren.de/DWD/wetter/radar/Webradar_Deutschland.jpg https://www.bafg.de/php/deutsches-eck.jpg; script-src 'self' 'unsafe-eval' https://pegelonline.wsv.de/; worker-src 'self' data: blob:; frame-ancestors 'self' https://pegelonline.wsv.de/",
+    "x-content-security-policy": "object-src 'none'; img-src 'self' https://pegelonline.wsv.de/ https://via.bund.de/ https://www.wettergefahren.de/DWD/wetter/radar/Webradar_Deutschland.jpg https://www.bafg.de/php/deutsches-eck.jpg; script-src 'self' 'unsafe-eval' https://pegelonline.wsv.de/; worker-src 'self' data: blob:; frame-ancestors 'self' https://pegelonline.wsv.de/",
+    "referrer-policy": "origin-when-cross-origin",
+    "etag": "\"0a98369aaad0e6060b83938f2b87af319\"",
+    "access-control-expose-headers": "Content-Security-Policy, Location",
+    "access-control-max-age": "600",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 7106,
+  "sha256": "ba498b3ed5b2c7e193a096f49fa9d64ff28a6509c93ad5d35773b69c8e33edba",
+  "sampleSha256": "ba498b3ed5b2c7e193a096f49fa9d64ff28a6509c93ad5d35773b69c8e33edba"
+}

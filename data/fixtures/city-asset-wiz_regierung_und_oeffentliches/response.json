@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "wiz_regierung_und_oeffentliches",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wiz_regierung_und_oeffentliches/",
+  "license": null,
+  "dateCreated": "2025-10-31T08:25:13.373000+00:00",
+  "dateModified": "2025-10-31T08:25:13+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_regierung_und_oeffentliches/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_regierung_und_oeffentliches/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_regierung_und_oeffentliches/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

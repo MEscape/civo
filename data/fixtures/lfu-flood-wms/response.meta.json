@@ -1,0 +1,43 @@
+{
+  "id": "lfu-flood-wms",
+  "name": "lfu-flood-wms",
+  "publisher": "Bayerisches Landesamt für Umwelt",
+  "url": "https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?SERVICE=WMS&REQUEST=GetCapabilities",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:49.113Z",
+  "httpStatus": 200,
+  "contentType": "text/xml",
+  "sample": "data/fixtures/lfu-flood-wms/response.txt",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.lfu.bayern.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Mon, 09 Nov 2026 06:10:46 GMT",
+    "server": "CERN httpd",
+    "cache-control": "private",
+    "content-type": "text/xml",
+    "x-content-type-options": "nosniff",
+    "content-security-policy": "frame-ancestors https:",
+    "strict-transport-security": "max-age=31536000",
+    "x-xss-protection": "0",
+    "host": "",
+    "user-agent": "",
+    "content-length": "46313",
+    "connection": "close"
+  },
+  "bytes": 46313,
+  "sha256": "82509a48beb9f39c4e863ee4d39b11e80cef7633f68e2a287211a11e63837c7b",
+  "sampleSha256": "82509a48beb9f39c4e863ee4d39b11e80cef7633f68e2a287211a11e63837c7b"
+}

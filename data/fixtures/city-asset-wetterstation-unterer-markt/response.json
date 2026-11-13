@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Wetterstation - Unterer Markt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wetterstation-unterer-markt/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
+  "dateCreated": "2024-07-02T12:41:37.124000+00:00",
+  "dateModified": "2024-06-11T12:37:12+00:00",
+  "keywords": [
+    "Wetter",
+    "Wetterstation",
+    "Temperatur",
+    "Luftdruck",
+    "Wind",
+    "Luftfeuchte",
+    "Niederschlag",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-unterer-markt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-unterer-markt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-unterer-markt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Abhängigkeitsquotient",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_abhaengigkeitsquotient/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T08:33:09.391000+00:00",
+  "dateModified": "2026-09-03T12:56:55.436000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Stadtbezirk",
+    "Hauptwohnsitz",
+    "Abhängigkeitsquotient",
+    "Gesamtquotient",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_abhaengigkeitsquotient/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_abhaengigkeitsquotient/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_abhaengigkeitsquotient/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Passantenzählung in der Schönbornstraße",
+  "url": "https://opendata.wuerzburg.de/explore/assets/passantenzaehlung_schoenbornstrasse/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2020-01-14T15:27:50.768000+00:00",
+  "dateModified": "2026-11-06T14:00:09.447000+00:00",
+  "keywords": [
+    "passanten",
+    "innenstadt",
+    "sensor",
+    "fussgaenger",
+    "schönbornstraße",
+    "fußgänger",
+    "schoenbornstrasse",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_schoenbornstrasse/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_schoenbornstrasse/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_schoenbornstrasse/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

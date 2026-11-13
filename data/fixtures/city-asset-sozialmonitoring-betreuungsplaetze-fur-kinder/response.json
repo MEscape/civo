@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Sozialmonitoring - Kinder, Jugend und Familie",
+  "url": "https://opendata.wuerzburg.de/explore/assets/sozialmonitoring-betreuungsplaetze-fur-kinder/",
+  "license": null,
+  "dateCreated": "2024-05-24T12:22:01.244000+00:00",
+  "dateModified": "2025-06-06T15:50:36+00:00",
+  "keywords": [
+    "betreuungsplaetze",
+    "soziales",
+    "kinder",
+    "jugend",
+    "teilhabe",
+    "familie",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-betreuungsplaetze-fur-kinder/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-betreuungsplaetze-fur-kinder/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-betreuungsplaetze-fur-kinder/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "@type": "Dataset",
+  "name": "Parkplatzdaten Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/parkplatzdaten_wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2026-01-28T13:45:49.285000+00:00",
+  "dateModified": "2026-11-06T14:01:01.894000+00:00",
+  "keywords": [
+    "parkplatz",
+    "mobilität",
+    "parken",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/parkplatzdaten_wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/parkplatzdaten_wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/parkplatzdaten_wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "bayern-hydrology",
+  "name": "bayern-hydrology",
+  "publisher": "Bayerisches Landesamt für Umwelt",
+  "url": "https://www.gkd.bayern.de/de/fluesse/wasserstand/main_unten",
+  "entityShapes": [
+    "Observation"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:21.853Z",
+  "httpStatus": 200,
+  "contentType": "text/html; charset=utf-8",
+  "sample": "data/fixtures/bayern-hydrology/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.gkd.bayern.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:21 GMT",
+    "server": "CERN httpd",
+    "vary": "Origin,Accept-Encoding",
+    "expires": "Thu, 19 Nov 1981 08:52:00 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate",
+    "pragma": "no-cache",
+    "strict-transport-security": "max-age=15552000; includeSubDomains",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "0",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "same-origin",
+    "permissions-policy": "geolocation=(self), midi=(), camera=(), usb=(), magnetometer=(), accelerometer=(), vr=(), speaker=(), ambient-light-sensor=(), gyroscope=(), microphone=()",
+    "content-security-policy": "default-src 'none'; connect-src 'self' *.bayern.de *.bybn.de https://maps.dwd.de; font-src 'self' data: *.bayern.de *.bybn.de; script-src 'self' 'unsafe-inline' *.bayern.de *.bybn.de; img-src 'self' data: *.bayern.de *.bybn.de *.bayernwolke.de wwa-webcams.de https://maps.dwd.de https://licensebuttons.net; style-src 'self' 'unsafe-inline' *.bayern.de *.bybn.de",
+    "content-type": "text/html; charset=utf-8",
+    "connection": "close",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 213996,
+  "sha256": "86d87f980b87047b1d0ec213a7802199a3361f6a11419fff8c46470a56d7cb02"
+}

@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Altenquotient",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_altenquotient/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T08:34:38.106000+00:00",
+  "dateModified": "2026-03-26T09:28:16.482000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Stadtbezirk",
+    "Hauptwohnsitz",
+    "Altenquotient",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_altenquotient/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_altenquotient/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_altenquotient/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

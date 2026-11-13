@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "iot_gateway_pos",
+  "url": "https://opendata.wuerzburg.de/explore/assets/iot_gateway_pos/",
+  "license": null,
+  "dateCreated": "2022-07-01T08:26:08.044000+00:00",
+  "dateModified": "2022-07-01T08:27:57+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/iot_gateway_pos/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/iot_gateway_pos/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/iot_gateway_pos/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/iot_gateway_pos/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

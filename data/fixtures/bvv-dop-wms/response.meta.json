@@ -1,0 +1,44 @@
+{
+  "id": "bvv-dop-wms",
+  "name": "bvv-dop-wms",
+  "publisher": "Bayerische Vermessungsverwaltung",
+  "url": "https://geoservices.bayern.de/od/wms/dop/v1/dop20?SERVICE=WMS&REQUEST=GetCapabilities",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:52.748Z",
+  "httpStatus": 200,
+  "contentType": "application/vnd.ogc.wms_xml; charset=UTF-8",
+  "sample": "data/fixtures/bvv-dop-wms/response.txt",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://geoservices.bayern.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Mon, 09 Nov 2026 06:10:50 GMT",
+    "server": "CERN httpd",
+    "content-type": "application/vnd.ogc.wms_xml; charset=UTF-8",
+    "accept-ranges": "bytes",
+    "access-control-allow-origin": "*",
+    "access-control-allow-credentials": "true",
+    "access-control-allow-methods": "GET, OPTIONS",
+    "access-control-allow-headers": "Content-Type, Authorization",
+    "x-content-type-options": "nosniff",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "content-security-policy": "default-src 'self'; style-src 'unsafe-inline' 'self' geoservices.bayern.de geodaten.bayern.de www.geodaten.bayern.de geoportal.bayern.de; object-src 'none'; child-src 'self'; base-uri 'none'; upgrade-insecure-requests; require-trusted-types-for 'script';",
+    "connection": "close",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 12382,
+  "sha256": "7675adca9fb396ffac318336d19bf0644deb408a61cd6fe060417d1421ae5acb",
+  "sampleSha256": "7675adca9fb396ffac318336d19bf0644deb408a61cd6fe060417d1421ae5acb"
+}

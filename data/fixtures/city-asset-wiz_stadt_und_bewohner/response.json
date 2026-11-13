@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "wiz_stadt_und_bewohner",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wiz_stadt_und_bewohner/",
+  "license": null,
+  "dateCreated": "2025-10-31T08:25:42.215000+00:00",
+  "dateModified": "2025-10-31T08:25:42+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_stadt_und_bewohner/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_stadt_und_bewohner/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_stadt_und_bewohner/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

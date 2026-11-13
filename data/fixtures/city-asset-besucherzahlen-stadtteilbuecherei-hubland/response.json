@@ -1,0 +1,30 @@
+{
+  "@type": "Dataset",
+  "name": "Besucherzahlen Stadtteilbücherei Hubland",
+  "url": "https://opendata.wuerzburg.de/explore/assets/besucherzahlen-stadtteilbuecherei-hubland/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-04-23T08:10:09.078000+00:00",
+  "dateModified": "2025-04-23T08:10:09+00:00",
+  "keywords": [
+    "Bücher",
+    "EDUC",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/besucherzahlen-stadtteilbuecherei-hubland/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/besucherzahlen-stadtteilbuecherei-hubland/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/besucherzahlen-stadtteilbuecherei-hubland/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

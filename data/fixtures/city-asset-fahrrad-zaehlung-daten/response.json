@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Fahrradzählung Daten - EcoCounter Stationen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/fahrrad-zaehlung-daten/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2022-02-25T13:45:09.143000+00:00",
+  "dateModified": "2026-11-06T05:16:03.584000+00:00",
+  "keywords": [
+    "Cycle",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrrad-zaehlung-daten/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrrad-zaehlung-daten/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrrad-zaehlung-daten/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrrad-zaehlung-daten/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

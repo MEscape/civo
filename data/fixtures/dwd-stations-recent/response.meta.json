@@ -1,0 +1,39 @@
+{
+  "id": "dwd-stations-recent",
+  "name": "dwd-stations-recent",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/recent/TU_Stundenwerte_Beschreibung_Stationen.txt",
+  "entityShapes": [
+    "Place"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:48:59.503Z",
+  "httpStatus": 200,
+  "contentType": "text/plain",
+  "sample": "data/fixtures/dwd-stations-recent/response.txt",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.dwd.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:48:59 GMT",
+    "content-type": "text/plain",
+    "content-length": "669561",
+    "last-modified": "Thu, 05 Nov 2026 08:55:08 GMT",
+    "connection": "keep-alive",
+    "etag": "\"6aec446c-a3779\"",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000",
+    "accept-ranges": "bytes"
+  },
+  "bytes": 670163,
+  "sha256": "c690b5cc708446f8de4bfd9607345515dfce69f14cbbafa3936535f735cfe6e0"
+}

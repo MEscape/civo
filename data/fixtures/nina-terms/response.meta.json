@@ -1,0 +1,41 @@
+{
+  "id": "nina-terms",
+  "name": "nina-terms",
+  "publisher": "Bundesamt für Bevölkerungsschutz und Katastrophenhilfe",
+  "url": "https://warnung.bund.de/api/appdata/gsb/html/DE/app/impressum.html",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:13.328Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=utf-8",
+  "sample": "data/fixtures/nina-terms/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://warnung.bund.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "myracloud",
+    "date": "Fri, 06 Nov 2026 07:37:13 GMT",
+    "content-type": "text/html;charset=utf-8",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "x-server-generated": "Fri, 06 Nov 2026 07:37:13 GMT",
+    "referrer-policy": "same-origin",
+    "x-ua-compatible": "IE=edge",
+    "x-permitted-cross-domain-policies": "none",
+    "content-language": "de",
+    "etag": "\"myra-23ff0442\"",
+    "cache-control": "max-age=3600"
+  },
+  "bytes": 8315,
+  "sha256": "8e128ebc54612d7eb884d7c1ab2afab6d4dbbc08ae4c82348d0843a21a3d9029"
+}

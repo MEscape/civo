@@ -1,0 +1,38 @@
+{
+  "id": "osm-policy",
+  "name": "osm-policy",
+  "publisher": "OpenStreetMap Foundation",
+  "url": "https://operations.osmfoundation.org/policies/tiles/",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:51.614Z",
+  "httpStatus": 200,
+  "contentType": "text/html; charset=utf-8",
+  "sample": "data/fixtures/osm-policy/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://operations.osmfoundation.org/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:51 GMT",
+    "server": "nginx/1.30.6",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "content-type": "text/html; charset=utf-8",
+    "content-length": "18698",
+    "last-modified": "Thu, 29 Oct 2026 10:44:13 GMT",
+    "etag": "\"6ae3237d-490a\"",
+    "accept-ranges": "bytes",
+    "vary": "Accept-Encoding"
+  },
+  "bytes": 18698,
+  "sha256": "04908a9e2faf70ad3090b3b2db43de100f3ad61243c578413b67fb57ba6b6912"
+}

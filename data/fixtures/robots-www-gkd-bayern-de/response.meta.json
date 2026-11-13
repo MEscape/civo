@@ -1,0 +1,24 @@
+{
+  "url": "https://www.gkd.bayern.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:21 GMT",
+    "server": "CERN httpd",
+    "vary": "Origin,Accept-Encoding",
+    "last-modified": "Fri, 23 Oct 2026 10:41:37 GMT",
+    "accept-ranges": "bytes",
+    "content-length": "5227",
+    "cache-control": "max-age=2592000",
+    "expires": "Sun, 06 Dec 2026 07:37:21 GMT",
+    "strict-transport-security": "max-age=15552000; includeSubDomains",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "0",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "same-origin",
+    "permissions-policy": "geolocation=(self), midi=(), camera=(), usb=(), magnetometer=(), accelerometer=(), vr=(), speaker=(), ambient-light-sensor=(), gyroscope=(), microphone=()",
+    "content-security-policy": "default-src 'none'; connect-src 'self' *.bayern.de *.bybn.de https://maps.dwd.de; font-src 'self' data: *.bayern.de *.bybn.de; script-src 'self' 'unsafe-inline' *.bayern.de *.bybn.de; img-src 'self' data: *.bayern.de *.bybn.de *.bayernwolke.de wwa-webcams.de https://maps.dwd.de https://licensebuttons.net; style-src 'self' 'unsafe-inline' *.bayern.de *.bybn.de",
+    "content-type": "text/plain; charset=utf-8",
+    "connection": "close"
+  },
+  "fetchedAt": "2026-11-06T07:37:21.850Z"
+}

@@ -1,0 +1,19 @@
+{
+  "url": "https://creativecommons.org/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 19:18:18 GMT",
+    "content-type": "text/plain; charset=utf-8",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "server": "cloudflare",
+    "x-robots-tag": "noindex, follow",
+    "link": "<https://creativecommons.org/wp-json/>; rel=\"https://api.w.org/\"",
+    "vary": "Accept-Encoding",
+    "cf-cache-status": "HIT",
+    "age": "3091",
+    "last-modified": "Fri, 06 Nov 2026 18:26:46 GMT",
+    "cf-ray": "a566717c7eb711cb-AMS"
+  },
+  "fetchedAt": "2026-11-06T19:18:19.372Z"
+}

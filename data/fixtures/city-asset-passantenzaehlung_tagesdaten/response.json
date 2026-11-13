@@ -1,0 +1,41 @@
+{
+  "@type": "Dataset",
+  "name": "Passantenzählung - Tagesdaten",
+  "url": "https://opendata.wuerzburg.de/explore/assets/passantenzaehlung_tagesdaten/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-02-07T11:47:11.321000+00:00",
+  "dateModified": "2026-09-03T12:58:10.866000+00:00",
+  "keywords": [
+    "passanten",
+    "zähler",
+    "fussgaenger",
+    "fußgänger",
+    "sensor",
+    "innenstadt",
+    "taeglich",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_tagesdaten/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_tagesdaten/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_tagesdaten/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_tagesdaten/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

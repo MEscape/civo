@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Passantenzählung in der Spiegelstraße",
+  "url": "https://opendata.wuerzburg.de/explore/assets/passantenzaehlung_spiegelstrasse/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-01-19T06:50:19.908000+00:00",
+  "dateModified": "2026-11-06T14:00:38.846000+00:00",
+  "keywords": [
+    "passanten",
+    "zähler",
+    "fussgaenger",
+    "sensor",
+    "innenstadt",
+    "spiegelstraße",
+    "fußgänger",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_spiegelstrasse/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_spiegelstrasse/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_spiegelstrasse/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+<?xml version="1.0" ?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/sld_capabilities.xsd http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd">
+<Service>
+  <Name>WMS</Name>
+  <Title>WMS DE BASEMAP.DE WEB RASTER</Title>
+  <Abstract>Der WMS basemap.de Web Raster basiert auf der Vektor Webkarte basemap.de Web Vektor und ist ein von Bund und Ländern gemeinsam entwickelter und durch das Bundesamt für Kartographie und Geodäsie (BKG) bereitgestellter Internet-Kartendienst im Rasterformat. Auf der Grundlage amtlicher Geobasisdaten vermittelt er eine attraktive, deutschlandweit einheitliche Kartendarstellung in Zoomstufen vom Einzelgebäude bis zur Deutschlandübersicht. Seine leistungsfähige Realisierung auf Basis internationaler Standards und seine moderne kartographische Gestaltung unterstützen vielfältige Anwendungsbereiche. Datengrundlagen für die basemap.de Web Raster (Vektor) sind das Basis-Landschaftsmodell, Hauskoordinaten und 3D Gebäudemodelle aus den Bundesländern sowie die am BKG gepflegten Digitalen Landschaftsmodelle 1:250 000 und 1:1 000 000.
+</Abstract>
+  <KeywordList>
+    <Keyword>WMS</Keyword>
+    <Keyword>ViewService</Keyword>
+    <Keyword>AdV-OWS-Basisprofil</Keyword>
+    <Keyword>AdV-WMS-Profil 5.0.0</Keyword>
+    <Keyword>AdV</Keyword>
+    <Keyword>Bund</Keyword>
+    <Keyword>BKG</Keyword>
+    <Keyword>Bundesamt für Kartographie und Geodäsie</Keyword>
+    <Keyword>DE</Keyword>
+    <Keyword>Deutschland</Keyword>
+    <Keyword>basemap.de</Keyword>
+    <Keyword>Smart Mapping</Keyword>
+    <Keyword>Webbasierter Atlas für Deutschland</Keyword>
+    <Keyword>Webkarte Deutschland</Keyword>
+    <Keyword>Deutschlandatlas</Keyword>
+    <Keyword>Geobasisdaten</Keyword>
+    <Keyword>Basis-DLM</Keyword>
+    <Keyword>DLM250</Keyword>
+    <Keyword>DLM1000</Keyword>
+    <Keyword>HK</Keyword>
+    <Keyword>Hauskoordinaten</Keyword>
+    <Keyword>Geographische Bezeichnungen</Keyword>
+    <Keyword>Geographische Namen</Keyword>
+    <Keyword>Verwaltungseinheiten</Keyword>
+    <Keyword>Grenzen</Keyword>
+    <Keyword>Adressen</Keyword>
+    <Keyword>Bodenbedeckung</Keyword>
+    <Keyword>Bodennutzung</Keyword>
+    <Keyword>Tatsächliche Nutzung</Keyword>
+    <Keyword>Gewässer</Keyword>
+    <Keyword>Bauwerke</Keyword>
+    <Keyword>Gewässernetz</Keyword>
+    <Keyword>Verkehrsnetz</Keyword>
+    <Keyword>Gebäude</Keyword>
+    <Keyword>Verkehr</Keyword>
+    <Keyword>Vegetation</Keyword>
+    <Keyword>Vegetationsflächen</Keyword>
+    <Keyword>Siedlung</Keyword>
+    <Keyword>Siedlungsflächen</Keyword>
+    <Keyword vocabulary="ISO">infoMapAccessService</Keyword>
+  </KeywordList>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://basemap.de"/>
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson></ContactPerson>
+        <ContactOrganization>Dienstleistungszentrum des Bundes für Geoinformation und Geodäsie</ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>Technischer Administrator</ContactPosition>
+      <ContactAddress>
+        <AddressType>postal</AddressType>
+        <Address>Karl-Rothe-Str. 10 - 14</Address>
+        <City>Leipzig</City>
+        <StateOrProvince></StateOrProvince>
+        <PostCode>04105</PostCode>
+        <Country>Deutschland</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>+49 (0) 341 5634 333</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>+49 (0) 341 5634 415</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>dlz@bkg.bund.de</ContactElectronicMailAddress>
+  </ContactInformation>
+    <Fees>Die Daten sind urheberrechtlich geschützt. Die Daten werden geldleistungsfrei gemäß der Creative Commons Namensnennung 4.0 International Lizenz  (https://creativecommons.org/licenses/by/4.0/) zur Verfügung gestellt. Daten, die unter der Lizenz CC BY 4.0 stehen, dürfen unter einer Namensnennung  geteilt, vervielfältigt und bearbeitet werden. Die Namensnennung ist im Quellenvermerk enthalten. Der Quellenvermerk ist zu beachten. ||  Quellenvermerk: &#169; GeoBasis-DE / BKG (Jahr des letzten Datenbezugs) CC BY 4.0
+</Fees>
+    <AccessConstraints>Es gelten keine Zugriffsbeschränkungen</AccessConstraints>
+    <MaxWidth>6000</MaxWidth>
+    <MaxHeight>6000</MaxHeight>
+</Service>
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="https://sgx.geodatenzentrum.de/wms_basemapde?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/jpeg</Format>
+      <Format>image/png</Format>
+      <Format>image/png8</Format>
+      <Format>image/png24</Format>
+      <Format>image/png32</Format>
+      <Format>image/tiff</Format>
+      <Format>image/gif</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="https://sgx.geodatenzentrum.de/wms_basemapde?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="https://sgx.geodatenzentrum.de/wms_basemapde?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+    <sld:GetLegendGraphic>
+      <Format>image/jpeg</Format>
+      <Format>image/png</Format>
+      <Format>image/png8</Format>
+      <Format>image/png24</Format>
+      <Format>image/png32</Format>
+      <Format>image/tiff</Format>
+      <Format>image/gif</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="https://sgx.geodatenzentrum.de/wms_basemapde?"/></Get>
+        </HTTP>
+      </DCPType>
+    </sld:GetLegendGraphic>
+  </Request>
+  <Exception>
+    <Format>XML</Format>
+    <Format>INIMAGE</Format>
+    <Format>BLANK</Format>
+  </Exception>
+  <inspire_vs:ExtendedCapabilities>
+    <inspire_common:MetadataUrl>
+      <inspire_common:URL>https://mis.bkg.bund.de/csw?REQUEST=GetRecordById&amp;SERVICE=CSW&amp;VERSION=2.0.2&amp;id=9C2904C1-2EA9-4891-BAD0-9F4097E882CE</inspire_common:URL>
+      <inspire_common:MediaType>application/vnd.ogc.csw.GetRecordByIdResponse_xml</inspire_common:MediaType>
+    </inspire_common:MetadataUrl>
+    <inspire_common:SupportedLanguages>
+      <inspire_common:DefaultLanguage>
+        <inspire_common:Language>ger</inspire_common:Language>
+      </inspire_common:DefaultLanguage>
+    </inspire_common:SupportedLanguages>
+    <inspire_common:ResponseLanguage>
+      <inspire_common:Language>ger</inspire_common:Language>
+    </inspire_common:ResponseLanguage>
+  </inspire_vs:ExtendedCapabilities>
+  <Layer>
+    <Title>WMS DE BASEMAP.DE WEB RASTER</Title>
+    <Abstract>basemap.de Web Raster WMS der AdV</Abstract>
+    <CRS>CRS:84</CRS>
+    <CRS>EPSG:3857</CRS>
+    <CRS>EPSG:25832</CRS>
+    <CRS>EPSG:25833</CRS>
+    <CRS>EPSG:4326</CRS>
+    <CRS>EPSG:4258</CRS>
+    <CRS>EPSG:3035</CRS>
+    <CRS>EPSG:3034</CRS>
+    <CRS>EPSG:3044</CRS>
+    <CRS>EPSG:3045</CRS>
+    <CRS>EPSG:4647</CRS>
+    <CRS>EPSG:5650</CRS>
+    <CRS>EPSG:2056</CRS>
+    <EX_GeographicBoundingBox>
+      <westBoundLongitude>0.10594674240568917</westBoundLongitude>
+      <eastBoundLongitude>20.448891294525627</eastBoundLongitude>
+      <southBoundLatitude>45.2375427360256</southBoundLatitude>
+      <northBoundLatitude>56.84787345153813</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+    <BoundingBox CRS="CRS:84" minx="0.10594674240568917" miny="45.2375427360256" maxx="20.448891294525627" maxy="56.84787345153813" />
+    <BoundingBox CRS="EPSG:3857" minx="11793.937415807442" miny="5658995.571556423" maxx="2276360.1661935975" maxy="7729088.680646521" />
+    <BoundingBox CRS="EPSG:25832" minx="-198055.94904201687" miny="5010132.602068917" maxx="1398535.0141488267" maxy="6359019.337671625" />
+    <BoundingBox CRS="EPSG:25833" minx="-668793.3140101954" miny="5009403.077166321" maxx="927672.5993785206" maxy="6399747.2696914235" />
+    <BoundingBox CRS="EPSG:4326" minx="45.2375427360256" miny="0.10594674240568917" maxx="56.84787345153813" maxy="20.448891294525627" />
+    <BoundingBox CRS="EPSG:4258" minx="45.2375427360256" miny="0.10594674240568917" maxx="56.84787345153813" maxy="20.448891294525627" />
+    <BoundingBox CRS="EPSG:3035" minx="2458428.4883610047" miny="3545460.5471543586" maxx="3795883.637052918" maxy="5139713.465792644" />
+    <BoundingBox CRS="EPSG:3034" minx="2072952.3560456398" miny="3248616.257512832" maxx="3366003.7002406213" maxy="4793246.105744808" />
+    <BoundingBox CRS="EPSG:3044" minx="5010132.602068917" miny="-198055.94904201687" maxx="6359019.337671625" maxy="1398535.0141488267" />
+    <BoundingBox CRS="EPSG:3045" minx="5009403.077166321" miny="-668793.3140101954" maxx="6399747.2696914235" maxy="927672.5993785206" />
+    <BoundingBox CRS="EPSG:4647" minx="31801944.05095798" miny="5010132.602068917" maxx="33398535.014148828" maxy="6359019.337671625" />
+    <BoundingBox CRS="EPSG:5650" minx="32331206.6859898" miny="5009403.077166321" maxx="33927672.59937852" maxy="6399747.2696914235" />
+    <BoundingBox CRS="EPSG:2056" minx="2024832.9578881792" miny="1012036.9454525451" maxx="3617251.859055824" maxy="2374369.163966707" />
+    <Layer>
+      <Name>de_basemapde_web_raster_farbe</Name>
+      <Title>basemap.de Web Raster Farbe</Title>
+      <Abstract>Der Layer enthält eine kombinierte Darstellung von ATKIS®- Landschaftsmodellen, der Hauskoordinaten und der Hausumringe,  die nach basemap.de WebSK in der jeweils aktuellen Version eine Kartensignatur haben, inklusive ihrer Beschriftung.
+  </Abstract>
+      <KeywordList>
+        <Keyword>DE</Keyword>
+        <Keyword>AdV</Keyword>
+        <Keyword>basemap.de</Keyword>
+        <Keyword>Smart Mapping</Keyword>
+        <Keyword>Web Raster Farbe</Keyword>
+        <Keyword>Webkarte Farbe</Keyword>
+      </KeywordList>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>0.10594674240568917</westBoundLongitude>
+        <eastBoundLongitude>20.448891294525627</eastBoundLongitude>
+        <southBoundLatitude>45.2375427360256</southBoundLatitude>
+        <northBoundLatitude>56.84787345153813</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="0.10594674240568917" miny="45.2375427360256" maxx="20.448891294525627" maxy="56.84787345153813" />
+      <BoundingBox CRS="EPSG:3857" minx="11793.937415807442" miny="5658995.571556423" maxx="2276360.1661935975" maxy="7729088.680646519" />
+      <BoundingBox CRS="EPSG:25832" minx="-46133.17" miny="5048875.268575673" maxx="1206211.101424327" maxy="6301219.54" />
+      <BoundingBox CRS="EPSG:25833" minx="-515738.4281212123" miny="5013712.005500647" maxx="836787.5036063041" maxy="6365521.907384202" />
+      <BoundingBox CRS="EPSG:4326" minx="45.2375427360256" miny="0.10594674240568917" maxx="56.84787345153813" maxy="20.448891294525627" />
+      <BoundingBox CRS="EPSG:4258" minx="45.2375427360256" miny="0.10594674240568917" maxx="56.84787345153813" maxy="20.448891294525627" />
+      <BoundingBox CRS="EPSG:3035" minx="2492075.705139841" miny="3696700.37924958" maxx="3756694.622511524" maxy="4965316.8201302625" />
+      <BoundingBox CRS="EPSG:3034" minx="2105849.728374512" miny="3395314.927252557" maxx="3328080.9066502084" maxy="4625140.554569101" />
+      <BoundingBox CRS="EPSG:3044" minx="5048875.268575673" miny="-46133.17" maxx="6301219.54" maxy="1206211.101424327" />
+      <BoundingBox CRS="EPSG:3045" minx="5013712.005500647" miny="-515738.4281212123" maxx="6365521.907384202" maxy="836787.5036063041" />
+      <BoundingBox CRS="EPSG:4647" minx="31953866.83" miny="5048875.268575672" maxx="33206211.10142433" maxy="6301219.540000001" />
+      <BoundingBox CRS="EPSG:5650" minx="32484261.571878787" miny="5013712.005500647" maxx="33836787.503606305" maxy="6365521.907384202" />
+      <BoundingBox CRS="EPSG:2056" minx="2143083.480291323" miny="1039979.23462294" maxx="3426932.8298353655" maxy="2315969.87342138" />
+      <AuthorityURL name="BKG">
+        <OnlineResource xlink:href="https://registry.gdi-de.org/id/de.bund.bkg.csw" />
+      </AuthorityURL>
+      <Identifier authority="BKG">https://registry.gdi-de.org/id/de.bund.bkg.csw/055981a6-c6c6-4ea9-a3a3-755999526d2e</Identifier>
+      <MetadataURL type="INSPIRE">
+        <Format>application/xml</Format>
+        <OnlineResource xlink:href="https://mis.bkg.bund.de/csw?REQUEST=GetRecordById&amp;SERVICE=CSW&amp;VERSION=2.0.2&amp;id=69264016-D304-4DD6-BCEF-509C1ED19F14"/>
+      </MetadataURL>
+      <Style>
+        <Name>inspire_common:DEFAULT</Name>
+        <Title>default</Title>
+        <LegendURL width="390" height="1880">
+          <Format>image/png</Format>
+          <OnlineResource xlink:type="simple" xlink:href="https://sgx.geodatenzentrum.de/wms_basemapde?format=image%2Fpng&amp;layer=de_basemapde_web_raster_farbe&amp;sld_version=1.1.0&amp;request=GetLegendGraphic&amp;service=WMS&amp;version=1.1.1&amp;styles=" />
+        </LegendURL>
+      </Style>
+    </Layer>
+    <Layer>
+      <Name>de_basemapde_web_raster_grau</Name>
+      <Title>basemap.de Web Raster Grau</Title>
+      <Abstract>Der Layer enthält eine kombinierte Darstellung von ATKIS®- Landschaftsmodellen, der Hauskoordinaten und der Hausumringe,  die nach basemap.de WebSK in der jeweils aktuellen Version eine Kartensignatur haben, inklusive ihrer Beschriftung.
+  </Abstract>
+      <KeywordList>
+        <Keyword>DE</Keyword>
+        <Keyword>AdV</Keyword>
+        <Keyword>basemap.de</Keyword>
+        <Keyword>Smart Mapping</Keyword>
+        <Keyword>Web Raster Grau</Keyword>
+        <Keyword>Webkarte Grau</Keyword>
+      </KeywordList>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>0.10594674240568917</westBoundLongitude>
+        <eastBoundLongitude>20.448891294525627</eastBoundLongitude>
+        <southBoundLatitude>45.2375427360256</southBoundLatitude>
+        <northBoundLatitude>56.84787345153813</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="0.10594674240568917" miny="45.2375427360256" maxx="20.448891294525627" maxy="56.84787345153813" />
+      <BoundingBox CRS="EPSG:3857" minx="11793.937415807442" miny="5658995.571556423" maxx="2276360.1661935975" maxy="7729088.680646519" />
+      <BoundingBox CRS="EPSG:25832" minx="-46133.17" miny="5048875.268575673" maxx="1206211.101424327" maxy="6301219.54" />
+      <BoundingBox CRS="EPSG:25833" minx="-515738.4281212123" miny="5013712.005500647" maxx="836787.5036063041" maxy="6365521.907384202" />
+      <BoundingBox CRS="EPSG:4326" minx="45.2375427360256" miny="0.10594674240568917" maxx="56.84787345153813" maxy="20.448891294525627" />
+      <BoundingBox CRS="EPSG:4258" minx="45.2375427360256" miny="0.10594674240568917" maxx="56.84787345153813" maxy="20.448891294525627" />
+      <BoundingBox CRS="EPSG:3035" minx="2492075.705139841" miny="3696700.37924958" maxx="3756694.622511524" maxy="4965316.8201302625" />
+      <BoundingBox CRS="EPSG:3034" minx="2105849.728374512" miny="3395314.927252557" maxx="3328080.9066502084" maxy="4625140.554569101" />
+      <BoundingBox CRS="EPSG:3044" minx="5048875.268575673" miny="-46133.17" maxx="6301219.54" maxy="1206211.101424327" />
+      <BoundingBox CRS="EPSG:3045" minx="5013712.005500647" miny="-515738.4281212123" maxx="6365521.907384202" maxy="836787.5036063041" />
+      <BoundingBox CRS="EPSG:4647" minx="31953866.83" miny="5048875.268575672" maxx="33206211.10142433" maxy="6301219.540000001" />
+      <BoundingBox CRS="EPSG:5650" minx="32484261.571878787" miny="5013712.005500647" maxx="33836787.503606305" maxy="6365521.907384202" />
+      <BoundingBox CRS="EPSG:2056" minx="2143083.480291323" miny="1039979.23462294" maxx="3426932.8298353655" maxy="2315969.87342138" />
+      <AuthorityURL name="BKG">
+        <OnlineResource xlink:href="https://registry.gdi-de.org/id/de.bund.bkg.csw" />
+      </AuthorityURL>
+      <Identifier authority="BKG">https://registry.gdi-de.org/id/de.bund.bkg.csw/1371b05a-055b-4749-8390-95cda942f40c</Identifier>
+      <MetadataURL type="INSPIRE">
+        <Format>application/xml</Format>
+        <OnlineResource xlink:href="https://mis.bkg.bund.de/csw?REQUEST=GetRecordById&amp;SERVICE=CSW&amp;VERSION=2.0.2&amp;id=971C190C-AE96-41B7-8EC9-2DF20D9BE521"/>
+      </MetadataURL>
+      <Style>
+        <Name>inspire_common:DEFAULT</Name>
+        <Title>default</Title>
+        <LegendURL width="390" height="1880">
+          <Format>image/png</Format>
+          <OnlineResource xlink:type="simple" xlink:href="https://sgx.geodatenzentrum.de/wms_basemapde?format=image%2Fpng&amp;layer=de_basemapde_web_raster_grau&amp;sld_version=1.1.0&amp;request=GetLegendGraphic&amp;service=WMS&amp;version=1.1.1&amp;styles=" />
+        </LegendURL>
+      </Style>
+    </Layer>
+  </Layer>
+</Capability>
+</WMS_Capabilities>

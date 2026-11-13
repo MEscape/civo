@@ -1,0 +1,30 @@
+{
+  "@type": "Dataset",
+  "name": "Passantenzähler Mitmachgarten Ochsenfurt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/imbuilding-passantenzaehler-klimagarten-ochsenfurt/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-06-26T11:28:26.547000+00:00",
+  "dateModified": "2025-06-26T11:28:26+00:00",
+  "keywords": [
+    "TRAN",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/imbuilding-passantenzaehler-klimagarten-ochsenfurt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/imbuilding-passantenzaehler-klimagarten-ochsenfurt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/imbuilding-passantenzaehler-klimagarten-ochsenfurt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

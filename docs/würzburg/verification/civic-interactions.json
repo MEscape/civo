@@ -1,0 +1,39 @@
+{
+  "capturedAt": "2026-11-06T21:28:42.722Z",
+  "results": [
+    {
+      "width": 390,
+      "paths": 190,
+      "mapSelection": true,
+      "mapZoom": true,
+      "closeFocus": true
+    },
+    {
+      "phase": "390: chart",
+      "error": "expect(received).not.toBe(expected) // Object.is equality\n\nExpected: not \"05. Nov. 2026, 22:30:00\t146 cm\"\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+      "ticks": [
+        "00:45",
+        "03:45",
+        "06:45",
+        "09:45",
+        "12:45",
+        "15:45",
+        "18:45",
+        "22:15",
+        "0",
+        "40",
+        "80",
+        "120",
+        "160"
+      ],
+      "statuses": [
+        "Messwerte: 96 · 05. Nov. 2026, 22:30:00 bis 06. Nov. 2026, 22:15:00 · cm",
+        "1–20 von 96",
+        "",
+        "25 von 25 Orten angezeigt",
+        ""
+      ]
+    }
+  ],
+  "thirdPartyRequests": []
+}

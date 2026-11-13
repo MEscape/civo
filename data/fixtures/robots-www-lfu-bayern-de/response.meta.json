@@ -1,0 +1,21 @@
+{
+  "url": "https://www.lfu.bayern.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 06:10:46 GMT",
+    "server": "CERN httpd",
+    "x-frame-options": "SAMEORIGIN",
+    "last-modified": "Thu, 08 Oct 2026 07:18:08 GMT",
+    "etag": "\"476-65d4f08944c00\"",
+    "accept-ranges": "bytes",
+    "content-length": "1142",
+    "vary": "Accept-Encoding",
+    "x-ua-compatible": "IE=edge",
+    "x-xss-protection": "0",
+    "x-content-type-options": "nosniff",
+    "strict-transport-security": "max-age=31536000",
+    "content-type": "text/plain",
+    "connection": "close"
+  },
+  "fetchedAt": "2026-11-09T06:10:49.111Z"
+}

@@ -1,0 +1,34 @@
+{
+  "@type": "Dataset",
+  "name": "Grenzwanderung Teil 4",
+  "url": "https://opendata.wuerzburg.de/explore/assets/grenzwanderung-teil-4/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2020-11-23T09:01:02.004000+00:00",
+  "dateModified": "2024-11-14T13:43:07.975000+00:00",
+  "keywords": [
+    "EDUC",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-4/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-4/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-4/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-4/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

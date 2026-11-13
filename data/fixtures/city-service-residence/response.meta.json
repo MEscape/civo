@@ -1,0 +1,50 @@
+{
+  "id": "city-service-residence",
+  "name": "city-service-residence",
+  "publisher": "Stadt Würzburg",
+  "url": "https://www.wuerzburg.de/rathaus/buergerbuero/meldewesen/index.html",
+  "entityShapes": [
+    "Service"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T19:18:17.191Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=UTF-8",
+  "sample": "data/fixtures/city-service-residence/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.wuerzburg.de/robots.txt",
+  "robotsPolicy": "Advisory rules recorded; explicit user instruction permits public API probes",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 19:18:16 GMT",
+    "server": "Apache",
+    "expires": "Fri, 06 Nov 2026 19:18:16 GMT",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "cache-control": "no-cache, must-revalidate",
+    "pragma": "no-cache",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "strict-transport-security": "max-age=31536000",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "last-modified": "Fri, 06 Nov 2026 19:18:16 GMT",
+    "vary": "Accept-Encoding",
+    "access-control-allow-origin": "*",
+    "access-control-allow-headers": "origin, x-requested-with, content-type",
+    "access-control-allow-methods": "PUT, GET, POST, DELETE, OPTIONS",
+    "transfer-encoding": "chunked",
+    "content-type": "text/html;charset=UTF-8"
+  },
+  "bytes": 143218,
+  "sha256": "2e2060a4e40efea89fc2872d4225210114cb328541a610d1c1b092e752ceb024",
+  "projection": "Page title and civic-service links only; no contacts, people, scripts or article text retained",
+  "sampleSha256": "aafe3b3136fa85aa0d81c8d90acf8d7c36ef92b8f046a394f7dcd78d6ac4c9c2"
+}

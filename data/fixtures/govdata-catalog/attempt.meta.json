@@ -1,0 +1,26 @@
+{
+  "id": "govdata-catalog",
+  "name": "govdata-catalog",
+  "publisher": "FITKO",
+  "url": "https://www.govdata.de/ckan/api/3/action/package_search?q=W%C3%BCrzburg&rows=100",
+  "entityShapes": [
+    "Dataset"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:44.161Z",
+  "httpStatus": null,
+  "contentType": null,
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "robots.txt disallows this path; request not sent",
+  "robots": "https://www.govdata.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified"
+}

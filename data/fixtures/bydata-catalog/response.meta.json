@@ -1,0 +1,44 @@
+{
+  "id": "bydata-catalog",
+  "name": "bydata-catalog",
+  "publisher": "Bayerisches Staatsministerium für Digitales",
+  "url": "https://open.bydata.de/api/3/action/package_search?q=W%C3%BCrzburg&rows=100",
+  "entityShapes": [
+    "Dataset"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:16.620Z",
+  "httpStatus": 200,
+  "contentType": "text/html",
+  "sample": "data/fixtures/bydata-catalog/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://open.bydata.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "access-control-allow-credentials": "true",
+    "access-control-allow-origin": "*",
+    "content-security-policy": "default-src 'self'; script-src 'self' https://consent.cookiebot.com https://consentcdn.cookiebot.com https://matomo.byte.bayern 'unsafe-eval' 'unsafe-inline'; frame-src 'self' https://consentcdn.cookiebot.com https://auth.bydata.de https://app.23degrees.io ; img-src 'self' https://open.bydata.de https://imgsct.cookiebot.com https://storage.googleapis.com data:; connect-src 'self' https://auth.bydata.de https://open.bydata.de https://consentcdn.cookiebot.com https://matomo.byte.bayern https://ppe.data.europa.eu https://data.europa.eu; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';",
+    "content-type": "text/html",
+    "date": "Fri, 06 Nov 2026 07:37:16 GMT",
+    "etag": "W/\"6ac8db12-129c\"",
+    "last-modified": "Fri, 09 Oct 2026 12:16:18 GMT",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "server": "nginx/1.31.6",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "vary": "Origin",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "0",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 4764,
+  "sha256": "32d2d552fd1ed7d0f379bfc4ea0571fca4707645d5c7fcc12d2096e682e689c3"
+}

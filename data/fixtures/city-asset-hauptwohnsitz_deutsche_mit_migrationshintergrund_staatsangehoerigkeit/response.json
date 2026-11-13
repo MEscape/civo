@@ -1,0 +1,39 @@
+{
+  "@type": "Dataset",
+  "name": "Hauptwohnsitz Deutsche mit Migrationshintergrund Staatsangehörigkeit",
+  "url": "https://opendata.wuerzburg.de/explore/assets/hauptwohnsitz_deutsche_mit_migrationshintergrund_staatsangehoerigkeit/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T08:19:23.830000+00:00",
+  "dateModified": "2026-03-26T09:25:40.120000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Gesamtstadt",
+    "Hauptwohnsitz",
+    "Migrationshintergrund",
+    "Deutsche",
+    "Kontinente",
+    "Ländergruppen",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_deutsche_mit_migrationshintergrund_staatsangehoerigkeit/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_deutsche_mit_migrationshintergrund_staatsangehoerigkeit/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_deutsche_mit_migrationshintergrund_staatsangehoerigkeit/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

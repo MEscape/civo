@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Wifi Counter ZDI",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wifi-counter-zdi/",
+  "license": null,
+  "dateCreated": "2026-10-19T16:42:16.566000+00:00",
+  "dateModified": "2026-10-19T16:42:16+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wifi-counter-zdi/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wifi-counter-zdi/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wifi-counter-zdi/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Wohnberechtigte",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_wohnberechtigte/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T13:34:30.972000+00:00",
+  "dateModified": "2026-03-26T10:29:22.262000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Stadtbezirk",
+    "Wohnberechtigte",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_wohnberechtigte/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_wohnberechtigte/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_wohnberechtigte/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

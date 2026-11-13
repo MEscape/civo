@@ -1,0 +1,22 @@
+{
+  "url": "https://www.wuerzburg.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 19:18:13 GMT",
+    "server": "Apache",
+    "x-frame-options": "DENY",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "strict-transport-security": "max-age=31536000",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "vary": "Accept-Encoding",
+    "access-control-allow-origin": "*",
+    "access-control-allow-headers": "origin, x-requested-with, content-type",
+    "access-control-allow-methods": "PUT, GET, POST, DELETE, OPTIONS",
+    "transfer-encoding": "chunked",
+    "content-type": "text/plain;charset=UTF-8"
+  },
+  "fetchedAt": "2026-11-09T19:18:13.384Z"
+}

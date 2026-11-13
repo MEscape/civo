@@ -1,0 +1,1284 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9">
+
+	
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+        <meta name="robots" content="all">
+    
+    
+
+
+
+<link rel="canonical" href="https://pegelonline.wsv.de/webservice/dokuRestapi">
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="content-language" content="de">
+<link rel="stylesheet" href="/css/global.css" type="text/css">
+<link rel="stylesheet" href="/css/webservice.css" type="text/css">
+<link rel="icon" href="/img/mobil/favicon.png" type="image/png">
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/common.js" type="text/javascript"></script>
+
+	<meta name="keywords" content="">
+	<meta name="description" content="Dokumentation der PEGELONLINE REST-API: Endpunkte, Parameter und Beispiele zum Abruf aktueller Wasserstände und Messreihen der WSV.">
+	<meta name="author" content="ITZBund">
+	<title>REST-API – Dokumentation | PEGELONLINE</title>
+        <link rel="stylesheet" href="/css/doku-restapi.css" type="text/css">
+</head>
+
+<body>
+<a name="top"></a>
+<div id="geruest" class="height_auto">
+	
+
+
+
+
+
+
+
+
+
+	<a href="/gast/external/redirect?url=https%3A%2F%2Fwww.wsv.de" target="_blank">
+		<img class="no_border float_right margin_top14 margin_bottom10" src="/img/wsv_rgb_2x.png" width="73" height="67" alt="WSV">
+	</a>
+	<div id ="menue2">
+		<ul id="navi2">
+			<li> <a href="/gast/hilfe">Hilfe</a> </li>
+			<li> <a href="/gast/links">Links</a> </li>
+			<li> <a href="/gast/impressum">Impressum</a> </li>
+			<li> <a href="/gast/nutzungsbedingungen">Nutzungsbedingungen</a> </li>
+			<li> <a href="/gast/datenschutzhinweise">Datenschutzhinweise</a> </li>
+			<li><a href="/gast/einstellungen">Einstellungen</a></li>
+		</ul>
+	</div>
+	<div class="logoimgmap">
+		<map name="logoimgmap">
+			<area shape="rect" coords="0,0,226,76" href="/gast/start" alt="PEGELONLINE">
+			<area shape="rect" coords="237,14,450,76" href="/webservice/ueberblick" alt="PEGELONLINE Webservices">
+		</map>
+
+		<img class="pegelonlinegif_ws" src="/img/webservice/pegelonline_webservices.gif" width="449" height="75" alt="PEGELONLINE" usemap="#logoimgmap">
+	</div>
+<br>
+        <div class="clear_both"></div>
+<div class="menu"></div><div id ="menue" class="menu_width">
+<ul id="navi">
+<li> <a  href="/webservice/ueberblick">Überblick</a> </li>
+<li> <a id="aktuell" href="/webservice/guideRestapi">REST-API</a> </li>
+<li class="navi-beta"> <a  href="/webservice/hydas">HyDAS-API</a> </li>
+<li> <a  href="/webservice/visualisierung">Visualisierung</a> </li>
+<li> <a  href="/webservice/wmsAktuell">WMS</a> </li>
+<li> <a  href="/webservice/wfsAktuell">WFS</a> </li>
+<li> <a  href="/webservice/guide-sos-api">SOS</a> </li>
+<li> <a  href="/webservice/downloads">Downloads</a> </li>
+<li> <a  href="/webservice/dictAPI">Dict-API</a> </li>
+<li> <a  href="/webservice/faq">FAQ</a> </li>
+</ul>
+</div>
+<div class="header_div1"></div>
+<div id="submenu" class="menu_width">
+	<ul id="subnavi">
+	
+		
+			
+			
+				<li> <a  href="/webservice/guideRestapi">User's Guide</a> </li>
+				<li> <a id="aktuell" href="/webservice/dokuRestapi">Dokumentation</a> </li>
+			
+		
+	
+	
+	
+    
+	</ul>
+</div>
+
+
+	<div id="content" class="margin_top5 width_100p">
+		<h1>PEGELONLINE REST-API Dokumentation</h1>
+		<ul>
+			<li> <a href="#ueberblick"> Überblick</a></li>
+			<li> <a href="#ressourcen"> Ressourcen </a>
+				<ul>
+                    <li> <a href="#ressourcenStation"> Station </a> </li>
+                    <li> <a href="#ressourcenWater"> Water </a> </li>
+                    <li> <a href="#ressourcenMeasurement"> Measurement </a> </li>
+                    <li> <a href="#ressourcenTimeseries"> Timeseries </a> </li>
+                    <li> <a href="#ressourcenCurrentMeasurement"> CurrentMeasurement </a> </li>
+				</ul>
+			</li>
+            <li> <a href="#vorhersagen"> Vorhersagen </a> </li>
+            <li> <a href="#terminwerte"> Terminwerte </a> </li>
+            <li> <a href="#fahrrinnen-tauchtiefen"> Fahrrinnen- und Tauchtiefen zwischen Elbe und Oder </a> </li>
+			<li> <a href="#urlParameter"> Allgemeine URL-Parameter </a></li>
+			<li> <a href="#caching"> Caching </a></li>
+			<li> <a href="#compression"> Kompression </a></li>
+			<li> <a href="#versionierung"> Versionierung </a></li>
+			<li> <a href="#fehlermeldungen"> Fehlermeldungen </a></li>
+			<li> <a href="#umlaute"> Umgang mit Sonderzeichen in URLs </a></li>
+			</ul>
+		<br>
+
+		<a name="ueberblick"></a>
+		<h1>Überblick</h1>
+
+		<p>
+			PEGELONLINE REST-API ist eine einfache Schnittstelle, um unterschiedliche gewässerkundliche Informationen von PEGELONLINE abzurufen.
+		</p>
+		<p>
+			Die API ist ressourcenorientiert, d.h. es sind eine Reihe von <a href="#ressourcen">Ressourcen</a> definiert, welche über
+			HTTP-URLs eindeutig adressierbar sind. Die Ressourcen können unterschiedlich repräsentiert werden, d.h. in unterschiedlichen
+			Formaten dargestellt werden. Aktuell wird JSON und bei den gemessenen Rohdaten zusätzlich CSV und eine Diagrammdarstellung
+			als PNG unterstützt.
+		</p>
+		<p>
+			Um die Datenübertragung zu beschleunigen oder ganz zu vermeiden wird <a href="#compression">HTTP-Kompression</a> und
+			clientseitiges <a href="#caching">Caching</a> unterstützt.
+		</p>
+		<p>
+			Die API ist unterhalb von <i>https://pegelonline.wsv.de/webservices/rest-api/v2</i> adressierbar.
+		</p>
+		
+			
+			
+				<p>
+					Es ist keine Authentifizierung oder Autorisierung erforderlich, um die PEGELONLINE REST-API zu nutzen.
+				</p>
+			
+		
+
+		<!--[if IE]>
+			<p>
+				<b>Anmerkung</b>: Bei der Verwendung des Internet Explorer Browsers wird hier an alle URLs der Parameter "contentType=text/plain" angehängt. Dadurch können
+				JSON-Dokumente direkt im Browser angezeigt werden. Dieser Parameter dient nur illustrativen Zwecken und sollte nicht beim produkiven Einsatz des Webservices
+				verwendet werden (auch nicht bei der Nutzung des Webservices per Javascript im Internet Explorer).
+			</p>
+		<![endif]-->
+
+		<a name="ressourcen"></a>
+		<h1>Ressourcen</h1>
+
+		<a name="ressourcenStation"></a>
+		<h2>Station</h2>
+		<p>
+			Hierbei handelt es sich um die Pegel bzw. die Messstellen von PEGELONLINE.
+		</p>
+		<p>
+			<b>Zugriff auf die Stationen inklusive verschiedener untergeordneter Daten:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?contentType=text/plain">
+					<![endif]-->
+						/stations.json
+					</a>
+				</td><td>
+					Alle Pegel sortiert nach Gewässername und Messstellenname.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&contentType=text/plain">
+					<![endif]-->
+						/stations.json?includeTimeseries=true
+					</a>
+				</td><td>
+					Alle Pegel inklusive Informationen zu den Zeitreihen.
+				</td></tr>
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&includeCurrentMeasurement=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&includeCurrentMeasurement=true&contentType=text/plain">
+					<![endif]-->
+						/stations.json?includeTimeseries=true&amp;includeCurrentMeasurement=true
+					</a>
+				</td><td>
+					Alle Pegel inklusive Informationen zu den Zeitreihen mit dem aktuell gemessenen Wert.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&includeCharacteristicValues=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&includeCharacteristicValues=true&contentType=text/plain">
+					<![endif]-->
+						/stations.json?includeTimeseries=true&amp;includeCharacteristicValues=true
+					</a>
+				</td><td>
+					Alle Pegel inklusive Informationen zu den Zeitreihen mit den kennzeichnenden Wasserstände.
+				</td></tr>
+                
+                    <tr class="tablerow2"><td>
+                        <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeForecastTimeseries=true&hasTimeseries=WV">
+                            /stations.json?includeForecastTimeseries=true&hasTimeseries=WV
+                        </a>
+                    </td><td>
+                        Alle Pegel mit Vorhersagezeitreihen ("Wasserstandvorhersage", "WV"). Weitere Informationen zu den Vorhersagen sind im Abschnitt
+                        <a href="#vorhersagen">Vorhersagen</a> zu finden.
+                    </td></tr>
+                
+			</table>
+		</p>
+		<p>
+			<b>Zugriff auf bestimmte Stationen:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td nowrap="nowrap">
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868.json">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868.json?contentType=text/plain">
+					<![endif]-->
+						/stations/593647aa-9fea-43ec-a7d6-6476a76ae868.json
+					</a>
+				</td><td>
+					Zugriff auf einen Pegel per UUID. Die UUIDs sind in der <a href="/gast/pegeltabelle">Pegeltabelle</a> aufgelistet oder
+                    können aus <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json">/stations.json</a> entnommen werden.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?waters=RHEIN,MAIN">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?waters=RHEIN,MAIN&contentType=text/plain">
+					<![endif]-->
+						/stations.json?waters=RHEIN,MAIN
+					</a>
+				</td><td>
+					Alle Pegel bestimmter Gewässer.
+				</td></tr>
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?ids=593647aa-9fea-43ec-a7d6-6476a76ae868,70272185-b2b3-4178-96b8-43bea330dcae">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?ids=593647aa-9fea-43ec-a7d6-6476a76ae868,70272185-b2b3-4178-96b8-43bea330dcae&contentType=text/plain">
+					<![endif]-->
+						/stations.json?ids=593647aa-9fea-43ec-a7d6-6476a76ae868,70272185-b2b3-4178-96b8-43bea330dcae
+					</a>
+				</td><td>
+					Mehrere Pegel per UUIDs.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?timeseries=Q&includeTimeseries=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?timeseries=Q&includeTimeseries=true&contentType=text/plain">
+					<![endif]-->
+						/stations.json?timeseries=Q&amp;includeTimeseries=true
+					</a>
+				</td><td>
+					Nur Pegel mit deren Q-Zeitreihen (Abflusszeitreihen).
+				</td></tr>
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?hasTimeseries=Q&includeTimeseries=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?hasTimeseries=Q&includeTimeseries=true&contentType=text/plain">
+					<![endif]-->
+						/stations.json?hasTimeseries=Q&amp;includeTimeseries=true
+					</a>
+				</td><td>
+					Pegel, welche eine Q-Zeitreihe besitzen, mit allen Zeitreihen des Pegels.
+				</td></tr>
+			</table>
+		</p>
+		<p>
+			<b>Spezialabfragen:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?latitude=52.44&longitude=13.57&radius=30">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?latitude=52.44&longitude=13.57&radius=30&contentType=text/plain">
+					<![endif]-->
+						/stations.json?latitude=52.44&amp;longitude=13.57&amp;radius=30
+					</a>
+				</td><td>
+					Pegel innerhalb eines Radius an einer geografischen Position. Koordinaten in WGS84 in Dezimalnotation.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?fuzzyId=berlin">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?fuzzyId=berlin&contentType=text/plain">
+					<![endif]-->
+						/stations.json?fuzzyId=berlin
+					</a>
+				</td><td>
+					Pegel, welche im Namen 'Berlin' enthalten.
+				</td></tr>
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?waters=RHEIN&km=680&radius=50">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?waters=RHEIN&km=680&radius=50&contentType=text/plain">
+					<![endif]-->
+						/stations.json?waters=RHEIN&amp;km=680&amp;radius=50
+					</a>
+				</td><td>
+					Pegel des Gewässers Rhein im Umkreis eines bestimmten Flusskilometers.
+				</td></tr>
+			</table>
+		</p>
+
+		<p>
+			<b>Erläuterung der Attribute der Ressource Station:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>uuid</td><td>
+					Eindeutige unveränderliche ID.
+				</td></tr>
+				<tr class="tablerow2"><td>number</td><td>
+					Pegelnummer
+				</td></tr>
+				<tr class="tablerow1"><td>shortname</td><td>
+					Pegelname (max. 40 Zeichen)
+				</td></tr>
+				<tr class="tablerow2"><td>longname</td><td>
+					Pegelname (max. 255 Zeichen)
+				</td></tr>
+				<tr class="tablerow1"><td>km</td><td>
+					Flusskilometer
+				</td></tr>
+				<tr class="tablerow2"><td>agency</td><td>
+					Wasserstra&szlig;en- und Schifffahrtsamt
+				</td></tr>
+				<tr class="tablerow1"><td>longitude</td><td>
+					Längengrad in WGS84 Dezimalnotation
+				</td></tr>
+				<tr class="tablerow2"><td>latitude</td><td>
+					Breitengrad in WGS84 Dezimalnotation
+				</td></tr>
+				<tr class="tablerow1"><td>voiceServiceNumber</td><td>
+					Telefonnummer der Messwertansage in internationaler Schreibweise. Wird nur ausgegeben,
+					wenn die Messstelle &uuml;ber den telefonischen Auskunftsservice abgefragt werden kann.
+				</td></tr>
+				<tr class="tablerow2"><td>remark</td><td>
+					Allgemeine Bemerkung zur Messstelle (max. 60 Zeichen). Wird nur ausgegeben, wenn eine
+					Bemerkung hinterlegt ist.
+				</td></tr>
+				<tr class="tablerow1"><td>water</td><td>
+					Angaben zum Gewässer
+				</td></tr>
+			</table>
+		</p>
+
+		<a name="ressourcenMeasurement"></a>
+		<h2>Measurement</h2>
+		<p>
+			Hierbei handelt es sich um die gemessenen Rohdaten, Vorhersagen, Terminwerte oder Fahrrinnen- und Tauchtiefen (siehe entsprechende Abschnitte). Es können Daten für die letzten 31 Tage bezogen werden.
+		</p>
+		<p>
+			Die Messwerte können in JSON bezogen werden, im CSV-Format oder als Diagramm visualisiert werden.
+		</p>
+		
+			<p>
+				Bei der Diagrammvisualisierung der Messwerte werden bei einer Reihe von Küstenpegeln zusätzlich
+				<a href="/gast/hilfe#hilfe_astrotide">astronomische Gezeitenganglinien</a> dargestellt.
+				Die Ganglinien werden gestrichelt in einem abgeschwächten Farbton gerendert.<br>
+				Die 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fwww.bsh.de%2FDE%2FDATEN%2FVorhersagen%2FGezeiten%2Fgezeiten_node.html" class="external-link" target="">Gezeitenvorausberechnungen <span class="external-icon">↗</span></a>
+
+ werden vom 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fwww.bsh.de%2FDE%2FHome%2Fhome_node.html" class="external-link" target="">Bundesamt für Seeschifffahrt und Hydrographie <span class="external-icon">↗</span></a>
+
+ zur Verf&uuml;gung gestellt.
+			</p>
+		
+
+		<p>
+			<b>Zugriff auf die Ressource <i>Measurement</i>:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?contentType=text/plain">
+					<![endif]-->
+						/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json
+					</a>
+				</td><td>
+					Wasserstandsrohdaten des Pegels Bonn der letzten 10 Tage (Standardzeitraum).
+				</td></tr>
+
+				
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?start=Thu Oct 15 09:00:00 CEST 2026%2B01:00&end=Tue Oct 27 16:00:00 CET 2026%2B01:00">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?start=Thu Oct 15 09:00:00 CEST 2026%2B01:00&end=Tue Oct 27 16:00:00 CET 2026%2B01:00&contentType=text/plain">
+					<![endif]-->
+						/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?start=Thu Oct 15 09:00:00 CEST 2026+01:00&amp;end=Tue Oct 27 16:00:00 CET 2026+01:00
+					</a>
+				</td><td>
+					Wasserstandsrohdaten des Pegels Bonn zwischen dem
+					Thu Oct 15 09:00:00 CEST 2026 Uhr bis zum
+					Tue Oct 27 16:00:00 CET 2026 Uhr.
+					Die Notation der Zeitstempel erfolgt nach 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+. Der Parameter <i>end</i> kann auch weggelassen werden. In diesem Fall wird
+					der aktuelle Zeitpunkt angenommen.
+				</td></tr>
+
+				
+
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?start=P8D">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?start=P8D&contentType=text/plain">
+					<![endif]-->
+						/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.json?start=P8D
+					</a>
+				</td><td>
+					Die Messwerte der letzten 8 Tage. Hier wird für start eine 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Period (<b>P</b>8D) verwendet.
+					Um zum Beispiel die Daten der letzen 6 Tage, 10 Stunden und 15 Minuten anzufordern würde man <i>P6DT10H15M</i> verwenden.
+				</td></tr>
+
+                <tr class="tablerow1"><td>
+                    <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.csv?contentType=text/plain">
+                        /stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.csv?contentType=text/plain
+                    </a>
+                </td><td>
+                    Abruf der Messwerte im CSV-Format. Die Zeitstempel, Messwerte und der CSV-Trenner sind so formatiert, dass sie direkt von der Excel-Tabellenkalkulation erkannt werden.<br>
+                    Mit der Angabe <i>contentType=text/plain</i> wird das CSV direkt im Browser dargestellt und nicht als Datei heruntergeladen. Der Parameter ist für den CSV-Abruf nicht notwendig.
+                </td></tr>
+
+				<tr class="tablerow2"><td>
+					<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.png?start=P20D&width=900&height=400">
+						/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.png?start=P20D&amp;width=900&amp;height=400
+					</a>
+				</td><td>
+					Eine grafische Darstellung der Messwerte der letzten 20 Tage in einer bestimmten Höhe und Breite.
+				</td></tr>
+
+                <tr class="tablerow1"><td>
+                    <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.png?start=P20D&width=700&height=200&enableSecondaryYAxis=true">
+                        /stations/593647aa-9fea-43ec-a7d6-6476a76ae868/W/measurements.png?start=P20D&amp;width=700&amp;height=200&amp;enableSecondaryYAxis=true
+                    </a>
+                </td><td>
+                    Eine grafische Darstellung mit zweiter Y-Achse auf der rechten Seite.
+                </td></tr>
+
+				<tr class="tablerow2"><td>
+					<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/8727ebfd-e2e1-43da-ab3d-fee48cff9acc/W/measurements.png?start=P1D&end=P1D&width=900&height=400">
+						/stations/8727ebfd-e2e1-43da-ab3d-fee48cff9acc/W/measurements.png?start=P1D&amp;end=P1D&amp;width=900&amp;height=400
+					</a>
+				</td><td>
+					Eine grafische Darstellung des Küstenpegels <a href="/gast/stammdaten?pegelnr=9340020">BORKUM FISCHERBALJE</a>  24 Stunden vor und 24 Stunden nach dem aktuellen Zeitpunkt. Es wird
+					zusätzlich eine <a href="/gast/hilfe#hilfe_astrotide">astronomische Gezeitenganglinie</a> angezeigt.
+				</td></tr>
+			</table>
+		</p>
+
+        <a name="attributeResourceMeasurement"></a>
+        <p>
+			<b>Erläuterung der Attribute der Ressource Measurement:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>timestamp</td><td>
+                    Alle Zeitangaben erfolgen in lokaler gesetzlicher Zeit (MEZ/MESZ mit Sommerzeitumstellung):
+
+                    <p><b>JSON-Format:</b><br/>
+                        Zeitstempel werden vollqualifiziert nach 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ mit explizitem Zeitzonenoffset zu UTC kodiert.<br/>
+                        Beispiel: <i>2025-09-25T10:00:00+02:00</i></p>
+
+                    <p>Dieses Format ermöglicht eine eindeutige zeitliche Zuordnung.</p>
+
+                    <p><b>CSV-Format:</b><br/>
+                        Für eine optimale Excel-Kompatibilität werden Zeitstempel in einem vereinfachten Format ohne Zeitzonenangabe ausgegeben.<br/>
+                        Beispiel: <i>2025-09-25 10:00</i></p>
+
+                    Die Werte repräsentieren ebenfalls die lokale gesetzliche Zeit (MEZ/MESZ).
+				</td></tr>
+				<tr class="tablerow2"><td>value</td><td>
+					Wert als Dezimalzahl in der Einheit, welche durch die <a href="#ressourcenTimeseries">Timeseries</a> der Station vorgegeben ist.
+				</td></tr>
+			</table>
+		</p>
+
+		<a name="ressourcenWater"></a>
+		<h2>Water</h2>
+		<p>
+			Hiermit können alle in PEGELONLINE verfügbaren Gewässer, optional mit untergeordneten Pegeln und Zeitreihen bezogen werden.
+		</p>
+		<p>
+			<b>Zugriff auf die Ressource <i>Water</i>:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/waters.json">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/waters.json?contentType=text/plain">
+					<![endif]-->
+						/waters.json
+					</a>
+				</td><td>
+					Alle Gewässer.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/waters.json?includeStations=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/waters.json?includeStations=true&contentType=text/plain">
+					<![endif]-->
+						/waters.json?includeStations=true
+					</a>
+				</td><td>
+					Alle Gewässer mit untergeordneten Pegeln. Wie bei <a href="#ressourcenStation">Stations</a> können auch hier weitere untergeordnete Daten
+					mit den Parametern <i>includeTimeseries</i>, <i>includeCurrentMeasurement</i> und <i>includeCharacteristicValues</i> angefordert werden.
+				</td></tr>
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/waters.json?ids=SAALE,ELBE&stations=ace7d4b0-33e5-46db-a41d-2fa7a321f67a,4626f6bc-494b-4a51-8c10-b47a32e87790,1edc5fa4-88af-47f5-95a4-0e77a06fe8b1,de4cc1db-51cb-4b62-bee2-9750cbe4f5c4&timeseries=W&includeTimeseries=true&includeStations=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/waters.json?ids=SAALE,ELBE&stations=ace7d4b0-33e5-46db-a41d-2fa7a321f67a,4626f6bc-494b-4a51-8c10-b47a32e87790,1edc5fa4-88af-47f5-95a4-0e77a06fe8b1,de4cc1db-51cb-4b62-bee2-9750cbe4f5c4&timeseries=W&includeTimeseries=true&includeStations=true&contentType=text/plain">
+					<![endif]-->
+						/waters.json?ids=SAALE,ELBE&amp;stations=ace7d4b0-33e5-46db-a41d-2fa7a321f67a,4626f6bc-494b-4a51-8c10-b47a32e87790,1edc5fa4-88af-47f5-95a4-0e77a06fe8b1,de4cc1db-51cb-4b62-bee2-9750cbe4f5c4&amp; timeseries=W&amp;includeTimeseries=true&amp;includeStations=true
+					</a>
+				</td><td>
+					Gewässer mit untergeordneten Stationen und Zeitreihen. Beschränkung erfolgt auf die Gewässer Saale und Elbe, auf die Stationen Nienburg, Roepzig, Dessau und Storkau, sowie auf Wasserstandszeitreihen.
+				</td></tr>
+			</table>
+		</p>
+		<p>
+			<b>Erläuterung der Attribute der Ressource Waters:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>shortname</td><td>
+					Kurzbezeichnung, maximal 40 Zeichen.
+				</td></tr>
+				<tr class="tablerow2"><td>longname</td><td>
+					Langbezeichnung, maximal 255 Zeichen.
+				</td></tr>
+			</table>
+		</p>
+
+		<a name="ressourcenTimeseries"></a>
+		<h2>Timeseries</h2>
+		<p>
+			Diese Ressource enthält Informationen zu den Zeitreihen. Sie kann mit Hilfe des URL-Parameters <i>includeTimeseries</i> bei den Ressourcen
+			<a href="#ressourcenStation">Stations</a> und <a href="#ressourcenWater">Waters</a> mit angefordert werden.<br>
+			Eine eigenständige Abfrage ist auch möglich.
+		</p>
+		<p>
+			<b>Zugriff auf die Ressource <i>Timeseries</i>:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&contentType=text/plain">
+					<![endif]-->
+						/stations.json?includeTimeseries=true
+					</a>
+				</td><td>
+					Stationen mit untergeordneten Zeitreihen.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCurrentMeasurement=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCurrentMeasurement=true&contentType=text/plain">
+					<![endif]-->
+						/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCurrentMeasurement=true
+					</a>
+				</td><td>
+					Die Wasserstandszeitreihe des Pegels Ketzin mit dem aktuelle Messwert.
+				</td></tr>
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCharacteristicValues=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCharacteristicValues=true&contentType=text/plain">
+					<![endif]-->
+						/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCharacteristicValues=true
+					</a>
+				</td><td>
+					Die Wasserstandszeitreihe des Pegels Ketzin mit kennzeichnenden Wasserständen.
+				</td></tr>
+			</table>
+		</p>
+		<p>
+			<b>Erläuterung der Attribute der Ressource Timeseries:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>shortname</td><td>
+					Kurzbezeichnung.
+				</td></tr>
+				<tr class="tablerow2"><td>longname</td><td>
+					Langbezeichnung.
+				</td></tr>
+				<tr class="tablerow1"><td>unit</td><td>
+					Maßeinheit
+				</td></tr>
+				<tr class="tablerow2"><td>equidistance</td><td>
+					Abstand der Messwerte in Minuten.
+				</td></tr>
+				
+			</table>
+		</p>
+		
+		<p>
+			<b>Erläuterung der Attribute der Unterressource Gauge Zero</b> (Es handelt sich hierbei um den Pegelnullpunkt):
+
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>unit</td><td>
+					Einheit des Pegelnullpunkts (immer in Metern über einem <a href="/gast/hilfe#hilfe_hoehensystem">Normalhöhennull</a>)
+				</td></tr>
+				<tr class="tablerow2"><td>value</td><td>
+					Höhe als Dezimalwert
+				</td></tr>
+				<tr class="tablerow1"><td>validFrom</td><td>
+					Beginn der Gültigkeit. 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Datum.
+				</td></tr>
+			</table>
+		</p>
+		<p>
+			<b>Erläuterung der Attribute der Unterressource Characteristic Value</b> (Es handelt sich hierbei um <a href="/gast/hilfe#hilfe_pegelkennwerte">kennzeichnende Wasserstände und Pegelkennwerte</a>):
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>shortname</td><td>
+					Kurzbezeichnung, maximal 40 Zeichen.
+				</td></tr>
+				<tr class="tablerow2"><td>longname</td><td>
+					Langbezeichnung, maximal 255 Zeichen.
+				</td></tr>
+				<tr class="tablerow1"><td>unit</td><td>
+					Maßeinheit.
+				</td></tr>
+				<tr class="tablerow2"><td>value</td><td>
+					Wert als Dezimalzahl.
+				</td></tr>
+				<tr class="tablerow1"><td>validFrom/occurences/timespanStart/timespanEnd</td><td>
+					Drückt aus ab welchem Zeitpunkt (validFrom), an welchen Zeitpunkten (occurences) oder in welchem Zeitraum
+					(timespanStart, timespanEnd) ein Kennwert gültig ist. Die Zeitstempel werden in 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+
+					kodiert und können sich auf ein Jahr (z.B. '2002'), auf einen Monat (z.B. '2002-10') oder auf ein Datum (z.B. '2002-10-01') beziehen.
+				</td></tr>
+			</table>
+		</p>
+		<p>
+			<b>Erläuterung der Attribute der Unterressource Comment</b><br>
+			Liegt z.B. eine Fehlfunktion oder ein Ausfall an der Messstelle vor, so ist dies hier mit einer Textbeschreibung erläutert.
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>shortDescription</td><td>
+					Kurzbeschreibung, maximal 55 Zeichen.
+				</td></tr>
+				<tr class="tablerow2"><td>longDescription</td><td>
+					Langbeschreibung, maximal 500 Zeichen.
+				</td></tr>
+			</table>
+		</p>
+
+		<a name="ressourcenCurrentMeasurement"></a>
+		<h2>CurrentMeasurement</h2>
+		<p>
+			Diese Ressource enthält den aktuellen Wert. Sie kann als Unterresource von <a href="#ressourcenTimeseries">Timeseries</a> angefordert werden oder
+			auch eigenständig.
+		</p>
+		<p>
+			<b>Zugriff auf die Ressource <i>CurrentMeasurement</i>:</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCurrentMeasurement=true">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCurrentMeasurement=true&contentType=text/plain">
+					<![endif]-->
+						/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W.json?includeCurrentMeasurement=true
+					</a>
+				</td><td>
+					Die Wasserstandszeitreihe des Pegels Ketzin mit dem aktuelle Messwert.
+				</td></tr>
+				<tr class="tablerow2"><td>
+					<!--[if !IE]> -->
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W/currentmeasurement.json">
+					<!-- <![endif]-->
+					<!--[if IE]>
+						<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W/currentmeasurement.json?contentType=text/plain">
+					<![endif]-->
+						/stations/d2d025a2-e691-4986-b9c4-923e7f1a47c3/W/currentmeasurement.json
+					</a>
+				</td><td>
+					Den aktuellen Wert von Ketzin.
+				</td></tr>
+			</table>
+		</p>
+		<p>
+			<b>Erläuterung der Attribute der Ressource CurrentMeasurement</b>
+			<table class="webservice-table webservice-rest-table">
+				<tr class="tablerow1"><td>timestamp</td><td>
+					Zeitpunkt kodiert im 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+				</td></tr>
+				<tr class="tablerow2"><td>value</td><td>
+					Wert als Dezimalzahl in der Einheit, welche durch die <a href="#ressourcenTimeseries">Timeseries</a> der Station vorgegeben ist.
+				</td></tr>
+				<tr class="tablerow1"><td>stateMnwMhw und stateNswHsw</td><td>
+					Diese Attribute sind nur bei Wasserständen vorhanden. Sie setzen den aktuellen Wasserstand entweder mit den
+					<a href="/gast/hilfe#hilfe_pegelkennwerte_MNW">mittleren niedrigsten Werten (MNW)</a> und den <a href="/gast/hilfe#hilfe_pegelkennwerte_MHW">mittleren höchsten Werten (MHW)</a>
+					in Beziehung (stateMnwMhw) oder mit dem <a href="/gast/hilfe#hilfe_pegelkennwerte_HSW">höchsten Schifffahrtswasserstand</a> (stateNswHsw).
+
+					Die Attribute stateMnwMhw und stateNswHsw können folgende Werte annehmen:
+					<ul>
+	 					<li><i>low</i>: Aktueller Wasserstand unterhalb/gleich des MNW (nur stateMnwMhw) </li>
+	 					<li><i>normal</i>: Aktueller Wasserstand zwischen MNW und MHW bzw. zwischen 0 und HSW</li>
+	 					<li><i>high</i>: Aktueller Wasserstand oberhalb/gleich MHW bzw. HSW</li>
+	 					<li><i>unknown</i>: Unbekannt, da MHW/MNW bzw. HSW für Zeitreihe nicht vorhanden</li>
+	 					<li><i>commented</i>: Fehlfunktion oder Störung. Siehe Subressource <i>comment</i> in Ressource <i>Timeseries</i></li>
+	 					<li><i>out-dated</i>: Aktueller Wasserstand veraltet (älter als 25 Stunden)</li>
+	 				</ul>
+	 				Siehe auch die <a href="/gast/hilfe#hilfe_grenzwertueberschreitung">Hilfe zu den Grenzwerten</a>.
+				</td></tr>
+			</table>
+		</p>
+
+		<div class="float_right"><a href="#top">nach oben</a></div>
+
+        
+            <a name="vorhersagen"></a>
+            <h1>Vorhersagen</h1>
+            <p>
+                Vorhersagen des Wasserstands werden vom Wasserstraßen- und Schifffahrtsamt Elbe, der Bundesanstalt für Gewässerkunde, der Hochwasservorhersagezentrale Rheinland-Pfalz
+                und dem Landesbetrieb für Hochwasserschutz und Wasserwirtschaft Sachsen-Anhalt erstellt.
+            </p>
+            <p>
+                Die Vorhersagen sind nur bei einigen Stationen abrufbar. Informationen zu den Vorhersagezeitreihen lassen sich mittels des Query-Parameters
+                <i>includeForecastTimeseries=true</i> einblenden. Beispiel für Station Kaub: <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/1d26e504-7f9e-480a-b52c-5932be6549ab.json?includeForecastTimeseries=true">/stations/1d26e504-7f9e-480a-b52c-5932be6549ab.json?includeForecastTimeseries=true</a>.
+                Neben den bei unter <a href="#ressourcenTimeseries">Timeseries</a> erläuterten Attributen tauchen hier noch weitere auf.
+            </p>
+                <table class="webservice-table webservice-rest-table">
+                    <tr class="tablerow1"><td>start</td><td>
+                        Ab wann existieren für diese Station Vorhersagen. Der Zeitpunkt ist kodiert im
+                        
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+                    </td></tr>
+                    <tr class="tablerow2"><td>end</td><td>
+                        Bis zu welchem Zeitpunkt existieren für diese Station Vorhersagen. Der Zeitpunkt ist kodiert im
+                            
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+                    </td></tr>
+                    <tr class="tablerow1"><td>comment</td><td>
+                        Hier wird aufgeführt, wann und von wem die Vorhersagen erstellt worden sind.
+                    </td></tr>
+
+                </table>
+            <p>
+                Der Abruf der Vorhersagen erfolgt über die Zeitreihe WV (Wasserstandvorhersagen). Eine Beispielabfrage für den Pegel Kaub sieht folgendermaßen aus:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/1d26e504-7f9e-480a-b52c-5932be6549ab/WV/measurements.json">/stations/1d26e504-7f9e-480a-b52c-5932be6549ab/WV/measurements.json</a>
+                Die Abfrage lässt sich mit den bei <a href="#ressourcenMeasurement">Measurement</a> beschriebenen Parametern <i>start</i> und <i>end</i> zeitlich weiter einschränken.
+                Ohne zeitliche Einschränkung wie im Beispiel werden alle verfügbaren Vorhersagen angezeigt.
+            </p>
+            <p>
+                Die Vorhersagen können auch im CSV-Format abgerufen werden:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/1d26e504-7f9e-480a-b52c-5932be6549ab/WV/measurements.csv?contentType=text/plain">/stations/1d26e504-7f9e-480a-b52c-5932be6549ab/WV/measurements.csv</a>
+            </p>
+            <p>
+                <b>Erläuterung der Attribute der Vorhersagen:</b>
+                <table class="webservice-table webservice-rest-table">
+                    <tr class="tablerow1"><td>initialized</td><td>
+                        Zeitpunkt, an dem die Vorhersage erstellt wurde, im 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format kodiert.
+                    </td></tr>
+                    <tr class="tablerow2"><td>timestamp</td><td>
+                        Zeitpunkt der Vorhersage im 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format kodiert.
+                    </td></tr>
+                    <tr class="tablerow1"><td>value</td><td>
+                        Wert als Dezimalzahl in der Einheit Zentimeter.
+                    </td></tr>
+                    <tr class="tablerow2"><td>type</td><td>
+                        Entweder <i>forcast</i> oder <i>estimate</i>. Bei <i>forecast</i> handelt es sich um eine Wasserstandsvorhersage mit größerer Genauigkeit, welche näher in der Zukunft liegt, üblicherweise bis zu 48 Stunden.<br/>
+                        Bei <i>estimate</i> handelt es sich um eine Abschätzung mit geringerer Genauigkeit, die üblicherweise für mehr als 48 Stunden in der Zukunft prognostiziert worden ist.<br/>
+                        Zur Unterscheidung von Vorhersage und Abschätzung bietet die 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fwww.bafg.de%2FDE%2F5_Informiert%2F7_Fachglossar%2FVorhersagegenauigkeit%2Fvorhersagegenauigkeit_text.html" class="external-link" target="">BfG weitere Details <span class="external-icon">↗</span></a>
+
+.
+                    </td></tr>
+                    <tr class="tablerow1"><td>percentile10, percentile20, percentile30, percentile40, percentile60, percentile70, percentile80, percentile90</td><td>
+                        Ein Perzentil definiert einen Wert, der mit einer bestimmten Wahrscheinlichkeit über- oder unterschritten werden wird.<br/>
+                        Ist zum Beispiel <i>percentile20=300</i>, so wird innerhalb des Vorhersagemodells der Wasserstand 300 Zentimeter an der Station mit 80% Wahrscheinlichkeit
+                        überschritten und mit 20% Wahrscheinlichkeit unterschritten. Das Attribut <i>value</i> liefert in dem Fall den Median also den Mittelwert.
+                        Je breiter die Perzentilspanne ist, desto unsicherer ist die Vorhersage.<br/>
+                        Nur einige Vorhersagen verfügen über Perzentile, deswegen sind diese Attribute optional.
+                    </td></tr>
+                </table>
+            </p>
+
+            <div class="float_right"><a href="#top">nach oben</a></div>
+        
+
+        
+            <a name="terminwerte"></a>
+            <h1>Terminwerte</h1>
+            <p>
+                Bei Terminwerten handelt es sich um plausibilisierte Wasserstände zu bestimmten Uhrzeiten gesetzlicher Zeit (ein oder mehrmals täglich, abhängig von der Wasserstraße und Pegel) für schifffahrtsrelevante Pegel.
+                Die Veröffentlichung erfolgt primär auf 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fwww.elwis.de%2FDE%2FService%2FWasserstaende%2FWasserstaende-node.html" class="external-link" target="">ELWIS <span class="external-icon">↗</span></a>
+
+
+            </p>
+            <p>
+                Informationen zu den Terminwert-Zeitreihen lassen sich mittels
+                des Query-Parameters <i>includeTrmTimeseries=true</i> einblenden. Beispiel für Station Bonn:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868.json?includeTrmTimeseries=true">/stations/593647aa-9fea-43ec-a7d6-6476a76ae868.json?includeTrmTimeseries=true</a>.
+                Über <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTrmTimeseries=true&hasTimeseries=TRM">/stations.json?includeTrmTimeseries=true&hasTimeseries=TRM</a>
+                lassen sich alle Messstellen mit Terminwert-Zeitreihen auflisten.<br/>
+                Neben den bei <a href="#ressourcenTimeseries">Timeseries</a> erläuterten Attributen tauchen hier noch weitere auf.
+            </p>
+            <table class="webservice-table webservice-rest-table">
+                <tr class="tablerow1"><td>start</td><td>
+                    Ab wann existieren für diese Station Terminwerte. Der Zeitpunkt ist kodiert im
+                    
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+                </td></tr>
+                <tr class="tablerow2"><td>end</td><td>
+                    Bis zu welchem Zeitpunkt existieren für diese Station Terminwerte. Der Zeitpunkt ist kodiert im
+                    
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+                </td></tr>
+            </table>
+            <p>
+                Der Abruf der Terminwerte erfolgt über die Zeitreihe TRM. Eine Beispielabfrage für den Pegel Bonn sieht folgendermaßen aus:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/TRM/measurements.json">/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/TRM/measurements.json</a>
+                Standardmäßig werden die Terminwerte der letzten 10 Tage zurückgegeben. Die Abfrage lässt sich mit den bei <a href="#ressourcenMeasurement">Measurement</a> beschriebenen Parametern
+                <i>start</i> und <i>end</i> zeitlich weiter einschränken.
+            </p>
+
+            <p>
+                Die Terminwerte können auch im CSV-Format abgerufen werden:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/TRM/measurements.csv?contentType=text/plain">/stations/593647aa-9fea-43ec-a7d6-6476a76ae868/TRM/measurements.csv</a>
+            </p>
+
+            <p>
+                <b>Wichtig:</b> Terminwerte können nur für die letzten 31 Tage abgerufen werden.
+            </p>
+
+            <p>
+                <b>Erläuterung der Attribute der Terminwerte:</b>
+                <table class="webservice-table webservice-rest-table">
+                    <tr class="tablerow1"><td>timestamp</td><td>
+                        Zeitpunkt des Terminwerts in lokaler gesetzlicher Zeit (MEZ/MESZ mit Sommerzeitumstellung),
+                        kodiert im 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format
+                        mit explizitem Zeitzonenoffset zu UTC.<br>
+                        Beispiel: <i>2025-09-25T07:00:00+02:00</i>
+                    </td></tr>
+                    <tr class="tablerow2"><td>value</td><td>
+                        Wert als Dezimalzahl in der Einheit, welche durch die <a href="#ressourcenTimeseries">Timeseries</a>
+                        der Station vorgegeben ist (z.B. cm für Wasserstand, m³/s für Abfluss).
+                        Fehlwerte werden als <i>null</i> publiziert.
+                    </td></tr>
+                    <tr class="tablerow1"><td>difference</td><td>
+                        Differenz zum Terminwert des Vortags als Dezimalzahl in derselben Einheit wie <i>value</i>.
+                        Ist keine Differenz vorhanden, wird <i>null</i> publiziert.
+                    </td></tr>
+                </table>
+            </p>
+
+            <div class="float_right"><a href="#top">nach oben</a></div>
+        
+
+        
+            <a name="fahrrinnen-tauchtiefen"></a>
+            <h1>Fahrrinnen- und Tauchtiefen zwischen Elbe und Oder</h1>
+            <p>
+                Die Daten umfassen hier zwei Parameter:
+            </p>
+            <ul>
+                <li><b>F (Fahrrinnentiefe):</b> Hierbei handelt es sich um den Abstand zwischen Gewässersohle und Wasserspiegel an einem Gewässerabschnitt </li>
+                <li><b>T (Tauchtiefe):</b> Die tagesaktuell höchstzulässsige Tauchtiefe eines Schiffes an einem Gewässerabschnitt </li>
+            </ul>
+            Die Veröffentlichung erfolgt primär auf 
+<a href="/gast/external/redirect?url=https%3A%2F%2Felwis.de%2FDE%2Fdynamisch%2FFt%2FStart" class="external-link" target="">ELWIS <span class="external-icon">↗</span></a>
+
+
+            <p>
+                Die Daten werden jeweils für bestimmte Strecken (Gewässerabschnitte) bereitgestellt.
+            </p>
+            <p>
+                Die Fahrrinnen- und Tauchtiefen sind nur bei einigen Stationen abrufbar. Informationen zu den Zeitreihen lassen sich
+                mittels des Query-Parameters <i>includeFTTimeseries=true</i> einblenden. Beispiel für Station Eisenhüttenstadt:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/8675aa70-cfbc-471a-8566-dcc851f201d3.json?includeFTTimeseries=true">/stations/8675aa70-cfbc-471a-8566-dcc851f201d3.json?includeFTTimeseries=true</a>.
+                Über <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeFTTimeseries=true&hasTimeseries=F,T">/stations.json?includeFTTimeseries=true&hasTimeseries=F,T</a>
+                lassen sich alle Messstellen mit Fahrrinnentiefen oder Tauchtiefen auflisten.<br/>
+                Neben den unter <a href="#ressourcenTimeseries">Timeseries</a> erläuterten Attributen tauchen hier noch weitere auf.
+            </p>
+            <table class="webservice-table webservice-rest-table">
+                <tr class="tablerow1"><td>sectionShortname</td><td>
+                    Kurzbezeichnung der Strecke (z.B. "O1"). Diese wird in der URL zum Abruf der Fahrrinnen- oder Tauchtiefen benötigt.
+                </td></tr>
+                <tr class="tablerow2"><td>sectionLongname</td><td>
+                    Langbezeichnung der Strecke (z.B. "Ratzdorf bis Frankfurt").
+                </td></tr>
+                <tr class="tablerow1"><td>start</td><td>
+                    Ab wann existieren für diese Strecke Fahrrinnen- oder Tauchtiefen. Der Zeitpunkt ist kodiert im
+                    
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+                </td></tr>
+                <tr class="tablerow2"><td>end</td><td>
+                    Bis zu welchem Zeitpunkt existieren für diese Strecke Fahrrinnen- oder Tauchtiefen. Der Zeitpunkt ist kodiert im
+                    
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format.
+                </td></tr>
+            </table>
+            <p>
+                Der Abruf der Daten erfordert neben der Stations-UUID und dem Parameter (F oder T) auch die Streckenbezeichnung
+                (<i>sectionShortname</i>). Eine Beispielabfrage für die Fahrrinnentiefe der Strecke O1 am Pegel Eisenhüttenstadt
+                sieht folgendermaßen aus:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/8675aa70-cfbc-471a-8566-dcc851f201d3/F/O1/measurements.json">/stations/8675aa70-cfbc-471a-8566-dcc851f201d3/F/O1/measurements.json</a>
+                Standardmäßig werden die Messwerte der letzten 10 Tage zurückgegeben. Die Abfrage lässt sich mit den Parametern
+                <i>start</i> und <i>end</i> zeitlich weiter einschränken.
+            </p>
+
+            <p>
+                Die Fahrrinnen- und Tauchtiefen können auch im CSV-Format abgerufen werden:
+                <a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/8675aa70-cfbc-471a-8566-dcc851f201d3/F/O1/measurements.csv?contentType=text/plain">/stations/8675aa70-cfbc-471a-8566-dcc851f201d3/F/O1/measurements.csv</a>
+            </p>
+            <p>
+                <b>Wichtig:</b> Fahrrinnen- und Tauchtiefen können nur für die letzten 31 Tage abgerufen werden.
+            </p>
+
+            <p>
+                <b>Erläuterung der Attribute der Fahrrinnen- und Tauchtiefen:</b>
+                <table class="webservice-table webservice-rest-table">
+                    <tr class="tablerow1"><td>timestamp</td><td>
+                        Zeitpunkt der Fahrrinnentiefe oder Tauchtiefe in lokaler gesetzlicher Zeit (MEZ/MESZ mit Sommerzeitumstellung),
+                        kodiert im 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FISO_8601" class="external-link" target="">ISO 8601 <span class="external-icon">↗</span></a>
+
+ Format
+                        mit explizitem Zeitzonenoffset zu UTC.<br>
+                        Beispiel: <i>2025-09-25T06:00:00+02:00</i>
+                    </td></tr>
+                    <tr class="tablerow2"><td>value</td><td>
+                        Tiefenwert als Dezimalzahl in Zentimetern.
+                        Fehlwerte und Sonderstatus (gesperrt, nicht gemeldet) werden als <i>null</i> publiziert.
+                        In diesen Fällen gibt das Attribut <i>comment</i> nähere Auskunft.
+                    </td></tr>
+                    <tr class="tablerow1"><td>comment</td><td>
+                        Kommentar zum Tiefenwert. Kann folgende Werte haben:
+                        <ul>
+                            <li><i>null</i>: Normaler Tiefenwert ohne Besonderheiten</li>
+                            <li><i>"gesperrt"</i>: Die Strecke ist gesperrt</li>
+                            <li><i>"nicht gemeldet"</i>: Es wurde kein Wert gemeldet</li>
+                        </ul>
+                    </td></tr>
+                </table>
+            </p>
+
+            <div class="float_right"><a href="#top">nach oben</a></div>
+        
+
+		<a name="urlParameter"></a>
+		<h1 class="margin_top25">Allgemeine URL-Parameter</h1>
+		<table class="webservice-table webservice-rest-table">
+			<tr class="tablerow1"><td>prettyprint</td><td>
+				Standardmäßig wird der Response in mehrere Zeilen geteilt und intendiert, um besser lesbar zu sein.
+				Für den produktiven Einsatz kann dies mit <i>prettyprint=false</i> deaktiviert werden.
+			</td></tr>
+			<tr class="tablerow2"><td>limit/offset</td><td>
+				Mit Hilfe von <i>limit</i> und <i>offset</i> kann die Anzahl der Ergebnisse eingeschränkt werden und somit "Pagination" realisiert werden.
+				Mit <i>limit=10&amp;offset=0</i> werden vom ersten Element an die ersten 10 angezeigt. Mit <i>limit=5&amp;offset=15</i> werden 5 Elemente beginnend mit dem
+				16. Element angezeigt (mit anderen Worten: die vierte Seite).
+			</td></tr>
+		</table>
+
+		<div class="float_right"><a href="#top">nach oben</a></div>
+		<br><br>
+
+		<a name="caching"></a>
+		<h1>Caching</h1>
+
+		PEGELONLINE REST-API macht über zwei komplementäre Mechanismen clientseitiges Caching möglich.
+
+		
+			<h2>Caching über HTTP Header Expires bzw. Cache-Control</h2>
+			<p>
+				Bei den meisten Ressourcen der PEGELONLINE REST-API kann bestimmt werden, wann in der Zukunft eine Änderung erfolgen könnte. Dieser Zeitraum ist relativ kurz und liegt
+				zwischen 1 und 60 Sekunden.
+			</p>
+			<p>
+				Die API setzt dazu den HTTP-Header <i>Expires</i> auf einen Zeitpunkt in der Zukunft, sowie <i>max-age</i> in <i>Cache-Control</i>
+				auf einen Sekundenwert, der ausdrückt, wie lange sich die Daten nicht ändern werden. Sowohl <i>Expires</i>, als auch <i>max-age</i> drücken dasselbe
+				aus.
+			</p>
+			<p>
+				Wertet ein Http-Client diese HTTP-Header aus, so kann für eine gewisse Zeit vermieden werden, überhaupt eine HTTP Abfrage auszulösen.
+			</p>
+		
+
+		<h2>"Conditional GET" über HTTP Header ETag</h2>
+		<p>
+			Alle HTTP-Antworten der PEGELONLINE REST-API werden mit einem <i>Etag</i> HTTP-Header ausgestattet. Dadurch können nachfolgende Anfragen auf dieselbe URL so gestellt
+			werden, dass der Server nur dann Daten zurückliefert, wenn sie sich tatsächlich geändert haben. Der Client verwendet dazu den <i>If-None-Match</i> HTTP-Header mit dem
+			Etag-Hashwert. Hat sich nichts geändert, so liefert der Server den HTTP Code 304 (Not Modified) ohne Content.
+		</p>
+		<p>
+			Um "Conditional GET" effektiv nutzen zu können, müssen Abfragen so konstruiert werden, dass veränderliche Daten von eher statischen Daten getrennt werden.
+			Durch die Verwendung der bei <a href="#ressourcen">Ressourcen</a> beschriebenen include..-Parameter kann gesteuert Daten welche Daten vom Server geliefert werden.<br>
+			Generell sind Stammdaten zu den Zeitreihen oder zu den Pegeln wenig Änderungen unterworfen. Dagegen ändert sich der gerade aktuelle Messwert sehr häufig.
+		</p>
+
+		<div class="float_right"><a href="#top">nach oben</a></div>
+		<br><br>
+
+		<a name="compression"></a>
+		<h1>Kompression</h1>
+		<p>
+			Die REST-API verwendet HTTP-Kompression. Durch Setzen des HTTP Headers <i>Accept-Encoding</i> auf z.B. gzip in der HTTP-Anfrage, wird die HTTP-Response durch den Server auf bis zu 10% der
+			Originalgröße komprimiert.
+		</p>
+		<p>
+			Auf Kompression sollte, wenn überhaupt, nur bei sehr kleinen Datenmengen verzichtet werden.
+		</p>
+		<div class="float_right"><a href="#top">nach oben</a></div>
+		<br><br>
+
+		<a name="versionierung"></a>
+		<h1>Versionierung</h1>
+		<p>
+			Werden nichtabwärtskompatible Änderungen an der Schnittstelle vorgenommen, so wird eine neue Webserviceversion unter einer anderen URL veröffentlicht. Die alte
+			Version bleibt bestehen. Abwärtskompatible Änderungen, wie z.B. das Hinzufügen von Attributen zu Ressourcen werden innerhalb der aktuellen Version unter der bestehenden URL
+			veröffentlicht.
+		</p>
+		<div class="float_right"><a href="#top">nach oben</a></div>
+		<br><br>
+
+		<a name="fehlermeldungen"></a>
+		<h1>Fehlermeldungen</h1>
+		<p>
+			Fehler werden als HTTP Status Codes ausgedrückt (404, 304, 500 usw.). Weiterhin wird der HTTP Status Code und eine textuelle Beschreibung im jeweiligen Format zurück gegeben.
+		</p>
+		<!--[if IE]>
+			<p>
+				<b>Anmerkung</b>: Die Fehlermeldung wird nicht im Internet Explorer sichtbar.
+			</p>
+		<![endif]-->
+		<a href="https://pegelonline.wsv.de/webservices/rest-api/v2/stations/XYZ.json" style="margin-bottom:0px; padding-bottom: 0px;">
+			GET /stations/XYZ.json
+		</a>
+<pre>{"status":404,"message":"Station does not exist."}</pre>
+		<div class="float_right"><a href="#top">nach oben</a></div>
+		<br>
+		<br>
+
+		<a name="umlaute"></a>
+		<h1>Umgang mit Sonderzeichen in URLs</h1>
+		<p>
+			Bei der Verwendung von Sonderzeichen in URLs, also z.B. bei https://pegelonline.wsv.de/webservices/rest-api/v2/stations/KÖLN.json müssen diese in UTF-8 enkodiert werden.
+		</p>
+		<p>
+			Kopiert man obige URL in die Adresszeile des Browsers, so wird das <i>Ö</i> automatisch vom Browser in UTF-8 als
+			<i>%C3%96</i> enkodiert und an den Server gesendet.<br/>
+		</p>
+		<p>
+			Bei der Verwendung anderer Clients muss die Enkodierung möglicherweise selbst durchgeführt werden
+			(siehe auch 
+<a href="/gast/external/redirect?url=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FURL-Encoding" class="external-link" target="">Wikipedia URL-Encoding <span class="external-icon">↗</span></a>
+
+).
+		</p>
+		<p>
+			Folgende Tabelle enthält die UTF-8 Entsprechungen bestimmter Sonderzeichen:
+			<table id="umlautetabelle" class="webservice-table">
+			<tr>
+				<th>Sonderzeichen</th>
+				<th>UTF-8</th>
+			</tr>
+			<tr class="tablerow1">
+				<td>Leerzeichen</td>
+				<td>%20</td>
+			</tr>
+			<tr class="tablerow1">
+				<td>Ö</td>
+				<td>%C3%96</td>
+			</tr>
+			<tr class="tablerow2">
+				<td>ö</td>
+				<td>%C3%B6</td>
+			</tr>
+			<tr class="tablerow1">
+				<td>Ä</td>
+				<td>%C3%84</td>
+			</tr>
+			<tr class="tablerow2">
+				<td>ä</td>
+				<td>%C3%A4</td>
+			</tr>
+			<tr class="tablerow1">
+				<td>Ü</td>
+				<td>%C3%9C</td>
+			</tr>
+			<tr class="tablerow2">
+				<td>ü</td>
+				<td>%C3%BC</td>
+			</tr>
+			</table>
+		</p>
+		<div class="float_right"><a href="#top">nach oben</a></div>
+	</div>
+    <div class="clear_both"></div>
+</div>
+
+<footer class="icon-container" id="social-media-footer">
+    <a href="/gast/external/redirect?url=https%3A%2F%2Fwww.facebook.com%2FWSV.de">
+        <svg
+                xmlns:svg="http://www.w3.org/2000/svg"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 933.33331 933.33331"
+                height="43"
+                width="43"
+                xml:space="preserve"
+                id="svg2"
+                version="1.1"><metadata
+                id="metadata8"><rdf:RDF><cc:Work
+                rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+                rdf:resource="http://purl.org/dc/dcmitype/StillImage"/></cc:Work></rdf:RDF></metadata>
+            <title>Facebook Icon - Link zu WSV Facebook-Seite</title>
+            <g
+                    transform="matrix(1.3333333,0,0,-1.3333333,0,933.33333)"
+                    id="g10">
+                <g
+                        id="g12">
+                    <g
+                            transform="translate(600,350)"
+                            id="g20">
+                        <path
+                                id="path22"
+                                style="fill:#6a869d;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                                d="m 0,0 c 0,138.071 -111.929,250 -250,250 -138.071,0 -250,-111.929 -250,-250 0,-117.245 80.715,-215.622 189.606,-242.638 v 166.242 h -51.552 V 0 h 51.552 v 32.919 c 0,85.092 38.508,124.532 122.048,124.532 15.838,0 43.167,-3.105 54.347,-6.211 V 81.986 c -5.901,0.621 -16.149,0.932 -28.882,0.932 -40.993,0 -56.832,-15.528 -56.832,-55.9 V 0 h 81.659 l -14.028,-76.396 h -67.631 V -248.169 C -95.927,-233.218 0,-127.818 0,0"/>
+                    </g>
+                </g>
+            </g>
+            </svg>
+    </a>
+    
+    <a href="/gast/external/redirect?url=https%3A%2F%2Fwww.instagram.com%2Fwsv.de" >
+        <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="30" height="30">
+            <title>Instagram Icon - Link zu WSV Instagram-Seite</title>
+            <path
+                    style="fill:#6a869d;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                    d="M295.42,6c-53.2,2.51-89.53,11-121.29,23.48-32.87,12.81-60.73,30-88.45,57.82S40.89,143,28.17,175.92c-12.31,31.83-20.65,68.19-23,121.42S2.3,367.68,2.56,503.46,3.42,656.26,6,709.6c2.54,53.19,11,89.51,23.48,121.28,12.83,32.87,30,60.72,57.83,88.45S143,964.09,176,976.83c31.8,12.29,68.17,20.67,121.39,23s70.35,2.87,206.09,2.61,152.83-.86,206.16-3.39S799.1,988,830.88,975.58c32.87-12.86,60.74-30,88.45-57.84S964.1,862,976.81,829.06c12.32-31.8,20.69-68.17,23-121.35,2.33-53.37,2.88-70.41,2.62-206.17s-.87-152.78-3.4-206.1-11-89.53-23.47-121.32c-12.85-32.87-30-60.7-57.82-88.45S862,40.87,829.07,28.19c-31.82-12.31-68.17-20.7-121.39-23S637.33,2.3,501.54,2.56,348.75,3.4,295.42,6m5.84,903.88c-48.75-2.12-75.22-10.22-92.86-17-23.36-9-40-19.88-57.58-37.29s-28.38-34.11-37.5-57.42c-6.85-17.64-15.1-44.08-17.38-92.83-2.48-52.69-3-68.51-3.29-202s.22-149.29,2.53-202c2.08-48.71,10.23-75.21,17-92.84,9-23.39,19.84-40,37.29-57.57s34.1-28.39,57.43-37.51c17.62-6.88,44.06-15.06,92.79-17.38,52.73-2.5,68.53-3,202-3.29s149.31.21,202.06,2.53c48.71,2.12,75.22,10.19,92.83,17,23.37,9,40,19.81,57.57,37.29s28.4,34.07,37.52,57.45c6.89,17.57,15.07,44,17.37,92.76,2.51,52.73,3.08,68.54,3.32,202s-.23,149.31-2.54,202c-2.13,48.75-10.21,75.23-17,92.89-9,23.35-19.85,40-37.31,57.56s-34.09,28.38-57.43,37.5c-17.6,6.87-44.07,15.07-92.76,17.39-52.73,2.48-68.53,3-202.05,3.29s-149.27-.25-202-2.53m407.6-674.61a60,60,0,1,0,59.88-60.1,60,60,0,0,0-59.88,60.1M245.77,503c.28,141.8,115.44,256.49,257.21,256.22S759.52,643.8,759.25,502,643.79,245.48,502,245.76,245.5,361.22,245.77,503m90.06-.18a166.67,166.67,0,1,1,167,166.34,166.65,166.65,0,0,1-167-166.34"
+                    transform="translate(-2.5 -2.5)"
+            />
+        </svg>
+    </a>
+    <a href="/gast/external/redirect?url=https%3A%2F%2Fwww.youtube.com%2F%40WSV_de">
+        <svg
+
+                xmlns:svg="http://www.w3.org/2000/svg"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 802.91602 687.82397"
+                height="45"
+                width="45"
+                xml:space="preserve"
+                id="svg2"
+                version="1.1">
+            <title>Youtube Icon - Link zu WSV Youtube-Seite</title><g
+                transform="matrix(1.3333333,0,0,-1.3333333,0,687.824)"
+                id="g10">
+            <g
+                    id="g12">
+                <g
+                        clip-path="url(#clipPath18)"
+                        id="g14">
+                    <g
+                            transform="translate(261.5556,198.411)"
+                            id="g20">
+                        <path
+                                id="path22"
+                                style="fill:#6a869d;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                                d="M 0,0 V 119.046 L 102.827,59.668 Z m 229.405,154.963 c -4.635,17.089 -17.669,30.414 -35.048,35.048 -30.704,8.4 -154.964,8.4 -154.964,8.4 0,0 -123.97,0 -154.673,-8.4 -17.09,-4.634 -30.414,-17.959 -35.338,-35.048 -8.11,-30.703 -8.11,-95.295 -8.11,-95.295 0,0 0,-64.592 8.11,-95.586 4.924,-16.799 18.248,-30.413 35.338,-35.047 30.703,-8.4 154.673,-8.4 154.673,-8.4 0,0 124.26,0 154.964,8.4 17.379,4.634 30.413,18.248 35.048,35.047 8.399,30.994 8.399,95.586 8.399,95.586 0,0 0,64.592 -8.399,95.295"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+            </svg>
+    </a>
+</footer>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+{
+  "id": "dwd-poi-index",
+  "name": "dwd-poi-index",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://opendata.dwd.de/weather/weather_reports/poi/",
+  "entityShapes": [
+    "Dataset"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:24:42.332Z",
+  "httpStatus": 200,
+  "contentType": "text/html",
+  "sample": "data/fixtures/dwd-poi-index/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.dwd.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:24:40 GMT",
+    "content-type": "text/html",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "bytes": 119019,
+  "sha256": "406c9ec3efeecbb70d771d5e17f1dfcce45038939e7d9567a1d908a5111ec424",
+  "projection": "Document HTML with script elements removed; original response hash retained separately",
+  "sampleSha256": "406c9ec3efeecbb70d771d5e17f1dfcce45038939e7d9567a1d908a5111ec424"
+}

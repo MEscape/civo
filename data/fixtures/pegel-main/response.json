@@ -1,0 +1,2023 @@
+[
+  {
+    "uuid": "db1684c1-7ffc-4e8a-b8cf-8240a0d03519",
+    "number": "24900108",
+    "shortname": "RAUNHEIM",
+    "longname": "RAUNHEIM",
+    "km": 12.213,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 8.448287,
+    "latitude": 50.016157,
+    "voiceServiceNumber": "+49 228 286527 274",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:30:00+01:00",
+          "value": 52.5
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 118.0,
+          "stateMnwMhw": "low",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 82.879,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 300.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 563.0,
+            "occurrences": [
+              "1995-01-31"
+            ]
+          },
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 111.0,
+            "occurrences": [
+              "1992-08-11"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 118.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 102.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 113.0,
+            "occurrences": [
+              "2009"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 145.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 400.0,
+            "validFrom": "2003-01-08"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 374.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 540.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.9
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 10.3
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.7
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "66ff3eb4-513b-478b-abd2-2f5126ea66fd",
+    "number": "24700404",
+    "shortname": "FRANKFURT OSTHAFEN",
+    "longname": "FRANKFURT OSTHAFEN",
+    "km": 37.591,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 8.714995,
+    "latitude": 50.105737,
+    "voiceServiceNumber": "+49 228 286527 275",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:30:00+01:00",
+          "value": 108.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 163.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 90.626,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 142.0,
+            "occurrences": [
+              "1976-06-29"
+            ]
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 547.0,
+            "occurrences": [
+              "1995-01-30"
+            ]
+          },
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 300.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 154.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 153.0,
+            "occurrences": [
+              "2004"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 137.0,
+            "validFrom": "2019-01-01"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 177.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 370.0,
+            "validFrom": "2003-01-08"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 361.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 519.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.7
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "PH",
+        "longname": "PH-WERT",
+        "unit": "--",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.1
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 12.8
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.8
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "07374faf-2039-4430-ae6d-adc0e0784c4b",
+    "number": "24700347",
+    "shortname": "HANAU BRÜCKE DFH",
+    "longname": "HANAU BRÜCKE DFH",
+    "km": 56.398,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 8.917580,
+    "latitude": 50.120180,
+    "voiceServiceNumber": "+49 228 286527 276",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "DFH",
+        "longname": "DURCHFAHRTSHÖHE",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 708.0
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 106.501,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "da453ad0-5f1d-417c-baa3-74ae297f0b7a",
+    "number": "24700346",
+    "shortname": "AUHEIM BRÜCKE DFH",
+    "longname": "AUHEIM BRÜCKE DFH",
+    "km": 59.56,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 8.936363,
+    "latitude": 50.107040,
+    "voiceServiceNumber": "+49 228 286527 277",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "DFH",
+        "longname": "DURCHFAHRTSHÖHE",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 690.0
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 106.264,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "27eed51b-c0a4-417e-926b-bb4194bfb341",
+    "number": "24700335",
+    "shortname": "KROTZENBURG",
+    "longname": "KROTZENBURG",
+    "km": 63.23,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 8.953596,
+    "latitude": 50.079717,
+    "voiceServiceNumber": "+49 228 286527 278",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 117.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "unknown"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 98.113,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 85.0,
+            "occurrences": [
+              "1997-11-01"
+            ]
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 626.0,
+            "occurrences": [
+              "1995-01-30"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 102.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 84.0,
+            "validFrom": "2019-11-01"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 101.0,
+            "occurrences": [
+              "2001"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 137.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 409.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 610.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 5.9
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.5
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "4627475d-ccda-4d53-8f13-28527c49eaf5",
+    "number": "24700325",
+    "shortname": "MAINFLINGEN",
+    "longname": "MAINFLINGEN",
+    "km": 76.43,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 9.033733,
+    "latitude": 50.015365,
+    "voiceServiceNumber": "+49 228 286527 279",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:30:00+01:00",
+          "value": 109.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 83.0,
+          "stateMnwMhw": "unknown",
+          "stateNswHsw": "unknown"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 101.125,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 61.0,
+            "occurrences": [
+              "2000-06-21"
+            ]
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 644.0,
+            "occurrences": [
+              "1995-01-30"
+            ]
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 56.0,
+            "validFrom": "2019-11-01"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.5
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.4
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "3ef81fc0-33dc-4f67-8bb8-3f66975292d5",
+    "number": "24700323",
+    "shortname": "KLEINOSTHEIM_WUK",
+    "longname": "KLEINOSTHEIM_WUK",
+    "km": 77.8,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 9.040709,
+    "latitude": 50.008238,
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 8.9
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 9.5
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "3c7cfb10-c866-404b-b11c-0d79986f865a",
+    "number": "24700302",
+    "shortname": "OBERNAU",
+    "longname": "OBERNAU",
+    "km": 92.385,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 9.129075,
+    "latitude": 49.933800,
+    "voiceServiceNumber": "+49 228 286527 280",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 100.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 107.78,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 83.0,
+            "occurrences": [
+              "1990-05-23"
+            ]
+          },
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 300.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 641.0,
+            "occurrences": [
+              "1970-02-26"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 93.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 71.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 88.0,
+            "occurrences": [
+              "2006"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 137.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 380.0,
+            "validFrom": "2003-01-08"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 433.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 612.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 12.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.0
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "355b02d2-c578-46d9-a56b-8046d470cb95",
+    "number": "24700200",
+    "shortname": "KLEINHEUBACH",
+    "longname": "KLEINHEUBACH",
+    "km": 121.7,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 9.225244,
+    "latitude": 49.716138,
+    "voiceServiceNumber": "+49 228 286527 281",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-05T17:15:00+01:00",
+          "value": 141.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 109.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 119.6,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 622.0,
+            "occurrences": [
+              "1995-01-30"
+            ]
+          },
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 300.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 80.0,
+            "occurrences": [
+              "1990-11-11"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 107.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 89.0,
+            "validFrom": "2019-11-01"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 92.0,
+            "occurrences": [
+              "2005"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 150.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 425.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 370.0,
+            "validFrom": "2003-01-08"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 602.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.7
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 13.7
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.8
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "a919f57f-8378-42d8-82f8-b87eaf008641",
+    "number": "24700109",
+    "shortname": "FAULBACH",
+    "longname": "FAULBACH",
+    "km": 146.6,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 9.438827,
+    "latitude": 49.784985,
+    "voiceServiceNumber": "+49 228 286527 282",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 103.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "unknown"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 128.257,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 72.0,
+            "occurrences": [
+              "2008-10-21"
+            ]
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 681.0,
+            "occurrences": [
+              "1970-02-26"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 97.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 75.0,
+            "validFrom": "1935-01-01"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 144.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 453.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.1
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "PH",
+        "longname": "PH-WERT",
+        "unit": "--",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.3
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.9
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.8
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "0e065a22-9a0b-4f1d-b813-22fe6321bb1a",
+    "number": "24709089",
+    "shortname": "WERTHEIM",
+    "longname": "WERTHEIM",
+    "km": 156.96,
+    "agency": "ASCHAFFENBURG",
+    "longitude": 9.518304,
+    "latitude": 49.760945,
+    "voiceServiceNumber": "+49 228 286527 283",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 95.0,
+          "stateMnwMhw": "unknown",
+          "stateNswHsw": "unknown"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 132.835,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 82.0,
+            "occurrences": [
+              "2010-06-30"
+            ]
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 610.0,
+            "occurrences": [
+              "1970-02-26"
+            ]
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 67.0,
+            "validFrom": "2019-11-01"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 5.7
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.5
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "1ed983c3-114c-4fcc-a1db-61d336cf045f",
+    "number": "24500100",
+    "shortname": "STEINBACH",
+    "longname": "STEINBACH",
+    "km": 200.52,
+    "agency": "SCHWEINFURT",
+    "longitude": 9.602081,
+    "latitude": 50.011050,
+    "voiceServiceNumber": "+49 228 286527 284",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:30:00+01:00",
+          "value": 53.5
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 121.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 146.301,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 300.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 659.0,
+            "occurrences": [
+              "1970-02-26"
+            ]
+          },
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 99.0,
+            "occurrences": [
+              "1971-08-06"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 115.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 96.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 109.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 155.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 370.0,
+            "validFrom": "2003-01-08"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 457.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 617.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 7.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "PH",
+        "longname": "PH-WERT",
+        "unit": "--",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.4
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.6
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.8
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "915d76e1-3bf9-4e37-9a9a-4d144cd771cc",
+    "number": "24300600",
+    "shortname": "WÜRZBURG",
+    "longname": "WÜRZBURG",
+    "km": 251.97,
+    "agency": "SCHWEINFURT",
+    "longitude": 9.925969,
+    "latitude": 49.796209,
+    "voiceServiceNumber": "+49 228 286527 285",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:30:00+01:00",
+          "value": 57.4
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 150.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 164.511,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 116.0,
+            "occurrences": [
+              "1934-07-17"
+            ]
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 1030.0,
+            "occurrences": [
+              "1342-07"
+            ]
+          },
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 270.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 140.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 123.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 134.0,
+            "occurrences": [
+              "2006"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 174.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 515.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 340.0,
+            "validFrom": "2002-03-15"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 648.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 5.8
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "PH",
+        "longname": "PH-WERT",
+        "unit": "--",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.6
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.6
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.6
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "3de69bf8-dcbb-4afb-a15b-a8683a6a689c",
+    "number": "24300406",
+    "shortname": "ASTHEIM",
+    "longname": "ASTHEIM",
+    "km": 311.22,
+    "agency": "SCHWEINFURT",
+    "remark": "",
+    "longitude": 10.217656,
+    "latitude": 49.858410,
+    "voiceServiceNumber": "+49 228 286527 286",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 72.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "unknown"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 189.465,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 47.0,
+            "occurrences": [
+              "1976-06-28"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 71.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 68.0,
+            "occurrences": [
+              "2004"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 134.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 510.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 663.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.1
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.8
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "42ecae60-eeb3-4b41-9721-46b3f12d04b8",
+    "number": "24300304",
+    "shortname": "SCHWEINFURT NEUER HAFEN",
+    "longname": "SCHWEINFURT NEUER HAFEN",
+    "km": 330.78,
+    "agency": "SCHWEINFURT",
+    "longitude": 10.221858,
+    "latitude": 50.030983,
+    "voiceServiceNumber": "+49 228 286527 287",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:30:00+01:00",
+          "value": 42.2
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 208.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 201.117,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 697.0,
+            "occurrences": [
+              "1970-02-24"
+            ]
+          },
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 141.0,
+            "occurrences": [
+              "2001-10-16"
+            ]
+          },
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 300.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 196.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 141.0,
+            "occurrences": [
+              "2001"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 184.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 227.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 479.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 370.0,
+            "validFrom": "2003-01-08"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 672.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 5.3
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "PH",
+        "longname": "PH-WERT",
+        "unit": "--",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.1
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.0
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.2
+        },
+        "characteristicValues": []
+      }
+    ]
+  },
+  {
+    "uuid": "a77aad00-caa0-44a2-95cb-8afd9c4ff00c",
+    "number": "24300202",
+    "shortname": "TRUNSTADT",
+    "longname": "TRUNSTADT",
+    "km": 378.44,
+    "agency": "SCHWEINFURT",
+    "longitude": 10.755205,
+    "latitude": 49.929696,
+    "voiceServiceNumber": "+49 228 286527 288",
+    "water": {
+      "shortname": "MAIN",
+      "longname": "MAIN"
+    },
+    "timeseries": [
+      {
+        "shortname": "Q",
+        "longname": "ABFLUSS",
+        "unit": "m³/s",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T16:15:00+01:00",
+          "value": 0.0
+        },
+        "characteristicValues": [],
+        "comment": {
+          "shortDescription": "Techn. Störung",
+          "longDescription": "Techn. Störung, Behebung schnellstmöglich"
+        }
+      },
+      {
+        "shortname": "W",
+        "longname": "WASSERSTAND ROHDATEN",
+        "unit": "cm",
+        "equidistance": 15,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:45:00+01:00",
+          "value": 155.0,
+          "stateMnwMhw": "normal",
+          "stateNswHsw": "normal"
+        },
+        "gaugeZero": {
+          "unit": "m. ü. NHN",
+          "value": 223.355,
+          "validFrom": "2019-11-01"
+        },
+        "characteristicValues": [
+          {
+            "shortname": "M_I",
+            "longname": "Marke_I",
+            "unit": "cm",
+            "value": 280.0,
+            "validFrom": "2010-08-16"
+          },
+          {
+            "shortname": "HHW",
+            "longname": "Höchster Hochwasserstand",
+            "unit": "cm",
+            "value": 714.0,
+            "occurrences": [
+              "2003-01-04"
+            ]
+          },
+          {
+            "shortname": "NNW",
+            "longname": "Niedrigster Niedrigwasserstand",
+            "unit": "cm",
+            "value": 112.0,
+            "occurrences": [
+              "1975-08-14"
+            ]
+          },
+          {
+            "shortname": "MNW",
+            "longname": "Mittel der Niedrigwasserstände ",
+            "unit": "cm",
+            "value": 154.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "NW",
+            "longname": "Niedrigster Tageswasserstand ",
+            "unit": "cm",
+            "value": 148.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          },
+          {
+            "shortname": "ZS_I",
+            "longname": "Stauziel I im Oberwasser einer Staustufe (Normalstau)",
+            "unit": "cm",
+            "value": 146.0,
+            "validFrom": "2003-01-01"
+          },
+          {
+            "shortname": "MW",
+            "longname": "Mittel der Tageswasserstände ",
+            "unit": "cm",
+            "value": 183.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HSW",
+            "longname": "höchster Schifffahrtswasserstand",
+            "unit": "cm",
+            "value": 340.0,
+            "validFrom": "2010-08-16"
+          },
+          {
+            "shortname": "MHW",
+            "longname": "Mittel der Hochwasserstände ",
+            "unit": "cm",
+            "value": 499.0,
+            "timespanStart": "2006-11-01",
+            "timespanEnd": "2015-10-31"
+          },
+          {
+            "shortname": "HW",
+            "longname": "Höchster Momentanwasserstand ",
+            "unit": "cm",
+            "value": 714.0,
+            "occurrences": [
+              "2003"
+            ],
+            "timespanStart": "2000-11-01",
+            "timespanEnd": "2010-10-31"
+          }
+        ]
+      },
+      {
+        "shortname": "LT",
+        "longname": "LUFTTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 6.9
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "PH",
+        "longname": "PH-WERT",
+        "unit": "--",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 8.2
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "O2",
+        "longname": "SAUERSTOFFGEHALT",
+        "unit": "mg/l",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 9.9
+        },
+        "characteristicValues": []
+      },
+      {
+        "shortname": "WT",
+        "longname": "WASSERTEMPERATUR",
+        "unit": "°C",
+        "equidistance": 60,
+        "currentMeasurement": {
+          "timestamp": "2026-11-07T17:00:00+01:00",
+          "value": 7.8
+        },
+        "characteristicValues": []
+      }
+    ]
+  }
+]

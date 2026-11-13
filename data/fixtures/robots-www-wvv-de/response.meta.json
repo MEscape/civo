@@ -1,0 +1,21 @@
+{
+  "url": "https://www.wvv.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:43 GMT",
+    "server": "Apache",
+    "strict-transport-security": "max-age=63072000; includeSubDomains",
+    "x-content-type-options": "nosniff",
+    "last-modified": "Mon, 31 Aug 2026 16:14:29 GMT",
+    "etag": "\"4c-65a5a18cb5f36\"",
+    "accept-ranges": "bytes",
+    "content-length": "76",
+    "vary": "Accept-Encoding",
+    "x-frame-options": "sameorigin",
+    "content-security-policy": "frame-ancestors 'self' https://cms.wvv.de https://cms-dev.wvv.de;",
+    "x-permitted-cross-domain-policies": "none",
+    "access-control-allow-origin": "*",
+    "content-type": "text/plain"
+  },
+  "fetchedAt": "2026-11-06T07:37:43.420Z"
+}

@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "testdaten_ochsenfurt_th",
+  "url": "https://opendata.wuerzburg.de/explore/assets/testdaten_ochsenfurt_th/",
+  "license": null,
+  "dateCreated": "2025-04-09T07:04:43.990000+00:00",
+  "dateModified": "2025-04-09T07:04:43+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/testdaten_ochsenfurt_th/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/testdaten_ochsenfurt_th/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/testdaten_ochsenfurt_th/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

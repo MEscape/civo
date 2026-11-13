@@ -1,0 +1,53 @@
+{
+  "id": "city-window-baumkataster_stadt_wuerzburg",
+  "name": "city-window-baumkataster_stadt_wuerzburg",
+  "publisher": "Stadt Würzburg",
+  "url": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/baumkataster_stadt_wuerzburg/records?limit=100&select=source_id%2Cbaumart%2Cbaumart_la%2Cbaumtyp%2Cgeo_punkt&order_by=source_id",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "attribution": null,
+  "fetchedAt": "2026-11-06T19:14:17.983Z",
+  "httpStatus": 200,
+  "contentType": "application/json; charset=utf-8",
+  "sample": "data/fixtures/city-window-baumkataster_stadt_wuerzburg/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.wuerzburg.de/robots.txt",
+  "robotsPolicy": "Advisory rules recorded; explicit user instruction permits public API probes",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "openresty",
+    "date": "Fri, 06 Nov 2026 19:14:17 GMT",
+    "content-type": "application/json; charset=utf-8",
+    "content-length": "16822",
+    "connection": "keep-alive",
+    "x-ratelimit-remaining": "4967",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-reset": "2026-11-07 00:00:00+00:00",
+    "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+    "vary": "Accept-Language, Cookie, Host",
+    "content-language": "en-us",
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "POST, GET, OPTIONS",
+    "access-control-max-age": "1000",
+    "access-control-allow-headers": "Authorization, X-Requested-With, Origin, ODS-API-Analytics-App, ODS-API-Analytics-Embed-Type, ODS-API-Analytics-Embed-Referrer, ODS-Widgets-Version, Accept",
+    "access-control-expose-headers": "ODS-Explore-API-Deprecation, Link, X-RateLimit-Remaining, X-RateLimit-Limit, X-RateLimit-Reset, X-RateLimit-dataset-Remaining, X-RateLimit-dataset-Limit, X-RateLimit-dataset-Reset",
+    "strict-transport-security": "max-age=31536000;includeSubdomains",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "content-security-policy": "upgrade-insecure-requests;",
+    "x-ua-compatible": "IE=edge",
+    "permissions-policy": "midi=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()"
+  },
+  "bytes": 16822,
+  "sha256": "daf436c45c5c0a381e0b2e80f56a23b8e294e944c69794ad387ef91ce95d20e5",
+  "sampleSha256": "daf436c45c5c0a381e0b2e80f56a23b8e294e944c69794ad387ef91ce95d20e5"
+}

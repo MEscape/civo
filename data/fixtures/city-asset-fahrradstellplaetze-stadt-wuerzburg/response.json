@@ -1,0 +1,38 @@
+{
+  "@type": "Dataset",
+  "name": "Fahrradstellplätze Stadt Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/fahrradstellplaetze-stadt-wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2022-06-14T14:01:57.745000+00:00",
+  "dateModified": "2022-06-14T14:02:18+00:00",
+  "keywords": [
+    "Fahrrad",
+    "Multimodale Mobilität",
+    "Neue Mobilität",
+    "Mobiliät",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradstellplaetze-stadt-wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradstellplaetze-stadt-wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradstellplaetze-stadt-wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradstellplaetze-stadt-wuerzburg/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

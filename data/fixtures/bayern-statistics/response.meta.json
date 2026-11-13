@@ -1,0 +1,40 @@
+{
+  "id": "bayern-statistics",
+  "name": "bayern-statistics",
+  "publisher": "Bayerisches Landesamt für Statistik",
+  "url": "https://www.statistikdaten.bayern.de/genesis/online",
+  "entityShapes": [
+    "Aggregate"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:24.354Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=UTF-8",
+  "sample": "data/fixtures/bayern-statistics/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.statistikdaten.bayern.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:24 GMT",
+    "server": "CERN httpd",
+    "expires": "Fri, 06 Nov 2026 07:37:24 GMT",
+    "x-frame-options": "DENY",
+    "content-security-policy": "default-src: 'self'; script-src: 'self'",
+    "cache-control": "private, no-store, no-cache, must-revalidate",
+    "pragma": "no-cache",
+    "content-type": "text/html;charset=UTF-8",
+    "strict-transport-security": "max-age=31536000",
+    "connection": "close",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 25704,
+  "sha256": "9039db94c926b70afb6fe24f881acb8b6f9d44dc633c5f4015828dba8b95e79c"
+}

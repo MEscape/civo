@@ -1,0 +1,43 @@
+{
+  "id": "wuerzburg-library",
+  "name": "wuerzburg-library",
+  "publisher": "Stadt Würzburg",
+  "url": "https://www.wuerzburg.de/stadtbuecherei/",
+  "entityShapes": [
+    "Schedule"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:49.850Z",
+  "httpStatus": 302,
+  "contentType": "text/html; charset=UTF-8",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Redirect requires separate robots review: /themen/kultur-bildung-kulturangebot/stadtbuecherei",
+  "robots": "https://www.wuerzburg.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:49 GMT",
+    "server": "Apache",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "strict-transport-security": "max-age=31536000",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "location": "/themen/kultur-bildung-kulturangebot/stadtbuecherei",
+    "access-control-allow-origin": "*",
+    "access-control-allow-headers": "origin, x-requested-with, content-type",
+    "access-control-allow-methods": "PUT, GET, POST, DELETE, OPTIONS",
+    "content-length": "0",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

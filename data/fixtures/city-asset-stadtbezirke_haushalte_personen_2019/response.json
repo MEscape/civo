@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Haushalte Personen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_haushalte_personen_2019/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2020-03-17T08:13:12.170000+00:00",
+  "dateModified": "2026-09-03T12:57:41.878000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Haushalte",
+    "Stadtbezirk",
+    "Anzahl Personen",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_haushalte_personen_2019/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_haushalte_personen_2019/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_haushalte_personen_2019/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

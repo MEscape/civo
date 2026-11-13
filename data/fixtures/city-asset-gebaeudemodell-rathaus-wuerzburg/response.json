@@ -1,0 +1,37 @@
+{
+  "@type": "Dataset",
+  "name": "Gebäudemodell Rathaus Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/gebaeudemodell-rathaus-wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-07-27T06:05:34.407000+00:00",
+  "dateModified": "2023-07-27T06:05:34+00:00",
+  "keywords": [
+    "raumplanung",
+    "städteplanung",
+    "gebäude",
+    "gebäudemodell",
+    "rathaus",
+    "modell",
+    "abbildung",
+    "GOVE",
+    "REGI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gebaeudemodell-rathaus-wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gebaeudemodell-rathaus-wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/gebaeudemodell-rathaus-wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

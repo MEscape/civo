@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Greying-Index",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_greyingindex/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T10:27:12.369000+00:00",
+  "dateModified": "2026-03-26T10:18:45.574000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Hauptwohnsitz",
+    "Stadtbezirk",
+    "Greying-Index",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_greyingindex/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_greyingindex/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_greyingindex/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,695 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "wikidata-rathaus",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q98486869.json",
+      "publisher": "Wikidata contributors",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wikidata-licensing",
+      "url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "publisher": "Wikimedia Foundation",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "city-service-info",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/allgemeine-informationen-zum-buergerbuero",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Service"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "city-service-home",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/index.html",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Service"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "city-service-residence",
+      "url": "https://www.wuerzburg.de/rathaus/buergerbuero/meldewesen/index.html",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Service"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "license-cc-by-4",
+      "url": "https://creativecommons.org/licenses/by/4.0/deed.de",
+      "publisher": "Creative Commons",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "license-cc-by-sa-4",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
+      "publisher": "Creative Commons",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "license-dl-by-2",
+      "url": "https://www.govdata.de/dl-de/by-2-0",
+      "publisher": "GovData",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-tree-catalog",
+      "url": "https://opendata.wuerzburg.de/explore/assets/baumkataster_stadt_wuerzburg/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "osm-copyright",
+      "url": "https://www.openstreetmap.org/copyright",
+      "publisher": "OpenStreetMap contributors",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "osm-wuerzburg-features",
+      "url": "https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A20%5D%3B(node%5Bamenity%3Ddrinking_water%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bnode%5Bamenity%3Dtoilets%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bnode%5Bemergency%3Ddefibrillator%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bway%5Bhighway%3Dcycleway%5D(49.75%2C9.88%2C49.83%2C10.02)%3Bway%5Bleisure%3Dpark%5D(49.75%2C9.88%2C49.83%2C10.02)%3B)%3Bout%20body%20geom%20120%3B",
+      "publisher": "OpenStreetMap contributors",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-docs-canonical",
+      "url": "https://pegelonline.wsv.de/webservice/dokuRestapi",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-terms-canonical",
+      "url": "https://pegelonline.wsv.de/webservice/ueber",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-license",
+      "url": "https://pegelonline.wsv.de/gast/nutzungsbedingungen",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-license",
+      "url": "https://opendata.dwd.de/climate_environment/CDC/Terms_of_use.pdf",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "energy-charts-openapi",
+      "url": "https://api.energy-charts.info/openapi.json",
+      "publisher": "Fraunhofer ISE",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "energy-charts-docs",
+      "url": "https://api.energy-charts.info/",
+      "publisher": "Fraunhofer ISE",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "uba-stations-canonical",
+      "url": "https://luftdaten.umweltbundesamt.de/api/air-data/v3/stations/json?use=airquality",
+      "publisher": "Umweltbundesamt",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-stations-recent",
+      "url": "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/recent/TU_Stundenwerte_Beschreibung_Stationen.txt",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-weather-current",
+      "url": "https://opendata.dwd.de/weather/weather_reports/poi/10655-BEOB.csv",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Observation"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-trees-page",
+      "url": "https://opendata.wuerzburg.de/explore/assets/baumkataster/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-sitemap",
+      "url": "https://opendata.wuerzburg.de/sitemap.xml",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-catalog-html",
+      "url": "https://opendata.wuerzburg.de/explore/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-terms",
+      "url": "https://opendata.wuerzburg.de/terms/terms-and-conditions/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-docs",
+      "url": "https://www.pegelonline.wsv.de/webservice/dokuRestapi",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-terms",
+      "url": "https://www.pegelonline.wsv.de/webservice/ueber",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-main",
+      "url": "https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json?waters=MAIN&includeTimeseries=true&includeCurrentMeasurement=true&includeCharacteristicValues=true",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Observation"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-terms",
+      "url": "https://www.dwd.de/DE/service/rechtliche_hinweise/rechtliche_hinweise.html",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-warnings",
+      "url": "https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Notice"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-stations",
+      "url": "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/TU_Stundenwerte_Beschreibung_Stationen.txt",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "uba-docs",
+      "url": "https://www.umweltbundesamt.de/daten/luft/luftdaten/doc",
+      "publisher": "Umweltbundesamt",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "uba-stations",
+      "url": "https://www.umweltbundesamt.de/api/air_data/v3/stations/json?use=airquality",
+      "publisher": "Umweltbundesamt",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "nina-terms",
+      "url": "https://warnung.bund.de/api/appdata/gsb/html/DE/app/impressum.html",
+      "publisher": "Bundesamt für Bevölkerungsschutz und Katastrophenhilfe",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "nina-wuerzburg",
+      "url": "https://warnung.bund.de/api31/dashboard/096630000000.json",
+      "publisher": "Bundesamt für Bevölkerungsschutz und Katastrophenhilfe",
+      "entityShapes": [
+        "Notice"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bydata-catalog",
+      "url": "https://open.bydata.de/api/3/action/package_search?q=W%C3%BCrzburg&rows=100",
+      "publisher": "Bayerisches Staatsministerium für Digitales",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bayern-geodata",
+      "url": "https://geoservices.bayern.de/wms/v2/ogc_dop80_oa.cgi?SERVICE=WMS&REQUEST=GetCapabilities",
+      "publisher": "Bayerische Vermessungsverwaltung",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bayern-boundaries",
+      "url": "https://geoservices.bayern.de/wfs/v2/ogc_verwaltungs_einheiten.cgi?SERVICE=WFS&REQUEST=GetCapabilities",
+      "publisher": "Bayerische Vermessungsverwaltung",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bayern-hydrology",
+      "url": "https://www.gkd.bayern.de/de/fluesse/wasserstand/main_unten",
+      "publisher": "Bayerisches Landesamt für Umwelt",
+      "entityShapes": [
+        "Observation"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bayern-statistics",
+      "url": "https://www.statistikdaten.bayern.de/genesis/online",
+      "publisher": "Bayerisches Landesamt für Statistik",
+      "entityShapes": [
+        "Aggregate"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "regionalstatistik",
+      "url": "https://www.regionalstatistik.de/genesis/online",
+      "publisher": "Statistische Ämter des Bundes und der Länder",
+      "entityShapes": [
+        "Aggregate"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "zensus2022",
+      "url": "https://www.zensus2022.de/DE/Ergebnisse-des-Zensus/_inhalt.html",
+      "publisher": "Statistische Ämter des Bundes und der Länder",
+      "entityShapes": [
+        "Aggregate"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "govdata-catalog",
+      "url": "https://www.govdata.de/ckan/api/3/action/package_search?q=W%C3%BCrzburg&rows=100",
+      "publisher": "FITKO",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "europa-catalog",
+      "url": "https://data.europa.eu/api/hub/search/search?query=W%C3%BCrzburg&limit=3",
+      "publisher": "Publications Office of the European Union",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "mastR",
+      "url": "https://www.marktstammdatenregister.de/MaStR/Datendownload",
+      "publisher": "Bundesnetzagentur",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "smard-docs",
+      "url": "https://www.smard.de/home/downloadcenter/download-marktdaten/",
+      "publisher": "Bundesnetzagentur",
+      "entityShapes": [
+        "Series"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "energy-charts",
+      "url": "https://api.energy-charts.info/public_power?country=de&start=2026-11-01&end=2026-11-02",
+      "publisher": "Fraunhofer ISE",
+      "entityShapes": [
+        "Series"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "mobilithek",
+      "url": "https://mobilithek.info/offers",
+      "publisher": "Bundesministerium für Verkehr",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "delfi",
+      "url": "https://www.opendata-oepnv.de/",
+      "publisher": "DELFI",
+      "entityShapes": [
+        "Schedule"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wvv",
+      "url": "https://www.wvv.de/mobilitaet/",
+      "publisher": "Würzburger Versorgungs- und Verkehrs-GmbH",
+      "entityShapes": [
+        "Schedule"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "vvm",
+      "url": "https://www.vvm-info.de/",
+      "publisher": "Verkehrsverbund Mainfranken",
+      "entityShapes": [
+        "Schedule"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-ris",
+      "url": "https://www.wuerzburg.sitzung-online.de/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Person/Body"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-city",
+      "url": "https://www.wuerzburg.de/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Service"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "wuerzburg-library",
+      "url": "https://www.wuerzburg.de/stadtbuecherei/",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Schedule"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "osm-policy",
+      "url": "https://operations.osmfoundation.org/policies/tiles/",
+      "publisher": "OpenStreetMap Foundation",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "nominatim-policy",
+      "url": "https://operations.osmfoundation.org/policies/nominatim/",
+      "publisher": "OpenStreetMap Foundation",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "overpass-docs",
+      "url": "https://wiki.openstreetmap.org/wiki/Overpass_API",
+      "publisher": "OpenStreetMap contributors",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "nextbike-discovery",
+      "url": "https://gbfs.nextbike.net/maps/gbfs/v2/nextbike_de/gbfs.json",
+      "publisher": "nextbike",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bkg-basemap",
+      "url": "https://sgx.geodatenzentrum.de/wms_basemapde?SERVICE=WMS&REQUEST=GetCapabilities",
+      "publisher": "Bundesamt für Kartographie und Geodäsie",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "copernicus",
+      "url": "https://land.copernicus.eu/en/products/urban-atlas",
+      "publisher": "European Environment Agency",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-opendata-index",
+      "url": "https://opendata.dwd.de/",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-opendata-liesmich",
+      "url": "https://opendata.dwd.de/LIESMICH.txt",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Document"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "dwd-poi-index",
+      "url": "https://opendata.dwd.de/weather/weather_reports/poi/",
+      "publisher": "Deutscher Wetterdienst",
+      "entityShapes": [
+        "Dataset"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "oparl-sitzung-online",
+      "url": "https://www.wuerzburg.sitzung-online.de/public/oparl/system",
+      "publisher": "Stadt Würzburg",
+      "entityShapes": [
+        "Person/Body"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "nextbike-wuerzburg",
+      "url": "https://maps.nextbike.net/maps/nextbike-live.json?lat=49.7913&lng=9.9534&distance=6000&limit=10",
+      "publisher": "nextbike GmbH",
+      "entityShapes": [
+        "Place"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "lfu-flood-wms",
+      "url": "https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?SERVICE=WMS&REQUEST=GetCapabilities",
+      "publisher": "Bayerisches Landesamt für Umwelt",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "lfu-noise-wms",
+      "url": "https://www.lfu.bayern.de/gdi/wms/laerm/hauptverkehrsstrassen?SERVICE=WMS&REQUEST=GetCapabilities",
+      "publisher": "Bayerisches Landesamt für Umwelt",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "bvv-dop-wms",
+      "url": "https://geoservices.bayern.de/od/wms/dop/v1/dop20?SERVICE=WMS&REQUEST=GetCapabilities",
+      "publisher": "Bayerische Vermessungsverwaltung",
+      "entityShapes": [
+        "Feature"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "mastr-wuerzburg-units",
+      "url": "https://www.marktstammdatenregister.de/MaStR/Einheit/EinheitJson/GetErweiterteOeffentlicheEinheitStromerzeugung?sort=&page=1&pageSize=10&group=&filter=Gemeindeschl%C3%BCssel~eq~'09663000'",
+      "publisher": "Bundesnetzagentur",
+      "entityShapes": [
+        "Aggregate"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    },
+    {
+      "id": "pegel-wuerzburg-day",
+      "url": "https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/915d76e1-3bf9-4e37-9a9a-4d144cd771cc/W/measurements.json?start=P1D",
+      "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+      "entityShapes": [
+        "Series"
+      ],
+      "verification": "Not Verified",
+      "reason": "Discovery candidate only; consult capture metadata for actual request evidence"
+    }
+  ]
+}

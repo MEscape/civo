@@ -1,0 +1,41 @@
+{
+  "id": "bayern-boundaries",
+  "name": "bayern-boundaries",
+  "publisher": "Bayerische Vermessungsverwaltung",
+  "url": "https://geoservices.bayern.de/wfs/v2/ogc_verwaltungs_einheiten.cgi?SERVICE=WFS&REQUEST=GetCapabilities",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:19.838Z",
+  "httpStatus": 404,
+  "contentType": "text/plain; charset=utf-8",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "HTTP 404",
+  "robots": "https://geoservices.bayern.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:19 GMT",
+    "server": "CERN httpd",
+    "content-type": "text/plain; charset=utf-8",
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "POST, GET, OPTIONS",
+    "access-control-allow-credentials": "true",
+    "access-control-allow-headers": "Content-Type, Authorization",
+    "vary": "Origin",
+    "content-security-policy": "script-src 'none'",
+    "strict-transport-security": "max-age=31536000",
+    "content-length": "36",
+    "connection": "close"
+  },
+  "bytes": 36,
+  "sha256": "46d0150b4d5de8a6e92ed840aae4d150eee406e66bb14135e7869a9100b57aa0"
+}

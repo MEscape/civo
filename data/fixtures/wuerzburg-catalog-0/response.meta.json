@@ -1,0 +1,10 @@
+{
+  "id": "wuerzburg-catalog-0",
+  "url": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets?limit=100&offset=0&order_by=dataset_id",
+  "fetchedAt": "2026-11-06T07:33:54.772Z",
+  "status": null,
+  "contentType": null,
+  "verdict": "Not Verified",
+  "error": "fetch failed",
+  "body": null
+}

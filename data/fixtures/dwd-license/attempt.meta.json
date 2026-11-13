@@ -1,0 +1,41 @@
+{
+  "id": "dwd-license",
+  "name": "dwd-license",
+  "publisher": "Deutscher Wetterdienst",
+  "url": "https://opendata.dwd.de/climate_environment/CDC/Terms_of_use.pdf",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:24:09.228Z",
+  "httpStatus": 200,
+  "contentType": "application/pdf",
+  "sample": "data/fixtures/dwd-license/response.pdf",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.dwd.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:24:06 GMT",
+    "content-type": "application/pdf",
+    "content-length": "61006",
+    "last-modified": "Wed, 15 May 2024 15:05:20 GMT",
+    "connection": "keep-alive",
+    "etag": "\"6644cf30-ee4e\"",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000",
+    "accept-ranges": "bytes"
+  },
+  "bytes": 61006,
+  "sha256": "7c47afd5346c60584662d7ca007b2228bc9c3622dc1936484aa3498bbc96d1d3",
+  "sampleSha256": "7c47afd5346c60584662d7ca007b2228bc9c3622dc1936484aa3498bbc96d1d3"
+}

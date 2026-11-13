@@ -1,0 +1,12 @@
+{
+  "startedAt": "2026-11-07T16:58:51.391Z",
+  "finishedAt": "2026-11-07T16:59:07.841Z",
+  "selected": [
+    "pegel-main",
+    "pegel-wuerzburg-day",
+    "city-window-parkplatzdaten_wuerzburg",
+    "city-window-fahrradzaehlung-tagesdaten-alle-zaehlstationen"
+  ],
+  "applied": true,
+  "failures": []
+}

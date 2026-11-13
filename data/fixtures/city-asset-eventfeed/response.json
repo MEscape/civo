@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "eventfeed_zdi",
+  "url": "https://opendata.wuerzburg.de/explore/assets/eventfeed/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-07-18T11:54:54.698000+00:00",
+  "dateModified": "2026-05-20T13:15:20.868000+00:00",
+  "keywords": [
+    "EDUC",
+    "ECON",
+    "HEAL",
+    "TECH",
+    "REGI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/eventfeed/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/eventfeed/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/eventfeed/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

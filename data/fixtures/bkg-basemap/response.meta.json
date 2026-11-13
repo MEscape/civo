@@ -1,0 +1,39 @@
+{
+  "id": "bkg-basemap",
+  "name": "bkg-basemap",
+  "publisher": "Bundesamt für Kartographie und Geodäsie",
+  "url": "https://sgx.geodatenzentrum.de/wms_basemapde?SERVICE=WMS&REQUEST=GetCapabilities",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:59.089Z",
+  "httpStatus": 200,
+  "contentType": "text/xml;charset=utf-8",
+  "sample": "data/fixtures/bkg-basemap/response.txt",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://sgx.geodatenzentrum.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "content-security-policy": "default-src 'self' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de;  script-src 'self' 'unsafe-inline' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de; style-src 'self' 'unsafe-inline' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de; img-src 'self' data: blob: https:;  font-src 'self' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de;  connect-src 'self' https: *.geodatenzentrum.de *.bund.de;  frame-src *;  object-src 'self';  base-uri 'self';  form-action 'self';  frame-ancestors *;",
+    "access-control-allow-headers": "X-Requested-With,Origin,Content-Type, Accept",
+    "access-control-allow-methods": "GET, POST",
+    "access-control-allow-origin": "*",
+    "vary": "origin,x-script-name,x-forwarded-host,x-forwarded-proto,accept-encoding",
+    "date": "Fri, 06 Nov 2026 07:37:59 GMT",
+    "keep-alive": "timeout=5, max=96",
+    "connection": "Keep-Alive",
+    "content-type": "text/xml;charset=utf-8",
+    "transfer-encoding": "chunked"
+  },
+  "bytes": 17303,
+  "sha256": "b0ac16d43175b77c7a08937cf9583662cc76ddfa554c58d421ab51232a48f79d"
+}

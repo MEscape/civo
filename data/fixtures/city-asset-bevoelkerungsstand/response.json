@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Bevölkerungsstand - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/bevoelkerungsstand/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:32:58.202000+00:00",
+  "dateModified": "2026-11-05T23:01:49.681000+00:00",
+  "keywords": [
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bevoelkerungsstand/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bevoelkerungsstand/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bevoelkerungsstand/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

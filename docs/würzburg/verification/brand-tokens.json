@@ -1,0 +1,74 @@
+[
+  {
+    "name": "wuerzburg",
+    "tokens": {
+      "--civo-color-primary": "#8F1838",
+      "--civo-color-secondary": "#42554F",
+      "--civo-color-accent": "#A76521",
+      "--civo-color-primary-foreground": "#ffffff",
+      "--civo-color-secondary-foreground": "#ffffff",
+      "--civo-color-accent-foreground": "#ffffff",
+      "--civo-color-primary-copy": "#8f1838",
+      "--civo-color-secondary-copy": "#42554f",
+      "--civo-color-accent-copy": "#a06120",
+      "--civo-font-heading": "var(--font-serif), ui-serif, Georgia, serif",
+      "--civo-font-body": "var(--font-sans), ui-sans-serif, system-ui, sans-serif",
+      "--civo-radius": "6px",
+      "--civo-section-spacing": "4rem"
+    }
+  },
+  {
+    "name": "light",
+    "tokens": {
+      "--civo-color-primary": "#FFFFE0",
+      "--civo-color-secondary": "#42554F",
+      "--civo-color-accent": "#A76521",
+      "--civo-color-primary-foreground": "#000000",
+      "--civo-color-secondary-foreground": "#ffffff",
+      "--civo-color-accent-foreground": "#ffffff",
+      "--civo-color-primary-copy": "#707063",
+      "--civo-color-secondary-copy": "#42554f",
+      "--civo-color-accent-copy": "#a06120",
+      "--civo-font-heading": "var(--font-serif), ui-serif, Georgia, serif",
+      "--civo-font-body": "var(--font-sans), ui-sans-serif, system-ui, sans-serif",
+      "--civo-radius": "6px",
+      "--civo-section-spacing": "4rem"
+    }
+  },
+  {
+    "name": "dark",
+    "tokens": {
+      "--civo-color-primary": "#080B14",
+      "--civo-color-secondary": "#42554F",
+      "--civo-color-accent": "#A76521",
+      "--civo-color-primary-foreground": "#ffffff",
+      "--civo-color-secondary-foreground": "#ffffff",
+      "--civo-color-accent-foreground": "#ffffff",
+      "--civo-color-primary-copy": "#080b14",
+      "--civo-color-secondary-copy": "#42554f",
+      "--civo-color-accent-copy": "#a06120",
+      "--civo-font-heading": "var(--font-serif), ui-serif, Georgia, serif",
+      "--civo-font-body": "var(--font-sans), ui-sans-serif, system-ui, sans-serif",
+      "--civo-radius": "6px",
+      "--civo-section-spacing": "4rem"
+    }
+  },
+  {
+    "name": "saturated",
+    "tokens": {
+      "--civo-color-primary": "#FFFF00",
+      "--civo-color-secondary": "#42554F",
+      "--civo-color-accent": "#A76521",
+      "--civo-color-primary-foreground": "#000000",
+      "--civo-color-secondary-foreground": "#ffffff",
+      "--civo-color-accent-foreground": "#ffffff",
+      "--civo-color-primary-copy": "#707000",
+      "--civo-color-secondary-copy": "#42554f",
+      "--civo-color-accent-copy": "#a06120",
+      "--civo-font-heading": "var(--font-serif), ui-serif, Georgia, serif",
+      "--civo-font-body": "var(--font-sans), ui-sans-serif, system-ui, sans-serif",
+      "--civo-radius": "6px",
+      "--civo-section-spacing": "4rem"
+    }
+  }
+]

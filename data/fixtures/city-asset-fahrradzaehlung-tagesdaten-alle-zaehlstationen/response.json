@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Fahrradzählung Tagesdaten - alle Zählstationen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/fahrradzaehlung-tagesdaten-alle-zaehlstationen/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-03-13T09:05:55.626000+00:00",
+  "dateModified": "2026-11-05T23:05:29.323000+00:00",
+  "keywords": [
+    "Cycle",
+    "fahrrad",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung-tagesdaten-alle-zaehlstationen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung-tagesdaten-alle-zaehlstationen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung-tagesdaten-alle-zaehlstationen/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung-tagesdaten-alle-zaehlstationen/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "@type": "Dataset",
+  "name": "Grenzwanderung Teil 1 - kopieren",
+  "url": "https://opendata.wuerzburg.de/explore/assets/grenzwanderung-teil-1-kopieren/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-07-14T12:10:35.292000+00:00",
+  "dateModified": "2020-09-29T12:14:41+00:00",
+  "keywords": [
+    "EDUC",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-1-kopieren/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-1-kopieren/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-1-kopieren/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/grenzwanderung-teil-1-kopieren/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

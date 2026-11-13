@@ -1,0 +1,32 @@
+{
+  "@type": "Dataset",
+  "name": "OpenWeather Historische Wetterdaten",
+  "url": "https://opendata.wuerzburg.de/explore/assets/openweather-historische-wetterdatenrzburg-1979-2021/",
+  "license": "http://dcat-ap.de/def/licenses/odbl",
+  "dateCreated": "2021-07-17T11:16:00.951000+00:00",
+  "dateModified": "2021-07-17T10:20:48+00:00",
+  "keywords": [
+    "wetter",
+    "Historie",
+    "Temperatur",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/openweather-historische-wetterdatenrzburg-1979-2021/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/openweather-historische-wetterdatenrzburg-1979-2021/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/openweather-historische-wetterdatenrzburg-1979-2021/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

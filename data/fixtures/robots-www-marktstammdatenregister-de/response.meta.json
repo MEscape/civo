@@ -1,0 +1,11 @@
+{
+  "url": "https://www.marktstammdatenregister.de/robots.txt",
+  "status": 302,
+  "headers": {
+    "location": "https://www.marktstammdatenregister.de/MaStR/Assets/static/error.html",
+    "strict-transport-security": "max-age=31536000",
+    "connection": "Keep-Alive",
+    "content-length": "0"
+  },
+  "fetchedAt": "2026-11-09T06:10:54.446Z"
+}

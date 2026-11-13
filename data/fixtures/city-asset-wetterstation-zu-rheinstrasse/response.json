@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Wetterstation - Zu Rheinstraße",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wetterstation-zu-rheinstrasse/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
+  "dateCreated": "2024-07-02T12:41:38.683000+00:00",
+  "dateModified": "2024-06-11T12:37:13+00:00",
+  "keywords": [
+    "Wetter",
+    "Wetterstation",
+    "Temperatur",
+    "Luftdruck",
+    "Wind",
+    "Luftfeuchte",
+    "Niederschlag",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-zu-rheinstrasse/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-zu-rheinstrasse/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-zu-rheinstrasse/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

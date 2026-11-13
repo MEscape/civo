@@ -1,0 +1,132 @@
+{
+  "capturedAt": "2026-11-06T21:28:31.885Z",
+  "websiteId": "reference-city-wuerzburg",
+  "passed": true,
+  "changedTables": [],
+  "before": {
+    "Website": {
+      "count": 1,
+      "hash": "bb5fc21b6e00c6e7fb16dd6c7a3fc0eaadc4e42d9aa327ad1961b2ceda370b13"
+    },
+    "WebsiteTheme": {
+      "count": 1,
+      "hash": "d4332789915f4b762de66a2e434229cdf0f81909cf3c963604ddee20184e2a2b"
+    },
+    "Page": {
+      "count": 13,
+      "hash": "c8118b2ab30e88ef2206b1bb62f2f5a918765dd3d10864341d971aa7b2bf9ebc"
+    },
+    "PageConfig": {
+      "count": 13,
+      "hash": "d23099951e33c039c361d5bbd73d5c0bdf831536e9c6d802aff426c054284635"
+    },
+    "DataSource": {
+      "count": 19,
+      "hash": "fcd1fb6efd1a7605bb575fae7f6258631e366c176e4ce57860ff43f610a6367b"
+    },
+    "Dataset": {
+      "count": 18,
+      "hash": "005b7c9a31f52e7f13cdcdbe18c502bea537a44ae463b67a8261b4e3b79f691b"
+    },
+    "Membership": {
+      "count": 6,
+      "hash": "5ce3fd5f17611bf8acc9b2ce04a7a70ce9d74092c1d3fcc48d89bb35e3c56e05"
+    },
+    "Invitation": {
+      "count": 0,
+      "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "BookingLocation": {
+      "count": 1,
+      "hash": "626e199235911d3f89cbff062e3410a333db5c0ed8135741f7c079a3a5218ae5"
+    },
+    "BookableResource": {
+      "count": 4,
+      "hash": "fecb149764662c611c47abe9d1588e5cb12e96c0a4380572a03cdc3552ea7072"
+    },
+    "BookableService": {
+      "count": 5,
+      "hash": "c7dbc651068f267a58c0020e6a0f51ae42915ce032fa2d4fba1ebc409796fe66"
+    },
+    "BookableServiceLocation": {
+      "count": 5,
+      "hash": "c00d10d4edca4cc73767713ca680c89a992301dd901dfd9323794343ac77efbb"
+    },
+    "Booking": {
+      "count": 6,
+      "hash": "d1f49e80fc2b5c6d2ec1efc202f4df2c46465fd40b42b5459684f23f474ca854"
+    },
+    "BookingAssignment": {
+      "count": 6,
+      "hash": "5d27a419d72676b9a55b090871564f18a723f8f8054e448970e89d19aa3bf474"
+    },
+    "WebsiteRelease": {
+      "count": 1,
+      "hash": "bfb1b8034e817269246eb21be721ea1f1aa11d5db25a5ae41d4365d4b1db6bab"
+    }
+  },
+  "after": {
+    "Website": {
+      "count": 1,
+      "hash": "bb5fc21b6e00c6e7fb16dd6c7a3fc0eaadc4e42d9aa327ad1961b2ceda370b13"
+    },
+    "WebsiteTheme": {
+      "count": 1,
+      "hash": "d4332789915f4b762de66a2e434229cdf0f81909cf3c963604ddee20184e2a2b"
+    },
+    "Page": {
+      "count": 13,
+      "hash": "c8118b2ab30e88ef2206b1bb62f2f5a918765dd3d10864341d971aa7b2bf9ebc"
+    },
+    "PageConfig": {
+      "count": 13,
+      "hash": "d23099951e33c039c361d5bbd73d5c0bdf831536e9c6d802aff426c054284635"
+    },
+    "DataSource": {
+      "count": 19,
+      "hash": "fcd1fb6efd1a7605bb575fae7f6258631e366c176e4ce57860ff43f610a6367b"
+    },
+    "Dataset": {
+      "count": 18,
+      "hash": "005b7c9a31f52e7f13cdcdbe18c502bea537a44ae463b67a8261b4e3b79f691b"
+    },
+    "Membership": {
+      "count": 6,
+      "hash": "5ce3fd5f17611bf8acc9b2ce04a7a70ce9d74092c1d3fcc48d89bb35e3c56e05"
+    },
+    "Invitation": {
+      "count": 0,
+      "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "BookingLocation": {
+      "count": 1,
+      "hash": "626e199235911d3f89cbff062e3410a333db5c0ed8135741f7c079a3a5218ae5"
+    },
+    "BookableResource": {
+      "count": 4,
+      "hash": "fecb149764662c611c47abe9d1588e5cb12e96c0a4380572a03cdc3552ea7072"
+    },
+    "BookableService": {
+      "count": 5,
+      "hash": "c7dbc651068f267a58c0020e6a0f51ae42915ce032fa2d4fba1ebc409796fe66"
+    },
+    "BookableServiceLocation": {
+      "count": 5,
+      "hash": "c00d10d4edca4cc73767713ca680c89a992301dd901dfd9323794343ac77efbb"
+    },
+    "Booking": {
+      "count": 6,
+      "hash": "d1f49e80fc2b5c6d2ec1efc202f4df2c46465fd40b42b5459684f23f474ca854"
+    },
+    "BookingAssignment": {
+      "count": 6,
+      "hash": "5d27a419d72676b9a55b090871564f18a723f8f8054e448970e89d19aa3bf474"
+    },
+    "WebsiteRelease": {
+      "count": 1,
+      "hash": "bfb1b8034e817269246eb21be721ea1f1aa11d5db25a5ae41d4365d4b1db6bab"
+    }
+  },
+  "limitation": "Application tables checked; auth credential hashes are deliberately excluded. No reset or fresh database was exercised.",
+  "scope": "New isolated local application/auth databases; removed after verification"
+}

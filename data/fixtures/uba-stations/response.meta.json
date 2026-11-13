@@ -1,0 +1,35 @@
+{
+  "id": "uba-stations",
+  "name": "uba-stations",
+  "publisher": "Umweltbundesamt",
+  "url": "https://www.umweltbundesamt.de/api/air_data/v3/stations/json?use=airquality",
+  "entityShapes": [
+    "Place"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:11.528Z",
+  "httpStatus": 301,
+  "contentType": "text/html",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Redirect requires separate robots review: https://luftdaten.umweltbundesamt.de/api/air-data/v3/stations/json?use=airquality",
+  "robots": "https://www.umweltbundesamt.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:37:11 GMT",
+    "content-type": "text/html",
+    "content-length": "162",
+    "connection": "keep-alive",
+    "location": "https://luftdaten.umweltbundesamt.de/api/air-data/v3/stations/json?use=airquality"
+  },
+  "bytes": 162,
+  "sha256": "9e17cb15dd75bbbd5dbb984eda674863c3b10ab72613cf8a39a00c3e11a8492a"
+}

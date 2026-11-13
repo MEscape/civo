@@ -1,0 +1,44 @@
+{
+  "id": "overpass-docs",
+  "name": "overpass-docs",
+  "publisher": "OpenStreetMap contributors",
+  "url": "https://wiki.openstreetmap.org/wiki/Overpass_API",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:54.734Z",
+  "httpStatus": 200,
+  "contentType": "text/html; charset=UTF-8",
+  "sample": "data/fixtures/overpass-docs/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://wiki.openstreetmap.org/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:54 GMT",
+    "server": "Apache",
+    "x-content-type-options": "nosniff",
+    "content-language": "en",
+    "accept-ch": "",
+    "vary": "Accept-Encoding,Accept-Language,Cookie",
+    "expires": "Thu, 01 Jan 1970 00:00:00 GMT",
+    "cache-control": "private, must-revalidate, max-age=0",
+    "x-request-id": "bd3d6666d70351ec5446b7ad",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "last-modified": "Wed, 04 Nov 2026 16:54:49 GMT",
+    "transfer-encoding": "chunked",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "bytes": 228609,
+  "sha256": "b870c311859bce994787cd0a6196c7fd30c9ab9c5c84843cb0a33367ed8fdf2c"
+}

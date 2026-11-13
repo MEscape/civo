@@ -1,0 +1,53 @@
+{
+  "id": "city-records-parkplatzdaten_wuerzburg",
+  "name": "city-records-parkplatzdaten_wuerzburg",
+  "publisher": "Stadt Würzburg",
+  "url": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/parkplatzdaten_wuerzburg/records?limit=3",
+  "entityShapes": [
+    "Feature"
+  ],
+  "auth": "Not Verified",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "attribution": null,
+  "fetchedAt": "2026-11-06T19:09:24.759Z",
+  "httpStatus": 200,
+  "contentType": "application/json; charset=utf-8",
+  "sample": "data/fixtures/city-records-parkplatzdaten_wuerzburg/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://opendata.wuerzburg.de/robots.txt",
+  "robotsPolicy": "Advisory rules recorded; explicit user instruction permits public API probes",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "openresty",
+    "date": "Fri, 06 Nov 2026 19:09:24 GMT",
+    "content-type": "application/json; charset=utf-8",
+    "content-length": "385",
+    "connection": "keep-alive",
+    "x-ratelimit-remaining": "4983",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-reset": "2026-11-07 00:00:00+00:00",
+    "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+    "vary": "Accept-Language, Cookie, Host",
+    "content-language": "en-us",
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "POST, GET, OPTIONS",
+    "access-control-max-age": "1000",
+    "access-control-allow-headers": "Authorization, X-Requested-With, Origin, ODS-API-Analytics-App, ODS-API-Analytics-Embed-Type, ODS-API-Analytics-Embed-Referrer, ODS-Widgets-Version, Accept",
+    "access-control-expose-headers": "ODS-Explore-API-Deprecation, Link, X-RateLimit-Remaining, X-RateLimit-Limit, X-RateLimit-Reset, X-RateLimit-dataset-Remaining, X-RateLimit-dataset-Limit, X-RateLimit-dataset-Reset",
+    "strict-transport-security": "max-age=31536000;includeSubdomains",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "content-security-policy": "upgrade-insecure-requests;",
+    "x-ua-compatible": "IE=edge",
+    "permissions-policy": "midi=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()"
+  },
+  "bytes": 385,
+  "sha256": "42733edee248739cbe29bfedcd3c676b5557bd1b6339940ef7314632d8d66493",
+  "sampleSha256": "42733edee248739cbe29bfedcd3c676b5557bd1b6339940ef7314632d8d66493"
+}

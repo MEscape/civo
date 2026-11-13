@@ -1,0 +1,30 @@
+{
+  "url": "https://land.copernicus.eu/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:38:01 GMT",
+    "content-type": "text/plain; charset=utf-8",
+    "content-length": "50",
+    "connection": "keep-alive",
+    "age": "0",
+    "content-security-policy": "default-src https: data: 'unsafe-inline' 'unsafe-eval'; img-src https: data: blob:; worker-src 'self' blob:; child-src 'self' blob:; connect-src https: data:; frame-src http: data:; upgrade-insecure-requests",
+    "etag": "W/\"32-8bwPGXAHlkHcVIGx7EAXs0MSnOE\"",
+    "grace": "",
+    "via": "1.1 clms-frontend-dpl-varnish-5c4d749f49-dcbw6 (Varnish/7.7)",
+    "x-backend": "cluster(frontend-volto:(null))",
+    "x-backend-name": "cluster(10.43.60.107:3000)",
+    "x-cache": "MISS",
+    "x-cacheable": "NO - PASS",
+    "x-content-type-options": "nosniff",
+    "x-varnish": "50901486 50901487",
+    "x-xss-protection": "\"1; mode=block\"",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "server": "HTTPS",
+    "expect-ct": "max-age=604800, report-uri='https://sentry.eea.europa.eu/api/45/security/?sentry_key=0343e20fc4e0469790b6016561f032e3'",
+    "x-frame-options": "'SAMEORIGIN'",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "access-control-allow-headers": "Authorization, Content-Type, content-type",
+    "permissions-policy": "accelerometer=(), autoplay=(), camera=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), sync-xhr=(self), usb=()"
+  },
+  "fetchedAt": "2026-11-06T07:38:01.364Z"
+}

@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /api/
+Disallow: /munin/
+Disallow: /achavi/
+Sitemap: https://z.overpass-api.de/api/sitemap

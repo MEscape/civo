@@ -1,0 +1,17 @@
+{
+  "startedAt": "2026-11-06T20:14:52.911Z",
+  "finishedAt": "2026-11-06T20:15:07.686Z",
+  "selected": [
+    "pegel-main",
+    "pegel-wuerzburg-day",
+    "city-window-parkplatzdaten_wuerzburg",
+    "city-window-fahrradzaehlung-tagesdaten-alle-zaehlstationen"
+  ],
+  "applied": false,
+  "failures": [
+    {
+      "reason": "Validation or ingestion failed; previous source captures restored",
+      "error": "Command failed: C:\\Users\\L14\\AppData\\Local\\fnm_multishells\\22756_1793996091555\\node.exe node_modules/tsx/dist/cli.mjs scripts/wuerzburg/apply-ingest.ts\nC:\\Users\\L14\\Documents\\Programming\\civo-temp\\node_modules\\server-only\\index.js:1\r\nthrow new Error(\r\n      ^\r\n\r\nError: This module cannot be imported"
+    }
+  ]
+}

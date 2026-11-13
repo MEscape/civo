@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "wiz_gesundheit_und_soziales",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wiz_gesundheit_und_soziales/",
+  "license": null,
+  "dateCreated": "2025-10-31T08:24:44.259000+00:00",
+  "dateModified": "2025-10-31T08:24:44+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_gesundheit_und_soziales/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_gesundheit_und_soziales/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_gesundheit_und_soziales/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

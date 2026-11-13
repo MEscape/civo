@@ -1,0 +1,26 @@
+{
+  "id": "mastr-wuerzburg-units",
+  "name": "mastr-wuerzburg-units",
+  "publisher": "Bundesnetzagentur",
+  "url": "https://www.marktstammdatenregister.de/MaStR/Einheit/EinheitJson/GetErweiterteOeffentlicheEinheitStromerzeugung?sort=&page=1&pageSize=10&group=&filter=Gemeindeschl%C3%BCssel~eq~'09663000'",
+  "entityShapes": [
+    "Aggregate"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:54.450Z",
+  "httpStatus": null,
+  "contentType": null,
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Robots policy could not be verified; request not sent",
+  "robots": "https://www.marktstammdatenregister.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified"
+}

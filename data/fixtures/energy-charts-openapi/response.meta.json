@@ -1,0 +1,38 @@
+{
+  "id": "energy-charts-openapi",
+  "name": "energy-charts-openapi",
+  "publisher": "Fraunhofer ISE",
+  "url": "https://api.energy-charts.info/openapi.json",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:58:05.071Z",
+  "httpStatus": 200,
+  "contentType": "application/json",
+  "sample": "data/fixtures/energy-charts-openapi/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://api.energy-charts.info/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:58:05 GMT",
+    "content-type": "application/json",
+    "content-length": "83840",
+    "x-cache": "MISS",
+    "x-process-time-ms": "97.5",
+    "server": "Nginx",
+    "content-security-policy": "frame-ancestors 'self' *.ise.fraunhofer.de ;",
+    "access-control-allow-origin": "https://www.api.energy-charts.info",
+    "strict-transport-security": "max-age=16000000; includeSubDomains; preload;"
+  },
+  "bytes": 83840,
+  "sha256": "523d3ec0fd82a7f148a94c02ffc08e8251c231d74e74b6019978af1e64b610d4"
+}

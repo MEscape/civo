@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie B _ Schulgebäude - Sport",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-b-schulgebaeude-sport/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:51:48.918000+00:00",
+  "dateModified": "2025-11-12T13:51:48+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-b-schulgebaeude-sport/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-b-schulgebaeude-sport/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-b-schulgebaeude-sport/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

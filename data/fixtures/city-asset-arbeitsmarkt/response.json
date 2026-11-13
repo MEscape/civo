@@ -1,0 +1,31 @@
+{
+  "@type": "Dataset",
+  "name": "Arbeitsmarkt - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/arbeitsmarkt/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:32:48.211000+00:00",
+  "dateModified": "2026-11-05T23:01:43.585000+00:00",
+  "keywords": [
+    "Beschäftigung",
+    "Arbeitslosigkeit",
+    "ECON",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/arbeitsmarkt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/arbeitsmarkt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/arbeitsmarkt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "url": "https://warnung.bund.de/robots.txt",
+  "status": 404,
+  "headers": {
+    "server": "myracloud",
+    "date": "Mon, 09 Nov 2026 06:10:39 GMT",
+    "content-type": "text/html; charset=utf-8",
+    "content-length": "146",
+    "connection": "keep-alive",
+    "expires": "Mon, 09 Nov 2026 06:10:41 GMT",
+    "cache-control": "max-age=2",
+    "etag": "\"myra-93d82e43\""
+  },
+  "fetchedAt": "2026-11-09T06:10:42.332Z"
+}

@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "heimatforum_standorte",
+  "url": "https://opendata.wuerzburg.de/explore/assets/heimatforum_standorte/",
+  "license": "http://dcat-ap.de/def/licenses/dl-zero-de/2.0",
+  "dateCreated": "2025-01-31T08:59:35.844000+00:00",
+  "dateModified": "2025-01-31T08:59:35+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heimatforum_standorte/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heimatforum_standorte/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heimatforum_standorte/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

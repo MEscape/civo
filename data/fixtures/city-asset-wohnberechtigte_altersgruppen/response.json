@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Wohnberechtigte Altersgruppen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wohnberechtigte_altersgruppen/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T13:37:02.019000+00:00",
+  "dateModified": "2026-03-26T10:32:53.713000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Wohnberechtigte",
+    "Gesamtstadt",
+    "Altersgruppe",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wohnberechtigte_altersgruppen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wohnberechtigte_altersgruppen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wohnberechtigte_altersgruppen/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

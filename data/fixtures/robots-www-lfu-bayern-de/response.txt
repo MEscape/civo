@@ -1,0 +1,58 @@
+User-agent: IsonSearchBot
+Disallow: /
+
+User-agent: ClaudeBot
+Crawl-delay: 5
+
+User-agent: Claude-SearchBot
+Crawl-delay: 5
+
+User-agent: Claude-User
+Crawl-delay: 5
+
+User-agent: CCBot
+Crawl-delay: 5
+
+User-agent: bingbot
+Crawl-delay: 5
+
+User-agent: Speedy
+Disallow: /
+
+User-agent: *
+Disallow: /global/
+Disallow: /pic/
+Disallow: /script/
+Disallow: /style/
+Disallow: /_appincludes/
+Disallow: /buerger/doc/pdf/
+Disallow: /suchen/
+Disallow: /download/
+Disallow: /umrei/strvgProbe/export*
+Disallow: /musterinseln_online/
+Disallow: /publikationen/newsletter/anmeldung.htm
+Disallow: /wasser/sachverstaendige_wasserrecht/arbeitshilfen_psw/
+Disallow: /wasser/umgang_mit_wgs/infos_vaws_sv/
+Disallow: /wasser/gewaessernachbarschaften/intern/
+Disallow: /publikationen/pubman/
+Disallow: /publikationen/newsletter/
+
+User-agent: Twitterbot 
+Allow: /pic/pic_twitter/
+Allow: /global/
+Allow: /pic/
+Allow: /script/
+Allow: /style/
+
+User-agent: Googlebot
+Allow: /global/
+Allow: /pic/
+Allow: /script/
+Allow: /style/
+
+#User-agent: gsa-crawler
+
+#User-agent: bingbot
+
+
+Sitemap: https://www.lfu.bayern.de/sitemap.xml

@@ -1,0 +1,462 @@
+
+
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+    
+    
+
+    
+    
+
+
+
+
+
+
+
+    
+        <title>
+    Explore the asset catalog &mdash; Open Data Portal Würzburg
+</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Language" content="en-US">
+
+        
+
+        
+
+    <link rel="icon" href="https://s3-eu-central-1.amazonaws.com/aws-ec2-eu-central-1-opendatasoft-staticfileset/wuerzburg/favicon?tstamp=17575793570261216">
+
+
+
+        
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="stylesheet" type="text/css" href="/static/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/vendor/normalize/normalize.css">
+    <link rel="stylesheet" href="/static/pictos/odsui/odsui.css" type="text/css">
+
+    <base href="/explore/" />
+
+
+    
+    <link rel="alternate" hreflang="de-de" href="https://wuerzburg.opendatasoft.com/explore/?refines=themes%3AENER&amp;flg=de-de" />
+<link rel="alternate" hreflang="en-us" href="https://wuerzburg.opendatasoft.com/explore/?refines=themes%3AENER&amp;flg=en-us" />
+
+
+    
+    <link rel="canonical" href="https://opendata.wuerzburg.de/explore/">
+
+
+    <meta name="description" content="Open Data Portal für Stadt und Landkreis Würzburg">
+
+    <link rel="stylesheet" href="/css/front-react.css?15" type="text/css">
+
+    <link rel="stylesheet" type="text/css" href="https://s3-eu-central-1.amazonaws.com/aws-ec2-eu-central-1-opendatasoft-staticfileset/wuerzburg/stylesheet/15.css">
+
+
+    
+
+<link  rel="stylesheet" href="/static/assets/automationAxios-Cr3vzyXe.css" />
+<link  rel="stylesheet" href="/static/assets/createContext-DEiHFDgR.css" />
+<link  rel="stylesheet" href="/static/assets/usePrevious-C5llbaAr.css" />
+<link  rel="stylesheet" href="/static/assets/Notifications-06iQaaRO.css" />
+<link  rel="stylesheet" href="/static/assets/strings-Bdi-Pmbg.css" />
+<link  rel="stylesheet" href="/static/assets/PortalLayout-B8HN8Cqh.css" />
+<link  rel="stylesheet" href="/static/assets/index-gDhmrRkW.css" />
+<link  rel="stylesheet" href="/static/assets/ReleaseStatusBadge-CIoBFoct.css" />
+<link  rel="stylesheet" href="/static/assets/NativePicto-CNAD6ltQ.css" />
+<link  rel="stylesheet" href="/static/assets/TagButton-C5R10GmS.css" />
+<link  rel="stylesheet" href="/static/assets/ShowcaseChip-DUbkD_kn.css" />
+<link  rel="stylesheet" href="/static/assets/useLocalizedLabel-CLDAPkO1.css" />
+<link  rel="stylesheet" href="/static/assets/Picto-BquBjE2L.css" />
+<link  rel="stylesheet" href="/static/assets/types-B1pDmZQz.css" />
+<link  rel="stylesheet" href="/static/assets/Card-B6shrU2F.css" />
+<link  rel="stylesheet" href="/static/assets/asset-card-BleQJfXF.css" />
+<link  rel="stylesheet" href="/static/assets/AssetCard-gbG8Zj1i.css" />
+<link  rel="stylesheet" href="/static/assets/BaseDateInput-B7WsSG7p.css" />
+<link  rel="stylesheet" href="/static/assets/date-filter-BoZvSNNH.css" />
+<link  rel="stylesheet" href="/static/assets/Card-CTgDu3Kw.css" />
+<link  rel="stylesheet" href="/static/assets/MessageCard-CGfNNWyC.css" />
+<link  rel="stylesheet" href="/static/assets/QuotaMessage-Bgcfop1Y.css" />
+<link  rel="stylesheet" href="/static/assets/Date-B_jmxQRx.css" />
+<link  rel="stylesheet" href="/static/assets/DateInput-B-ywCxyk.css" />
+<link  rel="stylesheet" href="/static/assets/Sidebar-DQ3xJtJU.css" />
+<link  rel="stylesheet" href="/static/assets/Pagination-LoCSJRVj.css" />
+<link  rel="stylesheet" href="/static/assets/Catalog-MzmuNN5D.css" />
+<link  rel="stylesheet" href="/static/assets/hyperlink-D4MO0nzg.css" />
+<link  rel="stylesheet" href="/static/assets/SearchFilter-DB5wvJNr.css" />
+<link  rel="stylesheet" href="/static/assets/index-Cn66JIjH.css" />
+<link  rel="stylesheet" href="/static/assets/Breadcrumb-DEO6U2FO.css" />
+<link  rel="stylesheet" href="/static/assets/AssetPublishingMessage-2HGlTc8d.css" />
+<link  rel="stylesheet" href="/static/assets/index-CSmXheqi.css" />
+<link  rel="stylesheet" href="/static/assets/TextInput-CA52K3s9.css" />
+<link  rel="stylesheet" href="/static/assets/index-DMdSUgP6.css" />
+<link  rel="stylesheet" href="/static/assets/AssetLayout-CxiJfn7i.css" />
+<link  rel="stylesheet" href="/static/assets/Backdrop-8YzNalKc.css" />
+<link  rel="stylesheet" href="/static/assets/PageRenderer-5TxO9Grn.css" />
+<link  rel="stylesheet" href="/static/assets/hooks-DHL-2FAk.css" />
+<link  rel="stylesheet" href="/static/assets/SidePanelContainer-ssguTBDJ.css" />
+<link  rel="stylesheet" href="/static/assets/MapVisualization-DDUYabdZ.css" />
+<link  rel="stylesheet" href="/static/assets/progress-bar-D0y0pXZ4.css" />
+<link  rel="stylesheet" href="/static/assets/Table-DSsGJdHs.css" />
+<link  rel="stylesheet" href="/static/assets/ConfirmModal-DSZF4N0j.css" />
+<link  rel="stylesheet" href="/static/assets/ConditionsBuilder-BiIVTeqt.css" />
+<link  rel="stylesheet" href="/static/assets/EndEllipsis-2BAna70J.css" />
+<link  rel="stylesheet" href="/static/assets/FullscreenPanel-CNiV8Wo3.css" />
+<link  rel="stylesheet" href="/static/assets/SupportModal-I1Dq8BqK.css" />
+<link  rel="stylesheet" href="/static/assets/BuilderHeader-Cg9vXSWS.css" />
+<link  rel="stylesheet" href="/static/assets/BuilderFormSection-oEh6eQzB.css" />
+<link  rel="stylesheet" href="/static/assets/MiddleEllipsis-Ss4r230z.css" />
+<link  rel="stylesheet" href="/static/assets/ThumbnailPreview-BIqMq35F.css" />
+<link  rel="stylesheet" href="/static/assets/FileContentInput-DnLUcN0d.css" />
+<link  rel="stylesheet" href="/static/assets/CollapsableComponent-ly8PPveV.css" />
+<link  rel="stylesheet" href="/static/assets/AssetPicker-CRmG1uZx.css" />
+<link  rel="stylesheet" href="/static/assets/maplibre-gl-DNVN2dqC.css" />
+<link  rel="stylesheet" href="/static/assets/UserDetails-BchqyjOa.css" />
+<link  rel="stylesheet" href="/static/assets/KeywordsField-qQu5XHCG.css" />
+<link  rel="stylesheet" href="/static/assets/index-Df0yCwaN.css" />
+<link  rel="stylesheet" href="/static/assets/index-Bd4u8iB4.css" />
+<link  rel="stylesheet" href="/static/assets/FrontofficeForm-KtdM1AKO.css" />
+<link  rel="stylesheet" href="/static/assets/UserAvatar-DOOfYdXS.css" />
+<link  rel="stylesheet" href="/static/assets/shared-DIiYDQiN.css" />
+<link  rel="stylesheet" href="/static/assets/PrefilledLogin-DiVKbXqi.css" />
+<link  rel="stylesheet" href="/static/assets/PrefilledSignup-_KbnApvr.css" />
+<link  rel="stylesheet" href="/static/assets/FrontOfficeFeatures-BGgT5yjN.css" />
+<link  rel="stylesheet" href="/static/assets/frontoffice-BEFriLkQ.css" />
+<link  rel="stylesheet" href="/static/assets/page-renderer-frontoffice-D_r6Ql4i.css" />
+
+<link href="/static/assets/automationAxios-D0_oFuWZ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/init-DIg7ntWm.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/react-render-compat-DqcMRWgN.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/usePrevious-D4qP3sIh.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Notifications-BISu6ndA.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-SiqtIhpg.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/UserContext-DxhkQnmm.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/History-CiptWeoT.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Catalog-C1ruX5at.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/AssetLayout-B3wXySgm.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/assets-Cqr3-j2e.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/explore-DJU1Ib2J.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Card-BaAZoIGq.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-BeqonXaD.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/PageRenderer-CAURv8FH.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Date-BSZ9veGz.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/BaseDateInput-B_PPNvWe.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/MessageCard-DG09WNMM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/QuotaMessage-DHHyu5W0.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/createContext-N1a7tsux.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/KeyboardShortcut-CWU151vw.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/hooks-BUCthEYI.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-DBob5-Dd.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/assets-BHSWtK6D.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/constants-BdxMAJuX.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/context-CVGRNo_S.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/SearchFilter-D90iLwBs.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/MapVisualization-6Q3JfNTu.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FieldTypeChip-Cr5aJXuH.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-BtNQ_AA7.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/types-DNJeRF1q.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ProgressBar-B-KYTHUQ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FormattedDate-CJRQbTyl.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/WebGlErrorBoundary-CidQ38ch.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Table-D27TqjKv.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useFrozenValue-CNu_fKkI.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ExternalHyperlink-DNwwNUMJ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ReleaseStatusBadge-DWB6kGL9.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/array-CWAYUWnM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-BWQXSwnq.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ConditionsBuilder--pQuXuLg.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Hyperlink-DGuhWuOC.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Sidebar-BJ9_3XYK.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-DjmdESOW.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/AssetPublishingMessage-BL2Y_Yco.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/portal-BIjMV7MJ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/constants-B0Sgf4SW.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/platformUrls-BhmHcM3j.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/DomainFooterContext-wXjGfRXi.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/i18n-B9qy4lYd.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/strings-CzEmTHu6.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/clipboard-DHctyDuN.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/NativePicto-CZmVg1sM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/TagButton-3NsKpUI4.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/react-beautiful-dnd.esm-BcTBebKd.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/EndEllipsis-WUOnez16.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-NQrQ0RnT.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/usePageMetadata-CDtSyd-4.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-DC9CZeIB.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FrontofficeForm-COmI-BjI.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useMeasure-drUYcNjz.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useDebounceInput-BFoSCKOM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/PortalLayout-sL6T77YC.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/loaders-CS8taK2U.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FrontOfficeFeatures-9bUmYrVv.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ReactEntryWrapper-DZfzLi3f.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/tslib.es6-rNOzVM8v.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/mixpanelTrackEvent-CBihJ8IF.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/types-Cw7FTdIM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/mixpanelTrackEventWithDebug-BD7mqx8S.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/constants-DwGYoeUW.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useLocalizedLabel-BFis0Io9.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ShowcaseChip-NsogKVDn.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Tag-B7YH4sGe.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/utils-DFYjmhoT.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/AssetCard-D2ObJEo-.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/types-DM1TV7wr.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Picto-BZh6PQts.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/metadata-dVGB-qaq.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useNumberFormat-QV2-asUA.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/asset-card.module-D6rPeQGv.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FallbackWarning-CiVdeoai.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useRenderedCardSize-kN6XxDes.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/AssetBookmarkButton-BWW8-lem.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Pagination-CJQIbWMM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/DateInput-SRG8va_E.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FileTypeIcon-DmlTZCaj.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useExploreAPIAction-BVSVEEk8.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useMapLocales-C0pMTPsa.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Backdrop-DnIUeLvM.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/usePortal-iKYwBnJ-.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/DateFilter-BKCxhApw.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Card-HYtlPBcJ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/planTypes-DHEYsDtq.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/TextInput-DxOXcNQH.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/chartTypeConstraints-zIuPQ4wD.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/SidePanelContainer-VAT1dhH_.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/hyperlink.module-IWfgu_6n.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/usePopper-0xlNbhp_.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ConfirmModal-BZBCHmT8.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Lazy-CvqlUoCy.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/automation-CQ2mJbz8.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/identityProviders-CD7f-2JH.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/pages-LsUPMZMK.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/DateTimeField-C5vav0ok.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/languages-CtuX1bIT.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/Breadcrumb-DarNseNe.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-jztz3Rv9.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/forms-DLOAGzxT.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FullscreenPanel-CxldXL8E.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/BuilderHeader-CsDtI464.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/SupportModal-NoOkt-5K.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ConfirmClick-5THB5kTl.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/BuilderFormSection-Bz6tPpTq.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/yup-Dcn5WvGq.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/MiddleEllipsis-C65i6UuZ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ThumbnailPreview-qWX5_8av.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/FileContentInput-CxIP6frU.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/InfiniteScrollSentinel-B6qMm_VU.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/AutoSave-DwTQTHVZ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/selectors-Dv7SJg7R.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/maplibre-BlUtAZs0.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/AssetPicker-SfZiFIMC.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/CollapsableComponent-D-tN9uj8.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/user-CbzI_S7S.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/UserDetails-BxrixKOr.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/InformationTooltip-BiL4ZomK.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/KeywordsField-CBYYzl2e.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/asyncDebounce-d0iYrg5e.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/wikitPropsUtils-BVsuoHxJ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/screeb-DLlCmLWQ.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/UserAvatar-CjHudrBX.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/index-BZ59Mke0.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/PrefilledLogin--0B32qZp.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/shared-B0txVv_A.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/useNextSearchParam-BfObGpl9.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/huwise-login-logo-Cc8XfSUd.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/ProSanteConnect-lz_NxEzD.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+<link href="/static/assets/PrefilledSignup-BPbEzzGz.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script" />
+
+
+    
+    
+        
+    
+
+    
+        
+    
+
+
+
+    
+
+    
+
+    
+
+    
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Explore the asset catalog" />
+
+    <meta name="twitter:description" content="Description unavailable" />
+
+<meta name="twitter:url" content="https://wuerzburg.opendatasoft.com/explore/?refines=themes%3AENER&amp;flg=en-us" />
+
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Explore the asset catalog" />
+
+    <meta property="og:description" content="Description unavailable" />
+
+<meta property="og:url" content="https://wuerzburg.opendatasoft.com/explore/?refines=themes%3AENER&amp;flg=en-us" />
+
+
+
+    
+
+    </head>
+    <body>
+        
+            
+            
+
+
+<header class="ng-cloak" role="banner" ng-controller="HeaderController">
+    
+        <div class="row">
+<div class="col-md-12" style="background-color:white; margin-bottom: 0; margin-top: 4px">
+<img alt="Logo der Stadt Würzburg" src="/assets/theme_image/ODP-Wort-Bild-Marke-Linksb%C3%BCndig-Blau%20mit%20Rahmen.png" style="height:50px;"/>
+</div>
+</div>
+<nav breakpoint="1000" class="ods-front-header" ods-responsive-menu="" style="position:static;">
+<ods-responsive-menu-placeholder>
+<a class="ods-front-header__portal-brand" href="/">
+
+</a>
+</ods-responsive-menu-placeholder>
+<ods-responsive-menu-collapsible>
+<ul class="ods-front-header__languages">
+<li class="ods-front-header__language">
+<a aria-current="false" class="ods-front-header__language__choice ods-front-header__link" href="#" hreflang="de" ods-language-switcher="de" title="German">de</a>
+</li>
+<li class="ods-front-header__language">
+<a aria-current="true" class="ods-front-header__language__choice ods-front-header__link ods-front-header__link--active" href="#" hreflang="en" ods-language-switcher="en" title="English (current)">en</a>
+</li>
+</ul>
+<a class="ods-front-header__portal-brand" href="/" style="top: -3px">
+
+<span class="ods-front-header__portal-brand__text" ng-non-bindable="">Startseite</span>
+</a>
+<ul class="ods-front-header__menu">
+<li class="ods-front-header__menu-item ods-front-header__menu-item--active" ng-non-bindable="">
+<a aria-current="page" class="ods-front-header__menu-item-link ods-front-header__menu-item-link--active" href="/explore/">
+            Catalogue
+        </a>
+</li>
+<li class="ods-front-header__menu-item" ng-non-bindable="">
+<a class="ods-front-header__menu-item-link" href="https://opendata.wuerzburg.de/pages/dashboards/">
+            Dashboards
+        </a>
+</li>
+<li class="ods-front-header__menu-item" ng-non-bindable="">
+<a class="ods-front-header__menu-item-link" href="/pages/furtheruse/">
+            Toolbox
+        </a>
+</li>
+</ul>
+<div class="ods-front-header__quick-find-button" data-quickfind-placeholder="" ng-non-bindable=""></div>
+<ul class="ods-front-header__management-menu">
+<li class="ods-front-header__management-menu-item">
+<div class="ods-front-header__login-signup-buttons-button" data-login-signup-placeholder="" ng-non-bindable=""></div>
+</li>
+</ul>
+</ods-responsive-menu-collapsible>
+</nav>
+    
+</header>
+
+
+<main id="main" role="main" >
+    
+</main>
+
+
+    <footer id="footer" role="contentinfo" ng-controller="FooterController">
+            <div class="ods-front-footer">
+<a class="ods-front-footer__ods-logo" href="//www.huwise.com">
+<img alt="Portal made with Huwise, data portal platform" class="ods-front-footer__ods-logo-img" src="/static/ods/imgv4/huwise-black.svg"/>
+</a>
+<a class="ods-front-footer__legal ods-front-footer__link" href="/terms/terms-and-conditions/" target="_blank">
+    Terms and conditions
+</a>
+<a class="ods-front-footer__legal ods-front-footer__link" href="/terms/privacy-policy/" target="_blank">
+    Privacy policy
+</a>
+<span><a href="/pages/impressum/" style="color: #B61F38;">Impressum</a></span>
+<ul class="ods-front-footer__languages">
+<li class="ods-front-footer__language">
+<a aria-current="false" class="ods-front-footer__language__choice ods-front-footer__link" href="#" hreflang="de" ods-language-switcher="de" title="German">de</a>
+</li>
+<li class="ods-front-footer__language">
+<a aria-current="true" class="ods-front-footer__language__choice ods-front-footer__link ods-front-footer__link--active" href="#" hreflang="en" ods-language-switcher="en" title="English (current)">en</a>
+</li>
+</ul>
+</div>
+    </footer>
+
+
+
+            
+        
+
+        
+        
+    
+    
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    
+
+    
+
+
+    
+        
+        
+
+
+        
+
+
+        
+
+
+        
+
+
+        
+
+
+
+
+        
+
+
+
+        
+
+
+        
+
+
+
+    
+
+
+
+    
+
+    </body>
+</html>

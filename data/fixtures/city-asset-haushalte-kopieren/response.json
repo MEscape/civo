@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Haushalte - absolut",
+  "url": "https://opendata.wuerzburg.de/explore/assets/haushalte-kopieren/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2025-10-08T08:52:14.821000+00:00",
+  "dateModified": "2025-10-08T08:53:07.327000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Haushalte",
+    "Anzahl Haushalte",
+    "Haushaltsgröße",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/haushalte-kopieren/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/haushalte-kopieren/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/haushalte-kopieren/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

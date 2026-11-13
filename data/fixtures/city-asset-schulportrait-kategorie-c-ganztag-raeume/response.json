@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie C _ Ganztag - Räume",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-c-ganztag-raeume/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:53:06.681000+00:00",
+  "dateModified": "2025-11-12T13:53:06+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-c-ganztag-raeume/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-c-ganztag-raeume/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-c-ganztag-raeume/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

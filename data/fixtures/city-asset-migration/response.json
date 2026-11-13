@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Migration - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/migration/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:32:41.652000+00:00",
+  "dateModified": "2026-11-05T23:01:47.693000+00:00",
+  "keywords": [
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/migration/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/migration/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/migration/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

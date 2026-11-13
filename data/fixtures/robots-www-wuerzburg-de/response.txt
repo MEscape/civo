@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /*?fCMS
+Disallow: /*lostpassword
+Disallow: /*.txt$
+Disallow: /*addpdfprinter
+Disallow: /*contrast=
+Disallow: /*fontsize=
+Disallow: /*setContrast=
+Disallow: /*setFontsize=
+Disallow: /*setLang=
+Disallow: /*a[st]=
+Disallow: /*_bskt=
+Disallow: /*&_ud=
+Disallow: /*_func=md
+Disallow: /*?_dc=

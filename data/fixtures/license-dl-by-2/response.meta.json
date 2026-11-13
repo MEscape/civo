@@ -1,0 +1,48 @@
+{
+  "id": "license-dl-by-2",
+  "name": "license-dl-by-2",
+  "publisher": "GovData",
+  "url": "https://www.govdata.de/dl-de/by-2-0",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T19:18:22.445Z",
+  "httpStatus": 200,
+  "contentType": "text/html; charset=utf-8",
+  "sample": "data/fixtures/license-dl-by-2/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.govdata.de/robots.txt",
+  "robotsPolicy": "Advisory rules recorded; explicit user instruction permits public API probes",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 19:16:40 GMT",
+    "server": "Apache",
+    "content-security-policy": "default-src 'self'; base-uri 'self'; font-src 'self' https://cdn.jsdelivr.net; form-action 'self'; frame-ancestors 'self'; img-src 'self' data: https://sgx.geodatenzentrum.de https://*.openstreetmap.org https://stat.govdata.de; object-src 'none'; script-src 'self' 'unsafe-inline' https://stat.govdata.de; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://www.govdata.de https://stat.govdata.de https://sgx.geodatenzentrum.de",
+    "cross-origin-opener-policy": "same-origin",
+    "cross-origin-resource-policy": "same-origin",
+    "referrer-policy": "no-referrer",
+    "x-permitted-cross-domain-policies": "none",
+    "vary": "rsc,next-router-state-tree,next-router-prefetch,next-router-segment-prefetch,Accept-Encoding",
+    "link": "</_next/static/css/a8c7d01d323e33e3.css>; rel=preload; as=\"style\", </_next/static/css/ba61560734a45cdd.css>; rel=preload; as=\"style\", </_next/static/css/191e7e014d800af7.css>; rel=preload; as=\"style\"",
+    "cache-control": "public, max-age=3600, must-revalidate",
+    "age": "101",
+    "content-length": "32099",
+    "content-type": "text/html; charset=utf-8",
+    "x-frame-options": "SAMEORIGIN",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "x-content-type-options": "nosniff"
+  },
+  "bytes": 32099,
+  "sha256": "8baaeaa92f3cc7bd1877b4f51cb4467fd4ac2b086705dcdeb39b7e676e364901",
+  "projection": "Document HTML with script elements removed; original response hash retained separately",
+  "sampleSha256": "9aa097a540819316c3f9aaa7c05cf00c722f6a3d6079881008bf1e969239143e"
+}

@@ -1,0 +1,18 @@
+{
+  "url": "https://wiki.openstreetmap.org/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:54 GMT",
+    "server": "Apache",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "last-modified": "Fri, 23 May 2025 10:36:57 GMT",
+    "etag": "\"1cc-635cb2d74a1a0\"",
+    "accept-ranges": "bytes",
+    "content-length": "460",
+    "vary": "Accept-Encoding",
+    "content-type": "text/plain; charset=utf-8"
+  },
+  "fetchedAt": "2026-11-06T07:37:54.731Z"
+}

@@ -1,0 +1,22 @@
+{
+  "url": "https://data.europa.eu/robots.txt",
+  "status": 200,
+  "headers": {
+    "content-type": "text/plain",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "date": "Fri, 06 Nov 2026 07:37:31 GMT",
+    "last-modified": "Wed, 19 Aug 2026 07:33:51 GMT",
+    "server": "nginx",
+    "x-xss-protection": "1; mode=block",
+    "etag": "W/\"6a855c5f-8cc\"",
+    "vary": "Accept-Encoding",
+    "via": "1.1 01abec7ece24959c09067a58477de9ee.cloudfront.net (CloudFront)",
+    "strict-transport-security": "max-age=63072000; includeSubdomains; preload",
+    "x-content-type-options": "nosniff",
+    "x-cache": "Miss from cloudfront",
+    "x-amz-cf-pop": "AMS1-P2",
+    "x-amz-cf-id": "pVgdsOU7S2tqJlSronq_EeKdoSgm4iKXBJSSawD0SlIMIdgnvi9slA=="
+  },
+  "fetchedAt": "2026-11-06T07:37:31.737Z"
+}

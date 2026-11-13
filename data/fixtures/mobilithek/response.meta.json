@@ -1,0 +1,40 @@
+{
+  "id": "mobilithek",
+  "name": "mobilithek",
+  "publisher": "Bundesministerium für Verkehr",
+  "url": "https://mobilithek.info/offers",
+  "entityShapes": [
+    "Dataset"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:39.849Z",
+  "httpStatus": 200,
+  "contentType": "text/html",
+  "sample": "data/fixtures/mobilithek/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://mobilithek.info/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:39 GMT",
+    "content-type": "text/html",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "cache-control": "no-store, no-cache, must-revalidate",
+    "etag": "W/\"6ad07a56-44e\"",
+    "last-modified": "Thu, 15 Oct 2026 07:01:42 GMT",
+    "server": "nginx/1.23.3",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+  },
+  "bytes": 1102,
+  "sha256": "dba9e7020e64cfee874c6c0bc1c2fa565f69dc86e31d71a3e4585d7beb4e824f"
+}

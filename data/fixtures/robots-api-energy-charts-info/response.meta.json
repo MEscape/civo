@@ -1,0 +1,15 @@
+{
+  "url": "https://api.energy-charts.info/robots.txt",
+  "status": 404,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:58:04 GMT",
+    "content-length": "22",
+    "content-type": "application/json",
+    "x-process-time-ms": "3.9",
+    "server": "Nginx",
+    "content-security-policy": "frame-ancestors 'self' *.ise.fraunhofer.de ;",
+    "access-control-allow-origin": "https://www.api.energy-charts.info",
+    "strict-transport-security": "max-age=16000000; includeSubDomains; preload;"
+  },
+  "fetchedAt": "2026-11-06T07:58:05.069Z"
+}

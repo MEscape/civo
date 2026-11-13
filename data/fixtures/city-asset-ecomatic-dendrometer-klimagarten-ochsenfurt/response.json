@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Ecomatic Dendrometer Klimagarten-Ochsenfurt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/ecomatic-dendrometer-klimagarten-ochsenfurt/",
+  "license": null,
+  "dateCreated": "2025-06-26T13:07:32.740000+00:00",
+  "dateModified": "2025-06-26T13:07:32+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/ecomatic-dendrometer-klimagarten-ochsenfurt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/ecomatic-dendrometer-klimagarten-ochsenfurt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/ecomatic-dendrometer-klimagarten-ochsenfurt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "@type": "Dataset",
+  "name": "Satellitenbeobachtung Rathausplatz",
+  "url": "https://opendata.wuerzburg.de/explore/assets/satellitenbeobachtung-rathausplatz/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-09-18T06:08:33.766000+00:00",
+  "dateModified": "2023-09-18T06:08:33+00:00",
+  "keywords": [
+    "satelliten",
+    "oberfläche",
+    "Temperatur",
+    "landoberflächentemperatur",
+    "beobachtung",
+    "klima",
+    "erwärmung",
+    "rathausplatz",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/satellitenbeobachtung-rathausplatz/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/satellitenbeobachtung-rathausplatz/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/satellitenbeobachtung-rathausplatz/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/satellitenbeobachtung-rathausplatz/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

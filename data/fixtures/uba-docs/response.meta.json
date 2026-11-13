@@ -1,0 +1,51 @@
+{
+  "id": "uba-docs",
+  "name": "uba-docs",
+  "publisher": "Umweltbundesamt",
+  "url": "https://www.umweltbundesamt.de/daten/luft/luftdaten/doc",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:10.066Z",
+  "httpStatus": 404,
+  "contentType": "text/html; charset=UTF-8",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "HTTP 404",
+  "robots": "https://www.umweltbundesamt.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:37:10 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "content-length": "104247",
+    "connection": "keep-alive",
+    "content-language": "de",
+    "etag": "W/\"1793947488\"",
+    "expires": "Sun, 19 Nov 1978 05:00:00 GMT",
+    "last-modified": "Fri, 06 Nov 2026 06:44:48 GMT",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "vary": "Accept-Encoding, Cookie",
+    "x-content-type-options": "nosniff",
+    "x-drupal-cache": "MISS",
+    "x-drupal-dynamic-cache": "HIT",
+    "x-frame-options": "SAMEORIGIN",
+    "x-generator": "Drupal 10 (https://www.drupal.org)",
+    "x-xss-protection": "1; mode=block",
+    "x-cache-host": "www.umweltbundesamt.de",
+    "x-varnish": "763717710 763621669",
+    "age": "3141",
+    "cache-control": "public, max-age=3600",
+    "x-rl": "root"
+  },
+  "bytes": 104247,
+  "sha256": "e2359ccab1de7aac72d5db26f4c8d5f79278866328f465b481249224fe3afb47"
+}

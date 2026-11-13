@@ -1,0 +1,40 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Deutsche mit Migrationshintergrund Staatsangehoerigkeit",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_deutsche_mit_migrationshintergrund_staatsangehoerigkeit_2019/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2020-03-17T08:04:10.710000+00:00",
+  "dateModified": "2026-03-26T10:12:45.401000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Hauptwohnsitz",
+    "Migrationshintergrund",
+    "Deutsche",
+    "Kontinente",
+    "Ländergruppen",
+    "Stadtbezirk",
+    "Bezugsland",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_deutsche_mit_migrationshintergrund_staatsangehoerigkeit_2019/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_deutsche_mit_migrationshintergrund_staatsangehoerigkeit_2019/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_deutsche_mit_migrationshintergrund_staatsangehoerigkeit_2019/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

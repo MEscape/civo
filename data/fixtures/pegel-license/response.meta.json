@@ -1,0 +1,44 @@
+{
+  "id": "pegel-license",
+  "name": "pegel-license",
+  "publisher": "Wasserstraßen- und Schifffahrtsverwaltung des Bundes",
+  "url": "https://pegelonline.wsv.de/gast/nutzungsbedingungen",
+  "entityShapes": [
+    "Document"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:58:00.943Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=UTF-8",
+  "sample": "data/fixtures/pegel-license/response.html",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://pegelonline.wsv.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:58:00 GMT",
+    "server": "Apache",
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET, OPTIONS, HEAD, PUT, POST",
+    "content-type": "text/html;charset=UTF-8",
+    "vary": "Accept-Encoding",
+    "cache-control": "max-age=0, private, no-cache, no-store, must-revalidate, proxy-revalidate, no-transform",
+    "x-xss-protection": "1; mode=block",
+    "x-content-type-options": "nosniff",
+    "content-security-policy": "object-src 'none'; img-src 'self' https://pegelonline.wsv.de/ https://via.bund.de/ https://www.wettergefahren.de/DWD/wetter/radar/Webradar_Deutschland.jpg https://www.bafg.de/php/deutsches-eck.jpg; script-src 'self' 'unsafe-eval' https://pegelonline.wsv.de/; worker-src 'self' data: blob:; frame-ancestors 'self' https://pegelonline.wsv.de/",
+    "x-content-security-policy": "object-src 'none'; img-src 'self' https://pegelonline.wsv.de/ https://via.bund.de/ https://www.wettergefahren.de/DWD/wetter/radar/Webradar_Deutschland.jpg https://www.bafg.de/php/deutsches-eck.jpg; script-src 'self' 'unsafe-eval' https://pegelonline.wsv.de/; worker-src 'self' data: blob:; frame-ancestors 'self' https://pegelonline.wsv.de/",
+    "x-frame-options": "SAMEORIGIN",
+    "referrer-policy": "origin-when-cross-origin",
+    "transfer-encoding": "chunked",
+    "strict-transport-security": "max-age=31536000; includeSubDomains"
+  },
+  "bytes": 16797,
+  "sha256": "d5e9194b6fb981df5eba1032c3d76d068a04123d05242a9549cb7b09e0013981"
+}

@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Wetterstation Rennweg update",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wetterstation-rennweg-update/",
+  "license": null,
+  "dateCreated": "2024-11-13T13:30:32.949000+00:00",
+  "dateModified": "2024-11-13T13:30:32+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-rennweg-update/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-rennweg-update/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-rennweg-update/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie A _ Allgemeines - Kontakt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-a-allgemeines-kontakt/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:41:44.759000+00:00",
+  "dateModified": "2025-11-12T13:41:44+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-kontakt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-kontakt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-kontakt/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-kontakt/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Heldenhelfer Statistiken",
+  "url": "https://opendata.wuerzburg.de/explore/assets/heldenhelfer-statistiken/",
+  "license": null,
+  "dateCreated": "2026-08-03T09:30:38.298000+00:00",
+  "dateModified": "2026-08-03T09:30:38+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heldenhelfer-statistiken/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heldenhelfer-statistiken/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heldenhelfer-statistiken/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

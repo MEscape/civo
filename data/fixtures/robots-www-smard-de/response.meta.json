@@ -1,0 +1,18 @@
+{
+  "url": "https://www.smard.de/robots.txt",
+  "status": 404,
+  "headers": {
+    "cache-control": "max-age=60",
+    "content-language": "de",
+    "content-length": "5748",
+    "content-security-policy-report-only": "default-src 'self'; connect-src 'self' *.engagement.coremedia.cloud *.byside.com wss://*.engagement.coremedia.cloud wss://*.byside.com; script-src 'self' *.engagement.coremedia.cloud 'unsafe-inline'; style-src 'self' *.engagement.coremedia.cloud 'unsafe-inline'; img-src 'self' *.engagement.coremedia.cloud data:;",
+    "content-type": "text/html;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 07:37:35 GMT",
+    "vary": "Access-Control-Request-Headers",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "x-xss-protection": "0",
+    "strict-transport-security": "max-age=31536000; includeSubDomains"
+  },
+  "fetchedAt": "2026-11-06T07:37:35.833Z"
+}

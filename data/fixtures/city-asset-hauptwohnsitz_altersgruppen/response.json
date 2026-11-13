@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Hauptwohnsitz Altersgruppen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/hauptwohnsitz_altersgruppen/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T07:59:34.306000+00:00",
+  "dateModified": "2026-03-26T09:18:50.204000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Gesamtstadt",
+    "Hauptwohnsitz",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_altersgruppen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_altersgruppen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/hauptwohnsitz_altersgruppen/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "@type": "Dataset",
+  "name": "Sozialmonitoring - Drogenberatung",
+  "url": "https://opendata.wuerzburg.de/explore/assets/sozialmonitoring-schwerbehinderung/",
+  "license": null,
+  "dateCreated": "2024-05-24T12:22:02.796000+00:00",
+  "dateModified": "2025-06-06T15:50:36+00:00",
+  "keywords": [
+    "soziales",
+    "drogen",
+    "beratung",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-schwerbehinderung/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-schwerbehinderung/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-schwerbehinderung/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

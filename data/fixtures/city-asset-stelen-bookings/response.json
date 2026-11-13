@@ -1,0 +1,30 @@
+{
+  "@type": "Dataset",
+  "name": "Bookings Stelen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stelen-bookings/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-17T12:56:09.534000+00:00",
+  "dateModified": "2026-11-06T01:02:01.596000+00:00",
+  "keywords": [
+    "GOVE",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stelen-bookings/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stelen-bookings/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stelen-bookings/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

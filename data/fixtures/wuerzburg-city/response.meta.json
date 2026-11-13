@@ -1,0 +1,47 @@
+{
+  "id": "wuerzburg-city",
+  "name": "wuerzburg-city",
+  "publisher": "Stadt Würzburg",
+  "url": "https://www.wuerzburg.de/",
+  "entityShapes": [
+    "Service"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:48.180Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=UTF-8",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.wuerzburg.de/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:48 GMT",
+    "server": "Apache",
+    "expires": "Fri, 06 Nov 2026 07:37:48 GMT",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "cache-control": "no-cache, must-revalidate",
+    "pragma": "no-cache",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "strict-transport-security": "max-age=31536000",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "last-modified": "Fri, 06 Nov 2026 07:37:48 GMT",
+    "vary": "Accept-Encoding",
+    "access-control-allow-origin": "*",
+    "access-control-allow-headers": "origin, x-requested-with, content-type",
+    "access-control-allow-methods": "PUT, GET, POST, DELETE, OPTIONS",
+    "transfer-encoding": "chunked",
+    "content-type": "text/html;charset=UTF-8"
+  },
+  "bytes": 133645,
+  "sha256": "22e7cb67490e3e9f2eb0b3b1df50057c2c2aa7987966254abb77ff2283ef0f8a"
+}

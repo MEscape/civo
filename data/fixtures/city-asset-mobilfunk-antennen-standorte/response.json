@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Mobilfunk Antennen Standorte",
+  "url": "https://opendata.wuerzburg.de/explore/assets/mobilfunk-antennen-standorte/",
+  "license": null,
+  "dateCreated": "2020-05-13T09:20:30.123000+00:00",
+  "dateModified": "2024-11-14T14:24:33.274000+00:00",
+  "keywords": [
+    "mobilfunk",
+    "REGI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mobilfunk-antennen-standorte/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mobilfunk-antennen-standorte/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mobilfunk-antennen-standorte/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/mobilfunk-antennen-standorte/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

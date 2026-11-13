@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "wiz_bildung",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wiz_bildung/",
+  "license": null,
+  "dateCreated": "2025-10-31T08:24:16.413000+00:00",
+  "dateModified": "2025-10-31T08:24:16+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_bildung/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_bildung/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wiz_bildung/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2020-10-06T11:28:19.665000+00:00",
+  "dateModified": "2025-10-05T08:47:34.280000+00:00",
+  "keywords": [
+    "Stadtbezirk",
+    "GOVE",
+    "REGI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

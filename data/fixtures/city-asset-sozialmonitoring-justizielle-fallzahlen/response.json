@@ -1,0 +1,35 @@
+{
+  "@type": "Dataset",
+  "name": "Sozialmonitoring - Inklusion",
+  "url": "https://opendata.wuerzburg.de/explore/assets/sozialmonitoring-justizielle-fallzahlen/",
+  "license": null,
+  "dateCreated": "2024-05-24T12:22:03.076000+00:00",
+  "dateModified": "2025-06-06T15:50:36+00:00",
+  "keywords": [
+    "soziales",
+    "mobilitaet",
+    "barrierefrei",
+    "haltestellen",
+    "behinderung",
+    "SOCI",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-justizielle-fallzahlen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-justizielle-fallzahlen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-justizielle-fallzahlen/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

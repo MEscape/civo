@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:esri_wms="http://www.esri.com/wms" version="1.3.0">
+	<Service>
+		<Name>WMS</Name>
+		<Title><![CDATA[Überschwemmungsgebiete und Hochwassergefahren]]></Title>
+		<Abstract><![CDATA[Die Hochwassergefahrenflächen zeigen, welche Flächen bei Hochwasserereignissen unterschiedlicher Eintrittswahrscheinlichkeit betroffen sind. Dadurch kann verglichen werden, welche Flächen jeweils bei einem häufigen (HQhäufig), 100-jährlichen (HQ100) und extremen Hochwasser (HQextrem) unter Wasser stehen. Die Überschwemmungsgebiete werden auf der Grundlage der Hochwassergefahrenflächen für ein HQ100 durch amtliche Bekanntmachung vorläufig gesichert und anschließend in einem formellen Verfahren per Rechtsverordnung festgesetzt (§ 76 Wasserhaushaltsgesetz). In Überschwemmungsgebieten gelten Nutzungseinschränkungen.]]></Abstract>
+		<KeywordList>
+			<Keyword><![CDATA[Bayern]]></Keyword>
+			<Keyword><![CDATA[ Hochwasser]]></Keyword>
+			<Keyword><![CDATA[ Überschwemmungsgebiet]]></Keyword>
+			<Keyword><![CDATA[  festgesetztes Überschwemmungsgebiet]]></Keyword>
+			<Keyword><![CDATA[ vorläufig gesichertes Überschwemmungsgebiet]]></Keyword>
+			<Keyword><![CDATA[ Hochwassergefahren]]></Keyword>
+			<Keyword><![CDATA[ Hochwassergefahrenflächen]]></Keyword>
+			<Keyword><![CDATA[ Brückenstatus]]></Keyword>
+			<Keyword><![CDATA[ Betrachtungsgrenzen]]></Keyword>
+			<Keyword><![CDATA[ geschützte Gebiete]]></Keyword>
+			<Keyword><![CDATA[ Berechnungsgrenzen]]></Keyword>
+		</KeywordList>
+		<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?"/>
+		<ContactInformation>
+			<ContactPersonPrimary>
+				<ContactPerson/>
+				<ContactOrganization><![CDATA[Bayerisches Landesamt für Umwelt]]></ContactOrganization>
+			</ContactPersonPrimary>
+			<ContactPosition><![CDATA[Datenstelle]]></ContactPosition>
+			<ContactAddress>
+				<AddressType><![CDATA[postal]]></AddressType>
+				<Address><![CDATA[Bürgermeister-Ulrich-Straße 160]]></Address>
+				<City><![CDATA[Augsburg]]></City>
+				<StateOrProvince><![CDATA[DE-BY]]></StateOrProvince>
+				<PostCode><![CDATA[86179]]></PostCode>
+				<Country><![CDATA[DE]]></Country>
+			</ContactAddress>
+			<ContactVoiceTelephone><![CDATA[+49-821-9071-0]]></ContactVoiceTelephone>
+			<ContactFacsimileTelephone/>
+			<ContactElectronicMailAddress><![CDATA[datenstelle@lfu.bayern.de]]></ContactElectronicMailAddress>
+		</ContactInformation>
+		<Fees><![CDATA[Der Datensatz/Dienst steht unter der Lizenz: Creative Commons Namensnennung 4.0 International (CC BY 4.0); Datenquelle: Bayerisches Landesamt für Umwelt, www.lfu.bayern.de]]></Fees>
+		<AccessConstraints><![CDATA[Es gelten keine Zugriffsbeschränkungen.]]></AccessConstraints>
+		<MaxWidth>4096</MaxWidth>
+		<MaxHeight>4096</MaxHeight>
+	</Service>
+	<Capability>
+		<Request>
+			<GetCapabilities>
+				<Format>application/vnd.ogc.wms_xml</Format>
+				<Format>text/xml</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</GetCapabilities>
+			<GetMap>
+				<Format>image/bmp</Format>
+				<Format>image/jpeg</Format>
+				<Format>image/tiff</Format>
+				<Format>image/png</Format>
+				<Format>image/png8</Format>
+				<Format>image/png24</Format>
+				<Format>image/png32</Format>
+				<Format>image/gif</Format>
+				<Format>image/svg+xml</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</GetMap>
+			<GetFeatureInfo>
+				<Format>application/vnd.esri.wms_raw_xml</Format>
+				<Format>application/vnd.esri.wms_featureinfo_xml</Format>
+				<Format>application/vnd.ogc.wms_xml</Format>
+				<Format>application/geojson</Format>
+				<Format>text/xml</Format>
+				<Format>text/html</Format>
+				<Format>text/plain</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</GetFeatureInfo>
+			<esri_wms:GetStyles>
+				<Format>application/vnd.ogc.sld+xml</Format>
+				<DCPType>
+					<HTTP>
+						<Get>
+							<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de/gdi/wms/wasser/ueberschwemmungsgebiete?"/>
+						</Get>
+					</HTTP>
+				</DCPType>
+			</esri_wms:GetStyles>
+		</Request>
+		<Exception>
+			<Format>application/vnd.ogc.se_xml</Format>
+			<Format>application/vnd.ogc.se_inimage</Format>
+			<Format>application/vnd.ogc.se_blank</Format>
+			<Format>text/xml</Format>
+			<Format>XML</Format>
+		</Exception>
+		<Layer>
+			<Title><![CDATA[Überschwemmungsgebiete und Hochwassergefahren]]></Title>
+			<Abstract><![CDATA[Die Hochwassergefahrenflächen zeigen, welche Flächen bei Hochwasserereignissen unterschiedlicher Eintrittswahrscheinlichkeit betroffen sind. Dadurch kann verglichen werden, welche Flächen jeweils bei einem häufigen (HQhäufig), 100-jährlichen (HQ100) und extremen Hochwasser (HQextrem) unter Wasser stehen. Die Überschwemmungsgebiete werden auf der Grundlage der Hochwassergefahrenflächen für ein HQ100 durch amtliche Bekanntmachung vorläufig gesichert und anschließend in einem formellen Verfahren per Rechtsverordnung festgesetzt (§ 76 Wasserhaushaltsgesetz). In Überschwemmungsgebieten gelten Nutzungseinschränkungen.]]></Abstract>
+			<CRS>CRS:84</CRS>
+			<CRS>EPSG:4326</CRS>
+			<CRS>EPSG:4258</CRS>
+			<CRS>EPSG:31467</CRS>
+			<CRS>EPSG:31468</CRS>
+			<CRS>EPSG:25832</CRS>
+			<CRS>EPSG:25833</CRS>
+			<CRS>EPSG:3857</CRS>
+			<CRS>EPSG:31258</CRS>
+			<EX_GeographicBoundingBox>
+				<westBoundLongitude>8.205988</westBoundLongitude>
+				<eastBoundLongitude>14.641022</eastBoundLongitude>
+				<southBoundLatitude>46.781936</southBoundLatitude>
+				<northBoundLatitude>51.030572</northBoundLatitude>
+			</EX_GeographicBoundingBox>
+			<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+			<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+			<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+			<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+			<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+			<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+			<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+			<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+			<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+			<Layer queryable="1">
+				<Name>flutpolder</Name>
+				<Title><![CDATA[Vorläufig gesicherte Gebiete zur HW-Entlastung/-Rückhaltung]]></Title>
+				<Abstract><![CDATA[Vorläufig gesicherte zur Hochwasserentlastung und -rückhaltung beanspruchte Gebiete, sind Gebiete die für den Bau von Flutpoldern vorgesehen sind. Flutpolder sind spezielle von Deichen umgebene Rückhalteräume mit geringen Schadenpotenzialen. In einen Flutpolder wird bei sehr großen Hochwasserereignissen gezielt Wasser eingeleitet, dort zurückgehalten und nach Ablaufen des Hochwassers wieder abgegeben. So wird die Spitze des Hochwasserabflusses unterhalb des Flutpolders reduziert. Damit die Rückhalteflächen bei Bedarf geflutet werden können, müssen sie nahe am Fluss liegen. Häufig handelt es sich dabei um ehemalige oder noch bestehende Überschwemmungsgebiete, die früher auch schon bei kleinen Hochwasserereignissen überschwemmt waren.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/b5362a28-63cf-428e-8420-96d04daf7ee2</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=ff23c06c-2c02-4cee-8b42-fc74d4b6e7eb"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[flutpolder]]></Title>
+					<LegendURL width="510" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/flutpolder.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708704.412202</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>hwgg_hq100</Name>
+				<Title><![CDATA[Geschützte Gebiete HQ100]]></Title>
+				<Abstract><![CDATA[Geschützte Gebiete für HQ100 sind Bereiche, die hinter Hochwasserschutzeinrichtungen (z. B. Deichen) liegen. Die Schutzeinrichtungen sind hier auf ein 100-jährliches Hochwasser (HQ100) ausgerichtet. Die dahinter liegenden geschützten Gebiete können in seltenen Fällen auch bei einem HQ100 überflutet werden – etwa wenn ein Deich bricht, weil er dem Wasserdruck nicht mehr Stand hält oder wenn sich bei einem lang anhaltenden Hochwasser der Grundwasserspiegel hinter dem Deich erhöht. Die geschützten Gebiete sollen auf dieses Risiko hinweisen. Es ist zu beachten, dass sich in der Realität, abhängig davon an welcher Stelle eine Schutzeinrichtung versagt (z. B. ein Deich bricht), auch Wassertiefen einstellen können, die von der Darstellung abweichen.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/2cc1efe6-ee33-4bb5-b9b0-f5edd4387e3f</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=4c0976bf-9b57-4414-90a1-f983ca411d1f"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[hwgg_hq100]]></Title>
+					<LegendURL width="222" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/hwgg_hq100.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708705.357143</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>hwgf_hqextrem</Name>
+				<Title><![CDATA[Hochwassergefahrenflächen HQextrem]]></Title>
+				<Abstract><![CDATA[Die Hochwassergefahrenflächen HQextrem zeigen, welche Gebiete bei einem Extremhochwasser (seltenes Hochwasser) betroffen sind.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/f8a6c4fd-62cb-4d94-a588-44201b7fbb61</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=5c8064fc-a669-402d-9302-b73d9d79adc4"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[hwgf_hqextrem]]></Title>
+					<LegendURL width="228" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/hwgf_hqextrem.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708705.357143</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>hwgf_hq100</Name>
+				<Title><![CDATA[Hochwassergefahrenflächen HQ100]]></Title>
+				<Abstract><![CDATA[Die Hochwassergefahrenflächen HQ100 zeigen, welche Gebiete bei einem 100-jährlichen Hochwasser (mittleres Hochwasser) betroffen sind.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/e6bc2a32-41c2-4955-94d8-aee193aac362</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=5ce61f79-290c-465e-8778-3a991be3ef71"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[hwgf_hq100]]></Title>
+					<LegendURL width="210" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/hwgf_hq100.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708705.357143</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>hwgf_hqhaeufig</Name>
+				<Title><![CDATA[Hochwassergefahrenflächen HQhäufig]]></Title>
+				<Abstract><![CDATA[Die Hochwassergefahrenflächen HQhäufig zeigen, welche Gebiete bei einem häufigen Hochwasser betroffen sind.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/b1bed258-2a92-4c2f-97a1-5f8271088c8a</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=4c1845f1-88e8-4157-88b4-187faadcd809"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[hwgf_hqhaeufig]]></Title>
+					<LegendURL width="228" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/hwgf_hqhaeufig.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708705.357143</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>berechnungsgrenze</Name>
+				<Title><![CDATA[Berechnungsgrenzen]]></Title>
+				<Abstract><![CDATA[Eine Berechnungsgrenze markiert den Bereich, ab dem die Berechnung der Hochwassergefahrenflächen für das dargestellte Gewässer endet, weil eine weitere Berechnung fachlich nicht mehr sinnvoll ist. Dies geschieht hauptsächlich in Bereichen von Mündungen oder wenn ein Gewässer bei Extremhochwasser einen Deich überströmt und sich über mehrere Kilometer hinweg in eine sehr flache Ebene ausbreitet. Außerdem kennzeichnet eine Berechnungsgrenze den Beginn eines Gewässers für das Gefahren- und Risikokarten erstellt wurden. Dass hinter Berechnungsgrenzen keine Gefahrenflächen dargestellt sind, heißt nicht, dass dort keine Hochwassergefahr besteht. Handelt es sich bei dem benachbarten Gewässer um ein Risikogewässer (Gewässer mit besonderem Hochwasserrisiko), dann sind die Hochwassergefahrenflächen in einer eigenen Karte dargestellt. Handelt es sich nicht um ein Risikogewässer, können dennoch Betroffenheiten bestehen, die aber nicht die Signifikanzkriterien bei der Festlegung der Risikogewässer erfüllt haben.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/ae79685a-b937-4204-a847-fc7f8b0e3e74</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=123c4af3-44a2-4ee1-a626-a597cd78a52b"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[berechnungsgrenze]]></Title>
+					<LegendURL width="306" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/berechnungsgrenze.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>47247.023810</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>bruecke_hqextrem</Name>
+				<Title><![CDATA[Brückenstatus für HQextrem]]></Title>
+				<Abstract><![CDATA[Der Brückenstatus gibt Auskunft darüber, ob eine Brücke bei einem Extremhochwasser (HQextrem) jeweils beeinträchtigt und eventuell nicht mehr passierbar ist. Die Darstellung des Brückenstatus erfolgt über fünf Klassen. „Nicht eingestaut“ bedeutet, dass das Wasser ungehindert unter der Brücke durchfließen kann und die Brücke trotz Hochwasser passierbar bleibt. „Eingestaut“ bedeutet, dass das Wasser nicht mehr ungehindert unter der Brücke durchfließen kann und sich aufstaut. Die Brücke ist bei Hochwasser möglicherweise nicht mehr zugänglich bzw. passierbar. „Eingestaut/überströmt“ bedeutet, dass das Wasser nicht mehr ungehindert unter der Brücke durchfließen kann und sich aufstaut. Eine Überströmung des Bauwerkes ist möglich. Somit ist die Brücke möglicherweise nicht mehr zugänglich bzw. passierbar. „Überströmt“ bedeutet, dass die abgebildete Brücke sich bei Hochwasser unterhalb des Wasserspiegels befindet. Die Brücke ist nicht mehr passierbar. „Unbekannt“ bedeutet, dass sich an dieser Stelle eine Brücke befindet aber keine Informationen bezüglich der Situation bei Hochwasser vorliegen.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/e4ee59aa-a23b-43ee-b0de-c10bf43a639e</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=45e8483a-69f6-479f-bd60-60507e604010"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[bruecke_hqextrem]]></Title>
+					<LegendURL width="144" height="90">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/bruecke_hqextrem.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>47247.023810</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>bruecke_hq100</Name>
+				<Title><![CDATA[Brückenstatus für HQ100]]></Title>
+				<Abstract><![CDATA[Der Brückenstatus gibt Auskunft darüber, ob eine Brücke einem 100-jährlichen Hochwasser (HQ100) beeinträchtigt und eventuell nicht mehr passierbar ist. Die Darstellung des Brückenstatus erfolgt über fünf Klassen. „Nicht eingestaut“ bedeutet, dass das Wasser ungehindert unter der Brücke durchfließen kann und die Brücke trotz Hochwasser passierbar bleibt. „Eingestaut“ bedeutet, dass das Wasser nicht mehr ungehindert unter der Brücke durchfließen kann und sich aufstaut. Die Brücke ist bei Hochwasser möglicherweise nicht mehr zugänglich bzw. passierbar. „Eingestaut/überströmt“ bedeutet, dass das Wasser nicht mehr ungehindert unter der Brücke durchfließen kann und sich aufstaut. Eine Überströmung des Bauwerkes ist möglich. Somit ist die Brücke möglicherweise nicht mehr zugänglich bzw. passierbar. „Überströmt“ bedeutet, dass die abgebildete Brücke sich bei Hochwasser unterhalb des Wasserspiegels befindet. Die Brücke ist nicht mehr passierbar. „Unbekannt“ bedeutet, dass sich an dieser Stelle eine Brücke befindet aber keine Informationen bezüglich der Situation bei Hochwasser vorliegen.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/4b90adc2-df38-433e-9a24-6d1a6722b09d</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=ef62b7b4-14cd-41a6-9e0a-ef28e55e7d17"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[bruecke_hq100]]></Title>
+					<LegendURL width="144" height="90">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/bruecke_hq100.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>47247.023810</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>bruecke_hqhaeufig</Name>
+				<Title><![CDATA[Brückenstatus für HQhäufig]]></Title>
+				<Abstract><![CDATA[Der Brückenstatus gibt Auskunft darüber, ob eine Brücke bei einem häufigen Hochwasser beeinträchtigt oder passierbar ist. Die Darstellung des Brückenstatus erfolgt über fünf Klassen. „Nicht eingestaut“ bedeutet, dass das Wasser ungehindert unter der Brücke durchfließen kann und die Brücke trotz Hochwasser passierbar bleibt. „Eingestaut“ bedeutet, dass das Wasser nicht mehr ungehindert unter der Brücke durchfließen kann und sich aufstaut. Die Brücke ist bei Hochwasser möglicherweise nicht mehr zugänglich bzw. passierbar. „Eingestaut/überströmt“ bedeutet, dass das Wasser nicht mehr ungehindert unter der Brücke durchfließen kann und sich aufstaut. Eine Überströmung des Bauwerkes ist möglich. Somit ist die Brücke möglicherweise nicht mehr zugänglich bzw. passierbar. „Überströmt“ bedeutet, dass die abgebildete Brücke sich bei Hochwasser unterhalb des Wasserspiegels befindet. Die Brücke ist nicht mehr passierbar. „Unbekannt“ bedeutet, dass sich an dieser Stelle eine Brücke befindet aber keine Informationen bezüglich der Situation bei Hochwasser vorliegen.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/ee040ea5-2f08-4b8c-9f51-89fadfb889fc</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=6e85ebf7-cff2-46ae-a013-f4a795032806"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[bruecke_hqhaeufig]]></Title>
+					<LegendURL width="144" height="90">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/bruecke_hqhaeufig.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>47247.023810</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>sicherung</Name>
+				<Title><![CDATA[Vorläufig gesicherte Überschwemmungsgebiete]]></Title>
+				<Abstract><![CDATA[Vorläufig gesicherte Überschwemmungsgebiete werden auf Grundlage der Hochwassergefahrenflächen für ein 100-jährliches Hochwasser ermittelt und von der zuständigen Kreisverwaltungsbehörde bekannt gemacht. Ab dem Zeitpunkt der offiziellen Bekanntmachung gelten die im Gesetz enthaltenen Einschränkungen zunächst vorläufig - solange bis dieses Gebiet amtlich festgesetzt wurde. Für den Zeitpunkt zwischen vorläufiger Sicherung und Festsetzung gilt in der Regel eine Frist von fünf Jahren.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/76eaceb6-64a2-47b7-9cd7-bf2066915371</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=fe950609-d9f9-4ab5-b5ad-683dcefff439"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[sicherung]]></Title>
+					<LegendURL width="282" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/sicherung.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708705.357143</MaxScaleDenominator>
+			</Layer>
+			<Layer queryable="1">
+				<Name>festsetzung</Name>
+				<Title><![CDATA[Festgesetzte Überschwemmungsgebiete]]></Title>
+				<Abstract><![CDATA[Amtlich festgesetzte Überschwemmungsgebiete werden auf Grundlage der Hochwassergefahrenflächen für ein 100-jährliches Hochwasser per Rechtsverordnung festgesetzt. Die im Wasserhaushaltsgesetz und in der Überschwemmungsgebietsverordnung enthaltenen Auflagen müssen eingehalten werden.]]></Abstract>
+				<CRS>CRS:84</CRS>
+				<CRS>EPSG:4326</CRS>
+				<CRS>EPSG:4258</CRS>
+				<CRS>EPSG:31467</CRS>
+				<CRS>EPSG:31468</CRS>
+				<CRS>EPSG:25832</CRS>
+				<CRS>EPSG:25833</CRS>
+				<CRS>EPSG:3857</CRS>
+				<CRS>EPSG:31258</CRS>
+				<EX_GeographicBoundingBox>
+					<westBoundLongitude>8.205988</westBoundLongitude>
+					<eastBoundLongitude>14.641022</eastBoundLongitude>
+					<southBoundLatitude>46.781936</southBoundLatitude>
+					<northBoundLatitude>51.030572</northBoundLatitude>
+				</EX_GeographicBoundingBox>
+				<BoundingBox CRS="CRS:84" minx="8.205988" miny="46.781936" maxx="14.641022" maxy="51.030572"/>
+				<BoundingBox CRS="EPSG:4326" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31468" minx="5188394.290900" miny="4233564.044500" maxx="5654906.269000" maxy="4685354.510900"/>
+				<BoundingBox CRS="EPSG:4258" minx="46.781936" miny="8.205988" maxx="51.030572" maxy="14.641022"/>
+				<BoundingBox CRS="EPSG:31467" minx="5182594.361921" miny="3444232.138144" maxx="5666749.436068" maxy="3914269.266045"/>
+				<BoundingBox CRS="EPSG:25832" minx="444247.640297" miny="5181048.300034" maxx="914153.811600" maxy="5665064.522170"/>
+				<BoundingBox CRS="EPSG:25833" minx="4691.604280" miny="5184140.639107" maxx="474811.067318" maxy="5668376.297492"/>
+				<BoundingBox CRS="EPSG:3857" minx="921586.723670" miny="5912963.744606" maxx="1616309.445225" maxy="6623758.514532"/>
+				<BoundingBox CRS="EPSG:31258" minx="88036.817726" miny="191501.650045" maxx="537260.161065" maxy="658139.216069"/>
+				<AuthorityURL name="LfU">
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://www.lfu.bayern.de"/>
+				</AuthorityURL>
+				<Identifier authority="LfU">https://registry.gdi-de.org/id/de.by/9f5ababd-0824-45dd-8f8a-09269e82af35</Identifier>
+				<MetadataURL type="ISO19115:2003">
+					<Format>text/xml</Format>
+					<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoportal.bayern.de/csw/gdi?REQUEST=GetRecordById&amp;VERSION=2.0.2&amp;service=CSW&amp;outputschema=csw:IsoRecord&amp;elementsetname=full&amp;ID=161e092a-158c-4f7e-8dad-dc2cec2cc253"/>
+				</MetadataURL>
+				<Style>
+					<Name>default</Name>
+					<Title><![CDATA[festsetzung]]></Title>
+					<LegendURL width="234" height="18">
+						<Format>image/png</Format>
+						<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.lfu.bayern.de/gdi/legende/wasser/ueberschwemmungsgebiete/festsetzung.png" xlink:type="simple"/>
+					</LegendURL>
+				</Style>
+				<MaxScaleDenominator>708705.357143</MaxScaleDenominator>
+			</Layer>
+		</Layer>
+	</Capability>
+</WMS_Capabilities>

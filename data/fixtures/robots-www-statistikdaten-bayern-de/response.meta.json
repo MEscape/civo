@@ -1,0 +1,17 @@
+{
+  "url": "https://www.statistikdaten.bayern.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 07:37:23 GMT",
+    "server": "CERN httpd",
+    "vary": "User-Agent",
+    "last-modified": "Mon, 12 Jan 2026 16:07:35 GMT",
+    "etag": "\"393-6483312bdaddf\"",
+    "accept-ranges": "bytes",
+    "content-length": "915",
+    "content-type": "text/plain",
+    "strict-transport-security": "max-age=31536000",
+    "connection": "close"
+  },
+  "fetchedAt": "2026-11-06T07:37:24.351Z"
+}

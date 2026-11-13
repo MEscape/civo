@@ -1,0 +1,10 @@
+{
+  "id": "wuerzburg-explore-api",
+  "url": "https://opendata.wuerzburg.de/api/explore/v2.1/swagger.json",
+  "fetchedAt": "2026-11-06T07:33:54.697Z",
+  "status": null,
+  "contentType": null,
+  "verdict": "Not Verified",
+  "error": "fetch failed",
+  "body": null
+}

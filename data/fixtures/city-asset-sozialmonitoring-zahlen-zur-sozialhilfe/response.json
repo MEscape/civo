@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "Sozialmonitoring - Soziale Sicherung",
+  "url": "https://opendata.wuerzburg.de/explore/assets/sozialmonitoring-zahlen-zur-sozialhilfe/",
+  "license": null,
+  "dateCreated": "2024-05-24T12:22:01.579000+00:00",
+  "dateModified": "2025-06-06T15:50:36+00:00",
+  "keywords": [
+    "sozialhilfe",
+    "soziales",
+    "grundsicherung",
+    "wohnungsnotfaelle",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-zahlen-zur-sozialhilfe/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-zahlen-zur-sozialhilfe/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sozialmonitoring-zahlen-zur-sozialhilfe/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

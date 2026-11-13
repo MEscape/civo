@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "heimatforum_besuche",
+  "url": "https://opendata.wuerzburg.de/explore/assets/heimatforum_besuche_test/",
+  "license": null,
+  "dateCreated": "2025-01-14T10:14:35.772000+00:00",
+  "dateModified": "2025-01-14T10:14:35+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heimatforum_besuche_test/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heimatforum_besuche_test/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/heimatforum_besuche_test/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

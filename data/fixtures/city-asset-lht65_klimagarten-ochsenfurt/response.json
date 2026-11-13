@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Oberflächentemperatur Mitmachgarten Ochsenfurt",
+  "url": "https://opendata.wuerzburg.de/explore/assets/lht65_klimagarten-ochsenfurt/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-05-07T10:04:57.085000+00:00",
+  "dateModified": "2025-05-07T10:04:57+00:00",
+  "keywords": [
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/lht65_klimagarten-ochsenfurt/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/lht65_klimagarten-ochsenfurt/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/lht65_klimagarten-ochsenfurt/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

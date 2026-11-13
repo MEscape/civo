@@ -1,0 +1,38 @@
+{
+  "id": "uba-stations-canonical",
+  "name": "uba-stations-canonical",
+  "publisher": "Umweltbundesamt",
+  "url": "https://luftdaten.umweltbundesamt.de/api/air-data/v3/stations/json?use=airquality",
+  "entityShapes": [
+    "Place"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:11:16.098Z",
+  "httpStatus": 500,
+  "contentType": "text/html; charset=UTF-8",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "HTTP 500",
+  "robots": "https://luftdaten.umweltbundesamt.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Mon, 09 Nov 2026 06:11:13 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "cache-control": "no-cache, private",
+    "x-content-type-options": "nosniff",
+    "x-powered-by": "PHP/8.3.36"
+  },
+  "bytes": 67,
+  "sha256": "36f72d74ee2ba6c0d09e4893d4d7a4b8bdc310bd40ba2ae885c08faa7acc4dc2"
+}

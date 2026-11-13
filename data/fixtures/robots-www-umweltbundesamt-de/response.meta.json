@@ -1,0 +1,24 @@
+{
+  "url": "https://www.umweltbundesamt.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:37:09 GMT",
+    "content-type": "text/plain; charset=utf-8",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "etag": "W/\"6a10200a-846\"",
+    "last-modified": "Fri, 22 May 2026 09:21:14 GMT",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block",
+    "x-varnish": "763884411",
+    "age": "0",
+    "accept-ranges": "bytes",
+    "cache-control": "public, max-age=3600",
+    "x-rl": "root"
+  },
+  "fetchedAt": "2026-11-06T07:37:10.064Z"
+}

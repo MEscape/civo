@@ -1,0 +1,12 @@
+{
+  "@type": "Dataset",
+  "name": "mach_mit_zukunftswoche",
+  "url": "https://opendata.wuerzburg.de/explore/assets/mach_mit_zukunftswoche/",
+  "license": null,
+  "dateCreated": "2024-05-13T15:24:43.654000+00:00",
+  "dateModified": "2024-05-13T15:24:43+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": []
+}

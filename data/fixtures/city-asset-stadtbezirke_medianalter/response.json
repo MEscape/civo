@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Stadtbezirke Medianalter",
+  "url": "https://opendata.wuerzburg.de/explore/assets/stadtbezirke_medianalter/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2019-12-18T13:33:08.115000+00:00",
+  "dateModified": "2026-03-26T10:29:16.845000+00:00",
+  "keywords": [
+    "Demografie",
+    "Bevölkerung",
+    "Einwohner",
+    "Würzburg",
+    "Stadtbezirk",
+    "Hauptwohnsitz",
+    "Medianalter",
+    "SOCI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_medianalter/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_medianalter/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/stadtbezirke_medianalter/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

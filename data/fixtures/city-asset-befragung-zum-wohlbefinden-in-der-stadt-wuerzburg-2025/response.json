@@ -1,0 +1,21 @@
+{
+  "@type": "Dataset",
+  "name": "Befragung zum Wohlbefinden in der Stadt Würzburg 2025",
+  "url": "https://opendata.wuerzburg.de/explore/assets/befragung-zum-wohlbefinden-in-der-stadt-wuerzburg-2025/",
+  "license": null,
+  "dateCreated": "2026-04-22T08:37:08.425000+00:00",
+  "dateModified": "2026-04-22T08:37:08+00:00",
+  "keywords": [
+    "Beteiligung",
+    "Gesundheit",
+    "Wohlbefinden",
+    "Lebensqualität",
+    "Befragung",
+    "Bürgerbefragung",
+    "Wohnen",
+    "HEAL",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": []
+}

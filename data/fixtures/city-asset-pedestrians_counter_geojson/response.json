@@ -1,0 +1,43 @@
+{
+  "@type": "Dataset",
+  "name": "Passantenzählung Zählstellen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/pedestrians_counter_geojson/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-01-29T13:24:53.978000+00:00",
+  "dateModified": "2024-11-14T14:28:23.913000+00:00",
+  "keywords": [
+    "passanten",
+    "passantenzählung",
+    "zähler",
+    "fussgaenger",
+    "fußgänger",
+    "Würzburg",
+    "wuerzburg",
+    "sensor",
+    "innenstadt",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/pedestrians_counter_geojson/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/pedestrians_counter_geojson/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/pedestrians_counter_geojson/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/pedestrians_counter_geojson/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

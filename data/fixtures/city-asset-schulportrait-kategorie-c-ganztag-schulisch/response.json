@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie C _ Ganztag - Schulisch",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-c-ganztag-schulisch/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:53:58.156000+00:00",
+  "dateModified": "2025-11-12T13:53:58+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-c-ganztag-schulisch/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-c-ganztag-schulisch/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-c-ganztag-schulisch/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Passantenzählung in der Kaiserstraße",
+  "url": "https://opendata.wuerzburg.de/explore/assets/passantenzaehlung_kaiserstrasse/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-01-26T07:52:20.285000+00:00",
+  "dateModified": "2026-11-06T14:00:25.068000+00:00",
+  "keywords": [
+    "passanten",
+    "zähler",
+    "sensor",
+    "innenstadt",
+    "fussgaenger",
+    "fußgänger",
+    "kaiserstraße",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_kaiserstrasse/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_kaiserstrasse/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/passantenzaehlung_kaiserstrasse/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

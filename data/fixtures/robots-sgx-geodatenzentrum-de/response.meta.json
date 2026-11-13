@@ -1,0 +1,18 @@
+{
+  "url": "https://sgx.geodatenzentrum.de/robots.txt",
+  "status": 200,
+  "headers": {
+    "content-security-policy": "default-src 'self' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de;  script-src 'self' 'unsafe-inline' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de; style-src 'self' 'unsafe-inline' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de;  img-src 'self' data: blob: https:;  font-src 'self' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de;  connect-src 'self' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de *.gdi-de.org;  frame-src 'self';  object-src 'self';  base-uri 'self';  form-action 'self';  frame-ancestors 'self' https://bkg.bund.de *.bkg.bund.de *.geodatenzentrum.de;",
+    "access-control-allow-headers": "X-Requested-With,Origin,Content-Type, Accept",
+    "access-control-allow-methods": "GET, POST",
+    "access-control-allow-origin": "*",
+    "vary": "Origin",
+    "accept-ranges": "bytes",
+    "etag": "W/\"71-1787560960000\"",
+    "last-modified": "Mon, 24 Aug 2026 08:42:40 GMT",
+    "content-type": "text/plain",
+    "content-length": "71",
+    "date": "Fri, 06 Nov 2026 07:37:58 GMT"
+  },
+  "fetchedAt": "2026-11-06T07:37:59.087Z"
+}

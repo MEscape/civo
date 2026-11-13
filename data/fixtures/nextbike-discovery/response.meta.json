@@ -1,0 +1,35 @@
+{
+  "id": "nextbike-discovery",
+  "name": "nextbike-discovery",
+  "publisher": "nextbike",
+  "url": "https://gbfs.nextbike.net/maps/gbfs/v2/nextbike_de/gbfs.json",
+  "entityShapes": [
+    "Place"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:57.226Z",
+  "httpStatus": 404,
+  "contentType": "text/html; charset=iso-8859-1",
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "HTTP 404",
+  "robots": "https://gbfs.nextbike.net/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "nginx",
+    "date": "Fri, 06 Nov 2026 07:37:57 GMT",
+    "content-type": "text/html; charset=iso-8859-1",
+    "content-length": "236",
+    "connection": "keep-alive",
+    "access-control-allow-origin": "*"
+  },
+  "bytes": 236,
+  "sha256": "9448f8a1159c9b14e3e1b9d8eab1a6ddf88d26e1f888a34cef430c756e4e6e1e"
+}

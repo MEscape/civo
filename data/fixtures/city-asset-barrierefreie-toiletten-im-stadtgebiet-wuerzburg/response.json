@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "Nette Toiletten im Stadtgebiet Würzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/barrierefreie-toiletten-im-stadtgebiet-wuerzburg/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2024-06-14T12:57:04.812000+00:00",
+  "dateModified": "2024-06-14T12:57:04+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/barrierefreie-toiletten-im-stadtgebiet-wuerzburg/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/barrierefreie-toiletten-im-stadtgebiet-wuerzburg/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/barrierefreie-toiletten-im-stadtgebiet-wuerzburg/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/barrierefreie-toiletten-im-stadtgebiet-wuerzburg/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

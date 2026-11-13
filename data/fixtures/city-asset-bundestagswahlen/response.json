@@ -1,0 +1,30 @@
+{
+  "@type": "Dataset",
+  "name": "Bundestagswahlen - Kommunalstatistik",
+  "url": "https://opendata.wuerzburg.de/explore/assets/bundestagswahlen/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by/4.0",
+  "dateCreated": "2025-09-24T07:32:54.719000+00:00",
+  "dateModified": "2026-11-05T23:01:55.653000+00:00",
+  "keywords": [
+    "Wahlen",
+    "GOVE",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bundestagswahlen/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bundestagswahlen/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/bundestagswahlen/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

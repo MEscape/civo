@@ -1,0 +1,33 @@
+{
+  "@type": "Dataset",
+  "name": "Adressverzeichnis Stadt Wuerzburg",
+  "url": "https://opendata.wuerzburg.de/explore/assets/adressverzeichnis_stadt_wue/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-08-17T13:33:51.683000+00:00",
+  "dateModified": "2023-08-17T13:33:51+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/adressverzeichnis_stadt_wue/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/adressverzeichnis_stadt_wue/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/adressverzeichnis_stadt_wue/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/adressverzeichnis_stadt_wue/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

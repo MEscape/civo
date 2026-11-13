@@ -1,0 +1,13 @@
+{
+  "url": "https://geoservices.bayern.de/robots.txt",
+  "status": 404,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 06:10:50 GMT",
+    "server": "CERN httpd",
+    "content-length": "196",
+    "content-type": "text/html; charset=iso-8859-1",
+    "strict-transport-security": "max-age=31536000",
+    "connection": "close"
+  },
+  "fetchedAt": "2026-11-09T06:10:52.743Z"
+}

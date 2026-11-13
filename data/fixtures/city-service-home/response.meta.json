@@ -1,0 +1,50 @@
+{
+  "id": "city-service-home",
+  "name": "city-service-home",
+  "publisher": "Stadt Würzburg",
+  "url": "https://www.wuerzburg.de/rathaus/buergerbuero/index.html",
+  "entityShapes": [
+    "Service"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T19:18:15.132Z",
+  "httpStatus": 200,
+  "contentType": "text/html;charset=UTF-8",
+  "sample": "data/fixtures/city-service-home/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://www.wuerzburg.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "date": "Mon, 09 Nov 2026 19:18:15 GMT",
+    "server": "Apache",
+    "expires": "Mon, 09 Nov 2026 19:18:15 GMT",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "cache-control": "no-cache, must-revalidate",
+    "pragma": "no-cache",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "strict-transport-security": "max-age=31536000",
+    "upgrade": "h2,h2c",
+    "connection": "Upgrade",
+    "last-modified": "Mon, 09 Nov 2026 19:18:15 GMT",
+    "vary": "Accept-Encoding",
+    "access-control-allow-origin": "*",
+    "access-control-allow-headers": "origin, x-requested-with, content-type",
+    "access-control-allow-methods": "PUT, GET, POST, DELETE, OPTIONS",
+    "transfer-encoding": "chunked",
+    "content-type": "text/html;charset=UTF-8"
+  },
+  "bytes": 133581,
+  "sha256": "f500f3dfb1fca178d8bbf4485ef35db018dbe656acfafd045a4df7b27b4c4843",
+  "projection": "Page title, civic-service links and plain facts (opening-hours lines, closing days, question headings, payment methods, functional @stadt.wuerzburg.de mailboxes); no people, scripts or article text retained",
+  "sampleSha256": "5804a3e1eacee9f6f86ef044dc8818cca3ade047202574d429d65f6594981bf2"
+}

@@ -44,6 +44,14 @@ Module names, stems and entities are kebab-case. `--stem` (default: the singular
 name) names module-level files and symbols; `--entity` (default: the stem) names entity-level ones.
 Add `--client` for a browser-safe `client.ts`.
 
+## Other scripts
+
+| Command                  | What it does                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run ai-rules`       | Consolidates `docs/rules/*.md` into `AI_RULES.md`. The files and their order come from the index in `docs/rules/README.md`.     |
+| `npm run ai-rules:check` | Fails when `AI_RULES.md` is stale or a relative link in a rule does not resolve; part of `npm run check` and a pre-commit hook. |
+| `npm run dead-code`      | Fails on an export nothing uses (`--all` also lists test-only and own-file-only exports).                                       |
+
 ## What you still do by hand
 
 `module` and `usecase` print these steps at the end of every run, because each one needs a
@@ -102,3 +110,7 @@ The tests cannot compile generated code, because that needs your Prisma model an
 After changing a template, verify it once against the real contract: generate a module, apply the
 printed steps, run `npm run db:generate && npm run typecheck && npm run lint`, and remove the
 module again.
+
+## Dead code
+
+`npm run dead-code` is not a generator but lives here with the other repository tooling. It reads the project the way the editor does (`tsconfig.json`, path aliases, re-exports) and lists every export of `src` that nothing references: `dead` (not even a test or its own file) fails the run, `test-only` and `unneeded-export` are listed with `--all`. Entry points the framework or the public API reads by name (`page.tsx`, `route.ts`, a module's `index.ts`, `client.ts` and `server.ts`) are not judged, and an export that something the compiler cannot see needs says so with `/** @keep <reason> */`. The analysis is `scripts/lib/dead-code.ts`; it runs in CI next to lint and as part of `npm run check`.

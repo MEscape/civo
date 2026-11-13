@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Würzburger Klimabaeume - Bodenfeuchte",
+  "url": "https://opendata.wuerzburg.de/explore/assets/sls-klimabaeume/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2022-11-23T09:06:00.120000+00:00",
+  "dateModified": "2026-11-01T17:23:28.956000+00:00",
+  "keywords": [
+    "klima",
+    "bodenfeuchte",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sls-klimabaeume/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sls-klimabaeume/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sls-klimabaeume/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/sls-klimabaeume/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

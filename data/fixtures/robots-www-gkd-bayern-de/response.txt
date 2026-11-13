@@ -1,0 +1,252 @@
+# robots.txt — GKD Bayern (gkd.bayern.de)
+# Stand: April 2026
+#
+# Strategie:
+# - Suchmaschinen + KI-Bots: Zugang erlaubt (öffentlicher Datenauftrag)
+# - Rechenintensive / interne Pfade: Für alle gesperrt
+# - Schadhafte Bots: Komplett ausgeschlossen
+#
+# Jeder Bot nutzt NUR den spezifischsten Block, der auf ihn passt.
+# Ein Bot mit eigenem Block ignoriert "User-agent: *" vollständig.
+# Deshalb haben erlaubte Bots KEINEN eigenen Block — sie fallen auf
+# "User-agent: *" durch und erben dort die Disallow-Regeln.
+
+
+# =====================================================================
+# GLOBALE REGELN
+# Gilt für alle Bots OHNE eigenen Block — also auch Suchmaschinen
+# und KI-Bots. Erlaubt alles außer den unten gesperrten Pfaden.
+# =====================================================================
+
+User-agent: *
+
+# Webservices — serverseitige Generierung (Charts, Exports), nicht indexierbar
+# --- Variante A: Pauschal
+Disallow: /webservices/
+# --- Variante B: Einzeldateien (nur wenn einzelne WS indexierbar sein sollen) ---
+# Disallow: /webservices/graphik.php
+# Disallow: /webservices/minigraphik.php
+
+# Downloadcenter-Aktionen
+Disallow: /de/downloadcenter/enqueue_download
+Disallow: /en/downloadcenter/enqueue_download
+Disallow: /de/downloadcenter/download
+Disallow: /en/downloadcenter/download
+
+# =====================================================================
+# KI-BOTS — KONFIGURIERBAR
+#
+# Jeder Anbieter kann einzeln aktiviert (auskommentiert = erlaubt)
+# oder deaktiviert (einkommentiert = geblockt) werden.
+#
+# Aktuell: ALLE ERLAUBT (fallen auf User-agent: * durch)
+# Zum Blocken: Kommentarzeichen (#) vor User-agent und Disallow entfernen
+# =====================================================================
+
+## --- OpenAI (ChatGPT, GPT-Modelle) ---
+
+## Training-Crawler:
+# User-agent: GPTBot
+# Disallow: /
+
+## KI-Suche (Echtzeit-Zugriff bei Nutzeranfragen):
+# User-agent: OAI-SearchBot
+# Disallow: /
+
+## Nutzer-initiiertes Browsing (ChatGPT "Im Web suchen"):
+# User-agent: ChatGPT-User
+# Disallow: /
+
+## --- Anthropic (Claude) ---
+
+## Training-Crawler:
+# User-agent: ClaudeBot
+# Disallow: /
+
+## Retrieval-Bot (Suche, Zitate):
+# User-agent: anthropic-ai
+# Disallow: /
+
+## Nutzer-initiiertes Browsing:
+# User-agent: Claude-User
+# Disallow: /
+
+## --- Google (Gemini, NotebookLM) ---
+
+## KI-Training (NICHT die Google-Suche — die bleibt immer erlaubt):
+# User-agent: Google-Extended
+# Disallow: /
+
+## NotebookLM:
+# User-agent: Google-NotebookLM
+# Disallow: /
+
+## --- Meta (LLaMA, Facebook AI) ---
+
+## Training-Crawler:
+# User-agent: Meta-ExternalAgent
+# Disallow: /
+
+# User-agent: FacebookBot
+# Disallow: /
+
+## --- Apple (Apple Intelligence, Siri) ---
+
+## KI-Features-Training:
+# User-agent: Applebot-Extended
+# Disallow: /
+
+## --- Amazon (Alexa, Titan) ---
+
+## Training-Crawler:
+# User-agent: Amazonbot
+# Disallow: /
+
+## --- Perplexity ---
+
+## Training + KI-Suche:
+# User-agent: PerplexityBot
+# Disallow: /
+
+## Nutzer-initiierte Suche:
+# User-agent: Perplexity-User
+# Disallow: /
+
+## --- Mistral ---
+
+# User-agent: MistralBot
+# Disallow: /
+
+## --- xAI (Grok) ---
+
+# User-agent: Grok
+# Disallow: /
+
+## --- Cohere ---
+
+## Training-Crawler:
+# User-agent: cohere-ai
+# Disallow: /
+
+# User-agent: cohere-training-data-crawler
+# Disallow: /
+
+## --- DuckDuckGo (AI-Assistent) ---
+
+# User-agent: DuckAssistBot
+# Disallow: /
+
+## --- Common Crawl (offener Trainingsdatensatz, wird von vielen KI-Firmen genutzt) ---
+
+# User-agent: CCBot
+# Disallow: /
+
+## --- Sonstige KI-Bots ---
+
+# User-agent: YouBot
+# Disallow: /
+
+# User-agent: Diffbot
+# Disallow: /
+
+# User-agent: AI2Bot
+# Disallow: /
+
+# User-agent: AI2Bot-Dolma
+# Disallow: /
+
+# User-agent: Timpibot
+# Disallow: /
+
+# User-agent: FirecrawlAgent
+# Disallow: /
+
+# User-agent: Omgilibot
+# Disallow: /
+
+# User-agent: webzio-extended
+# Disallow: /
+
+# User-agent: img2dataset
+# Disallow: /
+
+
+# =====================================================================
+# Blocken von bestimmten Bots
+# =====================================================================
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: TikTokSpider
+Disallow: /
+
+User-agent: Bytedance
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: Sogou
+Disallow: /
+
+User-agent: 360Spider
+Disallow: /
+
+User-agent: YisouSpider
+Disallow: /
+
+
+# =====================================================================
+# Blocken von SEO / MARKETING-CRAWLER (Kommerzielle Analyse-Tools)
+# =====================================================================
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: serpstatbot
+Disallow: /
+
+User-agent: SEOkicks
+Disallow: /
+
+
+# =====================================================================
+# Blocken von SCHADHAFTE / AGGRESSIVE BOTS
+# =====================================================================
+
+User-agent: ReactorNetty
+Disallow: /
+
+User-agent: MegaIndex
+Disallow: /
+
+User-agent: Zoominfobot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: Riddler
+Disallow: /
+
+User-agent: Seekport
+Disallow: /
+
+User-agent: BacklinkCrawler
+Disallow: /

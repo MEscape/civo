@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Wetterstation - Gerbrunn",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wetterstation-gerbrunn/",
+  "license": "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
+  "dateCreated": "2024-07-02T12:41:29.647000+00:00",
+  "dateModified": "2024-07-19T08:56:12+00:00",
+  "keywords": [
+    "Wetter",
+    "Wetterstation",
+    "Temperatur",
+    "Luftdruck",
+    "Wind",
+    "Luftfeuchte",
+    "Niederschlag",
+    "ENVI",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-gerbrunn/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-gerbrunn/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wetterstation-gerbrunn/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "@type": "Dataset",
+  "name": "Fahrradzählung Daten - Lorawan Stationen",
+  "url": "https://opendata.wuerzburg.de/explore/assets/fahrradzaehlung/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2023-09-15T09:49:33.902000+00:00",
+  "dateModified": "2026-11-06T14:00:43.641000+00:00",
+  "keywords": [
+    "fahrrad",
+    "mobilitaet",
+    "TRAN",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung/exports/xlsx",
+      "encodingFormat": "Excel"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/fahrradzaehlung/exports/geojson",
+      "encodingFormat": "GeoJSON"
+    }
+  ]
+}

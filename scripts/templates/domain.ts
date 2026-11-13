@@ -507,6 +507,7 @@ export interface ${P}Repository {
   findById(id: ${P}Id, tenantId: TenantId): AppResultAsync<${P} | null, InfrastructureAppError>;
 
   /** Bounded: never returns more than \`limit\` items (performance.md). */
+  // @truncation none the generated list shows the newest \`limit\` items and does not page; add an isTruncated flag when a screen needs to say more exist
   listByTenant(
     tenantId: TenantId,
     limit: number,

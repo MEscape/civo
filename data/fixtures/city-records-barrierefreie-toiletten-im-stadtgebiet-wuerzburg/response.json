@@ -1,0 +1,53 @@
+{
+  "total_count": 96,
+  "results": [
+    {
+      "id": "Toiletten.1153514",
+      "company": "Hauptfriedhof - Friedhofsverwaltung",
+      "toilettype": "Barrierefreie WC-Anlage",
+      "geometry": {
+        "type": "Feature",
+        "geometry": {
+          "coordinates": [
+            9.945116,
+            49.79614
+          ],
+          "type": "Point"
+        },
+        "properties": {}
+      }
+    },
+    {
+      "id": "Toiletten.1153513",
+      "company": "Klein Nizza (kombiniertes Damen/Herren-Behinderten-WC)",
+      "toilettype": "Barrierefreie WC-Anlage",
+      "geometry": {
+        "type": "Feature",
+        "geometry": {
+          "coordinates": [
+            9.940567,
+            49.79078
+          ],
+          "type": "Point"
+        },
+        "properties": {}
+      }
+    },
+    {
+      "id": "Toiletten.1153502",
+      "company": "Don-Bosco-Berufsschule - Toilette für alle",
+      "toilettype": "Barrierefreie WC-Anlage",
+      "geometry": {
+        "type": "Feature",
+        "geometry": {
+          "coordinates": [
+            9.921005,
+            49.79516
+          ],
+          "type": "Point"
+        },
+        "properties": {}
+      }
+    }
+  ]
+}

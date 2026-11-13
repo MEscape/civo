@@ -1,0 +1,1187 @@
+{
+  "capturedAt": "2026-11-06T21:13:02.979Z",
+  "origin": "http://localhost:3000",
+  "thirdPartyRequests": [],
+  "results": [
+    {
+      "page": "/",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Würzburg. Mitten im Leben. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5952
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Ihr Anliegen. Der nächste Schritt. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 8152
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Gut vorbereitet zum Termin | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3384
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/abfall",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Wann wird Ihre Tonne geleert? | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4596
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5540
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0.0017370080037136034,
+        "lcp": 7452
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0.01782804119903466,
+        "lcp": 5304
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "rathaus-politik",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Rathaus und Stadtleben | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2992
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "kontakt",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3908
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "impressum",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Impressum | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5860
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "datenschutz",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Datenschutz | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 7664
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "barrierefreiheit",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Barrierefreiheit | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3596
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "/",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Würzburg. Mitten im Leben. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5360
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Ihr Anliegen. Der nächste Schritt. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3924
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Gut vorbereitet zum Termin | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2848
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/abfall",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Wann wird Ihre Tonne geleert? | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3880
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 7136
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 6796
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4004
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "rathaus-politik",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Rathaus und Stadtleben | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4848
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "kontakt",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3884
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "impressum",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Impressum | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3004
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "datenschutz",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Datenschutz | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2840
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "barrierefreiheit",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Barrierefreiheit | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2800
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "/",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Würzburg. Mitten im Leben. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3260
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Ihr Anliegen. Der nächste Schritt. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2780
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Gut vorbereitet zum Termin | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2524
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/abfall",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Wann wird Ihre Tonne geleert? | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3360
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4640
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 11228
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 13216
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "rathaus-politik",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Rathaus und Stadtleben | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2856
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "kontakt",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3420
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "impressum",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Impressum | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2976
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "datenschutz",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Datenschutz | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2548
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "barrierefreiheit",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Barrierefreiheit | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2524
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "/",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Würzburg. Mitten im Leben. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3852
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Ihr Anliegen. Der nächste Schritt. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5620
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Gut vorbereitet zum Termin | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3808
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/abfall",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Wann wird Ihre Tonne geleert? | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3808
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5404
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 6160
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4740
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "rathaus-politik",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Rathaus und Stadtleben | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3740
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "kontakt",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2916
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "impressum",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Impressum | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2760
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "datenschutz",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Datenschutz | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2440
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "barrierefreiheit",
+      "viewport": "large-desktop",
+      "status": 200,
+      "title": "Barrierefreiheit | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2584
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "/",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Würzburg. Mitten im Leben. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3156
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Ihr Anliegen. Der nächste Schritt. | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2960
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/termine",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Gut vorbereitet zum Termin | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2772
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "buergerservice/abfall",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Wann wird Ihre Tonne geleert? | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3084
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "mobilitaet",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Gut unterwegs in Würzburg | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 3,
+      "renderedMaps": 3,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 5220
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "umwelt-klima",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Main, Stadtklima und Stadtnatur | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 37460
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "stadt-in-zahlen",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Würzburg verstehen | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 8368
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "rathaus-politik",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Rathaus und Stadtleben | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 4956
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "kontakt",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Bürgerbüro: Kontakt und Anfahrt | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 1,
+      "renderedMaps": 1,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3856
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "page": "impressum",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Impressum | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3240
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "datenschutz",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Datenschutz | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 3272
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "barrierefreiheit",
+      "viewport": "reflow-320",
+      "status": 200,
+      "title": "Barrierefreiheit | Würzburg · Stadt und Service",
+      "h1Count": 1,
+      "mainCount": 1,
+      "horizontalOverflow": false,
+      "unavailableSections": 0,
+      "expectedMaps": 0,
+      "renderedMaps": 0,
+      "developmentPerformance": {
+        "layoutShift": 0,
+        "lcp": 2892
+      },
+      "errors": [],
+      "violations": [],
+      "incomplete": []
+    }
+  ]
+}

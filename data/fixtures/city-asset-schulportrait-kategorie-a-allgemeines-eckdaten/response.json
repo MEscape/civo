@@ -1,0 +1,28 @@
+{
+  "@type": "Dataset",
+  "name": "Schulportrait - Kategorie A _ Allgemeines - Eckdaten",
+  "url": "https://opendata.wuerzburg.de/explore/assets/schulportrait-kategorie-a-allgemeines-eckdaten/",
+  "license": null,
+  "dateCreated": "2025-11-12T13:10:56.784000+00:00",
+  "dateModified": "2025-11-12T13:10:56+00:00",
+  "keywords": [
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-eckdaten/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-eckdaten/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/schulportrait-kategorie-a-allgemeines-eckdaten/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

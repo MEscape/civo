@@ -1,0 +1,26 @@
+{
+  "id": "oparl-sitzung-online",
+  "name": "oparl-sitzung-online",
+  "publisher": "Stadt Würzburg",
+  "url": "https://www.wuerzburg.sitzung-online.de/public/oparl/system",
+  "entityShapes": [
+    "Person/Body"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-09T06:10:45.595Z",
+  "httpStatus": null,
+  "contentType": null,
+  "sample": null,
+  "verdict": "Not Verified",
+  "reason": "robots.txt disallows this path; request not sent",
+  "robots": "https://www.wuerzburg.sitzung-online.de/robots.txt",
+  "robotsPolicy": "Respect generic-agent rules",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified"
+}

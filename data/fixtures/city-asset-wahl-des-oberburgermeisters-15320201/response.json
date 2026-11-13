@@ -1,0 +1,29 @@
+{
+  "@type": "Dataset",
+  "name": "Oberbürgermeisterwahl 2020",
+  "url": "https://opendata.wuerzburg.de/explore/assets/wahl-des-oberburgermeisters-15320201/",
+  "license": "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+  "dateCreated": "2020-05-11T12:46:42.394000+00:00",
+  "dateModified": "2020-05-11T12:41:32+00:00",
+  "keywords": [
+    "GOVE",
+    "Data"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wahl-des-oberburgermeisters-15320201/exports/csv",
+      "encodingFormat": "CSV"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wahl-des-oberburgermeisters-15320201/exports/json",
+      "encodingFormat": "JSON"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "https://opendata.wuerzburg.de/api/explore/v2.1/catalog/datasets/wahl-des-oberburgermeisters-15320201/exports/xlsx",
+      "encodingFormat": "Excel"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "europa-catalog",
+  "name": "europa-catalog",
+  "publisher": "Publications Office of the European Union",
+  "url": "https://data.europa.eu/api/hub/search/search?query=W%C3%BCrzburg&limit=3",
+  "entityShapes": [
+    "Dataset"
+  ],
+  "auth": "Not Verified",
+  "license": null,
+  "attribution": null,
+  "fetchedAt": "2026-11-06T07:37:31.739Z",
+  "httpStatus": 200,
+  "contentType": "application/json",
+  "sample": "data/fixtures/europa-catalog/response.json",
+  "verdict": "Not Verified",
+  "reason": "Fetched; reuse license, geography, schema and field mapping require review before connection",
+  "robots": "https://data.europa.eu/robots.txt",
+  "grouping": "Not Verified",
+  "time": {
+    "granularity": "Not Verified",
+    "historyDepth": "Not Verified"
+  },
+  "reliability": "Single probe; sustained availability Not Verified",
+  "headers": {
+    "server": "CloudFront",
+    "content-type": "application/json",
+    "content-length": "28413",
+    "connection": "keep-alive",
+    "access-control-allow-origin": "*",
+    "date": "Fri, 06 Nov 2026 07:37:32 GMT",
+    "via": "1.1 c38563a65534cacc21516bd5450b0818.cloudfront.net (CloudFront)",
+    "strict-transport-security": "max-age=63072000; includeSubdomains; preload",
+    "x-content-type-options": "nosniff",
+    "x-xss-protection": "1; mode=block",
+    "x-cache": "Miss from cloudfront",
+    "x-amz-cf-pop": "AMS1-P2",
+    "x-amz-cf-id": "NE8P-s8xel9N3bCOsNEmlutkj9ERtp-DfzZyNZCL7mg7ARaX0wKTXQ=="
+  },
+  "bytes": 28413,
+  "sha256": "198f8d3d7682babf1a782dbbdd2bc7e23a5e6077d473d80490c7617aa13d9c80"
+}

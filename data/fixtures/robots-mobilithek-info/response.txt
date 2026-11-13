@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+    <meta content="origin" name="referrer">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" href="/favicon.ico">
+    <title>Mobilithek.info - Mobilitätsdaten Deutschland</title>
+    <meta name="description" content="Die Mobilithek bietet Zugang zu offenen Mobilitätsdaten (open data) und ist nationaler Zugangspunkt und Marktplatz für Mobilitätsdaten. ">
+    <script type="module" crossorigin src="/assets/index-DbBkSjqS.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BZ1Z8fij.css">
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but Mobilithek.info - Mobilitätsdaten Deutschland doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+  </body>
+</html>

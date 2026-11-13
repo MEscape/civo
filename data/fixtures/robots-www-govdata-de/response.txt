@@ -1,0 +1,23 @@
+# Managed by Ansible (templates/apache/robots/robots.txt.j2)
+User-agent: Googlebot
+Disallow: /*?*ids=
+Crawl-delay: 10
+
+User-agent: bingbot
+Disallow: /*?*ids=
+Crawl-delay: 10
+
+User-agent: YandexBot
+Disallow: /*?*ids=
+Crawl-delay: 10
+
+User-agent: DuckDuckBot
+Disallow: /*?*ids=
+Crawl-delay: 10
+
+User-agent: Applebot
+Disallow: /*?*ids=
+Crawl-delay: 10
+
+User-agent: *
+Disallow: /
