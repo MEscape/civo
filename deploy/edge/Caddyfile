@@ -49,7 +49,7 @@ https://*.{$PREVIEW_SUFFIX} {
 	import errors
 	header X-Robots-Tag "noindex, nofollow"
 
-	@preview header_regexp pr Host ^pr-([1-9][0-9]{0,6})\.
+	@preview header_regexp pr Host ^(?:[a-z0-9-]+-)?pr-([1-9][0-9]{0,6})\.
 	handle @preview {
 		import app civo-pr-{re.pr.1}
 	}

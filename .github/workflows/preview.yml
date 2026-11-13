@@ -43,7 +43,7 @@ jobs:
       packages: write
     with:
       ref: ${{ github.event.pull_request.head.sha }}
-      app-url: https://pr-${{ github.event.pull_request.number }}.${{ vars.PREVIEW_DOMAIN }}
+      app-url: https://${{ vars.PREVIEW_HOST_PREFIX || 'pr-' }}${{ github.event.pull_request.number }}.${{ vars.PREVIEW_DOMAIN }}
 
   # ----------------------------------------------------------------------------
   # 2. Neon branch, migrations, container, smoke test, comment
@@ -56,7 +56,7 @@ jobs:
 
     environment:
       name: preview
-      url: https://pr-${{ github.event.pull_request.number }}.${{ vars.PREVIEW_DOMAIN }}
+      url: https://${{ vars.PREVIEW_HOST_PREFIX || 'pr-' }}${{ github.event.pull_request.number }}.${{ vars.PREVIEW_DOMAIN }}
 
     permissions:
       contents: read
@@ -67,7 +67,7 @@ jobs:
       PR: ${{ github.event.pull_request.number }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       IMAGE: ${{ needs.image.outputs.image }}
-      PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.${{ vars.PREVIEW_DOMAIN }}
+      PREVIEW_URL: https://${{ vars.PREVIEW_HOST_PREFIX || 'pr-' }}${{ github.event.pull_request.number }}.${{ vars.PREVIEW_DOMAIN }}
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
       NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
       NEON_PARENT_BRANCH: ${{ vars.NEON_PREVIEW_PARENT_BRANCH || 'preview-base' }}

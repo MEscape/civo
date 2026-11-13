@@ -279,7 +279,7 @@ cmd_deploy_preview() {
   valid_sha "$sha" || die 'invalid sha'
   valid_image "$image" || die 'invalid image'
   [[ -f $ENV_DIR/preview.env ]] || die "$ENV_DIR/preview.env is missing"
-  local name="pr-$pr" dir="$STATE/previews/pr-$pr" tmp
+  local name="pr-$pr" host="${PREVIEW_HOST_PREFIX}${pr}.${PREVIEW_SUFFIX}" dir="$STATE/previews/pr-$pr" tmp
   read_credentials
   tmp=$(mktemp)
   read_preview_env "$tmp"
@@ -301,7 +301,7 @@ cmd_deploy_preview() {
   if ! { pull_image "$image" &&
     deploy_instance "$name" "$sha" "$image" "$PREVIEW_MEMORY" "$PREVIEW_CPUS" "$PREVIEW_HEAP_MB" \
       --env-file "$ENV_DIR/preview.env" --env-file "$dir/db.env" \
-      -e "NEXT_PUBLIC_APP_URL=https://$name.$PREVIEW_SUFFIX"; }; then
+      -e "NEXT_PUBLIC_APP_URL=https://$host"; }; then
     # A preview that never came up must not keep one of the MAX_PREVIEWS slots.
     if ((!existed)); then
       remove_instance "$name"
@@ -312,7 +312,7 @@ cmd_deploy_preview() {
   printf '%s\n' "$sha" >"$dir/sha"
   printf '%s\n' "$image" >"$dir/image"
   prune_images
-  log "DEPLOYED $name $sha https://$name.$PREVIEW_SUFFIX"
+  log "DEPLOYED $name $sha https://$host"
 }
 
 cmd_remove_preview() {
@@ -363,6 +363,8 @@ load_conf() {
   # shellcheck disable=SC1090
   source "$CONF"
   : "${IMAGE_REPO:?}" "${PREVIEW_SUFFIX:?}"
+  PREVIEW_SUFFIX=${PREVIEW_SUFFIX:?}
+  PREVIEW_HOST_PREFIX=${PREVIEW_HOST_PREFIX:-pr-}
   MAX_PREVIEWS=${MAX_PREVIEWS:-4}
   PROD_MEMORY=${PROD_MEMORY:-2g}
   PROD_CPUS=${PROD_CPUS:-1.5}
@@ -372,6 +374,7 @@ load_conf() {
   PREVIEW_HEAP_MB=${PREVIEW_HEAP_MB:-512}
   HEALTH_TIMEOUT=${HEALTH_TIMEOUT:-120}
   [[ $IMAGE_REPO =~ ^[a-z0-9.-]+(:[0-9]{1,5})?(/[a-z0-9._-]+)+$ ]] || die 'IMAGE_REPO is malformed'
+  [[ $PREVIEW_HOST_PREFIX =~ ^[a-z0-9-]*pr-$ ]] || die 'PREVIEW_HOST_PREFIX must end with pr-'
   [[ $MAX_PREVIEWS =~ ^[0-9]+$ ]] || die 'MAX_PREVIEWS is malformed'
 }
 

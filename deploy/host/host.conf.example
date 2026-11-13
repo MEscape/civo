@@ -7,9 +7,12 @@ IMAGE_REPO=ghcr.io/OWNER/REPOSITORY
 # Public host name of production, as Cloudflare serves it.
 PROD_HOST=app.example.com
 
-# Previews are served as pr-<number>.<PREVIEW_SUFFIX>. Keep this a registrable domain (example.com),
-# not a deeper one: Cloudflare's free Universal SSL certificate covers the apex and one label only.
+# Previews are served as <PREVIEW_HOST_PREFIX><number>.<PREVIEW_SUFFIX> (default prefix: pr-).
+# Keep PREVIEW_SUFFIX a registrable domain (example.com), not a deeper one: Cloudflare's free
+# Universal SSL certificate covers the apex and one label only. Use PREVIEW_HOST_PREFIX=civo-pr-
+# when sharing one domain across multiple products.
 PREVIEW_SUFFIX=example.com
+PREVIEW_HOST_PREFIX=pr-
 
 # Previews running at once. 4 fits the 12 GB of the Always Free Ampere A1 allowance next to production.
 MAX_PREVIEWS=4
