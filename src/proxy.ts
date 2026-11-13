@@ -4,7 +4,7 @@ import createMiddleware from 'next-intl/middleware';
 
 import { I18N_ROUTING } from '@i18n';
 
-import { publicEnv } from '@lib/config';
+import { mapTiles } from '@lib/config';
 import { serverEnv } from '@lib/config/server';
 import { contentSecurityPolicy } from '@lib/security';
 import { TENANT_HINT_HEADER, tenantHintFromPathname } from '@lib/tenancy';
@@ -20,7 +20,7 @@ const handleI18nRouting = createMiddleware(I18N_ROUTING);
 const CONTENT_SECURITY_POLICY = contentSecurityPolicy({
   isProduction: serverEnv.NODE_ENV === 'production',
   storageUrls: [serverEnv.STORAGE_S3_ENDPOINT, serverEnv.STORAGE_PUBLIC_BASE_URL],
-  hasMap: publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN !== undefined,
+  hasMap: mapTiles() !== null,
 });
 
 /** Addresses with no locale: the routes behind them are not pages, so locale routing must not touch them. */
