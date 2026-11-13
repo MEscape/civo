@@ -23,6 +23,8 @@ export const smartCityObservationContent = defineContent({
     observedAt: instant(),
     value: number(),
     unit: label(),
+    /** ISO period when values describe a bucket rather than an instant, e.g. P1D for source dates. */
+    resolution: label(),
     category: smartCityCategory(),
   },
   rule: {

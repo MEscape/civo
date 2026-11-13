@@ -29,6 +29,7 @@ import { metricDonutDefinition } from './smartcity/metric-donut.component';
 import { metricGaugeDefinition } from './smartcity/metric-gauge.component';
 import { metricTableDefinition } from './smartcity/metric-table.component';
 import { metricTrendChartDefinition } from './smartcity/metric-trend-chart.component';
+import { statusBoardDefinition } from './smartcity/status-board.component';
 
 import type { ComponentDefinition } from '../models/component-definition';
 
@@ -67,6 +68,7 @@ export const COMPONENT_DEFINITIONS = [
   metricGaugeDefinition,
   metricTableDefinition,
   metricTrendChartDefinition,
+  statusBoardDefinition,
 ] as const;
 
 type RegisteredDefinition = (typeof COMPONENT_DEFINITIONS)[number];

@@ -6,6 +6,7 @@ import { smartCityCategoryProp } from './smart-city-category';
 
 export const metricChartDefinition = defineComponent({
   type: 'metricChart',
+  version: 2,
   category: 'smartcity',
   municipallyEditable: true,
   dataBinding: { kind: 'SmartCityMetric' },

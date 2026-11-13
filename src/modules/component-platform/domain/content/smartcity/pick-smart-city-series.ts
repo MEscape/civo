@@ -8,6 +8,7 @@ export interface SeriesPoint {
 }
 
 export interface PickedSeries {
+  readonly resolution?: string | undefined;
   readonly name: string;
   readonly unit: string | undefined;
   /** Chronological, oldest first. */
@@ -41,6 +42,7 @@ export function pickSeries(
   }
   return {
     name: wanted,
+    ...(first.resolution === undefined ? {} : { resolution: first.resolution }),
     unit: first.unit,
     points: rows
       .map((row) => ({ date: row.observedAt, value: row.value }))

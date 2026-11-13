@@ -1,14 +1,6 @@
 import type { ReactNode } from 'react';
 
-export interface SplitListProps {
-  readonly children: ReactNode;
-}
-
-/** The cards of one half of the split: one row of the split's grid per card. */
-export function SplitList({ children }: SplitListProps) {
-  return (
-    <ul className="flex flex-col gap-4 @3xl:row-[2/-1] @3xl:grid @3xl:grid-rows-subgrid">
-      {children}
-    </ul>
-  );
+/** Both columns keep the same spacing and list semantics. */
+export function SplitList({ children }: { readonly children: ReactNode }) {
+  return <ul className="space-y-4">{children}</ul>;
 }

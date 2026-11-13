@@ -1,4 +1,4 @@
-import { list, optional, text } from '../../models/field-schema';
+import { list, optionalField, text } from '../../models/field-schema';
 import { CONTENT_LIMITS as LIMITS } from '../content-limits';
 import { defineContent } from '../define-content';
 import { label, linkTarget, recordId, shortText, title } from '../shared-fields';
@@ -10,11 +10,11 @@ export const serviceDetailContent = defineContent({
     title: title(),
     description: shortText(),
     href: linkTarget(),
-    icon: optional(text({ max: LIMITS.label })),
+    icon: optionalField(text({ max: LIMITS.label })),
     category: label(),
     department: label(),
     processingNote: label(),
-    keywords: optional(list(text({ min: 1, max: LIMITS.label }), LIMITS.keywords)),
+    keywords: optionalField(list(text({ min: 1, max: LIMITS.label }), LIMITS.keywords)),
   },
   rule: {
     categoryOf: (service) => service.category,

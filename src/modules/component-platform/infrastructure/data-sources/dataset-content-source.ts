@@ -107,7 +107,13 @@ function validate<K extends ContentKind>(
       truncated: view.truncated,
     });
   }
-  return { items, hasMore: view.truncated };
+  return {
+    items,
+    ...(view.maxWindowRecords === undefined ? {} : { maxWindowRecords: view.maxWindowRecords }),
+    hasMore: view.truncated,
+    ...(rejected + view.skipped === 0 ? {} : { rejected: rejected + view.skipped }),
+    ...(view.provenance === undefined ? {} : { provenance: view.provenance }),
+  };
 }
 
 /**

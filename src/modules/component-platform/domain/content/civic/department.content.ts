@@ -1,4 +1,4 @@
-import { email, list, object, optional } from '../../models/field-schema';
+import { email, list, object, optionalField } from '../../models/field-schema';
 import { CONTENT_LIMITS as LIMITS } from '../content-limits';
 import { defineContent } from '../define-content';
 import { optionalLinkTarget, recordId, shortText, title } from '../shared-fields';
@@ -10,12 +10,12 @@ export const departmentContent = defineContent({
     name: title(),
     description: shortText(),
     href: optionalLinkTarget(),
-    contacts: optional(
+    contacts: optionalField(
       list(
         object({
           id: recordId(),
           name: title(),
-          email: optional(email(LIMITS.label)),
+          email: optionalField(email(LIMITS.label)),
         }),
         LIMITS.contacts,
       ),

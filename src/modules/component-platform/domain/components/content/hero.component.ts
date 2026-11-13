@@ -6,6 +6,8 @@ export const heroDefinition = defineComponent({
   type: 'hero',
   category: 'content',
   municipallyEditable: true,
+  // 2: the image can come from the media library (`image`); `imageUrl` stays as the fallback.
+  version: 2,
   props: {
     title: prop.text(PROP_LIMITS.heading, {
       group: 'content',
@@ -15,6 +17,7 @@ export const heroDefinition = defineComponent({
       group: 'content',
       municipal: true,
     }),
+    image: prop.media({ group: 'appearance' }),
     // Brand/design decision: municipality admins cannot swap the image.
     imageUrl: prop.url(PROP_LIMITS.url, {
       allowRelative: false,

@@ -165,7 +165,7 @@ export function boolean(): FieldSchema<boolean> {
   return schema((raw) => (typeof raw === 'boolean' ? pass(raw) : fail(CODES.typeInvalid)));
 }
 
-export function oneOf<const V extends string | number>(values: readonly V[]): FieldSchema<V> {
+export function oneOfValues<const V extends string | number>(values: readonly V[]): FieldSchema<V> {
   return schema((raw) => {
     const match = values.find((value) => value === raw);
     return match === undefined ? fail(CODES.optionUnknown) : pass(match);
@@ -301,7 +301,7 @@ export function scalarMap(
 }
 
 /** Absent (`undefined`, `null`) is acceptable; anything else must satisfy `inner`. */
-export function optional<T>(inner: FieldSchema<T>): FieldSchema<T | undefined> {
+export function optionalField<T>(inner: FieldSchema<T>): FieldSchema<T | undefined> {
   return schema(
     (raw) => (raw === undefined || raw === null ? pass(undefined) : inner.parse(raw)),
     inner.isInstant,

@@ -8,11 +8,13 @@ type GeoFeatureRecord = ContentOf<'GeoFeature'>;
 
 /** Attributes the record defines itself win over a municipality's free-form property of the same name. */
 function definedOnly(values: Record<string, string | number | boolean | undefined>): Attributes {
-  return Object.fromEntries(
-    Object.entries(values).filter(
-      (entry): entry is [string, string | number | boolean] => entry[1] !== undefined,
-    ),
-  );
+  const defined: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(values)) {
+    if (value !== undefined) {
+      defined[key] = value;
+    }
+  }
+  return defined;
 }
 
 export function geoFeatureToMapFeature(record: GeoFeatureRecord): MapFeatureInput {

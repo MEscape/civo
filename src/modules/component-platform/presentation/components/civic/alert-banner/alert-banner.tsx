@@ -1,10 +1,10 @@
+import { AlertOctagon, AlertTriangle, Info } from '@components/icons/icons';
 import { Container } from '@components/layout/layout-primitives';
 import { ContentLink } from '@components/ui/content-link';
-import { AlertOctagon, AlertTriangle, Info } from '@components/ui/icons';
 
 import { getTranslations } from '@i18n/server';
 
-import { stripHtml, trimToNull } from '@lib/utils';
+import { cn, stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -17,19 +17,29 @@ import type { LoadContent } from '../../page-renderer/load-content';
 
 type AlertSeverity = 'info' | 'warning' | 'urgent';
 
-const SEVERITY_ICONS = {
-  info: Info,
-  warning: AlertTriangle,
-  urgent: AlertOctagon,
-} as const satisfies Record<AlertSeverity, typeof Info>;
+interface SeverityStyle {
+  readonly Icon: typeof Info;
+  /** Start-edge bar in the solid status colour, tinted fill. */
+  readonly surface: string;
+  readonly icon: string;
+}
 
 // Status tokens, not brand tokens: severity is a fixed semantic signal that
-// must stay legible whatever a municipality's brand palette is.
-const SEVERITY_CLASSES = {
-  info: 'border-info-border bg-info-subtle text-info',
-  warning: 'border-warning-border bg-warning-subtle text-warning',
-  urgent: 'border-danger-border bg-danger-subtle text-danger',
-} as const satisfies Record<AlertSeverity, string>;
+// must stay legible whatever a municipality's brand palette is. Class names
+// are written out in full so Tailwind finds them.
+const SEVERITY = {
+  info: { Icon: Info, surface: 'border-s-info bg-info-subtle', icon: 'text-info' },
+  warning: {
+    Icon: AlertTriangle,
+    surface: 'border-s-warning bg-warning-subtle',
+    icon: 'text-warning',
+  },
+  urgent: {
+    Icon: AlertOctagon,
+    surface: 'border-s-danger bg-danger-subtle',
+    icon: 'text-danger',
+  },
+} as const satisfies Record<AlertSeverity, SeverityStyle>;
 
 export interface AlertBannerComponentProps {
   readonly props: ComponentProps<'alertBanner'>;
@@ -40,6 +50,9 @@ export interface AlertBannerComponentProps {
 /**
  * Official notices. Site-level notices read as part of the page frame, so
  * an empty result renders nothing instead of an "empty" state.
+ *
+ * Severity is carried by four signals, none of them colour alone: the start
+ * edge, the icon's shape, the live-region role, and a screen-reader label.
  */
 export async function AlertBanner({ props, context, loadContent }: AlertBannerComponentProps) {
   const [t, result] = await Promise.all([
@@ -63,26 +76,31 @@ export async function AlertBanner({ props, context, loadContent }: AlertBannerCo
   }
 
   return (
-    <div className="relative py-4">
-      <ContentOriginBadge origin={origin} />
+    <div className="py-4">
       <Container className="flex flex-col gap-3">
+        <ContentOriginBadge origin={origin} placement="inline" />
         {heading !== null && <h2 className="font-heading text-lg text-copy">{heading}</h2>}
         {items.map((alert) => {
-          const Icon = SEVERITY_ICONS[alert.severity];
+          const { Icon, surface, icon } = SEVERITY[alert.severity];
 
           return (
             <div
               key={alert.id}
               role={alert.severity === 'urgent' ? 'alert' : 'status'}
-              className={`flex items-start gap-3 rounded-token border px-4 py-3 text-sm ${
-                SEVERITY_CLASSES[alert.severity]
-              }`}
+              className={cn('flex items-start gap-3 rounded-e-token border-s-4 px-4 py-3', surface)}
             >
-              <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              <div>
-                <p className="font-medium">
+              <Icon className={cn('mt-0.5 size-5 shrink-0', icon)} aria-hidden="true" />
+              <div className="min-w-0 [overflow-wrap:anywhere]">
+                <p className="text-base font-semibold text-copy">
+                  <span className="sr-only">
+                    {t(`alertBanner.severity.${alert.severity}`)}
+                    {'. '}
+                  </span>
                   {alert.href !== undefined ? (
-                    <ContentLink href={alert.href} className="hover:underline">
+                    <ContentLink
+                      href={alert.href}
+                      className="underline decoration-1 underline-offset-4 hover:decoration-2"
+                    >
                       {alert.title}
                     </ContentLink>
                   ) : (
@@ -90,7 +108,7 @@ export async function AlertBanner({ props, context, loadContent }: AlertBannerCo
                   )}
                 </p>
                 {alert.message !== undefined && (
-                  <p className="mt-0.5 opacity-90">{stripHtml(alert.message)}</p>
+                  <p className="mt-0.5 text-sm text-copy-muted">{stripHtml(alert.message)}</p>
                 )}
               </div>
             </div>

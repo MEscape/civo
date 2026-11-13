@@ -1,7 +1,7 @@
 {
   "section": {
-    "version": 1,
-    "fingerprint": "e63db36fab6b2f36"
+    "version": 2,
+    "fingerprint": "7e7d2915c2fedc84"
   },
   "accordion": {
     "version": 1,
@@ -16,8 +16,8 @@
     "fingerprint": "10fcfde251f5a56b"
   },
   "hero": {
-    "version": 1,
-    "fingerprint": "cfaafe2591f09b73"
+    "version": 2,
+    "fingerprint": "448495f32f7ddb52"
   },
   "richText": {
     "version": 1,
@@ -32,8 +32,8 @@
     "fingerprint": "7d139d5bb95c8a8f"
   },
   "booking": {
-    "version": 1,
-    "fingerprint": "df0196a1b2ae28bb"
+    "version": 2,
+    "fingerprint": "4cda8b9874209bba"
   },
   "contactCard": {
     "version": 1,
@@ -53,7 +53,7 @@
   },
   "newsAndEventsSplit": {
     "version": 1,
-    "fingerprint": "987d9f7e39390b6a"
+    "fingerprint": "f803840c19a19ffa"
   },
   "newsGrid": {
     "version": 1,
@@ -64,8 +64,8 @@
     "fingerprint": "932a1352b8a16c6c"
   },
   "quickLinks": {
-    "version": 1,
-    "fingerprint": "1a03303a32dfd4df"
+    "version": 2,
+    "fingerprint": "66aaf5c0c2edd042"
   },
   "serviceFinder": {
     "version": 1,
@@ -76,28 +76,28 @@
     "fingerprint": "98b9bb20186a0ab5"
   },
   "wasteCalendar": {
-    "version": 1,
+    "version": 2,
     "fingerprint": "274794b034cf94c5"
   },
   "dashboardGrid": {
-    "version": 3,
-    "fingerprint": "9654358998e58c97"
+    "version": 4,
+    "fingerprint": "84770ca525c229d3"
   },
   "kpiGrid": {
-    "version": 1,
-    "fingerprint": "4a1c0d98f21434db"
+    "version": 2,
+    "fingerprint": "c984c6724297036e"
   },
   "map": {
-    "version": 1,
-    "fingerprint": "8f53fe4f1517604b"
+    "version": 2,
+    "fingerprint": "fa2e0fd7ade70ab3"
   },
   "metricChart": {
-    "version": 1,
-    "fingerprint": "94e1f29e779de9d6"
+    "version": 2,
+    "fingerprint": "22b5c97cf6ea519b"
   },
   "metricComparisonChart": {
-    "version": 1,
-    "fingerprint": "4e1ba9bf05eb1336"
+    "version": 2,
+    "fingerprint": "9d79a0d19375df89"
   },
   "metricDonut": {
     "version": 1,
@@ -108,11 +108,15 @@
     "fingerprint": "cc2d7ed27b7b5667"
   },
   "metricTable": {
-    "version": 1,
-    "fingerprint": "f7d3f19ae89bf607"
+    "version": 2,
+    "fingerprint": "3d69ee04ecd9c8c1"
   },
   "metricTrendChart": {
+    "version": 2,
+    "fingerprint": "71611c032ced53ee"
+  },
+  "statusBoard": {
     "version": 1,
-    "fingerprint": "49756f0212aa8181"
+    "fingerprint": "c0f8cd44779f27b7"
   }
 }

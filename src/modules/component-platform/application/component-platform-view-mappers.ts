@@ -50,6 +50,17 @@ export function fieldOptionKey(type: string, field: string, value: string | numb
   return `${TEXT_ROOT}.${type}.fields.${field}.options.${String(value)}`;
 }
 
+/**
+ * A field's own placeholder, else for a heading the one the component shows while none is
+ * stored (`<type>.defaultHeading`), so the empty field reads like the canvas.
+ */
+function placeholderKeyOf(type: string, field: PropFieldDefinition): string | null {
+  if (field.hasPlaceholder) {
+    return fieldPlaceholderKey(type, field.key);
+  }
+  return field.key === 'heading' ? `componentPlatform.${type}.defaultHeading` : null;
+}
+
 function toFieldView(
   definition: ComponentDefinition,
   field: PropFieldDefinition,
@@ -59,7 +70,7 @@ function toFieldView(
     control: field.control,
     group: field.group,
     labelKey: fieldLabelKey(definition.type, field.key),
-    placeholderKey: field.hasPlaceholder ? fieldPlaceholderKey(definition.type, field.key) : null,
+    placeholderKey: placeholderKeyOf(definition.type, field),
     options: field.options.map((value) => ({
       value,
       labelKey:

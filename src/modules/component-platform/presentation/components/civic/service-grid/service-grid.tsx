@@ -1,7 +1,6 @@
+import { DynamicIcon } from '@components/icons/dynamic-icon';
 import { Container, Grid, Section, SectionHeading } from '@components/layout/layout-primitives';
-import { Card, CardContent } from '@components/ui/card';
 import { ContentLink } from '@components/ui/content-link';
-import { DynamicIcon } from '@components/ui/dynamic-icon';
 
 import { getTranslations } from '@i18n/server';
 
@@ -47,36 +46,37 @@ export async function ServiceGrid({ props, context, loadContent }: ServiceGridCo
 
   return (
     <Section tone="muted" className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
         <Grid as="ul" columns={props.columns}>
           {items.map((service) => (
             <li key={service.id}>
-              <ContentLink href={service.href} className="group block h-full">
-                <Card className="h-full transition-colors group-hover:border-primary">
-                  <CardContent className="flex items-center gap-3 pt-5">
-                    <DynamicIcon
-                      name={service.icon}
-                      fallback={FALLBACK_ICON}
-                      className="h-5 w-5 shrink-0 text-primary-copy"
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <span className="text-sm font-medium text-copy">{service.title}</span>
-                      {service.description !== undefined && (
-                        <p className="mt-0.5 line-clamp-2 text-xs text-copy-muted">
-                          {stripHtml(service.description)}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+              <ContentLink
+                href={service.href}
+                className="group flex h-full items-start gap-3 border-t border-border py-4 transition-interactive hover:border-primary"
+              >
+                <DynamicIcon
+                  name={service.icon}
+                  fallback={FALLBACK_ICON}
+                  className="mt-0.5 size-5 shrink-0 text-primary-copy"
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+                  <span className="block text-base font-medium text-copy underline-offset-4 transition-interactive group-hover:text-primary-copy group-hover:underline">
+                    {service.title}
+                  </span>
+                  {service.description !== undefined && (
+                    <p className="mt-1 line-clamp-2 text-sm text-copy-muted">
+                      {stripHtml(service.description)}
+                    </p>
+                  )}
+                </div>
               </ContentLink>
             </li>
           ))}
         </Grid>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

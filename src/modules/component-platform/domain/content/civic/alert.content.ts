@@ -1,4 +1,4 @@
-import { instant, oneOf, optional, withFallback } from '../../models/field-schema';
+import { instant, oneOfValues, optionalField, withFallback } from '../../models/field-schema';
 import { defineContent } from '../define-content';
 import { sampleInstant } from '../sample-instant';
 import { optionalLinkTarget, recordId, shortText, title } from '../shared-fields';
@@ -21,10 +21,10 @@ export const alertContent = defineContent({
     id: recordId(),
     title: title(),
     message: shortText(),
-    severity: withFallback(oneOf(ALERT_SEVERITIES), 'info'),
+    severity: withFallback(oneOfValues(ALERT_SEVERITIES), 'info'),
     href: optionalLinkTarget(),
-    startsAt: optional(instant()),
-    endsAt: optional(instant()),
+    startsAt: optionalField(instant()),
+    endsAt: optionalField(instant()),
   },
   rule: {
     isRelevant: (alert, now) =>

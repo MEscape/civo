@@ -2,11 +2,10 @@ import { Container, Section, SectionHeading } from '@components/layout/layout-pr
 
 import { getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
-
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
 
+import { serviceFinderTexts } from './service-finder-texts';
 import { ServiceFinderClient } from './service-finder.client';
 
 import type {
@@ -35,39 +34,42 @@ export async function ServiceFinder({ props, context, loadContent }: ServiceFind
       datasetId: props.datasetId,
     }),
   ]);
-  const heading = trimToNull(props.heading) ?? t('serviceFinder.defaultHeading');
-  const description = trimToNull(props.description);
-  const placeholder = trimToNull(props.placeholder) ?? t('serviceFinder.defaultPlaceholder');
-  const initialCategory = trimToNull(props.initialCategory) ?? '';
+  const text = serviceFinderTexts(props, {
+    heading: t('serviceFinder.defaultHeading'),
+    placeholder: t('serviceFinder.defaultPlaceholder'),
+  });
 
   if (result.isErr()) {
-    return <ContentState kind="error" heading={heading} />;
+    return <ContentState kind="error" heading={text.heading} />;
   }
-  const { items, origin } = result.value;
-  if (items.length === 0) {
-    return <ContentState kind="empty" heading={heading} />;
+  if (result.value.items.length === 0) {
+    return <ContentState kind="empty" heading={text.heading} />;
   }
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
-        <SectionHeading>{heading}</SectionHeading>
-        {description !== null && (
-          <p className="-mt-6 mb-8 max-w-2xl text-sm text-copy-muted">{description}</p>
+        <SectionHeading>{text.heading}</SectionHeading>
+        {text.description !== null && (
+          <p className="-mt-4 mb-8 max-w-2xl text-sm text-copy-muted">{text.description}</p>
         )}
         {/* Keyed by the start category: the client seeds its state from it once, so a changed prop (the editor) must restart it. */}
         <ServiceFinderClient
-          key={initialCategory}
-          services={items}
-          placeholder={placeholder}
-          initialCategory={initialCategory}
+          key={text.initialCategory}
+          services={result.value.items}
+          placeholder={text.placeholder}
+          initialCategory={text.initialCategory}
           labels={{
             allCategories: t('serviceFinder.allCategories'),
             noResults: t('serviceFinder.noResults'),
+            search: t('serviceFinder.searchLabel'),
+            categories: t('serviceFinder.categoriesLabel'),
+            // The client fills the count in; the placeholder passes through as text.
+            resultCount: t('serviceFinder.resultCount', { count: '{count}' }),
           }}
         />
       </Container>
+      <ContentOriginBadge origin={result.value.origin} />
     </Section>
   );
 }

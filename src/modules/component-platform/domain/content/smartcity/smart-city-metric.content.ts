@@ -1,4 +1,4 @@
-import { number, oneOf, optional } from '../../models/field-schema';
+import { instant, number, oneOfValues, optionalField } from '../../models/field-schema';
 import { defineContent } from '../define-content';
 import { label, recordId, title } from '../shared-fields';
 
@@ -19,9 +19,10 @@ export const smartCityMetricContent = defineContent({
     label: title(),
     value: number(),
     unit: label(),
+    observedAt: optionalField(instant()),
     category: smartCityCategory(),
-    trend: optional(oneOf(METRIC_TRENDS)),
-    changePercent: optional(number()),
+    trend: optionalField(oneOfValues(METRIC_TRENDS)),
+    changePercent: optionalField(number()),
   },
   rule: {
     categoryOf: (metric) => metric.category,

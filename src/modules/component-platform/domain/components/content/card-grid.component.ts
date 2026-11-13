@@ -1,4 +1,4 @@
-import { optional, text, url } from '../../models/field-schema';
+import { optionalField, text, url } from '../../models/field-schema';
 import { prop } from '../../models/prop-field';
 import { defineComponent } from '../define-component';
 import { PROP_LIMITS } from '../prop-limits';
@@ -19,8 +19,8 @@ export const cardGridDefinition = defineComponent({
     cards: prop.items(
       {
         title: text({ min: 1, max: CARD_TITLE_MAX_LENGTH }),
-        description: optional(text({ max: PROP_LIMITS.text })),
-        href: optional(url({ max: PROP_LIMITS.url, allowRelative: true })),
+        description: optionalField(text({ max: PROP_LIMITS.text })),
+        href: optionalField(url({ max: PROP_LIMITS.url, allowRelative: true })),
       },
       MAX_CARDS,
       { group: 'content', municipal: true, multiline: ['description'] },

@@ -1,6 +1,5 @@
 import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
 import { Badge } from '@components/ui/badge';
-import { Card, CardContent } from '@components/ui/card';
 
 import { getTranslations } from '@i18n/server';
 
@@ -44,44 +43,44 @@ export async function CouncilBlock({ props, context, loadContent }: CouncilBlock
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
-        <ul className="flex flex-col gap-6">
+        <ul className="flex flex-col gap-10">
           {items.map((body) => (
-            <li key={body.id}>
-              <Card>
-                <CardContent className="pt-5">
-                  <h3 className="font-heading text-lg text-copy">{body.name}</h3>
-                  {body.description !== undefined && (
-                    <p className="mt-1 text-sm text-copy-muted">{stripHtml(body.description)}</p>
-                  )}
-                  {body.members !== undefined && body.members.length > 0 && (
-                    <ul className="mt-4 flex flex-col divide-y divide-border">
-                      {body.members.map((member) => (
-                        <li
-                          key={member.id}
-                          className="flex items-center justify-between gap-3 py-2.5"
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-copy">{member.name}</p>
-                            {member.role !== undefined && (
-                              <p className="text-xs text-copy-muted">{member.role}</p>
-                            )}
-                          </div>
-                          {member.party !== undefined && (
-                            <Badge variant="muted">{member.party}</Badge>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
+            <li key={body.id} className="@container border-t border-border pt-6">
+              <h3 className="font-heading text-xl font-semibold text-copy">{body.name}</h3>
+              {body.description !== undefined && (
+                <p className="mt-1 max-w-[var(--civo-measure)] text-sm text-copy-muted">
+                  {stripHtml(body.description)}
+                </p>
+              )}
+              {body.members !== undefined && body.members.length > 0 && (
+                <ul className="mt-5 gap-x-10 @xl:columns-2 @4xl:columns-3">
+                  {body.members.map((member) => (
+                    <li
+                      key={member.id}
+                      className="flex break-inside-avoid items-start justify-between gap-3 border-b border-border py-3"
+                    >
+                      <div className="min-w-0 [overflow-wrap:anywhere]">
+                        <p className="text-base font-medium text-copy">{member.name}</p>
+                        {member.role !== undefined && (
+                          <p className="text-sm text-copy-muted">{member.role}</p>
+                        )}
+                      </div>
+                      {member.party !== undefined && (
+                        <Badge variant="muted" className="shrink-0">
+                          {member.party}
+                        </Badge>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

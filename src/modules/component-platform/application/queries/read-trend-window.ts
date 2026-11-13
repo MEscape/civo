@@ -21,6 +21,7 @@ export interface TrendWindowRequest {
 }
 
 export interface TrendWindowView {
+  readonly resolution?: string | undefined;
   readonly points: ReadonlyArray<{ readonly date: string; readonly value: number }>;
   readonly unit: string | undefined;
   /** The dataset holds records beyond this window. */
@@ -58,7 +59,12 @@ export class ReadTrendWindow {
       )
       .map((view): TrendWindowView => {
         const picked = pickSeries(view.items, series);
-        return { points: picked?.points ?? [], unit: picked?.unit, hasMore: view.truncated };
+        return {
+          points: picked?.points ?? [],
+          unit: picked?.unit,
+          hasMore: view.truncated,
+          ...(picked?.resolution === undefined ? {} : { resolution: picked.resolution }),
+        };
       });
   }
 }

@@ -1,6 +1,8 @@
 import { Container, Section } from '@components/layout/layout-primitives';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs';
 
+import { Paragraphs } from '../shared/paragraphs';
+
 import type { ComponentProps } from '../../../application/contracts/component-platform-constraints';
 
 const FIRST_TAB = 'tab-0';
@@ -17,21 +19,34 @@ export function TabsBlock({ props }: TabsBlockComponentProps) {
 
   return (
     <Section>
-      <Container className="max-w-3xl">
-        <Tabs defaultValue={FIRST_TAB}>
-          <TabsList>
+      <Container>
+        <div className="max-w-3xl">
+          <Tabs defaultValue={FIRST_TAB}>
+            <TabsList className="h-auto max-w-full flex-wrap justify-start">
+              {props.tabs.map((tab, index) => (
+                <TabsTrigger
+                  key={`${String(index)}-${tab.label}`}
+                  value={`tab-${String(index)}`}
+                  className="max-w-full whitespace-normal [overflow-wrap:anywhere]"
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
             {props.tabs.map((tab, index) => (
-              <TabsTrigger key={`${String(index)}-${tab.label}`} value={`tab-${String(index)}`}>
-                {tab.label}
-              </TabsTrigger>
+              <TabsContent
+                key={`${String(index)}-${tab.label}`}
+                value={`tab-${String(index)}`}
+                className="mt-4"
+              >
+                <Paragraphs
+                  text={tab.body}
+                  className="max-w-[var(--civo-measure)] text-base leading-relaxed text-copy"
+                />
+              </TabsContent>
             ))}
-          </TabsList>
-          {props.tabs.map((tab, index) => (
-            <TabsContent key={`${String(index)}-${tab.label}`} value={`tab-${String(index)}`}>
-              {tab.body}
-            </TabsContent>
-          ))}
-        </Tabs>
+          </Tabs>
+        </div>
       </Container>
     </Section>
   );

@@ -1,5 +1,14 @@
 {
   "componentPlatform": {
+    "provenance": {
+      "synthetic": "Synthetic demonstration data – not an official service",
+      "snapshot": "Snapshot captured:",
+      "asOf": "As of:",
+      "partial": "{count, plural, one {# record could not be displayed.} other {# records could not be displayed.}}",
+      "measuredAt": "Measured:",
+      "license": "License and reuse",
+      "stale": "Update pending – last available data"
+    },
     "components": {
       "section": {
         "label": "Section",
@@ -24,6 +33,22 @@
             "options": {
               "default": "Default",
               "muted": "Muted"
+            }
+          },
+          "layout": {
+            "label": "Layout",
+            "options": {
+              "stack": "Stack",
+              "split": "Two columns",
+              "aside": "Content with aside"
+            }
+          },
+          "density": {
+            "label": "Density",
+            "options": {
+              "default": "Default",
+              "tight": "Compact",
+              "airy": "Spacious"
             }
           }
         }
@@ -163,8 +188,11 @@
           "subtitle": {
             "label": "Subtitle"
           },
+          "image": {
+            "label": "Image"
+          },
           "imageUrl": {
-            "label": "Image URL",
+            "label": "External image URL",
             "placeholder": "https://..."
           }
         }
@@ -245,7 +273,7 @@
             "label": "Heading"
           },
           "serviceId": {
-            "label": "Service ID (optional, books only this service)"
+            "label": "Service (optional, books only this service)"
           },
           "category": {
             "label": "Category (optional, shows only this category)"
@@ -297,6 +325,9 @@
         "fields": {
           "primaryDatasetId": {
             "label": "Map data"
+          },
+          "savedMapId": {
+            "label": "Saved map"
           },
           "secondaryDatasetId": {
             "label": "Additional map data"
@@ -440,6 +471,14 @@
               "href": {
                 "label": "Link target"
               }
+            }
+          },
+          "placement": {
+            "label": "Placement",
+            "options": {
+              "content": "Content list",
+              "header": "Site header",
+              "footer": "Site footer"
             }
           }
         }
@@ -699,6 +738,26 @@
             }
           }
         }
+      },
+      "statusBoard": {
+        "label": "Status board",
+        "description": "Reported place statuses with observation time and source.",
+        "sample": {
+          "props": {
+            "heading": "Reported status"
+          }
+        },
+        "fields": {
+          "datasetId": {
+            "label": "Dataset"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "limit": {
+            "label": "Limit (records shown)"
+          }
+        }
       }
     },
     "eventsGrid": {
@@ -720,8 +779,8 @@
       "datasetNotMapped": "Sample data: the dataset has no field mapping yet",
       "datasetKindMismatch": "Sample data: the dataset does not fit this component",
       "sourceFailed": "Sample data: the data source could not be reached",
-      "requestInvalid": "Sample data: the request was invalid",
-      "rateLimited": "Too many requests. Please wait a moment and try again."
+      "rateLimited": "Sample data: too many requests. Try again shortly.",
+      "requestInvalid": "Sample data: the request was invalid"
     },
     "hero": {
       "defaultTitle": "Welcome"
@@ -738,10 +797,19 @@
       }
     },
     "quickLinks": {
-      "defaultHeading": "Quick links"
+      "defaultHeading": "Quick links",
+      "skipToContent": "Skip to main content",
+      "menu": "Open menu",
+      "mainNavigation": "Main navigation",
+      "footerNavigation": "Service and legal information"
     },
     "alertBanner": {
-      "defaultHeading": "Notices"
+      "defaultHeading": "Notices",
+      "severity": {
+        "info": "Notice",
+        "warning": "Warning",
+        "urgent": "Urgent"
+      }
     },
     "booking": {
       "defaultHeading": "Book an appointment"
@@ -782,7 +850,10 @@
       "defaultHeading": "Find services",
       "defaultPlaceholder": "Search services…",
       "allCategories": "All",
-      "noResults": "No matching services found."
+      "noResults": "No matching services found.",
+      "searchLabel": "Search services",
+      "categoriesLabel": "Filter by category",
+      "resultCount": "Results: {count}"
     },
     "serviceGrid": {
       "defaultHeading": "Online services"
@@ -795,7 +866,8 @@
         "papier": "Paper",
         "gelberSack": "Packaging",
         "sperrmuell": "Bulky waste"
-      }
+      },
+      "next": "Next collection"
     },
     "dashboardGrid": {
       "defaultHeading": "Smart city dashboard",
@@ -816,6 +888,7 @@
     },
     "metricDonut": {
       "defaultHeading": "Distribution",
+      "others": "Others",
       "title": "{heading} · {label}"
     },
     "metricGauge": {
@@ -841,9 +914,39 @@
         "zoomOut": "Zoom out",
         "earlier": "Earlier",
         "later": "Later",
-        "failed": "The range could not be loaded.",
-        "status": "Showing up to {limit} values, starting at value {offset}."
+        "failed": "No measurements are available for this range. The previous view is retained.",
+        "status": "Measurements: {count} · {from} to {to}"
       }
+    },
+    "accordion": {
+      "defaultHeading": "Enter a heading"
+    },
+    "cardGrid": {
+      "defaultHeading": "Enter a heading"
+    },
+    "richText": {
+      "defaultHeading": "Enter a heading"
+    },
+    "charts": {
+      "chartLabel": "Chart: {title}",
+      "showData": "Show data as table",
+      "columns": {
+        "label": "Label",
+        "value": "Value",
+        "date": "Date",
+        "share": "Share"
+      }
+    },
+    "trendIndicator": {
+      "up": "increased",
+      "down": "decreased",
+      "flat": "unchanged"
+    },
+    "statusBoard": {
+      "defaultHeading": "Reported status",
+      "unknownStatus": "Status not reported",
+      "unknownTime": "Time not reported",
+      "observedAt": "Reported:"
     }
   }
 }

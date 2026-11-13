@@ -17,13 +17,15 @@ export const bookingDefinition = defineComponent({
   category: 'civic',
   municipallyEditable: true,
   isSingleton: true,
+  // 2: service and category are chosen from the website's booking data (same stored values).
+  version: 2,
   props: {
     heading: prop.text(PROP_LIMITS.heading, {
       group: 'content',
       municipal: true,
     }),
-    serviceId: prop.text(PROP_LIMITS.id, { group: 'content' }),
-    category: prop.text(PROP_LIMITS.category, {
+    serviceId: prop.bookingService({ group: 'content' }),
+    category: prop.bookingCategory(PROP_LIMITS.category, {
       group: 'content',
       municipal: true,
     }),

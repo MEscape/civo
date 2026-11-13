@@ -4,6 +4,8 @@ import { getTranslations } from '@i18n/server';
 
 import { originMessageKey } from '../../messages/message-keys';
 
+import { SourceAttribution } from './source-attribution';
+
 import type { ContentOrigin } from '../../../application/contracts/content-views';
 
 /** `corner` floats over the section's top corner; `inline` sits in the flow, above the content. */
@@ -28,6 +30,9 @@ export async function ContentOriginBadge({
   origin,
   placement = 'corner',
 }: ContentOriginBadgeProps) {
+  if (origin.kind === 'live' && (origin.sources !== undefined || (origin.rejected ?? 0) > 0)) {
+    return <SourceAttribution sources={origin.sources ?? []} rejected={origin.rejected} />;
+  }
   if (origin.kind !== 'sample') {
     return null;
   }

@@ -15,6 +15,7 @@ export const COMPONENT_PLATFORM_RATE_LIMITS = {
     id: 'component-platform.read-trend-window-client',
     limit: 60,
     windowSeconds: SECONDS_PER_MINUTE,
+    // @fail-open a chart that stops updating costs a visitor more than the gap in protection
     onBackendFailure: 'allow',
     onUnresolvedClient: 'skip',
   },

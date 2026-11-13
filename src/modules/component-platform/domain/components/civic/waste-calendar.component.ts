@@ -8,6 +8,7 @@ const MAX_ADDITIONAL_DATASETS = 8;
 
 export const wasteCalendarDefinition = defineComponent({
   type: 'wasteCalendar',
+  version: 2,
   category: 'civic',
   municipallyEditable: true,
   dataBinding: { kind: 'WasteCollectionEntry' },

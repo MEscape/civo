@@ -7,7 +7,9 @@ import {
   fieldOptionKey,
   fieldPlaceholderKey,
   itemFieldLabelKey,
+  toCatalogEntry,
 } from '@modules/component-platform/application/component-platform-view-mappers';
+import { bookingDefinition } from '@modules/component-platform/domain/components/civic/booking.component';
 import { COMPONENT_DEFINITIONS } from '@modules/component-platform/domain/components/component-definitions';
 import deComponentPlatform from '@modules/component-platform/presentation/i18n/de.json';
 import enComponentPlatform from '@modules/component-platform/presentation/i18n/en.json';
@@ -42,4 +44,14 @@ describe('the texts of the registered components', () => {
       expect(missing).toEqual([]);
     });
   }
+});
+
+describe('the placeholder of a heading', () => {
+  it('is the heading the component shows while none is stored', () => {
+    const heading = toCatalogEntry(bookingDefinition).fields.find(
+      (field) => field.key === 'heading',
+    );
+    expect(heading?.placeholderKey).toBe('componentPlatform.booking.defaultHeading');
+    expect(getPath(deComponentPlatform, heading?.placeholderKey ?? '')).toBe('Termin buchen');
+  });
 });

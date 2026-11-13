@@ -40,7 +40,11 @@ export function MetricComparisonChartClient({ data, labels }: MetricComparisonCh
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={[...data]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <BarChart
+          accessibilityLayer={false}
+          data={[...data]}
+          margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+        >
           <CartesianGrid stroke={CHART_COLORS.border} vertical={false} />
           <XAxis
             dataKey="label"
@@ -54,7 +58,8 @@ export function MetricComparisonChartClient({ data, labels }: MetricComparisonCh
             fontSize={AXIS_FONT_SIZE}
             tickLine={false}
             axisLine={false}
-            width={40}
+            // Measured from the tick labels, so six-digit values are not clipped.
+            width="auto"
           />
           <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: CHART_COLORS.background }} />
           <Legend wrapperStyle={{ fontSize: AXIS_FONT_SIZE }} />

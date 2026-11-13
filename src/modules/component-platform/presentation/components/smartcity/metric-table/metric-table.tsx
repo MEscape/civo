@@ -1,7 +1,9 @@
+// @ui-plain table A public-site block framed by its own Section and SectionHeading; the DataPanel is admin chrome and would repeat the heading in a tinted strip.
 import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -15,6 +17,7 @@ import { trimToNull } from '@lib/utils';
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
 import { categoryFilter } from '../support/category-filter';
+import { withUnit } from '../support/chart-tables';
 import { TrendIndicator } from '../support/trend-indicator';
 
 import type {
@@ -54,24 +57,34 @@ export async function MetricTable({ props, context, loadContent }: MetricTableCo
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
         <Table>
+          <TableCaption className="sr-only">{heading}</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('metricTable.columns.metric')}</TableHead>
-              <TableHead>{t('metricTable.columns.value')}</TableHead>
-              <TableHead>{t('metricTable.columns.change')}</TableHead>
+              <TableHead scope="col" className="text-start text-sm">
+                {t('metricTable.columns.metric')}
+              </TableHead>
+              <TableHead scope="col" className="text-end text-sm">
+                {t('metricTable.columns.value')}
+              </TableHead>
+              <TableHead scope="col" className="text-start text-sm">
+                {t('metricTable.columns.change')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.map((metric) => (
               <TableRow key={metric.id}>
-                <TableCell>{metric.label}</TableCell>
-                <TableCell>
-                  {fmt.number(metric.value)}
-                  {metric.unit === undefined ? '' : ` ${metric.unit}`}
+                <TableHead
+                  scope="row"
+                  className="h-auto p-4 text-start text-base font-medium text-copy [overflow-wrap:anywhere]"
+                >
+                  {metric.label}
+                </TableHead>
+                <TableCell className="text-end text-base font-medium tabular-nums">
+                  {withUnit(fmt.number(metric.value), metric.unit)}
                 </TableCell>
                 <TableCell>
                   {metric.trend !== undefined && metric.changePercent !== undefined ? (
@@ -89,6 +102,7 @@ export async function MetricTable({ props, context, loadContent }: MetricTableCo
           </TableBody>
         </Table>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

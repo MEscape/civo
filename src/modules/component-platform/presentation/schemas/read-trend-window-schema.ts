@@ -19,5 +19,3 @@ export const readTrendWindowSchema = z.object({
   limit: z.number().int().min(LIST_LIMITS.dataset.min).max(LIST_LIMITS.dataset.max),
   offset: z.number().int().min(0).max(MAX_LIST_OFFSET),
 });
-
-export type ReadTrendWindow = z.infer<typeof readTrendWindowSchema>;

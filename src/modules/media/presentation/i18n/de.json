@@ -1,0 +1,126 @@
+{
+  "media": {
+    "errors": {
+      "notFound": "Diese Datei wurde nicht gefunden.",
+      "validation": "Diese Datei kann nicht verwendet werden. Bitte prüfen Sie sie und versuchen Sie es erneut.",
+      "infrastructure": "Die Datei konnte gerade nicht gespeichert werden. Bitte versuchen Sie es gleich noch einmal.",
+      "storageDisabled": "Datei-Uploads sind für diese Website noch nicht eingerichtet.",
+      "storageFailed": "Der Dateispeicher ist gerade nicht erreichbar. Bitte versuchen Sie es gleich noch einmal.",
+      "tooManyPending": "Es laufen zu viele Uploads. Bitte warten Sie, bis sie abgeschlossen sind.",
+      "uploadMissing": "Die Datei ist noch nicht angekommen. Bitte laden Sie sie erneut hoch.",
+      "uploadRejected": "Die hochgeladene Datei entspricht nicht der angekündigten Datei und wurde entfernt. Bitte versuchen Sie es erneut.",
+      "inUse": "Diese Datei wird noch verwendet: auf einer Seite oder in einer Veröffentlichung, die wiederhergestellt werden kann. Deshalb kann sie nicht gelöscht werden.",
+      "notPrivate": "Nur private Dateien haben einen temporären Link.",
+      "notReady": "Diese Datei ist noch nicht bereit.",
+      "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+      "transferFailed": "Die Datei konnte nicht gesendet werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    },
+    "validation": {
+      "websiteInvalid": "Diese Website-Referenz ist ungültig.",
+      "idInvalid": "Diese Dateireferenz ist ungültig.",
+      "fileNameInvalid": "Die Datei braucht einen Namen.",
+      "contentTypeUnsupported": "Dieser Dateityp wird nicht unterstützt. Verwenden Sie JPEG, PNG, WebP, AVIF oder GIF.",
+      "sizeInvalid": "Die Datei ist leer oder ihre Größe ist ungültig.",
+      "sizeTooLarge": "Die Datei ist zu groß. Das Maximum beträgt {maxMegabytes} MB.",
+      "visibilityUnsupported": "Wählen Sie, ob die Datei öffentlich oder privat ist."
+    },
+    "picker": {
+      "choose": "Bild auswählen",
+      "upload": "Bild hochladen",
+      "uploading": "Wird hochgeladen …",
+      "remove": "Entfernen",
+      "selected": "Bild ausgewählt",
+      "empty": "Noch keine Bilder. Laden Sie eines hoch, um zu beginnen.",
+      "gridLabel": "Ihre Bilder",
+      "truncated": "Angezeigt werden die neuesten {shown} von {total} Bildern.",
+      "openLibrary": "Mediathek öffnen"
+    },
+    "library": {
+      "title": "Medien",
+      "description": "Bilder für die Seiten Ihrer Website. Einmal hochladen, überall verwenden.",
+      "metadataTitle": "Medien",
+      "panelTitle": "Dateien",
+      "count": "{count, plural, one {# Datei} other {# Dateien}}",
+      "listLabel": "Hochgeladene Dateien",
+      "paginationNav": "Seiten der Dateien",
+      "columns": {
+        "file": "Datei",
+        "details": "Typ und Größe",
+        "uploaded": "Hochgeladen",
+        "actions": "Aktionen"
+      },
+      "visibility": {
+        "public": "Öffentlich",
+        "private": "Privat"
+      },
+      "upload": "Bilder hochladen",
+      "keepPrivate": "Privat halten (nicht auf der Website anzeigen)",
+      "hint": "JPEG, PNG, WebP, AVIF oder GIF, je bis zu {maxMegabytes} MB.",
+      "emptyTitle": "Noch keine Bilder",
+      "emptyUpload": "Laden Sie Ihr erstes Bild hoch, um es auf Ihren Seiten zu verwenden.",
+      "open": "Öffnen",
+      "openLabel": "{name} öffnen",
+      "uploadsUnavailable": "Datei-Uploads sind für diese Installation noch nicht eingerichtet. Bitten Sie eine Administratorin oder einen Administrator, den Dateispeicher zu konfigurieren.",
+      "privateHint": "Private Dateien erscheinen nie auf der Website. Angemeldete Teammitglieder öffnen sie über einen kurzlebigen Link.",
+      "noMatchTitle": "Keine passenden Dateien",
+      "noMatchDescription": "Keine Datei passt zu dieser Suche oder diesem Filter.",
+      "review": {
+        "title": "Bilder hochladen",
+        "description": "{count, plural, one {# Bild wird} other {# Bilder werden}} hochgeladen:",
+        "filesLabel": "Ausgewählte Dateien",
+        "confirm": "Hochladen",
+        "cancel": "Abbrechen"
+      },
+      "notice": {
+        "uploading": "{count, plural, one {# Bild wird} other {# Bilder werden}} hochgeladen …",
+        "uploaded": "{count, plural, one {# Bild hochgeladen.} other {# Bilder hochgeladen.}}"
+      },
+      "filters": {
+        "label": "Dateien durchsuchen",
+        "search": "Nach Dateiname suchen",
+        "visibility": "Sichtbarkeit",
+        "all": "Alle",
+        "apply": "Suchen",
+        "reset": "Zurücksetzen"
+      },
+      "steps": {
+        "label": "So kommen Bilder auf Ihre Website",
+        "upload": {
+          "title": "Bilder hochladen"
+        },
+        "place": {
+          "title": "Im Seiteneditor einfügen",
+          "description": "Wählen Sie das Bild in einer Komponente aus, etwa im Titelbild."
+        },
+        "publish": {
+          "title": "Veröffentlichen",
+          "description": "Mit der nächsten Veröffentlichung erscheint es auf der Website."
+        }
+      }
+    },
+    "delete": {
+      "action": "Löschen",
+      "label": "{name} löschen",
+      "title": "Diese Datei löschen?",
+      "description": "„{name}“ wird endgültig entfernt. Eine Datei, die Seiten oder Veröffentlichungen noch verwenden, kann nicht gelöscht werden.",
+      "confirm": "Endgültig löschen",
+      "cancel": "Abbrechen",
+      "inUseTitle": "„{name}“ wird noch verwendet",
+      "inUseDescription": "{count, plural, one {Diese Komponente zeigt das Bild noch.} other {Diese # Komponenten zeigen das Bild noch.}} Wählen Sie dort ein anderes Bild, dann können Sie die Datei löschen.",
+      "unknown": "Ob „{name}“ noch verwendet wird, konnte nicht geprüft werden. Eine verwendete Datei wird nicht gelöscht.",
+      "openFirst": "Erste Stelle öffnen"
+    },
+    "auditEvents": {
+      "media": {
+        "upload_completed": "Datei hochgeladen",
+        "upload_rejected": "Upload abgelehnt",
+        "deleted": "Datei gelöscht"
+      }
+    },
+    "websiteOverview": {
+      "title": "Dateien",
+      "empty": "Noch keine Datei hochgeladen."
+    }
+  }
+}

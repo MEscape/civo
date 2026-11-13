@@ -8,6 +8,7 @@ const INITIAL_COLUMNS = 3;
 
 export const kpiGridDefinition = defineComponent({
   type: 'kpiGrid',
+  version: 2,
   category: 'smartcity',
   municipallyEditable: true,
   dataBinding: { kind: 'SmartCityMetric' },

@@ -3,8 +3,8 @@ import {
   list,
   number as numberField,
   object,
-  oneOf,
-  optional,
+  oneOfValues,
+  optionalField,
   text,
   url as urlField,
 } from './field-schema';
@@ -24,6 +24,10 @@ export const PROP_CONTROLS = [
   'datasets',
   'category',
   'items',
+  'media',
+  'map',
+  'booking-service',
+  'booking-category',
 ] as const;
 export type PropControl = (typeof PROP_CONTROLS)[number];
 
@@ -36,6 +40,8 @@ export const GRID_COLUMN_COUNTS = [1, 2, 3, 4] as const;
 export type GridColumnCount = (typeof GRID_COLUMN_COUNTS)[number];
 
 const NO_ITEMS = 0;
+const MEDIA_ID_LENGTH = 36;
+const MEDIA_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Controls that read the datasets of the component's data binding, and so need a content kind. */
 export const DATASET_CONTROLS: readonly PropControl[] = ['dataset', 'datasets', 'category'];
@@ -110,6 +116,17 @@ function propField<T>(init: PropFieldInit<T>): PropField<T> {
 
 /** The builders a component definition uses to declare its props. */
 export const prop = {
+  /** A saved map id of the rendering website; authorization and ownership are checked when it is resolved. */
+  map(meta?: PropMeta): PropField<string | undefined> {
+    return propField({
+      control: 'map',
+      schema: optionalField(
+        text({ max: MEDIA_ID_LENGTH, min: MEDIA_ID_LENGTH, pattern: MEDIA_ID_PATTERN }),
+      ),
+      fallback: undefined,
+      meta,
+    });
+  },
   /** Trimmed free text; absent or blank means "use the translated default". */
   text(
     max: number,
@@ -117,7 +134,7 @@ export const prop = {
   ): PropField<string | undefined> {
     return propField({
       control: 'text',
-      schema: optional(text({ max, trim: true })),
+      schema: optionalField(text({ max, trim: true })),
       fallback: undefined,
       meta,
       hasPlaceholder: meta?.placeholder ?? false,
@@ -131,10 +148,26 @@ export const prop = {
   ): PropField<string | undefined> {
     return propField({
       control: 'textarea',
-      schema: optional(text({ max, trim: true })),
+      schema: optionalField(text({ max, trim: true })),
       fallback: undefined,
       meta,
       hasPlaceholder: meta?.placeholder ?? false,
+    });
+  },
+
+  /**
+   * The id of an uploaded file of this website. Only the shape of an id is stored (a UUID, which
+   * is also what keeps it out of any path); whether the file exists and where it is served from
+   * is worked out at render time from the website the server is rendering, never from the prop.
+   */
+  media(meta?: PropMeta): PropField<string | undefined> {
+    return propField({
+      control: 'media',
+      schema: optionalField(
+        text({ max: MEDIA_ID_LENGTH, min: MEDIA_ID_LENGTH, pattern: MEDIA_ID_PATTERN }),
+      ),
+      fallback: undefined,
+      meta,
     });
   },
 
@@ -152,7 +185,7 @@ export const prop = {
   ): PropField<string | undefined> {
     return propField({
       control: 'text',
-      schema: optional(urlField({ max, allowRelative: options.allowRelative })),
+      schema: optionalField(urlField({ max, allowRelative: options.allowRelative })),
       fallback: undefined,
       meta: options,
       hasPlaceholder: options.placeholder ?? false,
@@ -172,7 +205,7 @@ export const prop = {
   select<const V extends string>(options: readonly V[], initial: V, meta?: PropMeta): PropField<V> {
     return propField({
       control: 'select',
-      schema: oneOf(options),
+      schema: oneOfValues(options),
       fallback: initial,
       meta,
       options,
@@ -182,7 +215,7 @@ export const prop = {
   columns(initial: GridColumnCount, meta?: PropMeta): PropField<GridColumnCount> {
     return propField({
       control: 'columns',
-      schema: oneOf(GRID_COLUMN_COUNTS),
+      schema: oneOfValues(GRID_COLUMN_COUNTS),
       fallback: initial,
       meta,
       options: GRID_COLUMN_COUNTS,
@@ -229,7 +262,7 @@ export const prop = {
   dataset(kind?: ContentKind): PropField<string | undefined> {
     return propField({
       control: 'dataset',
-      schema: optional(text({ min: 1, max: ID_MAX_LENGTH, trim: true })),
+      schema: optionalField(text({ min: 1, max: ID_MAX_LENGTH, trim: true })),
       fallback: undefined,
       meta: { group: 'data' },
       datasetKind: kind,
@@ -260,7 +293,31 @@ export const prop = {
   category(max: number, meta?: PropMeta): PropField<string | undefined> {
     return propField({
       control: 'category',
-      schema: optional(text({ max, trim: true })),
+      schema: optionalField(text({ max, trim: true })),
+      fallback: undefined,
+      meta,
+    });
+  },
+
+  /**
+   * One booking service of the same website, chosen from those it has. Stored as the service's id
+   * (plain text), so a page keeps working when the service is renamed; the booking module decides
+   * at render time whether it can still be booked.
+   */
+  bookingService(meta?: PropMeta): PropField<string | undefined> {
+    return propField({
+      control: 'booking-service',
+      schema: optionalField(text({ min: 1, max: ID_MAX_LENGTH, trim: true })),
+      fallback: undefined,
+      meta,
+    });
+  },
+
+  /** One category of the website's booking services, stored as its text like `category`. */
+  bookingCategory(max: number, meta?: PropMeta): PropField<string | undefined> {
+    return propField({
+      control: 'booking-category',
+      schema: optionalField(text({ max, trim: true })),
       fallback: undefined,
       meta,
     });

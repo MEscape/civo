@@ -2,6 +2,7 @@ import type { NotFoundAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
 
+import { readLegacyComponentDefaults } from '../../domain/components/legacy-component-props';
 import { componentNotRegistered } from '../../domain/errors/component-platform-errors';
 
 import type { PublicComponentPlatformDependencies } from '../component-platform-dependencies';
@@ -35,6 +36,10 @@ export class GetComponentDefaultProps {
     if (definition === undefined) {
       return err(componentNotRegistered());
     }
-    return ok(definition.version === input.version ? definition.defaultProps : null);
+    return ok(
+      definition.version === input.version
+        ? definition.defaultProps
+        : readLegacyComponentDefaults(input.type, input.version),
+    );
   }
 }

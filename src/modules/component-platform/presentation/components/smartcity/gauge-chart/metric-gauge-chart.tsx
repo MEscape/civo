@@ -1,4 +1,5 @@
-import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
+import { Container, Section } from '@components/layout/layout-primitives';
+import { Rail } from '@components/layout/rail';
 
 import { getTranslations, getAppFormatters } from '@i18n/server';
 
@@ -6,8 +7,10 @@ import { trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
+import { withUnit } from '../support/chart-tables';
 
 import { MetricGaugeChartClient } from './metric-gauge-chart.client';
+import { pickGoal } from './pick-goal';
 
 import type {
   ComponentProps,
@@ -47,35 +50,30 @@ export async function MetricGaugeChart({
   if (result.isErr()) {
     return <ContentState kind="error" heading={customHeading ?? t('metricGauge.defaultHeading')} />;
   }
-  const { items, origin } = result.value;
-  const goalId = trimToNull(props.goalId);
-  const metric = goalId === null ? items[0] : items.find((item) => item.id === goalId);
-  const target = metric?.target;
-  if (metric === undefined || target === undefined || target === 0) {
+  const goal = pickGoal(result.value.items, trimToNull(props.goalId));
+  if (goal === null) {
     return <ContentState kind="empty" heading={customHeading ?? t('metricGauge.defaultHeading')} />;
   }
 
-  const withUnit = (value: number): string => {
-    const formatted = fmt.number(value);
-    return metric.unit === undefined ? formatted : `${formatted} ${metric.unit}`;
-  };
-
   return (
     <Section tone="muted" className="relative">
-      <ContentOriginBadge origin={origin} />
-      <Container className="flex flex-col items-center text-center">
-        <SectionHeading className="mb-2">{customHeading ?? metric.label}</SectionHeading>
-        <MetricGaugeChartClient
-          percent={(metric.value / target) * PERCENT}
-          caption={t('metricGauge.progressLabel')}
-        />
-        <p className="mt-2 text-sm text-copy-muted">
-          {t('metricGauge.summary', {
-            value: withUnit(metric.value),
-            target: withUnit(target),
-          })}
-        </p>
+      <Container>
+        <Rail heading={customHeading ?? goal.metric.label} ratio="balanced">
+          <div className="flex flex-col items-start gap-4">
+            <MetricGaugeChartClient
+              percent={(goal.metric.value / goal.target) * PERCENT}
+              caption={t('metricGauge.progressLabel')}
+            />
+            <p className="max-w-[var(--civo-measure)] text-base text-copy-muted">
+              {t('metricGauge.summary', {
+                value: withUnit(fmt.number(goal.metric.value), goal.metric.unit),
+                target: withUnit(fmt.number(goal.target), goal.metric.unit),
+              })}
+            </p>
+          </div>
+        </Rail>
       </Container>
+      <ContentOriginBadge origin={result.value.origin} />
     </Section>
   );
 }

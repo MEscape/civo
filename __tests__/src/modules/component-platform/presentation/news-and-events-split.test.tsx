@@ -83,14 +83,54 @@ describe('NewsAndEventsSplit', () => {
     const tree = await renderSplit(loaderWith({ news: LIVE, events: SAMPLE }));
 
     const found = badges(tree);
-    expect(found).toHaveLength(1);
-    expect(found[0]?.props).toMatchObject({ origin: SAMPLE, placement: 'inline' });
+    expect(found).toHaveLength(2);
+    expect(found[0]?.props).toMatchObject({ origin: LIVE, placement: 'inline' });
+    expect(found[1]?.props).toMatchObject({ origin: SAMPLE, placement: 'inline' });
+    expect(await ContentOriginBadge({ origin: LIVE })).toBeNull();
   });
 
   it('shows no note while both columns carry real data', async () => {
     const tree = await renderSplit(loaderWith({ news: LIVE, events: LIVE }));
 
-    expect(badges(tree)).toHaveLength(0);
+    expect(badges(tree)).toHaveLength(2);
+    expect(await ContentOriginBadge({ origin: LIVE })).toBeNull();
+  });
+
+  it('retains provenance separately for both source-backed columns', async () => {
+    const snapshot: ContentOrigin = {
+      kind: 'live',
+      sources: [
+        {
+          kind: 'snapshot',
+          sourceId: 'recorded-source',
+          sourceUrl: 'https://example.invalid/data',
+          fetchedAt: NOW,
+          validUntil: null,
+          license: 'CC0',
+          licenseUrl: null,
+          attribution: 'Recorded publisher',
+        },
+      ],
+    };
+    const synthetic: ContentOrigin = {
+      kind: 'live',
+      sources: [
+        {
+          kind: 'synthetic',
+          sourceId: 'demo',
+          sourceUrl: null,
+          fetchedAt: NOW,
+          validUntil: null,
+          license: null,
+          licenseUrl: null,
+          attribution: null,
+        },
+      ],
+    };
+    const tree = await renderSplit(loaderWith({ news: snapshot, events: synthetic }));
+    const found = badges(tree);
+    expect(found[0]?.props).toMatchObject({ origin: snapshot });
+    expect(found[1]?.props).toMatchObject({ origin: synthetic });
   });
 
   it('lays the columns out by the width of the block, not of the window', async () => {

@@ -1,7 +1,7 @@
+import { Mail, Phone } from '@components/icons/icons';
 import { Container, Grid, Section, SectionHeading } from '@components/layout/layout-primitives';
 import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 import { ContentLink } from '@components/ui/content-link';
-import { Mail, Phone } from '@components/ui/icons';
 
 import { getTranslations } from '@i18n/server';
 
@@ -18,6 +18,10 @@ import type {
 import type { LoadContent } from '../../page-renderer/load-content';
 
 const MAX_COLUMNS = 3;
+
+/** A channel is a 44px row, underlined so it is not told by colour alone. */
+const CHANNEL_LINK =
+  'flex min-h-11 items-center gap-2 text-primary-copy underline decoration-1 underline-offset-4 [overflow-wrap:anywhere] hover:decoration-2';
 
 export interface ContactCardComponentProps {
   readonly props: ComponentProps<'contactCard'>;
@@ -48,7 +52,6 @@ export async function ContactCard({ props, context, loadContent }: ContactCardCo
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
         <Grid as="ul" columns={columnsForCount(items.length, MAX_COLUMNS)}>
@@ -58,22 +61,19 @@ export async function ContactCard({ props, context, loadContent }: ContactCardCo
                 <CardHeader>
                   <CardTitle>{contact.name}</CardTitle>
                   {contact.role !== undefined && <CardDescription>{contact.role}</CardDescription>}
-                  <div className="mt-3 flex flex-col gap-1.5 text-sm">
+                  <div className="mt-3 flex flex-col text-sm">
                     {contact.email !== undefined && (
-                      <ContentLink
-                        href={`mailto:${contact.email}`}
-                        className="flex items-center gap-2 text-primary-copy hover:underline"
-                      >
-                        <Mail className="h-4 w-4" aria-hidden="true" />
+                      <ContentLink href={`mailto:${contact.email}`} className={CHANNEL_LINK}>
+                        <Mail className="size-4 shrink-0" aria-hidden="true" />
                         {contact.email}
                       </ContentLink>
                     )}
                     {contact.phone !== undefined && (
                       <ContentLink
                         href={`tel:${contact.phone.replace(/\s+/g, '')}`}
-                        className="flex items-center gap-2 text-copy-muted hover:underline"
+                        className={`${CHANNEL_LINK} tabular-nums`}
                       >
-                        <Phone className="h-4 w-4" aria-hidden="true" />
+                        <Phone className="size-4 shrink-0" aria-hidden="true" />
                         {contact.phone}
                       </ContentLink>
                     )}
@@ -84,6 +84,7 @@ export async function ContactCard({ props, context, loadContent }: ContactCardCo
           ))}
         </Grid>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

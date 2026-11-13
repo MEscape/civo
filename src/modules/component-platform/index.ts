@@ -4,7 +4,11 @@
  * and framework entry points import from here and nowhere deeper. Browser
  * code imports from `./client`.
  */
-export { componentPlatformQueries, renderPageNodes } from './composition';
+export {
+  getComponentPlatformQueries,
+  renderPageNodes,
+  renderPublishedSitePage,
+} from './composition';
 
 export { default as enComponentPlatform } from './presentation/i18n/en.json';
 export { default as deComponentPlatform } from './presentation/i18n/de.json';
@@ -22,3 +26,5 @@ export type {
   RenderContext,
   RenderableNode,
 } from './application/contracts/component-platform-constraints';
+
+export { loadComponentLabels } from './composition';

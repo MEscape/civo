@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react';
 
-import { Card, CardHeader, CardTitle } from '@components/ui/card';
-import { ContentLink } from '@components/ui/content-link';
+import { ClampedText } from '@components/shared/page-parts.client';
 
 import { stripHtml, trimToNull } from '@lib/utils';
 
-import { ClampedText } from '../../shared/clamped-text.client';
+import { NewsCard } from '../../shared/news-card';
 
 import { SplitColumn } from './split-column';
 import { SplitList } from './split-list';
@@ -48,37 +47,20 @@ export function NewsColumn({
 
             return (
               <li key={item.id}>
-                <Card className="h-full">
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2 text-xs text-copy-muted">
-                      {item.category !== undefined ? (
-                        <span className="font-medium text-accent-copy">{item.category}</span>
-                      ) : (
-                        <span />
-                      )}
-                      {formatDay !== undefined && (
-                        <time dateTime={item.publishedAt}>{formatDay(item.publishedAt)}</time>
-                      )}
-                    </div>
-                    <CardTitle>
-                      {item.href !== undefined ? (
-                        <ContentLink href={item.href} className="hover:text-primary-copy">
-                          {item.title}
-                        </ContentLink>
-                      ) : (
-                        item.title
-                      )}
-                    </CardTitle>
-                    {description !== undefined && (
+                <NewsCard
+                  item={item}
+                  dateLabel={formatDay?.(item.publishedAt)}
+                  description={
+                    description !== undefined ? (
                       <ClampedText
                         text={description}
                         showMoreLabel={showMoreLabel}
                         showLessLabel={showLessLabel}
                         className="text-sm text-copy-muted"
                       />
-                    )}
-                  </CardHeader>
-                </Card>
+                    ) : undefined
+                  }
+                />
               </li>
             );
           })}

@@ -1,0 +1,126 @@
+{
+  "media": {
+    "errors": {
+      "notFound": "This file could not be found.",
+      "validation": "This file cannot be used. Please check it and try again.",
+      "infrastructure": "The file could not be saved right now. Please try again in a moment.",
+      "storageDisabled": "File uploads are not set up for this website yet.",
+      "storageFailed": "The file storage is not reachable right now. Please try again in a moment.",
+      "tooManyPending": "Too many uploads are still in progress. Please wait for them to finish.",
+      "uploadMissing": "The file has not arrived yet. Please upload it again.",
+      "uploadRejected": "The uploaded file is not the file that was announced, so it was removed. Please try again.",
+      "inUse": "This file is still in use: on a page, or in a release that can be restored. That is why it cannot be deleted.",
+      "notPrivate": "Only private files have a temporary link.",
+      "notReady": "This file is not ready yet.",
+      "rateLimited": "Too many attempts. Please wait a moment and try again.",
+      "transferFailed": "The file could not be sent. Check your connection and try again.",
+      "unexpected": "Something went wrong. Please try again."
+    },
+    "validation": {
+      "websiteInvalid": "This website reference is not valid.",
+      "idInvalid": "This file reference is not valid.",
+      "fileNameInvalid": "The file needs a name.",
+      "contentTypeUnsupported": "This file type is not supported. Use JPEG, PNG, WebP, AVIF or GIF.",
+      "sizeInvalid": "The file is empty or its size is not valid.",
+      "sizeTooLarge": "The file is too large. The maximum is {maxMegabytes} MB.",
+      "visibilityUnsupported": "Choose whether the file is public or private."
+    },
+    "picker": {
+      "choose": "Choose image",
+      "upload": "Upload image",
+      "uploading": "Uploading…",
+      "remove": "Remove",
+      "selected": "Image selected",
+      "empty": "No images yet. Upload one to get started.",
+      "gridLabel": "Your images",
+      "truncated": "Showing the newest {shown} of {total} images.",
+      "openLibrary": "Open the media library"
+    },
+    "library": {
+      "title": "Media",
+      "description": "Images for your website's pages. Upload once, use them anywhere.",
+      "metadataTitle": "Media",
+      "panelTitle": "Files",
+      "count": "{count, plural, one {# file} other {# files}}",
+      "listLabel": "Uploaded files",
+      "paginationNav": "Files pages",
+      "columns": {
+        "file": "File",
+        "details": "Type and size",
+        "uploaded": "Uploaded",
+        "actions": "Actions"
+      },
+      "visibility": {
+        "public": "Public",
+        "private": "Private"
+      },
+      "upload": "Upload images",
+      "keepPrivate": "Keep private (not shown on the website)",
+      "hint": "JPEG, PNG, WebP, AVIF or GIF, up to {maxMegabytes} MB each.",
+      "emptyTitle": "No images yet",
+      "emptyUpload": "Upload your first image to use it on your pages.",
+      "open": "Open",
+      "openLabel": "Open {name}",
+      "uploadsUnavailable": "File uploads are not set up for this installation yet. Ask an administrator to configure file storage.",
+      "privateHint": "Private files never appear on the website. Signed-in team members open them through a short-lived link.",
+      "noMatchTitle": "No matching files",
+      "noMatchDescription": "No file matches this search or filter.",
+      "review": {
+        "title": "Upload images",
+        "description": "{count, plural, one {# image is} other {# images are}} uploaded:",
+        "filesLabel": "Chosen files",
+        "confirm": "Upload",
+        "cancel": "Cancel"
+      },
+      "notice": {
+        "uploading": "Uploading {count, plural, one {# image} other {# images}} …",
+        "uploaded": "{count, plural, one {# image uploaded.} other {# images uploaded.}}"
+      },
+      "filters": {
+        "label": "Search files",
+        "search": "Search by file name",
+        "visibility": "Visibility",
+        "all": "All",
+        "apply": "Search",
+        "reset": "Reset"
+      },
+      "steps": {
+        "label": "How images reach your website",
+        "upload": {
+          "title": "Upload images"
+        },
+        "place": {
+          "title": "Place them in the page editor",
+          "description": "Choose an image in a component, such as the hero."
+        },
+        "publish": {
+          "title": "Publish",
+          "description": "The next release shows it on the website."
+        }
+      }
+    },
+    "delete": {
+      "action": "Delete",
+      "label": "Delete {name}",
+      "title": "Delete this file?",
+      "description": "“{name}” is removed for good. A file that pages or releases still use cannot be deleted.",
+      "confirm": "Delete for good",
+      "cancel": "Cancel",
+      "inUseTitle": "“{name}” is still in use",
+      "inUseDescription": "{count, plural, one {This component still shows the image.} other {These # components still show the image.}} Choose another image there, then delete the file.",
+      "unknown": "It could not be checked whether “{name}” is still in use. A file in use is not deleted.",
+      "openFirst": "Open the first one"
+    },
+    "auditEvents": {
+      "media": {
+        "upload_completed": "File uploaded",
+        "upload_rejected": "Upload rejected",
+        "deleted": "File deleted"
+      }
+    },
+    "websiteOverview": {
+      "title": "Files",
+      "empty": "No file uploaded yet."
+    }
+  }
+}

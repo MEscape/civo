@@ -1,4 +1,4 @@
-import { boolean, oneOf, optional, text, withDefault } from '../../models/field-schema';
+import { boolean, oneOfValues, optionalField, text, withDefault } from '../../models/field-schema';
 import { defineContent } from '../define-content';
 
 export const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -6,12 +6,12 @@ export const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as con
 const TIME_PATTERN = /^\d{2}:\d{2}$/;
 const TIME_LENGTH = 5;
 
-const time = () => optional(text({ max: TIME_LENGTH, pattern: TIME_PATTERN }));
+const time = () => optionalField(text({ max: TIME_LENGTH, pattern: TIME_PATTERN }));
 
 /** The opening hours of one weekday, Monday first. */
 export const openingHoursEntryContent = defineContent({
   shape: {
-    day: oneOf(WEEKDAYS),
+    day: oneOfValues(WEEKDAYS),
     closed: withDefault(boolean(), false),
     opensAt: time(),
     closesAt: time(),

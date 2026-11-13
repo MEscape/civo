@@ -3,7 +3,7 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { componentPlatformQueries } from '../../composition';
+import { getComponentPlatformQueries } from '../../composition';
 import { parseContentInput } from '../schemas/parse-content-input';
 import { readTrendWindowSchema } from '../schemas/read-trend-window-schema';
 
@@ -17,7 +17,7 @@ import type { TrendWindowDto } from '../dto/trend-window-dto';
  */
 export async function readTrendWindowAction(input: unknown): Promise<ActionResult<TrendWindowDto>> {
   const result = await parseContentInput(readTrendWindowSchema, input).asyncAndThen((request) =>
-    componentPlatformQueries.readTrendWindow.execute(request),
+    getComponentPlatformQueries().readTrendWindow.execute(request),
   );
   return toActionResult(result);
 }

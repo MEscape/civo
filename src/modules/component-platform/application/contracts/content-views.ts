@@ -6,6 +6,7 @@ import type {
   ContentSourceError,
   RenderMode,
 } from './component-platform-constraints';
+import type { ContentProvenance } from '../../domain/models/content-provenance';
 
 /**
  * Where the records came from, so the UI can be honest about it.
@@ -13,11 +14,16 @@ import type {
  * when nothing is bound yet.
  */
 export type ContentOrigin =
-  | { readonly kind: 'live' }
+  | {
+      readonly kind: 'live';
+      readonly sources?: readonly ContentProvenance[];
+      readonly rejected?: number;
+    }
   | { readonly kind: 'unbound' }
   | { readonly kind: 'sample'; readonly cause: string | null };
 
 export interface ContentListView<K extends ContentKind> {
+  readonly maxWindowRecords?: number;
   readonly items: ReadonlyArray<ContentOf<K>>;
   readonly origin: ContentOrigin;
   /** More relevant records existed than the limit allowed. */

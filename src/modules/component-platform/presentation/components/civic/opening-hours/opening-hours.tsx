@@ -1,9 +1,9 @@
-import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
-import { Card, CardContent } from '@components/ui/card';
+import { Container, Section } from '@components/layout/layout-primitives';
+import { Rail } from '@components/layout/rail';
 
 import { getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { cn, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
@@ -18,6 +18,15 @@ export interface OpeningHoursComponentProps {
   readonly props: ComponentProps<'openingHours'>;
   readonly context: RenderContext;
   readonly loadContent: LoadContent;
+}
+
+/** A day with a midday break has one entry per period; they share one row, in source order. */
+function byDay<T extends { readonly day: string }>(items: readonly T[]): Map<T['day'], T[]> {
+  const days = new Map<T['day'], T[]>();
+  for (const entry of items) {
+    days.set(entry.day, [...(days.get(entry.day) ?? []), entry]);
+  }
+  return days;
 }
 
 /** The general opening hours, one row per weekday. */
@@ -43,29 +52,40 @@ export async function OpeningHours({ props, context, loadContent }: OpeningHours
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
-      <Container className="max-w-xl">
-        <SectionHeading>{heading}</SectionHeading>
-        <Card>
-          <CardContent className="pt-5">
-            <dl className="divide-y divide-border">
-              {items.map((entry) => (
-                <div key={entry.day} className="flex items-center justify-between py-2.5 text-sm">
-                  <dt className="text-copy">{t(`openingHours.days.${entry.day}`)}</dt>
-                  <dd className="text-copy-muted">
-                    {entry.closed || entry.opensAt === undefined || entry.closesAt === undefined
+      <Container>
+        <Rail heading={heading} ratio="content-heavy">
+          <dl className="max-w-[var(--civo-width-narrow)] divide-y divide-border border-y border-border">
+            {[...byDay(items)].map(([day, entries]) => {
+              const ranges = entries.flatMap((entry) =>
+                entry.closed || entry.opensAt === undefined || entry.closesAt === undefined
+                  ? []
+                  : [t('openingHours.range', { from: entry.opensAt, to: entry.closesAt })],
+              );
+
+              return (
+                <div key={day} className="flex items-baseline justify-between gap-4 py-3">
+                  <dt className="text-copy">{t(`openingHours.days.${day}`)}</dt>
+                  <dd
+                    className={cn(
+                      'text-end tabular-nums',
+                      ranges.length === 0 ? 'text-copy-muted' : 'font-medium text-copy',
+                    )}
+                  >
+                    {ranges.length === 0
                       ? t('openingHours.closed')
-                      : t('openingHours.range', {
-                          from: entry.opensAt,
-                          to: entry.closesAt,
-                        })}
+                      : ranges.map((range) => (
+                          <span key={range} className="block">
+                            {range}
+                          </span>
+                        ))}
                   </dd>
                 </div>
-              ))}
-            </dl>
-          </CardContent>
-        </Card>
+              );
+            })}
+          </dl>
+        </Rail>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

@@ -23,6 +23,11 @@ export interface RenderServices {
   readonly mapSection: ComponentType<MapSectionProps>;
   /** The booking module's server-side booking section. */
   readonly bookingSection: ComponentType<BookingSectionProps>;
+  /**
+   * Where visitors load one of the website's uploaded files from, or `null` when it has none.
+   * Called with the website the server is rendering, never one named by a page's props.
+   */
+  readonly mediaUrl: (websiteId: string, assetId: string) => string | null;
 }
 
 export interface ComponentRenderInput<TProps> extends RenderServices {
@@ -34,11 +39,6 @@ export interface ComponentRenderInput<TProps> extends RenderServices {
 
 export interface ComponentImplementationSpec<TProps> {
   readonly render: (input: ComponentRenderInput<TProps>) => ReactNode;
-  /**
-   * Shown while an async (data-loading) component streams in. Leave it out
-   * for components that render synchronously.
-   */
-  readonly skeleton?: ReactNode;
 }
 
 /** Everything the renderer knows about one node when it asks for its content. */
@@ -51,7 +51,6 @@ export interface NodeRenderRequest extends RenderServices {
 /** A component with its props type erased: the props are parsed inside, so a caller needs no cast. */
 export interface ComponentImplementation {
   render(request: NodeRenderRequest): ReactNode;
-  readonly skeleton: ReactNode;
 }
 
 /**
@@ -68,6 +67,5 @@ export function implementComponent<T extends RegisteredComponentName>(
   return {
     render: ({ rawProps, ...rest }) =>
       spec.render({ ...rest, props: definition.parseProps(rawProps) }),
-    skeleton: spec.skeleton ?? null,
   };
 }

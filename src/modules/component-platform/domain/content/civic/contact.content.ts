@@ -1,4 +1,4 @@
-import { email, optional, text } from '../../models/field-schema';
+import { email, optionalField, text } from '../../models/field-schema';
 import { CONTENT_LIMITS as LIMITS } from '../content-limits';
 import { defineContent } from '../define-content';
 import { label, recordId, title } from '../shared-fields';
@@ -9,8 +9,8 @@ export const contactContent = defineContent({
     id: recordId(),
     name: title(),
     role: label(),
-    email: optional(email(LIMITS.label)),
-    phone: optional(text({ max: LIMITS.phone })),
+    email: optionalField(email(LIMITS.label)),
+    phone: optionalField(text({ max: LIMITS.phone })),
   },
   rule: {},
 }).withSample(() => [

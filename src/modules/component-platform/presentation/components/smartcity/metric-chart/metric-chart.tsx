@@ -1,12 +1,14 @@
 import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
 
-import { getTranslations } from '@i18n/server';
+import { getAppFormatters, getTranslations } from '@i18n/server';
 
-import { trimToNull } from '@lib/utils';
+import { groupBy, trimToNull } from '@lib/utils';
 
+import { ChartFigure } from '../../shared/chart-figure';
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
 import { categoryFilter } from '../support/category-filter';
+import { metricRows } from '../support/chart-tables';
 
 import { MetricChartClient } from './metric-chart.client';
 
@@ -22,10 +24,11 @@ export interface MetricChartComponentProps {
   readonly loadContent: LoadContent;
 }
 
-/** A simple bar chart comparing metrics at one point in time. */
+/** A simple bar chart comparing metrics at one point in time, with its data as a table. */
 export async function MetricChart({ props, context, loadContent }: MetricChartComponentProps) {
-  const [t, result] = await Promise.all([
+  const [t, fmt, result] = await Promise.all([
     getTranslations('componentPlatform'),
+    getAppFormatters(),
     loadContent({
       kind: 'SmartCityMetric',
       mode: context.mode,
@@ -46,16 +49,41 @@ export async function MetricChart({ props, context, loadContent }: MetricChartCo
 
   return (
     <Section tone="muted" className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
-        <MetricChartClient
-          data={items.map((metric) => ({
-            label: metric.label,
-            value: metric.value,
-          }))}
-        />
+        <div className="space-y-8">
+          {Array.from(
+            groupBy(items, (metric) => metric.unit),
+            ([unit, metrics]) => {
+              const title = trimToNull(unit) === null ? heading : `${heading} (${unit})`;
+              return (
+                <div key={unit === undefined ? 'missing-unit' : `unit:${unit}`}>
+                  {trimToNull(unit) !== null && (
+                    <h3 className="mb-3 font-heading text-lg font-semibold text-copy">{title}</h3>
+                  )}
+                  <ChartFigure
+                    label={t('charts.chartLabel', { title })}
+                    showDataLabel={t('charts.showData')}
+                    table={{
+                      caption: title,
+                      columns: [t('charts.columns.label'), t('charts.columns.value')],
+                      rows: metricRows(metrics, fmt),
+                    }}
+                  >
+                    <MetricChartClient
+                      data={metrics.map((metric) => ({
+                        label: metric.label,
+                        value: metric.value,
+                      }))}
+                    />
+                  </ChartFigure>
+                </div>
+              );
+            },
+          )}
+        </div>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

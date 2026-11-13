@@ -1,4 +1,4 @@
-import { instant, optional } from '../../models/field-schema';
+import { instant, optionalField } from '../../models/field-schema';
 import { defineContent } from '../define-content';
 import { sampleInstant } from '../sample-instant';
 import {
@@ -18,7 +18,7 @@ export const eventContent = defineContent({
     title: title(),
     description: longText(),
     startDate: instant(),
-    endDate: optional(instant()),
+    endDate: optionalField(instant()),
     location: label(),
     category: label(),
     imageUrl: imageUrl(),

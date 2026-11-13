@@ -1,4 +1,4 @@
-import { number, optional, text } from '../../models/field-schema';
+import { number, optionalField, text } from '../../models/field-schema';
 import { CONTENT_LIMITS as LIMITS } from '../content-limits';
 import { defineContent } from '../define-content';
 import { label, recordId, title } from '../shared-fields';
@@ -14,7 +14,7 @@ export const smartCityBreakdownEntryContent = defineContent({
     id: recordId(),
     label: title(),
     value: number({ min: 0 }),
-    group: optional(text({ min: 1, max: LIMITS.label })),
+    group: optionalField(text({ min: 1, max: LIMITS.label })),
     unit: label(),
   },
   rule: {},

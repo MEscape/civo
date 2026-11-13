@@ -1,5 +1,14 @@
 {
   "componentPlatform": {
+    "provenance": {
+      "synthetic": "Synthetische Demodaten – kein amtliches Angebot",
+      "snapshot": "Datenstand (Momentaufnahme):",
+      "asOf": "Stand:",
+      "partial": "{count, plural, one {# Datensatz konnte nicht angezeigt werden.} other {# Datensätze konnten nicht angezeigt werden.}}",
+      "measuredAt": "Messzeit:",
+      "license": "Lizenz und Nutzung",
+      "stale": "Aktualisierung ausstehend – zuletzt verfügbare Daten"
+    },
     "components": {
       "section": {
         "label": "Abschnitt",
@@ -24,6 +33,22 @@
             "options": {
               "default": "Standard",
               "muted": "Abgesetzt"
+            }
+          },
+          "layout": {
+            "label": "Anordnung",
+            "options": {
+              "stack": "Untereinander",
+              "split": "Zwei Spalten",
+              "aside": "Inhalt mit Seitenspalte"
+            }
+          },
+          "density": {
+            "label": "Abstände",
+            "options": {
+              "default": "Standard",
+              "tight": "Kompakt",
+              "airy": "Großzügig"
             }
           }
         }
@@ -163,8 +188,11 @@
           "subtitle": {
             "label": "Untertitel"
           },
+          "image": {
+            "label": "Bild"
+          },
           "imageUrl": {
-            "label": "Bild-URL",
+            "label": "Externe Bild-URL",
             "placeholder": "https://..."
           }
         }
@@ -245,7 +273,7 @@
             "label": "Überschrift"
           },
           "serviceId": {
-            "label": "Leistungs-ID (optional, bucht nur diese Leistung)"
+            "label": "Leistung (optional, bucht nur diese Leistung)"
           },
           "category": {
             "label": "Kategorie (optional, zeigt nur diese Kategorie)"
@@ -297,6 +325,9 @@
         "fields": {
           "primaryDatasetId": {
             "label": "Kartendaten"
+          },
+          "savedMapId": {
+            "label": "Gespeicherte Karte"
           },
           "secondaryDatasetId": {
             "label": "Weitere Kartendaten"
@@ -440,6 +471,14 @@
               "href": {
                 "label": "Link-Ziel"
               }
+            }
+          },
+          "placement": {
+            "label": "Platzierung",
+            "options": {
+              "content": "Inhaltsliste",
+              "header": "Websitekopf",
+              "footer": "Websitefuß"
             }
           }
         }
@@ -699,6 +738,26 @@
             }
           }
         }
+      },
+      "statusBoard": {
+        "label": "Statusübersicht",
+        "description": "Meldestatus von Orten mit Zeitpunkt und Datenherkunft.",
+        "sample": {
+          "props": {
+            "heading": "Gemeldeter Status"
+          }
+        },
+        "fields": {
+          "datasetId": {
+            "label": "Datensatz"
+          },
+          "heading": {
+            "label": "Überschrift"
+          },
+          "limit": {
+            "label": "Limit (angezeigte Datensätze)"
+          }
+        }
       }
     },
     "eventsGrid": {
@@ -720,8 +779,8 @@
       "datasetNotMapped": "Beispieldaten: der Datensatz hat noch keine Feldzuordnung",
       "datasetKindMismatch": "Beispieldaten: der Datensatz passt nicht zu dieser Komponente",
       "sourceFailed": "Beispieldaten: die Datenquelle ist nicht erreichbar",
-      "requestInvalid": "Beispieldaten: die Anfrage war ungültig",
-      "rateLimited": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
+      "rateLimited": "Beispieldaten: zu viele Anfragen. Bitte gleich noch einmal versuchen.",
+      "requestInvalid": "Beispieldaten: die Anfrage war ungültig"
     },
     "hero": {
       "defaultTitle": "Willkommen"
@@ -738,10 +797,19 @@
       }
     },
     "quickLinks": {
-      "defaultHeading": "Schnellzugriff"
+      "defaultHeading": "Schnellzugriff",
+      "skipToContent": "Zum Hauptinhalt springen",
+      "menu": "Menü",
+      "mainNavigation": "Hauptnavigation",
+      "footerNavigation": "Service und rechtliche Informationen"
     },
     "alertBanner": {
-      "defaultHeading": "Bekanntmachungen"
+      "defaultHeading": "Bekanntmachungen",
+      "severity": {
+        "info": "Hinweis",
+        "warning": "Warnung",
+        "urgent": "Dringend"
+      }
     },
     "booking": {
       "defaultHeading": "Termin buchen"
@@ -782,7 +850,10 @@
       "defaultHeading": "Leistungen finden",
       "defaultPlaceholder": "Leistung suchen…",
       "allCategories": "Alle",
-      "noResults": "Keine passenden Leistungen gefunden."
+      "noResults": "Keine passenden Leistungen gefunden.",
+      "searchLabel": "Leistungen suchen",
+      "categoriesLabel": "Nach Kategorie filtern",
+      "resultCount": "Ergebnisse: {count}"
     },
     "serviceGrid": {
       "defaultHeading": "Online-Leistungen"
@@ -795,7 +866,8 @@
         "papier": "Papier",
         "gelberSack": "Gelber Sack",
         "sperrmuell": "Sperrmüll"
-      }
+      },
+      "next": "Nächste Abholung"
     },
     "dashboardGrid": {
       "defaultHeading": "Smart-City-Dashboard",
@@ -816,6 +888,7 @@
     },
     "metricDonut": {
       "defaultHeading": "Verteilung",
+      "others": "Weitere",
       "title": "{heading} · {label}"
     },
     "metricGauge": {
@@ -841,9 +914,39 @@
         "zoomOut": "Herauszoomen",
         "earlier": "Früher",
         "later": "Später",
-        "failed": "Der Bereich konnte nicht geladen werden.",
-        "status": "Zeigt bis zu {limit} Werte ab Wert {offset}."
+        "failed": "Für diesen Bereich sind keine Messwerte verfügbar. Die bisherige Ansicht bleibt erhalten.",
+        "status": "Messwerte: {count} · {from} bis {to}"
       }
+    },
+    "accordion": {
+      "defaultHeading": "Überschrift eingeben"
+    },
+    "cardGrid": {
+      "defaultHeading": "Überschrift eingeben"
+    },
+    "richText": {
+      "defaultHeading": "Überschrift eingeben"
+    },
+    "charts": {
+      "chartLabel": "Diagramm: {title}",
+      "showData": "Daten als Tabelle anzeigen",
+      "columns": {
+        "label": "Bezeichnung",
+        "value": "Wert",
+        "date": "Datum",
+        "share": "Anteil"
+      }
+    },
+    "trendIndicator": {
+      "up": "gestiegen",
+      "down": "gesunken",
+      "flat": "unverändert"
+    },
+    "statusBoard": {
+      "defaultHeading": "Gemeldeter Status",
+      "unknownStatus": "Status nicht gemeldet",
+      "unknownTime": "Zeitpunkt nicht gemeldet",
+      "observedAt": "Gemeldet:"
     }
   }
 }

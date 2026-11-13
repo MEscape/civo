@@ -16,7 +16,7 @@ export async function ComponentErrorFallback({ componentType }: ComponentErrorFa
         role="status"
         className="rounded-token border border-dashed border-border bg-surface px-4 py-3 text-sm text-copy-muted"
       >
-        {componentType !== null && <code className="mr-2 font-mono text-xs">{componentType}</code>}
+        {componentType !== null && <code className="me-2 font-mono text-xs">{componentType}</code>}
         {t('render.sectionUnavailable')}
       </div>
     </Container>

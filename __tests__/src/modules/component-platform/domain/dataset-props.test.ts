@@ -157,3 +157,36 @@ describe('the registry', () => {
     expect(() => createComponentRegistry([unbound])).toThrow(/declares no data binding/);
   });
 });
+
+describe('component contract dependencies', () => {
+  it.each([
+    ['newsAndEventsSplit', ['NewsItem', 'Event']],
+    ['dashboardGrid', ['SmartCityMetric', 'SmartCityObservation', 'SmartCityBreakdownEntry']],
+    ['map', ['GeoFeature']],
+  ] as const)('pins every dataset contract used by %s', (type, contracts) => {
+    const definition = COMPONENT_DEFINITIONS.find((candidate) => candidate.type === type);
+
+    expect(definition?.dependsOnContracts).toEqual(
+      contracts.map((contract) => ({ contract, minVersion: 1 })),
+    );
+  });
+
+  it('deduplicates dataset contracts while preserving the binding minimum version', () => {
+    const definition = defineComponent({
+      type: 'multipleSources',
+      category: 'content',
+      dataBinding: { kind: 'NewsItem', minVersion: 3 },
+      props: {
+        datasetId: prop.dataset(),
+        newsDatasetId: prop.dataset('NewsItem'),
+        eventDatasetIds: prop.datasets(2, 'Event'),
+        eventDatasetId: prop.dataset('Event'),
+      },
+    });
+
+    expect(definition.dependsOnContracts).toEqual([
+      { contract: 'NewsItem', minVersion: 3 },
+      { contract: 'Event', minVersion: 1 },
+    ]);
+  });
+});

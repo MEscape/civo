@@ -14,10 +14,11 @@ import { PROP_LIMITS } from '../prop-limits';
  */
 export const mapDefinition = defineComponent({
   type: 'map',
-  version: 1,
+  version: 2,
   category: 'smartcity',
   municipallyEditable: true,
   props: {
+    savedMapId: prop.map({ group: 'data', municipal: true }),
     primaryDatasetId: prop.dataset('GeoFeature'),
     secondaryDatasetId: prop.dataset('GeoFeature'),
     heading: prop.text(PROP_LIMITS.heading, {

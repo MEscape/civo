@@ -1,4 +1,4 @@
-import { list, object, optional } from '../../models/field-schema';
+import { list, object, optionalField } from '../../models/field-schema';
 import { CONTENT_LIMITS as LIMITS } from '../content-limits';
 import { defineContent } from '../define-content';
 import { label, recordId, shortText, title } from '../shared-fields';
@@ -9,7 +9,7 @@ export const councilBodyContent = defineContent({
     id: recordId(),
     name: title(),
     description: shortText(),
-    members: optional(
+    members: optionalField(
       list(
         object({ id: recordId(), name: title(), role: label(), party: label() }),
         LIMITS.members,

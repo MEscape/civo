@@ -2,6 +2,7 @@ import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from 
 import type { AppResultAsync } from '@lib/result';
 
 import type { ContentKind, ContentOf } from '../content/content-definitions';
+import type { ContentProvenance } from '../models/content-provenance';
 import type { DatasetId, WebsiteId } from '../models/ids';
 
 /** Why a source could not deliver: all three are outcomes callers can tell apart. */
@@ -22,6 +23,9 @@ export interface ContentWindow {
 }
 
 export interface ContentBatch<K extends ContentKind> {
+  readonly maxWindowRecords?: number;
+  readonly provenance?: ContentProvenance;
+  readonly rejected?: number;
   /** Only records that satisfy the canonical contract. Rejected records are the adapter's to report. */
   readonly items: ReadonlyArray<ContentOf<K>>;
   /** The dataset holds records beyond the window: the view shows part of it. */

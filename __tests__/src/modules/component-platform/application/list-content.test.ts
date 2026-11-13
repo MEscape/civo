@@ -69,6 +69,27 @@ function dependencies(source: ContentSource): PublicComponentPlatformDependencie
 }
 
 describe('ListContent with several datasets', () => {
+  it('carries the smallest contributing source budget into the rendered view', async () => {
+    const source = new FakeContentSource();
+    const bounded: ContentSource = {
+      list: (request) =>
+        source
+          .list(request)
+          .map((batch) => ({ ...batch, maxWindowRecords: request.datasetId === FIRST ? 50 : 10 })),
+    };
+    const result = await new ListContent(dependencies(bounded)).execute({
+      kind: 'WasteCollectionEntry',
+      mode: 'published',
+      websiteId: WEBSITE_ID,
+      datasetId: FIRST,
+      additionalDatasetIds: [SECOND],
+      limit: 1,
+    });
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.maxWindowRecords).toBe(10);
+    }
+  });
   const request = {
     kind: 'WasteCollectionEntry',
     mode: 'published',

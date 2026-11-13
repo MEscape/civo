@@ -25,12 +25,16 @@ export function MetricChartClient({ data }: { readonly data: readonly MetricChar
 
   // Takes only the value: Recharts also passes the tick index, which must
   // not land in fmt.number's `options` parameter.
-  const formatNumber = (value: number): string => fmt.number(value);
+  const formatTick = (value: number): string => fmt.number(value);
 
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={[...data]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <BarChart
+          accessibilityLayer={false}
+          data={[...data]}
+          margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+        >
           <CartesianGrid stroke={CHART_COLORS.border} vertical={false} />
           <XAxis
             dataKey="label"
@@ -40,16 +44,17 @@ export function MetricChartClient({ data }: { readonly data: readonly MetricChar
             axisLine={{ stroke: CHART_COLORS.border }}
           />
           <YAxis
-            tickFormatter={formatNumber}
+            tickFormatter={formatTick}
             stroke={CHART_COLORS.muted}
             fontSize={AXIS_FONT_SIZE}
             tickLine={false}
             axisLine={false}
-            width={48}
+            // Measured from the tick labels, so six-digit values are not clipped.
+            width="auto"
           />
           <Tooltip
             formatter={(value) => [
-              typeof value === 'number' ? formatNumber(value) : String(value),
+              typeof value === 'number' ? formatTick(value) : String(value),
               '',
             ]}
             separator=""

@@ -1,23 +1,19 @@
 import type { ReactNode } from 'react';
 
-export interface SplitColumnProps {
+interface SplitColumnProps {
   readonly heading: string;
   readonly badge?: ReactNode;
   readonly children: ReactNode;
 }
 
-/**
- * One half of the split. Side by side it is a subgrid over the split's rows,
- * so the n-th card of both halves sits in the same row and the two are equally
- * tall; stacked it is a plain column.
- */
+/** A column's heading and source status stay with its content at every width. */
 export function SplitColumn({ heading, badge, children }: SplitColumnProps) {
   return (
-    <div className="flex flex-col gap-4 @3xl:row-span-full @3xl:grid @3xl:grid-rows-subgrid">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium uppercase tracking-wide text-copy-muted">{heading}</h3>
-        {badge}
-      </div>
+    <div className="min-w-0 space-y-4">
+      <h3 className="border-b border-border pb-3 font-heading text-xl font-semibold text-copy">
+        {heading}
+      </h3>
+      {badge}
       {children}
     </div>
   );

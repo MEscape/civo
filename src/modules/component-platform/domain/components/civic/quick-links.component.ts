@@ -7,9 +7,14 @@ const MAX_LINKS = 30;
 
 export const quickLinksDefinition = defineComponent({
   type: 'quickLinks',
+  version: 2,
   category: 'civic',
   municipallyEditable: true,
   props: {
+    placement: prop.select(['content', 'header', 'footer'], 'content', {
+      group: 'appearance',
+      municipal: true,
+    }),
     heading: prop.text(PROP_LIMITS.heading, {
       group: 'content',
       municipal: true,

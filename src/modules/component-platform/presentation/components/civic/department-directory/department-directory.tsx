@@ -1,7 +1,7 @@
+import { Mail } from '@components/icons/icons';
 import { Container, Grid, Section, SectionHeading } from '@components/layout/layout-primitives';
 import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 import { ContentLink } from '@components/ui/content-link';
-import { Mail } from '@components/ui/icons';
 
 import { getTranslations } from '@i18n/server';
 
@@ -49,7 +49,6 @@ export async function DepartmentDirectory({
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
         <Grid as="ul" columns={props.columns}>
@@ -59,7 +58,10 @@ export async function DepartmentDirectory({
                 <CardHeader className="flex-1">
                   <CardTitle>
                     {department.href !== undefined ? (
-                      <ContentLink href={department.href} className="hover:text-primary-copy">
+                      <ContentLink
+                        href={department.href}
+                        className="hover:text-primary-copy hover:underline"
+                      >
                         {department.name}
                       </ContentLink>
                     ) : (
@@ -70,24 +72,31 @@ export async function DepartmentDirectory({
                     <CardDescription>{stripHtml(department.description)}</CardDescription>
                   )}
                   {department.contacts !== undefined && department.contacts.length > 0 && (
-                    <ul className="mt-auto flex flex-col gap-1.5 pt-3 text-sm">
-                      {department.contacts.map((contact) => (
-                        <li key={contact.id} className="flex items-center justify-between gap-2">
-                          <span className="text-copy">{contact.name}</span>
-                          {contact.email !== undefined && (
-                            <ContentLink
-                              href={`mailto:${contact.email}`}
-                              aria-label={t('departmentDirectory.writeTo', {
-                                name: contact.name,
-                              })}
-                              className="flex items-center gap-1.5 text-primary-copy hover:underline"
-                            >
-                              <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-                            </ContentLink>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="mt-auto pt-3">
+                      <ul className="flex flex-col divide-y divide-border border-t border-border text-sm">
+                        {department.contacts.map((contact) => (
+                          <li
+                            key={contact.id}
+                            className="flex min-h-11 items-center justify-between gap-3"
+                          >
+                            <span className="min-w-0 text-copy [overflow-wrap:anywhere]">
+                              {contact.name}
+                            </span>
+                            {contact.email !== undefined && (
+                              <ContentLink
+                                href={`mailto:${contact.email}`}
+                                aria-label={t('departmentDirectory.writeTo', {
+                                  name: contact.name,
+                                })}
+                                className="inline-flex size-11 shrink-0 items-center justify-center rounded-token-sm text-primary-copy transition-interactive hover:bg-canvas"
+                              >
+                                <Mail className="size-4" aria-hidden="true" />
+                              </ContentLink>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </CardHeader>
               </Card>
@@ -95,6 +104,7 @@ export async function DepartmentDirectory({
           ))}
         </Grid>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

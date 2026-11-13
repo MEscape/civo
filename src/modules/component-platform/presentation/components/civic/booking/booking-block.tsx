@@ -25,6 +25,9 @@ export interface BookingBlockProps {
  * only WHERE booking appears and WHICH services a visitor may choose from;
  * the booking module owns availability, holds and every rule. The website is
  * read from the render context, never from a prop an editor could change.
+ *
+ * Like every block it takes the container's full width under its heading; the
+ * journey lays its choices out inside that width.
  */
 export async function BookingBlock({
   props,
@@ -41,7 +44,7 @@ export async function BookingBlock({
         <SectionHeading>{heading}</SectionHeading>
         <BookingSection
           websiteId={context.websiteId}
-          renderMode={context.mode}
+          renderMode={context.isPreview === true ? 'preview' : context.mode}
           heading={heading}
           serviceId={trimToNull(props.serviceId) ?? undefined}
           category={trimToNull(props.category) ?? undefined}

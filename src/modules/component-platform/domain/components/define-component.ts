@@ -1,4 +1,4 @@
-import { isPlainObject } from '@lib/utils';
+import { definedKeys, isPlainObject, pick } from '@lib/utils';
 
 import type { ContentKind } from '../content/content-definitions';
 import type {
@@ -46,7 +46,7 @@ export interface ComponentSpec<TType extends string, P extends PropSet> {
  * (`parseProps` keeps it, so a render function still sees `undefined`.)
  */
 function withoutUndefined(props: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined));
+  return pick(props, definedKeys(props));
 }
 
 function toFieldDefinition(key: string, field: PropField<unknown>): PropFieldDefinition {
@@ -78,6 +78,20 @@ function restoreProps(props: PropSet, raw: unknown): Record<string, unknown> {
   return restored;
 }
 
+/** Includes every dataset kind in release compatibility, including multi-source components. */
+function contractDependencies(spec: ComponentSpec<string, PropSet>): readonly ContractDependency[] {
+  const contracts = new Map<ContentKind, number>();
+  if (spec.dataBinding !== undefined) {
+    contracts.set(spec.dataBinding.kind, spec.dataBinding.minVersion ?? INITIAL_CONTRACT_VERSION);
+  }
+  for (const field of Object.values(spec.props)) {
+    if (field.datasetKind !== null && !contracts.has(field.datasetKind)) {
+      contracts.set(field.datasetKind, INITIAL_CONTRACT_VERSION);
+    }
+  }
+  return Array.from(contracts, ([contract, minVersion]) => ({ contract, minVersion }));
+}
+
 /**
  * Builds a component definition from its prop fields. Each prop is written
  * once: its type, its validation, its default and its editor control all
@@ -89,15 +103,6 @@ export function defineComponent<const TType extends string, P extends PropSet>(
   const entries = Object.entries(spec.props);
   const canHaveChildren = spec.canHaveChildren ?? false;
   const binding = spec.dataBinding;
-  const dependsOnContracts: readonly ContractDependency[] =
-    binding === undefined
-      ? []
-      : [
-          {
-            contract: binding.kind,
-            minVersion: binding.minVersion ?? INITIAL_CONTRACT_VERSION,
-          },
-        ];
 
   return {
     type: spec.type,
@@ -110,7 +115,7 @@ export function defineComponent<const TType extends string, P extends PropSet>(
     municipallyEditable: spec.municipallyEditable ?? false,
     isSingleton: spec.isSingleton ?? false,
     dataBinding: binding === undefined ? null : { canonicalKind: binding.kind },
-    dependsOnContracts,
+    dependsOnContracts: contractDependencies(spec),
     defaultProps: withoutUndefined(restoreProps(spec.props, {})),
     // `restoreProps` yields exactly the keys of `P`; TypeScript cannot follow a mapped type through a loop.
 

@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@components/ui/card';
+import { getAppFormatters, getTranslations } from '@i18n/server';
 
-import { getAppFormatters } from '@i18n/server';
+import { cn } from '@lib/utils';
 
 import { TrendIndicator } from './trend-indicator';
 
@@ -12,11 +12,12 @@ export interface MetricCardData {
   readonly unit?: string | undefined;
   readonly trend?: TrendDirection | undefined;
   readonly changePercent?: number | undefined;
+  readonly observedAt?: string | undefined;
 }
 
 const SIZES = {
-  regular: { value: 'text-3xl', unit: 'text-sm', trend: 'mt-2 text-xs' },
-  compact: { value: 'text-2xl', unit: 'text-xs', trend: 'mt-1 text-xs' },
+  regular: { value: 'text-4xl', unit: 'text-base', trend: 'mt-2' },
+  compact: { value: 'text-3xl', unit: 'text-sm', trend: 'mt-1' },
 } as const;
 
 export interface MetricCardProps {
@@ -24,30 +25,37 @@ export interface MetricCardProps {
   readonly size?: keyof typeof SIZES;
 }
 
+/** One key figure: a small label over a large number, set on a hairline instead of in a box. */
 export async function MetricCard({ metric, size = 'regular' }: MetricCardProps) {
-  const fmt = await getAppFormatters();
+  const [fmt, t] = await Promise.all([getAppFormatters(), getTranslations('componentPlatform')]);
   const sizes = SIZES[size];
 
   return (
-    <Card>
-      <CardContent className="pt-5">
-        <p className="text-sm text-copy-muted">{metric.label}</p>
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className={`font-heading text-primary-copy ${sizes.value}`}>
-            {fmt.number(metric.value)}
-          </span>
-          {metric.unit !== undefined && (
-            <span className={`text-copy-muted ${sizes.unit}`}>{metric.unit}</span>
-          )}
-        </div>
-        {metric.trend !== undefined && metric.changePercent !== undefined && (
+    <dl className="border-t border-border pt-4">
+      <dt className="text-sm text-copy-muted [overflow-wrap:anywhere]">{metric.label}</dt>
+      <dd className="mt-2 flex flex-wrap items-baseline gap-x-2">
+        <span className={cn('font-heading text-primary-copy tabular-nums', sizes.value)}>
+          {fmt.number(metric.value)}
+        </span>
+        {metric.unit !== undefined && (
+          <span className={cn('text-copy-muted', sizes.unit)}>{metric.unit}</span>
+        )}
+      </dd>
+      {metric.observedAt !== undefined && (
+        <dd className="mt-2 text-sm text-copy-muted">
+          {t('provenance.measuredAt')}{' '}
+          <time dateTime={metric.observedAt}>{fmt.dateTime(metric.observedAt)}</time>
+        </dd>
+      )}
+      {metric.trend !== undefined && metric.changePercent !== undefined && (
+        <dd>
           <TrendIndicator
             trend={metric.trend}
             changePercent={metric.changePercent}
             className={sizes.trend}
           />
-        )}
-      </CardContent>
-    </Card>
+        </dd>
+      )}
+    </dl>
   );
 }

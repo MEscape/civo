@@ -1,6 +1,4 @@
 import { Container, Grid, Section, SectionHeading } from '@components/layout/layout-primitives';
-import { Card, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
-import { ContentLink } from '@components/ui/content-link';
 
 import { getAppFormatters, getTranslations } from '@i18n/server';
 
@@ -8,6 +6,7 @@ import { stripHtml, trimToNull } from '@lib/utils';
 
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
+import { EventCard } from '../../shared/event-card';
 
 import type {
   ComponentProps,
@@ -50,7 +49,6 @@ export async function EventsGrid({ props, context, loadContent }: EventsGridComp
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
         <Grid as="ul" columns={props.columns}>
@@ -58,60 +56,27 @@ export async function EventsGrid({ props, context, loadContent }: EventsGridComp
             const time = t('eventsGrid.time', {
               time: fmt.date(event.startDate, TIME_FORMAT),
             });
-            const details = [event.category, time, event.location].filter(Boolean).join(' · ');
+            const meta = [event.category, time, event.location].filter(
+              (part): part is string => part !== undefined && part !== '',
+            );
+            const description =
+              event.description !== undefined ? trimToNull(stripHtml(event.description)) : null;
 
             return (
               <li key={event.id}>
-                <Card className="h-full overflow-hidden">
-                  {event.imageUrl !== undefined && (
-                    // eslint-disable-next-line @next/next/no-img-element -- the URL comes from municipal content on any host; next/image would need each host allow-listed
-                    <img
-                      src={event.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="h-40 w-full object-cover"
-                    />
-                  )}
-                  <CardHeader>
-                    <div className="flex items-start gap-3">
-                      <time
-                        dateTime={event.startDate}
-                        className="flex shrink-0 flex-col items-center rounded-token-sm border border-border px-3 py-1.5 text-center text-xs uppercase text-copy-muted"
-                      >
-                        {fmt.date(event.startDate, DAY_FORMAT)}
-                      </time>
-                      <div>
-                        <CardTitle>
-                          {event.href !== undefined ? (
-                            <ContentLink href={event.href} className="hover:text-primary-copy">
-                              {event.title}
-                            </ContentLink>
-                          ) : (
-                            event.title
-                          )}
-                        </CardTitle>
-                        <p className="mt-1 text-xs text-copy-muted">{details}</p>
-                      </div>
-                    </div>
-                    {(() => {
-                      const description =
-                        event.description !== undefined
-                          ? trimToNull(stripHtml(event.description))
-                          : null;
-                      return (
-                        description !== null && (
-                          <CardDescription className="mt-2">{description}</CardDescription>
-                        )
-                      );
-                    })()}
-                  </CardHeader>
-                </Card>
+                <EventCard
+                  event={event}
+                  dayLabel={fmt.date(event.startDate, DAY_FORMAT)}
+                  meta={meta}
+                  description={description}
+                  showImage
+                />
               </li>
             );
           })}
         </Grid>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Card, CardHeader, CardTitle } from '@components/ui/card';
-import { ContentLink } from '@components/ui/content-link';
+import { EventCard } from '../../shared/event-card';
 
 import { SplitColumn } from './split-column';
 import { SplitList } from './split-list';
@@ -36,32 +35,11 @@ export function EventsColumn({
         <SplitList>
           {list.items.map((event) => (
             <li key={event.id}>
-              <Card className="h-full">
-                <CardHeader>
-                  <div className="flex items-start gap-3">
-                    <time
-                      dateTime={event.startDate}
-                      className="flex shrink-0 flex-col items-center rounded-token-sm border border-border px-3 py-1.5 text-center text-xs uppercase text-copy-muted"
-                    >
-                      {formatDay(event.startDate)}
-                    </time>
-                    <div>
-                      <CardTitle>
-                        {event.href !== undefined ? (
-                          <ContentLink href={event.href} className="hover:text-primary-copy">
-                            {event.title}
-                          </ContentLink>
-                        ) : (
-                          event.title
-                        )}
-                      </CardTitle>
-                      {event.location !== undefined && (
-                        <p className="mt-1 text-xs text-copy-muted">{event.location}</p>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
+              <EventCard
+                event={event}
+                dayLabel={formatDay(event.startDate)}
+                meta={event.location !== undefined ? [event.location] : []}
+              />
             </li>
           ))}
         </SplitList>

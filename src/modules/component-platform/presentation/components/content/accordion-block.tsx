@@ -1,4 +1,5 @@
-import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
+import { Container, Section } from '@components/layout/layout-primitives';
+import { Rail } from '@components/layout/rail';
 import {
   Accordion,
   AccordionContent,
@@ -7,6 +8,8 @@ import {
 } from '@components/ui/accordion';
 
 import { trimToNull } from '@lib/utils';
+
+import { Paragraphs } from '../shared/paragraphs';
 
 import type { ComponentProps } from '../../../application/contracts/component-platform-constraints';
 
@@ -21,21 +24,28 @@ export function AccordionBlock({ props }: AccordionBlockComponentProps) {
   }
   const heading = trimToNull(props.heading);
 
+  const accordion = (
+    <div className="max-w-3xl">
+      <Accordion type="single" collapsible>
+        {props.items.map((item, index) => (
+          <AccordionItem key={`${String(index)}-${item.question}`} value={`item-${String(index)}`}>
+            <AccordionTrigger>{item.question}</AccordionTrigger>
+            <AccordionContent>
+              <Paragraphs
+                text={item.answer}
+                className="max-w-[var(--civo-measure)] text-base leading-relaxed text-copy"
+              />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+
   return (
     <Section>
-      <Container className="max-w-3xl">
-        {heading !== null && <SectionHeading>{heading}</SectionHeading>}
-        <Accordion type="single" collapsible>
-          {props.items.map((item, index) => (
-            <AccordionItem
-              key={`${String(index)}-${item.question}`}
-              value={`item-${String(index)}`}
-            >
-              <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent>{item.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+      <Container>
+        {heading === null ? accordion : <Rail heading={heading}>{accordion}</Rail>}
       </Container>
     </Section>
   );

@@ -14,7 +14,10 @@ export interface CallToActionComponentProps {
   readonly props: ComponentProps<'callToAction'>;
 }
 
-/** A highlighted block with one button. */
+/**
+ * The page's one inverse band: a heading, a sentence, one button. The
+ * band's focus ring and print fallback come from `Section tone="inverse"`.
+ */
 export async function CallToAction({ props }: CallToActionComponentProps) {
   const t = await getTranslations('componentPlatform');
   const heading = trimToNull(props.heading) ?? t('callToAction.defaultHeading');
@@ -23,21 +26,24 @@ export async function CallToAction({ props }: CallToActionComponentProps) {
   const href = trimToNull(props.href) ?? FALLBACK_HREF;
 
   return (
-    <Section>
+    <Section tone="inverse" className="@container">
       <Container>
-        <div className="rounded-token bg-primary px-8 py-12 text-primary-foreground sm:px-12">
-          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-heading text-2xl">{heading}</h2>
-              {body !== null && <p className="mt-2 max-w-lg text-primary-foreground/80">{body}</p>}
-            </div>
-            <ContentLink
-              href={href}
-              className={cn(buttonVariants({ variant: 'accent', size: 'lg' }), 'shrink-0')}
-            >
-              {buttonLabel}
-            </ContentLink>
+        <div className="grid gap-8 @3xl:grid-cols-[minmax(0,1fr)_auto] @3xl:items-end @3xl:gap-12">
+          <div className="min-w-0">
+            <h2 className="font-heading text-3xl text-balance sm:text-4xl">{heading}</h2>
+            {body !== null && <p className="mt-4 max-w-[var(--civo-measure)] text-lg">{body}</p>}
           </div>
+          <ContentLink
+            href={href}
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              // The theme's own on-primary colour as the fill: legible on any brand primary,
+              // even when accent equals primary. A long label wraps; 44px for the main action.
+              'h-auto min-h-11 justify-self-start bg-primary-foreground py-2 text-start text-base whitespace-normal text-inverse-action-copy hover:bg-primary-foreground hover:underline print:bg-transparent print:text-copy',
+            )}
+          >
+            {buttonLabel}
+          </ContentLink>
         </div>
       </Container>
     </Section>

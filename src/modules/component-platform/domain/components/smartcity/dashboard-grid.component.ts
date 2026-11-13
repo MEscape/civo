@@ -20,9 +20,10 @@ const INITIAL_COLUMNS = 4;
  */
 export const dashboardGridDefinition = defineComponent({
   type: 'dashboardGrid',
-  version: 3,
+  version: 4,
   category: 'smartcity',
   municipallyEditable: true,
+  dataBinding: { kind: 'SmartCityMetric' },
   props: {
     datasetId: prop.dataset('SmartCityMetric'),
     trendDatasetId: prop.dataset('SmartCityObservation'),

@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useId } from 'react';
 
+import { DynamicIcon } from '@components/icons/dynamic-icon';
+import { Search } from '@components/icons/icons';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
-import { Card, CardContent } from '@components/ui/card';
 import { ContentLink } from '@components/ui/content-link';
-import { DynamicIcon } from '@components/ui/dynamic-icon';
-import { Search } from '@components/ui/icons';
-import { Input } from '@components/ui/input';
+import { Input, Label } from '@components/ui/input';
 
-import { stripHtml } from '@lib/utils';
+import { cn } from '@lib/utils';
+
+import { useServiceFinder } from '../../../hooks/use-service-finder';
 
 const FALLBACK_ICON = 'arrowRight' as const;
 
@@ -29,6 +30,12 @@ export interface ServiceFinderItem {
 export interface ServiceFinderLabels {
   readonly allCategories: string;
   readonly noResults: string;
+  /** The visible label of the search field. */
+  readonly search: string;
+  /** The accessible name of the category chips. */
+  readonly categories: string;
+  /** Contains the literal `{count}`, replaced here. */
+  readonly resultCount: string;
 }
 
 export interface ServiceFinderClientProps {
@@ -36,21 +43,6 @@ export interface ServiceFinderClientProps {
   readonly placeholder: string;
   readonly initialCategory: string;
   readonly labels: ServiceFinderLabels;
-}
-
-function matches(service: ServiceFinderItem, query: string, category: string): boolean {
-  if (category !== '' && service.category !== category) {
-    return false;
-  }
-  if (query === '') {
-    return true;
-  }
-  return (
-    service.title.toLowerCase().includes(query) ||
-    (service.description !== undefined &&
-      stripHtml(service.description).toLowerCase().includes(query)) ||
-    (service.keywords?.some((keyword) => keyword.toLowerCase().includes(query)) ?? false)
-  );
 }
 
 interface CategoryChipProps {
@@ -63,8 +55,11 @@ function CategoryChip({ label, active, onSelect }: CategoryChipProps) {
   return (
     <Button
       type="button"
-      size="sm"
-      variant={active ? 'default' : 'ghost'}
+      variant={active ? 'default' : 'outline'}
+      className={cn(
+        'h-auto min-h-10 py-1.5 text-start whitespace-normal',
+        !active && 'border-border-strong',
+      )}
       onClick={onSelect}
       aria-pressed={active}
     >
@@ -79,40 +74,40 @@ export function ServiceFinderClient({
   initialCategory,
   labels,
 }: ServiceFinderClientProps) {
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState(initialCategory);
-
-  const categories = Array.from(
-    new Set(
-      services
-        .map((service) => service.category)
-        .filter((value): value is string => value !== undefined && value !== ''),
-    ),
-  );
-  const normalizedQuery = query.trim().toLowerCase();
-  const filtered = services.filter((service) => matches(service, normalizedQuery, category));
+  const searchId = useId();
+  const { query, setQuery, category, setCategory, categories, filtered } = useServiceFinder({
+    services,
+    initialCategory,
+  });
+  const status =
+    filtered.length === 0
+      ? labels.noResults
+      : labels.resultCount.replace('{count}', String(filtered.length));
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-copy-muted"
-            aria-hidden="true"
-          />
-          <Input
-            type="search"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-            }}
-            placeholder={placeholder}
-            className="pl-9"
-            aria-label={placeholder}
-          />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor={searchId}>{labels.search}</Label>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-copy-muted"
+              aria-hidden="true"
+            />
+            <Input
+              id={searchId}
+              type="search"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+              }}
+              placeholder={placeholder}
+              className="h-11 ps-9 text-base"
+            />
+          </div>
         </div>
         {categories.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div role="group" aria-label={labels.categories} className="flex flex-wrap gap-2">
             <CategoryChip
               label={labels.allCategories}
               active={category === ''}
@@ -134,42 +129,39 @@ export function ServiceFinderClient({
         )}
       </div>
 
-      {filtered.length === 0 ? (
-        <p className="text-sm text-copy-muted">{labels.noResults}</p>
-      ) : (
-        <ul className="flex flex-col divide-y divide-border">
-          {filtered.map((service) => (
+      <p role="status" className="text-sm text-copy-muted tabular-nums">
+        {status}
+      </p>
+
+      {filtered.length > 0 && (
+        <ul className="flex flex-col divide-y divide-border border-y border-border">
+          {filtered.map(({ service, description }) => (
             <li key={service.id}>
-              <ContentLink
-                href={service.href}
-                className="group flex items-start gap-3 py-4 hover:bg-surface sm:gap-4"
-              >
-                <Card className="flex h-10 w-10 shrink-0 items-center justify-center border-0 bg-surface">
-                  <DynamicIcon
-                    name={service.icon}
-                    fallback={FALLBACK_ICON}
-                    className="h-5 w-5 text-primary-copy"
-                    aria-hidden="true"
-                  />
-                </Card>
-                <CardContent className="min-w-0 flex-1 p-0 break-words">
-                  <p className="text-sm font-medium text-copy group-hover:text-primary-copy">
+              <ContentLink href={service.href} className="group flex items-start gap-4 py-4">
+                <DynamicIcon
+                  name={service.icon}
+                  fallback={FALLBACK_ICON}
+                  className="mt-0.5 size-5 shrink-0 text-primary-copy"
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+                  <p className="text-base font-medium text-copy underline-offset-4 transition-interactive group-hover:text-primary-copy group-hover:underline">
                     {service.title}
                   </p>
-                  {service.description !== undefined && (
-                    <p className="mt-0.5 text-sm text-copy-muted">
-                      {stripHtml(service.description)}
-                    </p>
+                  {description !== undefined && (
+                    <p className="mt-1 text-sm text-copy-muted">{description}</p>
                   )}
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {service.department !== undefined && (
-                      <Badge variant="muted">{service.department}</Badge>
-                    )}
-                    {service.processingNote !== undefined && (
-                      <Badge>{service.processingNote}</Badge>
-                    )}
-                  </div>
-                </CardContent>
+                  {(service.department !== undefined || service.processingNote !== undefined) && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {service.department !== undefined && (
+                        <Badge variant="muted">{service.department}</Badge>
+                      )}
+                      {service.processingNote !== undefined && (
+                        <Badge>{service.processingNote}</Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
               </ContentLink>
             </li>
           ))}

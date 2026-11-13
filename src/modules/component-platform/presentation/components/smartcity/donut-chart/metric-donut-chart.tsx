@@ -1,12 +1,15 @@
-import { Container, Section, SectionHeading } from '@components/layout/layout-primitives';
+import { Container, Section } from '@components/layout/layout-primitives';
+import { Rail } from '@components/layout/rail';
 
-import { getTranslations } from '@i18n/server';
+import { getAppFormatters, getTranslations } from '@i18n/server';
 
 import { trimToNull } from '@lib/utils';
 
 import { pickDistribution } from '../../../../application/contracts/component-platform-constraints';
+import { ChartFigure } from '../../shared/chart-figure';
 import { ContentOriginBadge } from '../../shared/content-origin-badge';
 import { ContentState } from '../../shared/content-state';
+import { distributionRows } from '../support/chart-tables';
 
 import { MetricDonutChartClient } from './metric-donut-chart.client';
 
@@ -31,8 +34,9 @@ export async function MetricDonutChart({
   context,
   loadContent,
 }: MetricDonutChartComponentProps) {
-  const [t, result] = await Promise.all([
+  const [t, fmt, result] = await Promise.all([
     getTranslations('componentPlatform'),
+    getAppFormatters(),
     loadContent({
       kind: 'SmartCityBreakdownEntry',
       mode: context.mode,
@@ -46,23 +50,39 @@ export async function MetricDonutChart({
   if (result.isErr()) {
     return <ContentState kind="error" heading={heading} />;
   }
-  const { items, origin } = result.value;
-  const distribution = pickDistribution(items, trimToNull(props.group));
-  if (distribution === null) {
-    return <ContentState kind="empty" heading={heading} />;
-  }
+  const distribution = pickDistribution(result.value.items, trimToNull(props.group));
+  const title =
+    distribution?.group === undefined
+      ? heading
+      : t('metricDonut.title', { heading, label: distribution.group });
 
-  return (
+  return distribution === null ? (
+    <ContentState kind="empty" heading={heading} />
+  ) : (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
-      <Container className="max-w-2xl">
-        <SectionHeading>
-          {distribution.group === undefined
-            ? heading
-            : t('metricDonut.title', { heading, label: distribution.group })}
-        </SectionHeading>
-        <MetricDonutChartClient data={distribution.parts} />
+      <Container>
+        <Rail heading={title} ratio="balanced">
+          <ChartFigure
+            label={t('charts.chartLabel', { title })}
+            showDataLabel={t('charts.showData')}
+            table={{
+              caption: title,
+              columns: [
+                t('charts.columns.label'),
+                t('charts.columns.value'),
+                t('charts.columns.share'),
+              ],
+              rows: distributionRows(distribution.parts, fmt),
+            }}
+          >
+            <MetricDonutChartClient
+              data={distribution.parts}
+              othersLabel={t('metricDonut.others')}
+            />
+          </ChartFigure>
+        </Rail>
       </Container>
+      <ContentOriginBadge origin={result.value.origin} />
     </Section>
   );
 }

@@ -2,7 +2,7 @@ import {
   instant,
   number,
   opaqueRecord,
-  optional,
+  optionalField,
   scalarMap,
   withFallback,
 } from '../../models/field-schema';
@@ -34,18 +34,21 @@ export const geoFeatureContent = defineContent({
   shape: {
     id: recordId(),
     name: title(),
-    geometry: withFallback(optional(opaqueRecord({ maxNodes: LIMITS.geometryNodes })), undefined),
-    latitude: optional(number({ min: -90, max: 90 })),
-    longitude: optional(number({ min: -180, max: 180 })),
+    geometry: withFallback(
+      optionalField(opaqueRecord({ maxNodes: LIMITS.geometryNodes })),
+      undefined,
+    ),
+    latitude: optionalField(number({ min: -90, max: 90 })),
+    longitude: optionalField(number({ min: -180, max: 180 })),
     category: label(),
     status: label(),
-    value: optional(number()),
+    value: optionalField(number()),
     unit: label(),
-    observedAt: optional(instant()),
+    observedAt: optionalField(instant()),
     description: shortText(),
     href: optionalLinkTarget(),
     properties: withFallback(
-      optional(
+      optionalField(
         scalarMap({
           maxEntries: LIMITS.propertyEntries,
           maxKeyLength: LIMITS.propertyKey,

@@ -6,7 +6,9 @@ import { getContentDefinition } from '../../domain/content/content-definitions';
 import { selectContent } from '../../domain/content/select-content';
 import { contentDatasetNotFound } from '../../domain/errors/component-platform-errors';
 import { parseDatasetId, parseWebsiteId } from '../../domain/models/ids';
-import { resolveListLimit, resolveListOffset } from '../list-limits';
+import { resolveListLimit, resolveListOffset } from '../component-platform-limits';
+import { batchOrigin } from '../services/batch-origin';
+import { batchWindowLimit } from '../services/batch-window-limit';
 
 import type { ContentKind, ContentOf } from '../../domain/content/content-definitions';
 import type { ContentBatch } from '../../domain/ports/content-source.port';
@@ -90,10 +92,17 @@ export class ListContent {
     const present = (
       records: ReadonlyArray<ContentOf<K>>,
       origin: ContentOrigin,
-      hasMore = false,
+      metadata: { readonly hasMore?: boolean; readonly maxWindowRecords?: number | undefined } = {},
     ): ContentListView<K> => {
       const selection = selectContent(request.kind, records, { now, category, limit });
-      return { ...selection, truncated: selection.truncated || hasMore, origin };
+      return {
+        ...selection,
+        truncated: selection.truncated || metadata.hasMore === true,
+        origin,
+        ...(metadata.maxWindowRecords === undefined
+          ? {}
+          : { maxWindowRecords: metadata.maxWindowRecords }),
+      };
     };
     const sampled = (cause: string | null): ContentListView<K> =>
       present(getContentDefinition(request.kind).sample(now), {
@@ -124,11 +133,10 @@ export class ListContent {
       ),
     )
       .map((batches) =>
-        present(
-          mergeBatches(batches),
-          { kind: 'live' },
-          batches.some((batch) => batch.hasMore),
-        ),
+        present(mergeBatches(batches), batchOrigin(batches), {
+          hasMore: batches.some((batch) => batch.hasMore),
+          maxWindowRecords: batchWindowLimit(batches),
+        }),
       )
       .orElse(fallback);
   }

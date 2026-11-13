@@ -21,7 +21,7 @@ export interface KpiGridComponentProps {
   readonly loadContent: LoadContent;
 }
 
-/** Key figures as tiles. */
+/** Key figures, each set on a hairline. */
 export async function KpiGrid({ props, context, loadContent }: KpiGridComponentProps) {
   const [t, result] = await Promise.all([
     getTranslations('componentPlatform'),
@@ -45,10 +45,9 @@ export async function KpiGrid({ props, context, loadContent }: KpiGridComponentP
 
   return (
     <Section className="relative">
-      <ContentOriginBadge origin={origin} />
       <Container>
         <SectionHeading>{heading}</SectionHeading>
-        <Grid as="ul" columns={props.columns}>
+        <Grid as="ul" columns={props.columns} className="gap-x-8 gap-y-8">
           {items.map((metric) => (
             <li key={metric.id}>
               <MetricCard metric={metric} />
@@ -56,6 +55,7 @@ export async function KpiGrid({ props, context, loadContent }: KpiGridComponentP
           ))}
         </Grid>
       </Container>
+      <ContentOriginBadge origin={origin} />
     </Section>
   );
 }

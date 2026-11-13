@@ -4,7 +4,7 @@ import type { AppResultAsync } from '@lib/result';
 import { categoriesOf, sampleCategoriesOf } from '../../domain/content/content-categories';
 import { isContentKind } from '../../domain/content/content-definitions';
 import { parseDatasetId, parseWebsiteId } from '../../domain/models/ids';
-import { maxListLimit } from '../list-limits';
+import { maxListLimit } from '../component-platform-limits';
 
 import type { ContentKind } from '../../domain/content/content-definitions';
 import type { DatasetId, WebsiteId } from '../../domain/models/ids';
