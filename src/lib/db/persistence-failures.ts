@@ -4,6 +4,9 @@ import { infrastructureError } from '@lib/errors';
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import { logger } from '@lib/logger';
 import { type AppResult, err, ok } from '@lib/result';
+import { definedKeys, pick } from '@lib/utils';
+
+import { causeChain } from './cause-chain';
 
 /** Postgres `exclusion_violation`: a row was refused by an `EXCLUDE` constraint. */
 const EXCLUSION_VIOLATION_SQLSTATE = '23P01';
@@ -13,33 +16,10 @@ function isExclusionViolation(error: unknown): boolean {
 }
 
 /**
- * Wrapping deeper than this is not something the runtime does; the bound only keeps a chain that
- * loops back on itself from being followed forever.
- */
-const MAX_CAUSE_DEPTH = 4;
-
-/**
- * The thrown value and what it was caused by, outermost first. The runtime wraps the normalized
- * driver error as `cause` of its own structured error (and, for a retried prepared statement, one
- * level further), so the driver error is looked for along the chain, not only at the top.
- */
-function causeChain(thrown: unknown): unknown[] {
-  const chain: unknown[] = [thrown];
-  for (let depth = 0; depth < MAX_CAUSE_DEPTH; depth += 1) {
-    const last = chain[chain.length - 1];
-    if (!(last instanceof Error) || last.cause === undefined) {
-      break;
-    }
-    chain.push(last.cause);
-  }
-  return chain;
-}
-
-/**
  * Whether a write was refused because it collides with another valid write.
  *
  * Only unique and exclusion violations count (an exclusion constraint is a unique constraint over
- * ranges: two bookings for the same time). Foreign-key, not-null and check violations are
+ * ranges: two writes claiming the same period). Foreign-key, not-null and check violations are
  * deliberately not conflicts: they point to a caller bug or a missing domain invariant, not to a
  * race between two valid writes, so they surface as infrastructure failures that get logged and
  * investigated.
@@ -57,17 +37,14 @@ function isConflict(chain: readonly unknown[]): boolean {
  * What a log line needs to find the cause: the SQLSTATE and the constraint and table the database
  * named. Never `detail`, which can quote the offending row.
  */
-function queryDiagnostics(chain: readonly unknown[]): Record<string, string> {
+function queryDiagnostics(chain: readonly unknown[]): Record<string, string | undefined> {
   const query = chain.find((candidate): candidate is SqlQueryError => SqlQueryError.is(candidate));
   if (query === undefined) {
     return {};
   }
   const { sqlState, constraint, table } = query;
-  return Object.fromEntries(
-    Object.entries({ sqlState, constraint, table }).filter(
-      (entry): entry is [string, string] => entry[1] !== undefined,
-    ),
-  );
+  const fields = { sqlState, constraint, table };
+  return pick(fields, definedKeys(fields));
 }
 
 export interface PersistenceFailureConfig {
@@ -125,4 +102,15 @@ export function createPersistenceFailures(config: PersistenceFailureConfig) {
       <R extends object>(row: R | null): AppResult<R, N> =>
         row === null ? err(onNotFound(undefined)) : ok(row),
   };
+}
+
+/**
+ * The name of the constraint a conflicting write ran into, `undefined` when the driver names none.
+ * A repository tells two conflicts apart by it (a taken reference from a taken resource), never by
+ * the message.
+ */
+export function conflictConstraint(thrown: unknown): string | undefined {
+  return causeChain(thrown).find((candidate): candidate is SqlQueryError =>
+    SqlQueryError.is(candidate),
+  )?.constraint;
 }

@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "ActorMessage": {
+      "model": "ActorMessage",
+      "namespace": "public"
+    },
     "AuditEntry": {
       "model": "AuditEntry",
       "namespace": "public"
@@ -16,16 +20,20 @@
       "model": "BookableService",
       "namespace": "public"
     },
+    "BookableServiceLocation": {
+      "model": "BookableServiceLocation",
+      "namespace": "public"
+    },
     "Booking": {
       "model": "Booking",
       "namespace": "public"
     },
-    "BookingLocation": {
-      "model": "BookingLocation",
+    "BookingAssignment": {
+      "model": "BookingAssignment",
       "namespace": "public"
     },
-    "BookingResource": {
-      "model": "BookingResource",
+    "BookingLocation": {
+      "model": "BookingLocation",
       "namespace": "public"
     },
     "DataSource": {
@@ -36,8 +44,16 @@
       "model": "Dataset",
       "namespace": "public"
     },
+    "EmployeePreference": {
+      "model": "EmployeePreference",
+      "namespace": "public"
+    },
     "Invitation": {
       "model": "Invitation",
+      "namespace": "public"
+    },
+    "MediaAsset": {
+      "model": "MediaAsset",
       "namespace": "public"
     },
     "Membership": {
@@ -50,6 +66,10 @@
     },
     "PageConfig": {
       "model": "PageConfig",
+      "namespace": "public"
+    },
+    "SavedMap": {
+      "model": "SavedMap",
       "namespace": "public"
     },
     "Website": {
@@ -73,6 +93,31 @@
     "namespaces": {
       "public": {
         "enum": {
+          "ActorMessageType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "assigned",
+                "value": "assigned"
+              },
+              {
+                "name": "unassigned",
+                "value": "unassigned"
+              },
+              {
+                "name": "cancelled",
+                "value": "cancelled"
+              },
+              {
+                "name": "rescheduled",
+                "value": "rescheduled"
+              },
+              {
+                "name": "calendar_changed",
+                "value": "calendar_changed"
+              }
+            ]
+          },
           "ActorRole": {
             "codecId": "pg/text@1",
             "members": [
@@ -99,6 +144,23 @@
               {
                 "name": "platform_admin",
                 "value": "platform_admin"
+              }
+            ]
+          },
+          "AssignmentMode": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "automatic",
+                "value": "automatic"
+              },
+              {
+                "name": "manual",
+                "value": "manual"
+              },
+              {
+                "name": "open",
+                "value": "open"
               }
             ]
           },
@@ -208,6 +270,36 @@
               }
             ]
           },
+          "MediaAssetStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "READY",
+                "value": "READY"
+              },
+              {
+                "name": "DELETING",
+                "value": "DELETING"
+              }
+            ]
+          },
+          "MediaVisibility": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PUBLIC",
+                "value": "PUBLIC"
+              },
+              {
+                "name": "PRIVATE",
+                "value": "PRIVATE"
+              }
+            ]
+          },
           "MigrationStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -306,6 +398,150 @@
           }
         },
         "models": {
+          "ActorMessage": {
+            "fields": {
+              "bookingId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "params": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "readAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "recipientActorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tenantId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ActorMessageType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "booking": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "bookingId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "Booking",
+                  "namespace": "public"
+                }
+              },
+              "website": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "websiteId",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "Website",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "bookingId": {
+                  "column": "bookingId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "params": {
+                  "column": "params"
+                },
+                "readAt": {
+                  "column": "readAt"
+                },
+                "recipientActorId": {
+                  "column": "recipientActorId"
+                },
+                "tenantId": {
+                  "column": "tenantId"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ActorMessage"
+            }
+          },
           "AuditEntry": {
             "fields": {
               "actorId": {
@@ -459,6 +695,13 @@
                   "kind": "scalar"
                 }
               },
+              "coverage": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -468,6 +711,13 @@
               },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "internalNote": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -487,13 +737,6 @@
                   "kind": "scalar"
                 }
               },
-              "managerChange": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/jsonb@1",
-                  "kind": "scalar"
-                }
-              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -501,10 +744,24 @@
                   "kind": "scalar"
                 }
               },
+              "setupMinutes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "skills": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "teardownMinutes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -544,20 +801,22 @@
               }
             },
             "relations": {
-              "holds": {
+              "assignments": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
                     "id",
-                    "websiteId"
+                    "websiteId",
+                    "type"
                   ],
                   "targetFields": [
                     "resourceId",
-                    "websiteId"
+                    "websiteId",
+                    "resourceType"
                   ]
                 },
                 "to": {
-                  "model": "BookingResource",
+                  "model": "BookingAssignment",
                   "namespace": "public"
                 }
               },
@@ -576,6 +835,23 @@
                 },
                 "to": {
                   "model": "BookingLocation",
+                  "namespace": "public"
+                }
+              },
+              "preferences": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "resourceId",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "EmployeePreference",
                   "namespace": "public"
                 }
               },
@@ -609,11 +885,17 @@
                 "capacity": {
                   "column": "capacity"
                 },
+                "coverage": {
+                  "column": "coverage"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
                 "id": {
                   "column": "id"
+                },
+                "internalNote": {
+                  "column": "internalNote"
                 },
                 "isActive": {
                   "column": "isActive"
@@ -621,14 +903,17 @@
                 "locationId": {
                   "column": "locationId"
                 },
-                "managerChange": {
-                  "column": "managerChange"
-                },
                 "name": {
                   "column": "name"
                 },
+                "setupMinutes": {
+                  "column": "setupMinutes"
+                },
                 "skills": {
                   "column": "skills"
+                },
+                "teardownMinutes": {
+                  "column": "teardownMinutes"
                 },
                 "tenantId": {
                   "column": "tenantId"
@@ -649,6 +934,19 @@
           },
           "BookableService": {
             "fields": {
+              "assignmentMode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AssignmentMode",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "availability": {
                 "nullable": true,
                 "type": {
@@ -677,6 +975,13 @@
                   "kind": "scalar"
                 }
               },
+              "copiedFromLocationId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -695,6 +1000,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "homeLocationId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -726,17 +1038,17 @@
                   "kind": "scalar"
                 }
               },
+              "internalNote": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "isActive": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
-                  "kind": "scalar"
-                }
-              },
-              "locationIds": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -843,6 +1155,59 @@
                   "namespace": "public"
                 }
               },
+              "copiedFrom": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "copiedFromLocationId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookingLocation",
+                  "namespace": "public"
+                }
+              },
+              "home": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "homeLocationId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookingLocation",
+                  "namespace": "public"
+                }
+              },
+              "locations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "serviceId",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableServiceLocation",
+                  "namespace": "public"
+                }
+              },
               "website": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -864,6 +1229,9 @@
             },
             "storage": {
               "fields": {
+                "assignmentMode": {
+                  "column": "assignmentMode"
+                },
                 "availability": {
                   "column": "availability"
                 },
@@ -876,6 +1244,9 @@
                 "cleanupMinutes": {
                   "column": "cleanupMinutes"
                 },
+                "copiedFromLocationId": {
+                  "column": "copiedFromLocationId"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -884,6 +1255,9 @@
                 },
                 "durationMinutes": {
                   "column": "durationMinutes"
+                },
+                "homeLocationId": {
+                  "column": "homeLocationId"
                 },
                 "horizonDays": {
                   "column": "horizonDays"
@@ -897,11 +1271,11 @@
                 "instructions": {
                   "column": "instructions"
                 },
+                "internalNote": {
+                  "column": "internalNote"
+                },
                 "isActive": {
                   "column": "isActive"
-                },
-                "locationIds": {
-                  "column": "locationIds"
                 },
                 "name": {
                   "column": "name"
@@ -942,6 +1316,162 @@
               },
               "namespaceId": "public",
               "table": "BookableService"
+            }
+          },
+          "BookableServiceLocation": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "isOnlineBookable": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "locationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "resources": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "serviceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tenantId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "location": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "locationId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookingLocation",
+                  "namespace": "public"
+                }
+              },
+              "service": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "serviceId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableService",
+                  "namespace": "public"
+                }
+              },
+              "website": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "websiteId",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "Website",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "isOnlineBookable": {
+                  "column": "isOnlineBookable"
+                },
+                "locationId": {
+                  "column": "locationId"
+                },
+                "resources": {
+                  "column": "resources"
+                },
+                "serviceId": {
+                  "column": "serviceId"
+                },
+                "tenantId": {
+                  "column": "tenantId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "BookableServiceLocation"
             }
           },
           "Booking": {
@@ -1002,6 +1532,13 @@
                   "kind": "scalar"
                 }
               },
+              "locale": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "locationId": {
                 "nullable": false,
                 "type": {
@@ -1048,6 +1585,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "serviceSnapshot": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -1108,7 +1652,7 @@
               }
             },
             "relations": {
-              "holds": {
+              "assignments": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
@@ -1121,7 +1665,7 @@
                   ]
                 },
                 "to": {
-                  "model": "BookingResource",
+                  "model": "BookingAssignment",
                   "namespace": "public"
                 }
               },
@@ -1140,6 +1684,23 @@
                 },
                 "to": {
                   "model": "BookingLocation",
+                  "namespace": "public"
+                }
+              },
+              "messages": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "bookingId",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "ActorMessage",
                   "namespace": "public"
                 }
               },
@@ -1206,6 +1767,9 @@
                 "id": {
                   "column": "id"
                 },
+                "locale": {
+                  "column": "locale"
+                },
                 "locationId": {
                   "column": "locationId"
                 },
@@ -1226,6 +1790,9 @@
                 },
                 "serviceId": {
                   "column": "serviceId"
+                },
+                "serviceSnapshot": {
+                  "column": "serviceSnapshot"
                 },
                 "sessionCapacity": {
                   "column": "sessionCapacity"
@@ -1251,6 +1818,172 @@
               },
               "namespaceId": "public",
               "table": "Booking"
+            }
+          },
+          "BookingAssignment": {
+            "fields": {
+              "bookingId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "occupiedEnd": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "occupiedStart": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "requirementIndex": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "resourceId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "resourceType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ResourceType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "sessionKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "unitIndex": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "usesPlace": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "booking": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "bookingId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "Booking",
+                  "namespace": "public"
+                }
+              },
+              "resource": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "resourceId",
+                    "websiteId",
+                    "resourceType"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId",
+                    "type"
+                  ]
+                },
+                "to": {
+                  "model": "BookableResource",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "bookingId": {
+                  "column": "bookingId"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "occupiedEnd": {
+                  "column": "occupiedEnd"
+                },
+                "occupiedStart": {
+                  "column": "occupiedStart"
+                },
+                "requirementIndex": {
+                  "column": "requirementIndex"
+                },
+                "resourceId": {
+                  "column": "resourceId"
+                },
+                "resourceType": {
+                  "column": "resourceType"
+                },
+                "sessionKey": {
+                  "column": "sessionKey"
+                },
+                "unitIndex": {
+                  "column": "unitIndex"
+                },
+                "usesPlace": {
+                  "column": "usesPlace"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "BookingAssignment"
             }
           },
           "BookingLocation": {
@@ -1351,6 +2084,40 @@
                   "namespace": "public"
                 }
               },
+              "copiedServices": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "copiedFromLocationId",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableService",
+                  "namespace": "public"
+                }
+              },
+              "homeServices": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "homeLocationId",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableService",
+                  "namespace": "public"
+                }
+              },
               "resources": {
                 "cardinality": "1:N",
                 "on": {
@@ -1365,6 +2132,23 @@
                 },
                 "to": {
                   "model": "BookableResource",
+                  "namespace": "public"
+                }
+              },
+              "serviceSettings": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "locationId",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableServiceLocation",
                   "namespace": "public"
                 }
               },
@@ -1425,124 +2209,6 @@
               },
               "namespaceId": "public",
               "table": "BookingLocation"
-            }
-          },
-          "BookingResource": {
-            "fields": {
-              "bookingId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "isActive": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/bool@1",
-                  "kind": "scalar"
-                }
-              },
-              "occupiedEnd": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "occupiedStart": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "resourceId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "sessionKey": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "websiteId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "booking": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "bookingId",
-                    "websiteId"
-                  ],
-                  "targetFields": [
-                    "id",
-                    "websiteId"
-                  ]
-                },
-                "to": {
-                  "model": "Booking",
-                  "namespace": "public"
-                }
-              },
-              "resource": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "resourceId",
-                    "websiteId"
-                  ],
-                  "targetFields": [
-                    "id",
-                    "websiteId"
-                  ]
-                },
-                "to": {
-                  "model": "BookableResource",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "bookingId": {
-                  "column": "bookingId"
-                },
-                "isActive": {
-                  "column": "isActive"
-                },
-                "occupiedEnd": {
-                  "column": "occupiedEnd"
-                },
-                "occupiedStart": {
-                  "column": "occupiedStart"
-                },
-                "resourceId": {
-                  "column": "resourceId"
-                },
-                "sessionKey": {
-                  "column": "sessionKey"
-                },
-                "websiteId": {
-                  "column": "websiteId"
-                }
-              },
-              "namespaceId": "public",
-              "table": "BookingResource"
             }
           },
           "DataSource": {
@@ -1844,6 +2510,124 @@
               "table": "Dataset"
             }
           },
+          "EmployeePreference": {
+            "fields": {
+              "resourceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "serviceIds": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "tenantId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "windowEnd": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "windowStart": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "resource": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "resourceId",
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableResource",
+                  "namespace": "public"
+                }
+              },
+              "website": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "websiteId",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "Website",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "resourceId": {
+                  "column": "resourceId"
+                },
+                "serviceIds": {
+                  "column": "serviceIds"
+                },
+                "tenantId": {
+                  "column": "tenantId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                },
+                "windowEnd": {
+                  "column": "windowEnd"
+                },
+                "windowStart": {
+                  "column": "windowStart"
+                }
+              },
+              "namespaceId": "public",
+              "table": "EmployeePreference"
+            }
+          },
           "Invitation": {
             "fields": {
               "acceptedAt": {
@@ -1949,6 +2733,178 @@
               },
               "namespaceId": "public",
               "table": "Invitation"
+            }
+          },
+          "MediaAsset": {
+            "fields": {
+              "byteSize": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "contentType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "objectKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "originalFilename": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "MediaAssetStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "tenantId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "uploadExpiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "visibility": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "MediaVisibility",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "website": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "websiteId",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "id",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "Website",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "byteSize": {
+                  "column": "byteSize"
+                },
+                "contentType": {
+                  "column": "contentType"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "objectKey": {
+                  "column": "objectKey"
+                },
+                "originalFilename": {
+                  "column": "originalFilename"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "tenantId": {
+                  "column": "tenantId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "uploadExpiresAt": {
+                  "column": "uploadExpiresAt"
+                },
+                "visibility": {
+                  "column": "visibility"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "MediaAsset"
             }
           },
           "Membership": {
@@ -2247,6 +3203,114 @@
               "table": "PageConfig"
             }
           },
+          "SavedMap": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "settings": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "websiteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "website": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "websiteId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Website",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "settings": {
+                  "column": "settings"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
+                },
+                "websiteId": {
+                  "column": "websiteId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "SavedMap"
+            }
+          },
           "Website": {
             "fields": {
               "createdAt": {
@@ -2314,6 +3378,23 @@
               }
             },
             "relations": {
+              "actorMessages": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "websiteId",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "ActorMessage",
+                  "namespace": "public"
+                }
+              },
               "auditEntries": {
                 "cardinality": "1:N",
                 "on": {
@@ -2412,6 +3493,40 @@
                   "namespace": "public"
                 }
               },
+              "employeePreferences": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "websiteId",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "EmployeePreference",
+                  "namespace": "public"
+                }
+              },
+              "mediaAssets": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "websiteId",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "MediaAsset",
+                  "namespace": "public"
+                }
+              },
               "migrations": {
                 "cardinality": "1:N",
                 "on": {
@@ -2474,6 +3589,38 @@
                 },
                 "to": {
                   "model": "WebsiteRelease",
+                  "namespace": "public"
+                }
+              },
+              "savedMaps": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "websiteId"
+                  ]
+                },
+                "to": {
+                  "model": "SavedMap",
+                  "namespace": "public"
+                }
+              },
+              "serviceLocations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id",
+                    "tenantId"
+                  ],
+                  "targetFields": [
+                    "websiteId",
+                    "tenantId"
+                  ]
+                },
+                "to": {
+                  "model": "BookableServiceLocation",
                   "namespace": "public"
                 }
               },
@@ -2985,6 +4132,169 @@
       "public": {
         "entries": {
           "table": {
+            "ActorMessage": {
+              "checks": [
+                {
+                  "expression": "(\"type\" = 'calendar_changed') = (\"bookingId\" IS NULL)",
+                  "name": "ActorMessage_booking_rule_f40704c8",
+                  "prefix": "ActorMessage_booking_rule"
+                },
+                {
+                  "expression": "jsonb_typeof(\"params\") = 'object'",
+                  "name": "ActorMessage_params_rule_01ffc67b",
+                  "prefix": "ActorMessage_params_rule"
+                },
+                {
+                  "expression": "char_length(\"recipientActorId\") BETWEEN 1 AND 128",
+                  "name": "ActorMessage_recipient_rule_28aa15f7",
+                  "prefix": "ActorMessage_recipient_rule"
+                },
+                {
+                  "expression": "\"type\" IN ('assigned', 'unassigned', 'cancelled', 'rescheduled', 'calendar_changed')",
+                  "name": "ActorMessage_type_check_63fc7e5f",
+                  "prefix": "ActorMessage_type_check"
+                }
+              ],
+              "columns": {
+                "bookingId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "params": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "readAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "recipientActorId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "tenantId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ActorMessageType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "ActorMessage_websiteId_tenantId_idx_ac8953f0"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "websiteId",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ActorMessage"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Website"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "ActorMessage_bookingId_websiteId_idx_1ccc460f"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "bookingId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ActorMessage"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Booking"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "bookingId",
+                    "websiteId"
+                  ],
+                  "name": "ActorMessage_bookingId_websiteId_idx_1ccc460f",
+                  "prefix": "ActorMessage_bookingId_websiteId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "recipientActorId",
+                    "createdAt"
+                  ],
+                  "name": "ActorMessage_websiteId_recipientActorId_createdAt_idx_1ee26959",
+                  "prefix": "ActorMessage_websiteId_recipientActorId_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "tenantId"
+                  ],
+                  "name": "ActorMessage_websiteId_tenantId_idx_ac8953f0",
+                  "prefix": "ActorMessage_websiteId_tenantId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "AuditEntry": {
               "checks": [
                 {
@@ -3016,12 +4326,12 @@
               "columns": {
                 "actorId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "actorKind": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -3032,22 +4342,22 @@
                 },
                 "details": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "occurredAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": false
                 },
                 "severity": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -3058,17 +4368,17 @@
                 },
                 "source": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "type": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -3145,14 +4455,29 @@
                   "prefix": "BookableResource_actor_rule"
                 },
                 {
+                  "expression": "\"setupMinutes\" BETWEEN 0 AND 240 AND \"teardownMinutes\" BETWEEN 0 AND 240",
+                  "name": "BookableResource_buffers_rule_8881a382",
+                  "prefix": "BookableResource_buffers_rule"
+                },
+                {
                   "expression": "\"capacity\" IS NULL OR \"capacity\" BETWEEN 1 AND 10000",
                   "name": "BookableResource_capacity_rule_d4b0b053",
                   "prefix": "BookableResource_capacity_rule"
                 },
                 {
+                  "expression": "\"coverage\" IS NULL OR jsonb_typeof(\"coverage\") = 'array'",
+                  "name": "BookableResource_coverage_rule_ebade982",
+                  "prefix": "BookableResource_coverage_rule"
+                },
+                {
                   "expression": "char_length(\"name\") BETWEEN 1 AND 120",
                   "name": "BookableResource_name_rule_38e74a36",
                   "prefix": "BookableResource_name_rule"
+                },
+                {
+                  "expression": "\"internalNote\" IS NULL OR char_length(\"internalNote\") <= 2000",
+                  "name": "BookableResource_note_rule_5bac6775",
+                  "prefix": "BookableResource_note_rule"
                 },
                 {
                   "expression": "jsonb_typeof(\"skills\") = 'array'",
@@ -3168,70 +4493,93 @@
               "columns": {
                 "assignedActorId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "availability": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "capacity": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "coverage": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
+                },
+                "internalNote": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "isActive": {
                   "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
                   "default": {
                     "kind": "literal",
                     "value": true
                   },
-                  "nativeType": "bool",
                   "nullable": false
                 },
                 "locationId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "managerChange": {
-                  "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "setupMinutes": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
                   "nullable": false
                 },
                 "skills": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "teardownMinutes": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
                   "nullable": false
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "type": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -3242,21 +4590,24 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "BookableResource_websiteId_tenantId_idx_ac8953f0"
+                  },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
@@ -3276,6 +4627,9 @@
                   }
                 },
                 {
+                  "index": {
+                    "name": "BookableResource_locationId_websiteId_idx_3128d57b"
+                  },
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
@@ -3336,11 +4690,23 @@
                     "id",
                     "websiteId"
                   ]
+                },
+                {
+                  "columns": [
+                    "id",
+                    "websiteId",
+                    "type"
+                  ]
                 }
               ]
             },
             "BookableService": {
               "checks": [
+                {
+                  "expression": "\"assignmentMode\" IN ('automatic', 'manual', 'open')",
+                  "name": "BookableService_assignmentMode_check_9afda85f",
+                  "prefix": "BookableService_assignmentMode_check"
+                },
                 {
                   "expression": "\"preparationMinutes\" BETWEEN 0 AND 240 AND \"cleanupMinutes\" BETWEEN 0 AND 240",
                   "name": "BookableService_buffers_rule_53109094",
@@ -3362,14 +4728,19 @@
                   "prefix": "BookableService_instructions_rule"
                 },
                 {
-                  "expression": "jsonb_typeof(\"locationIds\") = 'array' AND jsonb_typeof(\"requirements\") = 'array' AND jsonb_typeof(\"information\") = 'array' AND jsonb_typeof(\"requiredDocuments\") = 'array'",
-                  "name": "BookableService_lists_rule_8a614c43",
+                  "expression": "jsonb_typeof(\"requirements\") = 'array' AND jsonb_typeof(\"information\") = 'array' AND jsonb_typeof(\"requiredDocuments\") = 'array'",
+                  "name": "BookableService_lists_rule_c1542c4f",
                   "prefix": "BookableService_lists_rule"
                 },
                 {
                   "expression": "char_length(\"name\") BETWEEN 1 AND 120",
                   "name": "BookableService_name_rule_38e74a36",
                   "prefix": "BookableService_name_rule"
+                },
+                {
+                  "expression": "\"internalNote\" IS NULL OR char_length(\"internalNote\") <= 2000",
+                  "name": "BookableService_note_rule_5bac6775",
+                  "prefix": "BookableService_note_rule"
                 },
                 {
                   "expression": "\"participantsPerBooking\" BETWEEN 1 AND 500 AND \"participantsPerSession\" BETWEEN \"participantsPerBooking\" AND 500",
@@ -3393,166 +4764,194 @@
                 }
               ],
               "columns": {
+                "assignmentMode": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "automatic"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AssignmentMode",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
                 "availability": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "cancellation": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "category": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "cleanupMinutes": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 0
                   },
-                  "nativeType": "int4",
                   "nullable": false
+                },
+                "copiedFromLocationId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "description": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "durationMinutes": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
                   "nullable": false
+                },
+                "homeLocationId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "horizonDays": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "information": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "instructions": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "internalNote": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "isActive": {
                   "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
                   "default": {
                     "kind": "literal",
                     "value": true
                   },
-                  "nativeType": "bool",
-                  "nullable": false
-                },
-                "locationIds": {
-                  "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
                   "nullable": false
                 },
                 "name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "noticeMinutes": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 0
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "participantsPerBooking": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 1
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "participantsPerSession": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 1
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "preparationMinutes": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 0
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "requiredDocuments": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "requirements": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "rescheduling": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "slotIntervalMinutes": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
                   "nullable": false
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "BookableService_websiteId_tenantId_idx_ac8953f0"
+                  },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
@@ -3569,6 +4968,42 @@
                     ],
                     "namespaceId": "public",
                     "tableName": "Website"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "homeLocationId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableService"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingLocation"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "copiedFromLocationId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableService"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingLocation"
                   }
                 }
               ],
@@ -3597,6 +5032,156 @@
                 }
               ]
             },
+            "BookableServiceLocation": {
+              "checks": [
+                {
+                  "expression": "jsonb_typeof(\"resources\") = 'array'",
+                  "name": "BookableServiceLocation_resources_rule_ce3fa37e",
+                  "prefix": "BookableServiceLocation_resources_rule"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "isOnlineBookable": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "locationId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "resources": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "serviceId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "tenantId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "websiteId",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableServiceLocation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Website"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "serviceId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableServiceLocation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableService"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "BookableServiceLocation_locationId_websiteId_idx_3128d57b"
+                  },
+                  "source": {
+                    "columns": [
+                      "locationId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableServiceLocation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingLocation"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "locationId",
+                    "websiteId"
+                  ],
+                  "name": "BookableServiceLocation_locationId_websiteId_idx_3128d57b",
+                  "prefix": "BookableServiceLocation_locationId_websiteId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "serviceId",
+                  "locationId"
+                ]
+              },
+              "uniques": []
+            },
             "Booking": {
               "checks": [
                 {
@@ -3620,6 +5205,11 @@
                   "prefix": "Booking_group_size_rule"
                 },
                 {
+                  "expression": "\"locale\" IS NULL OR \"locale\" ~ '^[a-z]{2}$'",
+                  "name": "Booking_locale_rule_0c16b0d8",
+                  "prefix": "Booking_locale_rule"
+                },
+                {
                   "expression": "\"reference\" ~ '^[0-9A-HJKMNP-TV-Z]{10}$'",
                   "name": "Booking_reference_rule_1ba81916",
                   "prefix": "Booking_reference_rule"
@@ -3628,6 +5218,11 @@
                   "expression": "\"rescheduleCount\" >= 0",
                   "name": "Booking_reschedules_rule_e98165eb",
                   "prefix": "Booking_reschedules_rule"
+                },
+                {
+                  "expression": "\"serviceSnapshot\" IS NULL OR jsonb_typeof(\"serviceSnapshot\") = 'object'",
+                  "name": "Booking_snapshot_rule_bb7550b6",
+                  "prefix": "Booking_snapshot_rule"
                 },
                 {
                   "expression": "\"start\" < \"end\" AND \"occupiedStart\" <= \"start\" AND \"end\" <= \"occupiedEnd\"",
@@ -3643,105 +5238,115 @@
               "columns": {
                 "cancelledAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "cancelledBy": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "customer": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "customerEmail": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "end": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": false
                 },
                 "holdExpiresAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
+                },
+                "locale": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "locationId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "occupiedEnd": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": false
                 },
                 "occupiedStart": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": false
                 },
                 "participants": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
                   "nullable": false
                 },
                 "reference": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "rescheduleCount": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 0
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "serviceId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
+                },
+                "serviceSnapshot": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": true
                 },
                 "sessionCapacity": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
                   "nullable": false
                 },
                 "sessionKey": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "start": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -3752,21 +5357,21 @@
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -3791,6 +5396,9 @@
                   }
                 },
                 {
+                  "index": {
+                    "name": "Booking_serviceId_websiteId_idx_dff1d9a6"
+                  },
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
@@ -3810,6 +5418,9 @@
                   }
                 },
                 {
+                  "index": {
+                    "name": "Booking_locationId_websiteId_idx_3128d57b"
+                  },
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
@@ -3913,6 +5524,187 @@
                 }
               ]
             },
+            "BookingAssignment": {
+              "checks": [
+                {
+                  "expression": "\"resourceId\" IS NOT NULL OR \"resourceType\" = 'employee'",
+                  "name": "BookingAssignment_open_rule_1f631f72",
+                  "prefix": "BookingAssignment_open_rule"
+                },
+                {
+                  "expression": "\"requirementIndex\" BETWEEN 0 AND 5 AND \"unitIndex\" BETWEEN 0 AND 19",
+                  "name": "BookingAssignment_position_rule_d0bd8b3f",
+                  "prefix": "BookingAssignment_position_rule"
+                },
+                {
+                  "expression": "\"resourceType\" IN ('employee', 'room', 'office', 'service-desk', 'sports-field', 'meeting-room', 'vehicle', 'equipment', 'facility', 'workstation', 'other')",
+                  "name": "BookingAssignment_resourceType_check_f6b4675f",
+                  "prefix": "BookingAssignment_resourceType_check"
+                },
+                {
+                  "expression": "\"occupiedStart\" < \"occupiedEnd\"",
+                  "name": "BookingAssignment_span_check_62352ed1",
+                  "prefix": "BookingAssignment_span_check"
+                }
+              ],
+              "columns": {
+                "bookingId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "nullable": false
+                },
+                "occupiedEnd": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "occupiedStart": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "requirementIndex": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "resourceId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "resourceType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ResourceType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "sessionKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "unitIndex": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "usesPlace": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "BookingAssignment_bookingId_websiteId_idx_1ccc460f"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "bookingId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingAssignment"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Booking"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "resourceId",
+                      "websiteId",
+                      "resourceType"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingAssignment"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId",
+                      "type"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableResource"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "bookingId",
+                    "websiteId"
+                  ],
+                  "name": "BookingAssignment_bookingId_websiteId_idx_1ccc460f",
+                  "prefix": "BookingAssignment_bookingId_websiteId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "occupiedStart"
+                  ],
+                  "name": "BookingAssignment_open_idx_79e72bca",
+                  "prefix": "BookingAssignment_open_idx",
+                  "unique": false,
+                  "where": "\"resourceId\" IS NULL AND \"isActive\""
+                },
+                {
+                  "columns": [
+                    "resourceId",
+                    "occupiedStart"
+                  ],
+                  "name": "BookingAssignment_resource_idx_f895f372",
+                  "prefix": "BookingAssignment_resource_idx",
+                  "unique": false,
+                  "where": "\"resourceId\" IS NOT NULL"
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "bookingId",
+                  "requirementIndex",
+                  "unitIndex"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "bookingId",
+                    "resourceId"
+                  ]
+                }
+              ]
+            },
             "BookingLocation": {
               "checks": [
                 {
@@ -3939,74 +5731,77 @@
               "columns": {
                 "address": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "isActive": {
                   "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
                   "default": {
                     "kind": "literal",
                     "value": true
                   },
-                  "nativeType": "bool",
                   "nullable": false
                 },
                 "name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "openingHours": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "staffHours": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "timeZone": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "BookingLocation_websiteId_tenantId_idx_ac8953f0"
+                  },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
@@ -4051,119 +5846,6 @@
                 }
               ]
             },
-            "BookingResource": {
-              "checks": [
-                {
-                  "expression": "\"occupiedStart\" < \"occupiedEnd\"",
-                  "name": "BookingResource_span_check_62352ed1",
-                  "prefix": "BookingResource_span_check"
-                }
-              ],
-              "columns": {
-                "bookingId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "isActive": {
-                  "codecId": "pg/bool@1",
-                  "nativeType": "bool",
-                  "nullable": false
-                },
-                "occupiedEnd": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "occupiedStart": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "resourceId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "sessionKey": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "websiteId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                }
-              },
-              "foreignKeys": [
-                {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "bookingId",
-                      "websiteId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "BookingResource"
-                  },
-                  "target": {
-                    "columns": [
-                      "id",
-                      "websiteId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "Booking"
-                  }
-                },
-                {
-                  "onDelete": "restrict",
-                  "source": {
-                    "columns": [
-                      "resourceId",
-                      "websiteId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "BookingResource"
-                  },
-                  "target": {
-                    "columns": [
-                      "id",
-                      "websiteId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "BookableResource"
-                  }
-                }
-              ],
-              "indexes": [
-                {
-                  "columns": [
-                    "bookingId",
-                    "websiteId"
-                  ],
-                  "name": "BookingResource_bookingId_websiteId_idx_1ccc460f",
-                  "prefix": "BookingResource_bookingId_websiteId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "resourceId",
-                    "occupiedStart"
-                  ],
-                  "name": "BookingResource_resourceId_occupiedStart_idx_e88cdc78",
-                  "prefix": "BookingResource_resourceId_occupiedStart_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "bookingId",
-                  "resourceId"
-                ]
-              },
-              "uniques": []
-            },
             "DataSource": {
               "checks": [
                 {
@@ -4185,26 +5867,26 @@
               "columns": {
                 "config": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "kind": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -4215,26 +5897,26 @@
                 },
                 "lastCheckedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "lastError": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "UNKNOWN"
                   },
-                  "nativeType": "text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -4245,21 +5927,24 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "DataSource_websiteId_idx_aa7167ce"
+                  },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
@@ -4325,60 +6010,60 @@
               "columns": {
                 "canonicalKind": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "dataSourceId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "lastFetchedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "mapping": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "path": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "slug": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "UNKNOWN"
                   },
-                  "nativeType": "text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -4389,11 +6074,11 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 }
               },
@@ -4431,6 +6116,133 @@
                 }
               ]
             },
+            "EmployeePreference": {
+              "checks": [
+                {
+                  "expression": "jsonb_typeof(\"serviceIds\") = 'array'",
+                  "name": "EmployeePreference_lists_rule_d08a4f86",
+                  "prefix": "EmployeePreference_lists_rule"
+                },
+                {
+                  "expression": "(\"windowStart\" IS NULL AND \"windowEnd\" IS NULL) OR (\"windowStart\" BETWEEN 0 AND 1439 AND \"windowEnd\" BETWEEN 1 AND 1440 AND \"windowStart\" < \"windowEnd\")",
+                  "name": "EmployeePreference_window_rule_270b5b53",
+                  "prefix": "EmployeePreference_window_rule"
+                }
+              ],
+              "columns": {
+                "resourceId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "serviceIds": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "tenantId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "windowEnd": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "windowStart": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "EmployeePreference_websiteId_tenantId_idx_ac8953f0"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "websiteId",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EmployeePreference"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Website"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "EmployeePreference_resourceId_websiteId_idx_70562050"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "resourceId",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EmployeePreference"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookableResource"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "resourceId",
+                    "websiteId"
+                  ],
+                  "name": "EmployeePreference_resourceId_websiteId_idx_70562050",
+                  "prefix": "EmployeePreference_resourceId_websiteId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "tenantId"
+                  ],
+                  "name": "EmployeePreference_websiteId_tenantId_idx_ac8953f0",
+                  "prefix": "EmployeePreference_websiteId_tenantId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "resourceId"
+                ]
+              },
+              "uniques": []
+            },
             "Invitation": {
               "checks": [
                 {
@@ -4462,41 +6274,41 @@
               "columns": {
                 "acceptedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "email": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "expiresAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "invitedBy": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "role": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -4507,12 +6319,12 @@
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "tokenHash": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -4551,6 +6363,167 @@
                 }
               ]
             },
+            "MediaAsset": {
+              "checks": [
+                {
+                  "expression": "char_length(\"originalFilename\") BETWEEN 1 AND 255",
+                  "name": "MediaAsset_filename_rule_beac8236",
+                  "prefix": "MediaAsset_filename_rule"
+                },
+                {
+                  "expression": "\"byteSize\" > 0",
+                  "name": "MediaAsset_size_check_1e79ac18",
+                  "prefix": "MediaAsset_size_check"
+                },
+                {
+                  "expression": "\"status\" IN ('PENDING', 'READY', 'DELETING')",
+                  "name": "MediaAsset_status_check_48ccb1f2",
+                  "prefix": "MediaAsset_status_check"
+                },
+                {
+                  "expression": "\"visibility\" IN ('PUBLIC', 'PRIVATE')",
+                  "name": "MediaAsset_visibility_check_60a8f38d",
+                  "prefix": "MediaAsset_visibility_check"
+                }
+              ],
+              "columns": {
+                "byteSize": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "contentType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "objectKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "originalFilename": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PENDING"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "MediaAssetStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "tenantId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "uploadExpiresAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "visibility": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "MediaVisibility",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "websiteId",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "MediaAsset"
+                  },
+                  "target": {
+                    "columns": [
+                      "id",
+                      "tenantId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Website"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "websiteId",
+                    "tenantId",
+                    "status",
+                    "createdAt"
+                  ],
+                  "name": "MediaAsset_websiteId_tenantId_status_createdAt_idx_a1f9cd34",
+                  "prefix": "MediaAsset_websiteId_tenantId_status_createdAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "objectKey"
+                  ]
+                }
+              ]
+            },
             "Membership": {
               "checks": [
                 {
@@ -4577,26 +6550,26 @@
               "columns": {
                 "actorId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "role": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -4607,7 +6580,7 @@
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -4659,54 +6632,54 @@
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "path": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "title": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "version": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 1
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -4762,35 +6735,35 @@
               "columns": {
                 "content": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "pageId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "DRAFT"
                   },
-                  "nativeType": "text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -4801,20 +6774,20 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "version": {
                   "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "default": {
                     "kind": "literal",
                     "value": 1
                   },
-                  "nativeType": "int4",
                   "nullable": false
                 }
               },
@@ -4852,6 +6825,134 @@
                 }
               ]
             },
+            "SavedMap": {
+              "checks": [
+                {
+                  "expression": "\"description\" IS NULL OR char_length(\"description\") <= 500",
+                  "name": "SavedMap_description_rule_e354da0e",
+                  "prefix": "SavedMap_description_rule"
+                },
+                {
+                  "expression": "char_length(\"name\") BETWEEN 1 AND 120",
+                  "name": "SavedMap_name_rule_38e74a36",
+                  "prefix": "SavedMap_name_rule"
+                },
+                {
+                  "expression": "\"version\" > 0",
+                  "name": "SavedMap_version_rule_efca705d",
+                  "prefix": "SavedMap_version_rule"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "settings": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nullable": false
+                },
+                "websiteId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "SavedMap_websiteId_idx_aa7167ce"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "websiteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "SavedMap"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Website"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "websiteId"
+                  ],
+                  "name": "SavedMap_websiteId_idx_aa7167ce",
+                  "prefix": "SavedMap_websiteId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "websiteId",
+                    "name",
+                    "id"
+                  ],
+                  "name": "SavedMap_websiteId_name_id_idx_bfb0270a",
+                  "prefix": "SavedMap_websiteId_name_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "id",
+                    "websiteId"
+                  ]
+                }
+              ]
+            },
             "Website": {
               "checks": [
                 {
@@ -4883,55 +6984,55 @@
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "description": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "publishedReleaseId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "slug": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "templateKey": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "tenantId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 }
               },
@@ -4997,55 +7098,55 @@
               "columns": {
                 "appliedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "appliedBy": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "plan": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "proposedBy": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "resolutions": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "sourceReleaseId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "PROPOSED"
                   },
-                  "nativeType": "text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -5056,7 +7157,7 @@
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -5079,6 +7180,9 @@
                   }
                 },
                 {
+                  "index": {
+                    "name": "WebsiteMigration_sourceReleaseId_websiteId_idx_7795b2f9"
+                  },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
@@ -5156,60 +7260,60 @@
               "columns": {
                 "changes": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "note": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "publishedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "dataType": "pg/timestamptz",
                   "nullable": true
                 },
                 "publishedBy": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "releaseNumber": {
                   "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "dataType": "pg/int4",
                   "nullable": false
                 },
                 "snapshot": {
                   "codecId": "pg/jsonb@1",
-                  "nativeType": "jsonb",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "snapshotHash": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "DRAFT"
                   },
-                  "nativeType": "text",
                   "nullable": false,
                   "valueSet": {
                     "entityKind": "valueSet",
@@ -5220,7 +7324,7 @@
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -5275,80 +7379,85 @@
               "columns": {
                 "accentColor": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "#C9782F"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "bodyFont": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "Inter"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "headingFont": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "Source Serif 4"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "primaryColor": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "#1F3A34"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "radius": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "md"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "secondaryColor": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "#7A8B85"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "spacingScale": {
                   "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
                     "value": "comfortable"
                   },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "websiteId": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "unique": [
+                      "websiteId"
+                    ]
+                  },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
@@ -5382,6 +7491,16 @@
             }
           },
           "valueSet": {
+            "ActorMessageType": {
+              "kind": "valueSet",
+              "values": [
+                "assigned",
+                "unassigned",
+                "cancelled",
+                "rescheduled",
+                "calendar_changed"
+              ]
+            },
             "ActorRole": {
               "kind": "valueSet",
               "values": [
@@ -5391,6 +7510,14 @@
                 "viewer",
                 "employee",
                 "platform_admin"
+              ]
+            },
+            "AssignmentMode": {
+              "kind": "valueSet",
+              "values": [
+                "automatic",
+                "manual",
+                "open"
               ]
             },
             "AuditActorKind": {
@@ -5442,6 +7569,21 @@
                 "ERROR"
               ]
             },
+            "MediaAssetStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PENDING",
+                "READY",
+                "DELETING"
+              ]
+            },
+            "MediaVisibility": {
+              "kind": "valueSet",
+              "values": [
+                "PUBLIC",
+                "PRIVATE"
+              ]
+            },
             "MigrationStatus": {
               "kind": "valueSet",
               "values": [
@@ -5487,10 +7629,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "02d2cc979bf21c8eff202f310eca267162b4257d8328d4d16022d5fc7d2ec69d"
+    "storageHash": "656d8313d617b80ea93a8f4725811e2ccb9a3560895fd76454bab8008e832a81"
   },
   "execution": {
-    "executionHash": "a372b913a1bd7abd2b3acd28399d86aa7476f99ec19c36253b900ecd58811c39",
+    "executionHash": "04d5cce1788b06767c3951b50a00ee9c9127b1a91811716cca2c73aad08581d5",
     "mutations": {
       "defaults": [
         {
@@ -5499,9 +7641,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "AuditEntry"
+            "entry": "ActorMessage",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5510,9 +7652,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "BookableResource"
+            "entry": "AuditEntry",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5521,9 +7663,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "BookableService"
+            "entry": "BookableResource",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5532,9 +7674,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "Booking"
+            "entry": "BookableService",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5543,9 +7685,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "BookingLocation"
+            "entry": "Booking",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5554,9 +7696,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "Dataset"
+            "entry": "BookingLocation",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5565,9 +7707,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "DataSource"
+            "entry": "DataSource",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5576,9 +7718,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "Invitation"
+            "entry": "Dataset",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5587,9 +7729,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "Membership"
+            "entry": "Invitation",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5598,9 +7740,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "Page"
+            "entry": "MediaAsset",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5609,9 +7751,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "PageConfig"
+            "entry": "Membership",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5620,9 +7762,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "Website"
+            "entry": "Page",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5631,9 +7773,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "WebsiteMigration"
+            "entry": "PageConfig",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5642,9 +7784,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "WebsiteRelease"
+            "entry": "SavedMap",
+            "field": "id",
+            "namespace": "public"
           }
         },
         {
@@ -5653,9 +7795,42 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "WebsiteTheme"
+            "entry": "Website",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "WebsiteMigration",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "WebsiteRelease",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "WebsiteTheme",
+            "field": "id",
+            "namespace": "public"
           }
         }
       ]
@@ -5664,6 +7839,8 @@
   "capabilities": {
     "postgres": {
       "distinctOn": true,
+      "forKeyShare": true,
+      "forNoKeyUpdate": true,
       "jsonAgg": true,
       "lateral": true,
       "limit": true,
@@ -5674,9 +7851,14 @@
       "checkConstraint": true,
       "defaultInInsert": true,
       "enums": true,
+      "forShare": true,
+      "forUpdate": true,
       "insertOnConflictSkip": true,
       "insertOnConflictWithoutTarget": true,
       "lateral": true,
+      "lockNowait": true,
+      "lockOf": true,
+      "lockSkipLocked": true,
       "returning": true,
       "scalarList": true
     }

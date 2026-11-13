@@ -1,0 +1,57 @@
+// use prisma-8
+
+/// Root aggregate. A tenant is its website, so one id serves as both and every child table
+/// references the `(id, tenantId)` pair. See README.md, "Tenant isolation".
+model Website {
+  id                  String   @id @onCreate(uuid())
+  tenantId            String
+  name                String
+  slug                String   @unique
+  description         String?
+  templateKey         String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
+  /// The live release. The `(publishedReleaseId, id)` pair makes the database refuse a release of another website.
+  publishedReleaseId  String?  @unique
+
+  theme               WebsiteTheme?
+  pages               Page[]
+  releases            WebsiteRelease[]     @relation("WebsiteReleases")
+  publishedRelease    WebsiteRelease?      @relation("PublishedRelease", fields: [publishedReleaseId, id], references: [id, websiteId], index: false, onDelete: Restrict)
+  migrations          WebsiteMigration[]
+  dataSources         DataSource[]
+  bookingLocations    BookingLocation[]
+  bookableResources   BookableResource[]
+  bookableServices    BookableService[]
+  serviceLocations    BookableServiceLocation[]
+  bookings            Booking[]
+  employeePreferences EmployeePreference[]
+  actorMessages       ActorMessage[]
+  mediaAssets         MediaAsset[]
+  auditEntries        AuditEntry[]
+  savedMaps           SavedMap[]
+
+  @@unique([id, tenantId])
+  @@check(expression: sql`"id" = "tenantId"`, name: "Website_tenant_is_website_check")
+  @@check(expression: sql`"slug" ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND char_length("slug") <= 80`, name: "Website_slug_rule")
+  @@check(expression: sql`char_length("name") BETWEEN 2 AND 120`, name: "Website_name_rule")
+  @@check(expression: sql`"description" IS NULL OR char_length("description") <= 500`, name: "Website_description_rule")
+  @@check(expression: sql`char_length("templateKey") BETWEEN 1 AND 64`, name: "Website_template_rule")
+}
+
+/// Design tokens of a website. The hex check keeps values safe to inline into generated CSS.
+model WebsiteTheme {
+  id             String @id @onCreate(uuid())
+  websiteId      String @unique
+  primaryColor   String @default("#1F3A34")
+  secondaryColor String @default("#7A8B85")
+  accentColor    String @default("#C9782F")
+  headingFont    String @default("Source Serif 4")
+  bodyFont       String @default("Inter")
+  radius         String @default("md")
+  spacingScale   String @default("comfortable")
+
+  website        Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@check(expression: sql`"primaryColor" ~ '^#[0-9a-fA-F]{6}$' AND "secondaryColor" ~ '^#[0-9a-fA-F]{6}$' AND "accentColor" ~ '^#[0-9a-fA-F]{6}$'`, name: "WebsiteTheme_colors_rule")
+}

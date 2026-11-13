@@ -1,0 +1,50 @@
+// use prisma-8
+
+/// What an actor may do inside a tenant. `platform_admin` is the only role that is not tenant-scoped.
+enum ActorRole {
+  admin
+  editor
+  contributor
+  viewer
+  employee
+  platform_admin
+}
+
+/// Links an authenticated actor to a tenant with a role. It has no foreign keys: actors live in
+/// the authentication database, and `platform` is a tenant without a website.
+model Membership {
+  id        String    @id @onCreate(uuid())
+  actorId   String
+  tenantId  String
+  role      ActorRole
+  createdAt DateTime  @default(now())
+
+  @@unique([actorId, tenantId, role])
+  @@index([tenantId, role])
+  @@check(expression: sql`char_length("actorId") BETWEEN 1 AND 128`, name: "Membership_actor_rule")
+  @@check(expression: sql`"tenantId" ~ '^[A-Za-z0-9_-]{1,64}$'`, name: "Membership_tenant_rule")
+  // `platform_admin` exists only in the `platform` tenant, and that tenant has no other role.
+  @@check(expression: sql`("role" = 'platform_admin') = ("tenantId" = 'platform')`, name: "Membership_platform_rule")
+}
+
+/// Single-use invitation to join a tenant. Only the SHA-256 of the emailed token is stored, so a
+/// database read cannot be turned into a working link.
+model Invitation {
+  id         String    @id @onCreate(uuid())
+  tenantId   String
+  email      String
+  role       ActorRole
+  tokenHash  String    @unique
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([tenantId, email])
+  // Serves the list of open invitations.
+  @@index([tenantId, createdAt], where: sql`"acceptedAt" IS NULL`, name: "Invitation_open_idx")
+  @@check(expression: sql`"tokenHash" ~ '^[0-9a-f]{64}$'`, name: "Invitation_token_rule")
+  @@check(expression: sql`char_length("email") BETWEEN 3 AND 254`, name: "Invitation_email_rule")
+  @@check(expression: sql`"tenantId" ~ '^[A-Za-z0-9_-]{1,64}$'`, name: "Invitation_tenant_rule")
+  @@check(expression: sql`("role" = 'platform_admin') = ("tenantId" = 'platform')`, name: "Invitation_platform_rule")
+}

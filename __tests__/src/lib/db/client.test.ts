@@ -1,117 +1,135 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// 1. Mock the configuration to control database connection parameters
-vi.mock('@lib/config/server', () => ({
-  serverEnv: {
-    DATABASE_URL: 'postgresql://user:password@localhost:5432/mydb',
-    DATABASE_POOL_SIZE: 15,
-    DATABASE_POOL_TIMEOUT_SECONDS: 10,
-    NODE_ENV: 'development',
+const mocks = vi.hoisted(() => {
+  const warn = vi.fn();
+  const error = vi.fn();
+  const poolInstances: Array<{
+    options: Record<string, unknown>;
+    ending: boolean;
+    end: ReturnType<typeof vi.fn>;
+    on: ReturnType<typeof vi.fn>;
+  }> = [];
+  const client = { close: vi.fn() };
+  const postgres = vi.fn((_options: Record<string, unknown>) => client);
+  const env = {
+    DATABASE_URL: 'postgresql://user:pass@localhost:5432/test',
+    DATABASE_POOL_SIZE: 4,
+    DATABASE_POOL_TIMEOUT_SECONDS: 7,
+    DATABASE_STATEMENT_TIMEOUT_SECONDS: 20,
+    NODE_ENV: 'development' as 'development' | 'production',
+  };
+  return { warn, error, poolInstances, client, postgres, env };
+});
+
+vi.mock('pg', () => ({
+  Pool: class {
+    ending = false;
+    end = vi.fn(() => {
+      this.ending = true;
+      return Promise.resolve();
+    });
+    on = vi.fn();
+    constructor(readonly options: Record<string, unknown>) {
+      mocks.poolInstances.push(this);
+    }
+  },
+}));
+vi.mock('@prisma/orm-postgres/runtime', () => ({ default: mocks.postgres }));
+vi.mock('temporal-polyfill/global', () => ({}));
+vi.mock('@lib/config/server', () => ({ serverEnv: mocks.env }));
+vi.mock('@lib/logger', () => ({
+  logger: {
+    withContext: () => ({ warn: mocks.warn, error: mocks.error, debug: vi.fn(), info: vi.fn() }),
   },
 }));
 
-// 2. Mock the Prisma ORM runtime factory
-vi.mock('@prisma/orm-postgres/runtime', () => ({
-  default: vi.fn(() => ({
-    close: vi.fn().mockResolvedValue(undefined),
-  })),
-}));
+async function loadClient() {
+  vi.resetModules();
+  return import('@lib/db/client');
+}
 
-// 3. Mock the local dependencies (middleware and generated contract)
-vi.mock('@lib/db/query-logger', () => ({
-  queryLogger: vi.fn(() => 'mocked-query-logger-middleware'),
-}));
-
-vi.mock('@lib/db/contract.json', () => ({
-  default: { mock: 'contract-data' },
-}));
-
-// 4. Mock the logger to capture infrastructure errors
-vi.mock('@lib/logger', () => {
-  const mockDbLogger = { error: vi.fn() };
-  return {
-    logger: {
-      withContext: vi.fn(() => mockDbLogger),
-    },
-  };
-});
-
-describe('Database infrastructure adapter', () => {
+describe('db client', () => {
   beforeEach(() => {
-    // Reset module registry so each test evaluates the top-level module code independently
-    vi.resetModules();
-
-    // Clear the Next.js development hot-reload cache
-    delete (globalThis as any).prisma;
+    mocks.poolInstances.length = 0;
+    mocks.env.NODE_ENV = 'development';
+    mocks.client.close.mockReset().mockResolvedValue(undefined);
+    mocks.postgres.mockClear();
+    mocks.warn.mockClear();
+    mocks.error.mockClear();
+    Reflect.deleteProperty(globalThis, 'database');
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    Reflect.deleteProperty(globalThis, 'database');
   });
 
-  it('initializes the Prisma Postgres client with the connection URL and middleware', async () => {
-    const postgres = (await import('@prisma/orm-postgres/runtime')).default;
-    const { db } = await import('@lib/db');
+  it('sizes the pool from the configuration and hands it to the runtime', async () => {
+    const { db } = await loadClient();
 
-    expect(postgres).toHaveBeenCalledTimes(1);
-    expect(postgres).toHaveBeenCalledWith({
-      contractJson: { mock: 'contract-data' },
-      // Asserts that pool limits are correctly appended to the base URL
-      url: 'postgresql://user:password@localhost:5432/mydb?connection_limit=15&pool_timeout=10',
-      middleware: ['mocked-query-logger-middleware'],
+    expect(mocks.poolInstances).toHaveLength(1);
+    const [pool] = mocks.poolInstances;
+    expect(pool?.options).toEqual({
+      connectionString: mocks.env.DATABASE_URL,
+      max: 4,
+      connectionTimeoutMillis: 7000,
+      idleTimeoutMillis: 30_000,
+      statement_timeout: 20_000,
+      application_name: 'civo',
     });
-
-    expect(db).toBeDefined();
+    expect(mocks.postgres).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pg: pool,
+        contract: expect.objectContaining({ target: 'postgres', targetFamily: 'sql' }),
+      }),
+    );
+    expect(db).toBe(mocks.client);
   });
 
-  it('caches the client instance on globalThis in non-production environments to prevent pool exhaustion', async () => {
-    const postgres = (await import('@prisma/orm-postgres/runtime')).default;
+  it('logs a connection the server dropped while idle instead of crashing the process', async () => {
+    await loadClient();
 
-    // First import initializes the client and caches it
-    await import('@lib/db');
-    expect(postgres).toHaveBeenCalledTimes(1);
-    expect((globalThis as any).prisma).toBeDefined();
+    const [call] = mocks.poolInstances[0]?.on.mock.calls ?? [];
+    expect(call?.[0]).toBe('error');
+    (call?.[1] as (error: Error) => void)(new Error('terminating connection'));
 
-    // Resetting modules simulates a Next.js hot module reload
-    vi.resetModules();
-
-    // Second import should reuse the global instance instead of creating a new one
-    await import('@lib/db');
-    expect(postgres).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not cache the client instance on globalThis in production environments', async () => {
-    const { serverEnv } = await import('@lib/config/server');
-    serverEnv.NODE_ENV = 'production';
-
-    await import('@lib/db');
-
-    expect((globalThis as any).prisma).toBeUndefined();
-
-    // Restore the environment variable for subsequent tests
-    serverEnv.NODE_ENV = 'development';
-  });
-
-  describe('disconnectDb', () => {
-    it('gracefully closes the database connection', async () => {
-      const { db, disconnectDb } = await import('@lib/db');
-
-      await disconnectDb();
-
-      expect(db.close).toHaveBeenCalledTimes(1);
+    expect(mocks.warn).toHaveBeenCalledWith('db.pool.idle_connection_failed', {
+      reason: 'terminating connection',
     });
+  });
 
-    it('logs and rethrows if closing the connection fails', async () => {
-      const { db, disconnectDb } = await import('@lib/db');
-      const { logger } = await import('@lib/logger');
+  it('reuses the database across module reloads outside production', async () => {
+    await loadClient();
+    await loadClient();
 
-      const dbLogger = logger.withContext({ module: 'infrastructure.prisma' });
-      const error = new Error('Connection unexpectedly lost');
+    expect(mocks.poolInstances).toHaveLength(1);
+  });
 
-      (db.close as any).mockRejectedValueOnce(error);
+  it('builds a new database per module instance in production', async () => {
+    mocks.env.NODE_ENV = 'production';
 
-      await expect(disconnectDb()).rejects.toThrow('Connection unexpectedly lost');
-      expect(dbLogger.error).toHaveBeenCalledWith('db.disconnect_failed', error);
-    });
+    await loadClient();
+    await loadClient();
+
+    expect(mocks.poolInstances).toHaveLength(2);
+  });
+
+  it('closes the client, then ends the pool, and may be called twice', async () => {
+    const { disconnectDb } = await loadClient();
+
+    await disconnectDb();
+    await disconnectDb();
+
+    const pool = mocks.poolInstances[0];
+    expect(mocks.client.close).toHaveBeenCalledTimes(2);
+    expect(pool?.end).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs and rethrows a failed disconnect', async () => {
+    const failure = new Error('close failed');
+    mocks.client.close.mockRejectedValue(failure);
+    const { disconnectDb } = await loadClient();
+
+    await expect(disconnectDb()).rejects.toBe(failure);
+    expect(mocks.error).toHaveBeenCalledWith('db.disconnect_failed', failure);
   });
 });

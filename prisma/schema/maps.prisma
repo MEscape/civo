@@ -1,0 +1,21 @@
+// use prisma-8
+
+/// Reusable map configuration, scoped to its website. Feature data stays in datasets.
+model SavedMap {
+  id          String   @id @onCreate(uuid())
+  websiteId   String
+  name        String
+  description String?
+  settings    Jsonb
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@unique([id, websiteId])
+  @@index([websiteId, name, id])
+  @@check(expression: sql`char_length("name") BETWEEN 1 AND 120`, name: "SavedMap_name_rule")
+  @@check(expression: sql`"description" IS NULL OR char_length("description") <= 500`, name: "SavedMap_description_rule")
+  @@check(expression: sql`"version" > 0`, name: "SavedMap_version_rule")
+}

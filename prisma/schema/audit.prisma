@@ -1,0 +1,44 @@
+// use prisma-8
+
+/// `WARN` marks failures, denials and security signals.
+enum AuditSeverity {
+  INFO
+  WARN
+}
+
+/// A signed-in member, an anonymous visitor of the public site, or the system itself.
+enum AuditActorKind {
+  MEMBER
+  VISITOR
+  SYSTEM
+}
+
+/// One audit event of a website. Ids, counts and codes only, never content or personal data, so
+/// the log can be retained without becoming a privacy liability. Append-only (a trigger refuses
+/// updates); rows go with the website.
+model AuditEntry {
+  id         String         @id @onCreate(uuid())
+  websiteId  String
+  /// Module that recorded the event (`booking`, `release`, ...).
+  source     String
+  /// Event type, e.g. `booking.confirmed`.
+  type       String
+  severity   AuditSeverity
+  actorKind  AuditActorKind
+  /// Actor id, set for `MEMBER` only and resolved to a name at display time.
+  actorId    String?
+  details    Jsonb
+  occurredAt DateTime
+
+  website    Website @relation(fields: [websiteId], references: [id], index: false, onDelete: Cascade)
+
+  @@index([websiteId, occurredAt])
+  @@index([websiteId, source, occurredAt])
+  @@index([websiteId, actorId, occurredAt])
+  // Serves the daily retention delete, which spans every website.
+  @@index([occurredAt])
+  // Exactly the entries of a member name one.
+  @@check(expression: sql`("actorKind" = 'MEMBER') = ("actorId" IS NOT NULL)`, name: "AuditEntry_member_actor_check")
+  @@check(expression: sql`char_length("source") BETWEEN 1 AND 64 AND char_length("type") BETWEEN 1 AND 128`, name: "AuditEntry_label_rule")
+  @@check(expression: sql`jsonb_typeof("details") = 'object'`, name: "AuditEntry_details_rule")
+}

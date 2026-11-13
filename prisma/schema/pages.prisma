@@ -1,0 +1,43 @@
+// use prisma-8
+
+/// Only a draft is editable; publishing freezes the tree into a release snapshot.
+enum PageConfigStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// A routed page. The root page has the empty path, so routing needs no special case for `/`.
+model Page {
+  id        String   @id @onCreate(uuid())
+  tenantId  String
+  websiteId String
+  path      String
+  title     String
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  website   Website      @relation(fields: [websiteId, tenantId], references: [id, tenantId], index: false, onDelete: Cascade)
+  configs   PageConfig[]
+
+  @@unique([websiteId, path])
+  @@check(expression: sql`("path" = '' OR "path" ~ '^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$') AND char_length("path") <= 200`, name: "Page_path_rule")
+  @@check(expression: sql`char_length("title") BETWEEN 2 AND 120`, name: "Page_title_rule")
+  @@check(expression: sql`"version" >= 1`, name: "Page_version_rule")
+}
+
+/// One revision of a page's component tree.
+model PageConfig {
+  id        String           @id @onCreate(uuid())
+  pageId    String
+  content   Jsonb
+  status    PageConfigStatus @default(DRAFT)
+  version   Int              @default(1)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @default(now())
+
+  page      Page @relation(fields: [pageId], references: [id], index: false, onDelete: Cascade)
+
+  @@unique([pageId, version])
+  @@check(expression: sql`"version" >= 1`, name: "PageConfig_version_rule")
+}

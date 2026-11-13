@@ -1,0 +1,247 @@
+[
+  {
+    "id": "table.SavedMap",
+    "label": "Create table \"SavedMap\"",
+    "summary": "Creates table \"SavedMap\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "SavedMap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"SavedMap\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SavedMap\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"SavedMap\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"SavedMap\"",
+        "sql": "CREATE TABLE \"public\".\"SavedMap\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"settings\" jsonb NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"websiteId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"SavedMap_description_rule_e354da0e\" CHECK (\"description\" IS NULL OR char_length(\"description\") <= 500),\n  CONSTRAINT \"SavedMap_name_rule_38e74a36\" CHECK (char_length(\"name\") BETWEEN 1 AND 120),\n  CONSTRAINT \"SavedMap_version_rule_efca705d\" CHECK (\"version\" > 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"SavedMap\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"SavedMap\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"SavedMap\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "unique.SavedMap.SavedMap_id_websiteId_key",
+    "label": "Add unique constraint on \"SavedMap\" (id, websiteId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "SavedMap_id_websiteId_key",
+        "table": "SavedMap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"SavedMap_id_websiteId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SavedMap_id_websiteId_key",
+          "public",
+          "\"public\".\"SavedMap\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"SavedMap_id_websiteId_key\" on \"SavedMap\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"SavedMap_id_websiteId_key\"",
+        "sql": "ALTER TABLE \"public\".\"SavedMap\" ADD CONSTRAINT \"SavedMap_id_websiteId_key\" UNIQUE (\"id\", \"websiteId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"SavedMap_id_websiteId_key\" exists on (id, websiteId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "SavedMap_id_websiteId_key",
+          "public",
+          "\"public\".\"SavedMap\"",
+          "u",
+          "[\"id\",\"websiteId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.SavedMap.SavedMap_websiteId_idx_aa7167ce",
+    "label": "Create index \"SavedMap_websiteId_idx_aa7167ce\" on \"SavedMap\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "SavedMap_websiteId_idx_aa7167ce",
+        "table": "SavedMap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"SavedMap_websiteId_idx_aa7167ce\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SavedMap_websiteId_idx_aa7167ce\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"SavedMap_websiteId_idx_aa7167ce\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"SavedMap_websiteId_idx_aa7167ce\"",
+        "sql": "CREATE INDEX \"SavedMap_websiteId_idx_aa7167ce\" ON \"public\".\"SavedMap\" (\"websiteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"SavedMap_websiteId_idx_aa7167ce\" exists on \"SavedMap\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"SavedMap_websiteId_idx_aa7167ce\"",
+          "i",
+          "I",
+          "\"public\".\"SavedMap\"",
+          "btree",
+          "[\"websiteId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.SavedMap.SavedMap_websiteId_name_id_idx_bfb0270a",
+    "label": "Create index \"SavedMap_websiteId_name_id_idx_bfb0270a\" on \"SavedMap\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "SavedMap_websiteId_name_id_idx_bfb0270a",
+        "table": "SavedMap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"SavedMap_websiteId_name_id_idx_bfb0270a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SavedMap_websiteId_name_id_idx_bfb0270a\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"SavedMap_websiteId_name_id_idx_bfb0270a\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"SavedMap_websiteId_name_id_idx_bfb0270a\"",
+        "sql": "CREATE INDEX \"SavedMap_websiteId_name_id_idx_bfb0270a\" ON \"public\".\"SavedMap\" (\"websiteId\", \"name\", \"id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"SavedMap_websiteId_name_id_idx_bfb0270a\" exists on \"SavedMap\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"SavedMap_websiteId_name_id_idx_bfb0270a\"",
+          "i",
+          "I",
+          "\"public\".\"SavedMap\"",
+          "btree",
+          "[\"websiteId\",\"name\",\"id\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.SavedMap.SavedMap_websiteId_fkey",
+    "label": "Add foreign key \"SavedMap_websiteId_fkey\" on \"SavedMap\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "SavedMap_websiteId_fkey",
+        "table": "SavedMap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"SavedMap_websiteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SavedMap_websiteId_fkey",
+          "public",
+          "\"public\".\"SavedMap\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"SavedMap_websiteId_fkey\" on \"SavedMap\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"SavedMap_websiteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"SavedMap\"\nADD CONSTRAINT \"SavedMap_websiteId_fkey\"\nFOREIGN KEY (\"websiteId\")\nREFERENCES \"public\".\"Website\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"SavedMap_websiteId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "SavedMap_websiteId_fkey",
+          "public",
+          "\"public\".\"SavedMap\"",
+          "f",
+          "[\"websiteId\"]",
+          "\"public\".\"Website\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  }
+]

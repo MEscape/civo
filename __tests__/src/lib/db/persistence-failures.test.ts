@@ -1,7 +1,7 @@
 import { isUniqueConstraintViolation, SqlQueryError } from '@prisma/orm-family-sql/errors';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createPersistenceFailures } from '@lib/db/persistence-failures';
+import { conflictConstraint, createPersistenceFailures } from '@lib/db/persistence-failures';
 import { conflictError, notFoundError } from '@lib/errors';
 
 // The driver's own predicates are the boundary being faked: real driver errors need a database.
@@ -177,5 +177,19 @@ describe('what a failure log names', () => {
     failures.infraOnly('save')(thrown);
 
     expect(mockError.mock.calls[0]?.[2]).toEqual({ operation: 'save', sqlState: '57014' });
+  });
+});
+
+describe('conflictConstraint', () => {
+  it('names the constraint the driver reports, also from the cause', () => {
+    const driver = Object.assign(new Error('overlap'), { constraint: 'Booking_no_overlap' });
+    const outer = new Error('query failed', { cause: driver });
+    vi.mocked(SqlQueryError.is).mockImplementation((e) => e === driver);
+
+    expect(conflictConstraint(outer)).toBe('Booking_no_overlap');
+  });
+
+  it('is undefined when no driver error is on the chain', () => {
+    expect(conflictConstraint(new Error('boom'))).toBeUndefined();
   });
 });

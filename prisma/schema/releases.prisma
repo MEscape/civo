@@ -1,0 +1,66 @@
+// use prisma-8
+
+/// `FAILED` and `ROLLED_BACK` are kept as rows so the history shows what happened to a publish.
+enum ReleaseStatus {
+  DRAFT
+  PUBLISHED
+  FAILED
+  ROLLED_BACK
+}
+
+enum MigrationStatus {
+  PROPOSED
+  APPLIED
+}
+
+/// Immutable snapshot of a website's pages and component pins. Immutability is what makes a
+/// rollback a pointer change on `Website.publishedReleaseId` instead of a rebuild.
+model WebsiteRelease {
+  id            String        @id @onCreate(uuid())
+  websiteId     String
+  releaseNumber Int
+  status        ReleaseStatus @default(DRAFT)
+  snapshot      Jsonb
+  /// SHA-256 of the canonical snapshot, lowercase hex.
+  snapshotHash  String
+  /// Editor's publish note shown in the history. NULL: released before notes existed.
+  note          String?
+  /// Diff against the release live before this one, frozen at publish time. NULL: earlier releases.
+  changes       Jsonb?
+  /// Actor id of the publisher, resolved to a name at display time so it is never stale. NULL: earlier releases.
+  publishedBy   String?
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+
+  website        Website            @relation("WebsiteReleases", fields: [websiteId], references: [id], index: false, onDelete: Cascade)
+  activeWebsites Website[]          @relation("PublishedRelease")
+  migrations     WebsiteMigration[]
+
+  @@unique([websiteId, releaseNumber])
+  @@unique([id, websiteId])
+  @@check(expression: sql`"releaseNumber" >= 1`, name: "WebsiteRelease_number_rule")
+  @@check(expression: sql`"snapshotHash" ~ '^[0-9a-f]{64}$'`, name: "WebsiteRelease_hash_rule")
+  @@check(expression: sql`"note" IS NULL OR char_length("note") <= 200`, name: "WebsiteRelease_note_rule")
+  // Only a release that has been live has a publication time.
+  @@check(expression: sql`("status" IN ('PUBLISHED', 'ROLLED_BACK')) = ("publishedAt" IS NOT NULL)`, name: "WebsiteRelease_published_rule")
+}
+
+/// Audit record of a component-version migration: the proposed plan and how it was resolved.
+model WebsiteMigration {
+  id              String          @id @onCreate(uuid())
+  websiteId       String
+  sourceReleaseId String
+  status          MigrationStatus @default(PROPOSED)
+  plan            Jsonb
+  resolutions     Jsonb?
+  proposedBy      String
+  appliedBy       String?
+  createdAt       DateTime        @default(now())
+  appliedAt       DateTime?
+
+  website         Website        @relation(fields: [websiteId], references: [id], index: false, onDelete: Cascade)
+  sourceRelease   WebsiteRelease @relation(fields: [sourceReleaseId, websiteId], references: [id, websiteId], onDelete: Cascade)
+
+  @@index([websiteId, createdAt])
+  @@check(expression: sql`("status" = 'APPLIED') = ("appliedAt" IS NOT NULL)`, name: "WebsiteMigration_applied_rule")
+}

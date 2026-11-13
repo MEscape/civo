@@ -1,0 +1,63 @@
+// use prisma-8
+
+/// `MOCK` serves fixture datasets so sites work without an external API.
+enum DataSourceKind {
+  MOCK
+  REST
+}
+
+enum DataSourceStatus {
+  UNKNOWN
+  OK
+  ERROR
+}
+
+enum DatasetStatus {
+  UNKNOWN
+  OK
+  ERROR
+}
+
+/// External integration endpoint that feeds datasets.
+model DataSource {
+  id            String           @id @onCreate(uuid())
+  websiteId     String
+  name          String
+  kind          DataSourceKind
+  config        Jsonb
+  status        DataSourceStatus @default(UNKNOWN)
+  lastCheckedAt DateTime?
+  lastError     String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @default(now())
+
+  website       Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  datasets      Dataset[]
+
+  @@check(expression: sql`char_length("name") BETWEEN 2 AND 100`, name: "DataSource_name_rule")
+}
+
+/// Typed collection read from a data source and normalised through `mapping`.
+model Dataset {
+  id            String        @id @onCreate(uuid())
+  dataSourceId  String
+  name          String
+  slug          String
+  canonicalKind String
+  /// Request path on the source, one leading `/`. NULL: the source's own URL.
+  path          String?
+  mapping       Jsonb?
+  status        DatasetStatus @default(UNKNOWN)
+  lastFetchedAt DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now())
+
+  dataSource    DataSource @relation(fields: [dataSourceId], references: [id], index: false, onDelete: Cascade)
+
+  @@unique([dataSourceId, slug])
+  @@check(expression: sql`char_length("name") BETWEEN 2 AND 100`, name: "Dataset_name_rule")
+  @@check(expression: sql`"slug" ~ '^[a-z0-9-]+$' AND char_length("slug") <= 50`, name: "Dataset_slug_rule")
+  @@check(expression: sql`char_length("canonicalKind") BETWEEN 1 AND 64`, name: "Dataset_kind_rule")
+  // Rejects `//host` so a path can never turn into a protocol-relative URL (request-target injection).
+  @@check(expression: sql`"path" IS NULL OR ("path" LIKE '/%' AND "path" NOT LIKE '//%' AND char_length("path") <= 500)`, name: "Dataset_path_rule")
+}

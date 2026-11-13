@@ -2,96 +2,134 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { queryLogger } from '@lib/db/query-logger';
 
-const { mockDebug, mockWarn } = vi.hoisted(() => ({ mockDebug: vi.fn(), mockWarn: vi.fn() }));
+import type { SqlMiddlewareContext } from '@prisma/orm-postgres/family-runtime';
+
+const { debug, warn } = vi.hoisted(() => ({ debug: vi.fn(), warn: vi.fn() }));
 vi.mock('@lib/logger', () => ({
-  logger: { withContext: vi.fn(() => ({ debug: mockDebug, warn: mockWarn })) },
+  logger: { withContext: () => ({ debug, warn }) },
 }));
 
-const plan = { sql: 'SELECT * FROM "Booking" WHERE "id" = $1', params: ['jane.doe@example.org'] };
-// The runtime's own types are wider than what the middleware reads.
-const asPlan = plan as never;
+const sql = 'SELECT * FROM "Booking" WHERE "id" = $1';
+
+function context() {
+  const states = new Map<symbol, Record<string, unknown>>();
+  return {
+    state: (key: symbol) => {
+      let state = states.get(key);
+      if (state === undefined) {
+        state = {};
+        states.set(key, state);
+      }
+      return state;
+    },
+  } as SqlMiddlewareContext;
+}
 
 beforeEach(() => {
-  mockDebug.mockClear();
-  mockWarn.mockClear();
+  debug.mockClear();
+  warn.mockClear();
 });
 
-describe('queryLogger', () => {
-  const middleware = queryLogger();
+describe('Prisma query logging through activity lifecycle hooks', () => {
+  it.each(['succeeded', 'failed', 'stopped'] as const)(
+    'records a query that %s without logging parameter values',
+    async (outcome) => {
+      const middleware = queryLogger();
+      const ctx = context();
+      await middleware.beforeEncode?.({ sql, params: ['private@example.org'] } as never, ctx);
+      await middleware.activityEnded?.(
+        { kind: 'statement' } as never,
+        {
+          kind: 'statement',
+          returns: 'rows',
+          rowCount: 3,
+          latencyMs: 12.6,
+          outcome,
+          source: 'driver',
+        },
+        ctx,
+      );
+      expect(debug).toHaveBeenCalledWith('db.query', {
+        sql,
+        rowCount: 3,
+        latencyMs: 13,
+        completed: outcome === 'succeeded',
+        source: 'driver',
+      });
+      expect(warn).toHaveBeenCalledTimes(outcome === 'succeeded' ? 0 : 1);
+      expect(JSON.stringify([...debug.mock.calls, ...warn.mock.calls])).not.toContain(
+        'private@example.org',
+      );
+    },
+  );
 
-  it('is a SQL-family middleware with a stable name', () => {
-    expect(middleware).toMatchObject({ name: 'query-logger', familyId: 'sql' });
-  });
-
-  it('logs a completed query at debug, with SQL text and timing', async () => {
-    await middleware.afterQuery?.(
-      asPlan,
-      { rowCount: 3, latencyMs: 12.6, completed: true, source: 'driver' } as never,
-      {} as never,
+  it.each(['succeeded', 'failed'] as const)('records a write that %s', async (outcome) => {
+    const middleware = queryLogger();
+    const ctx = context();
+    await middleware.beforeEncode?.({ sql } as never, ctx);
+    await middleware.activityEnded?.(
+      { kind: 'statement' } as never,
+      {
+        kind: 'statement',
+        returns: 'stats',
+        stats: { affectedRows: 2 },
+        latencyMs: 4,
+        outcome,
+        source: 'driver',
+      },
+      ctx,
     );
-
-    expect(mockDebug).toHaveBeenCalledWith('db.query', {
-      sql: plan.sql,
-      rowCount: 3,
-      latencyMs: 13,
-      completed: true,
-      source: 'driver',
-    });
-    expect(mockWarn).not.toHaveBeenCalled();
-  });
-
-  it('also warns about a query that did not complete', async () => {
-    await middleware.afterQuery?.(
-      asPlan,
-      { rowCount: 0, latencyMs: 1, completed: false, source: 'driver' } as never,
-      {} as never,
-    );
-
-    expect(mockWarn).toHaveBeenCalledWith(
-      'db.query.failed',
-      expect.objectContaining({ completed: false }),
-    );
-  });
-
-  it('logs a completed write at debug, with the rows it touched', async () => {
-    await middleware.afterExecute?.(
-      asPlan,
-      { stats: { affectedRows: 2 }, latencyMs: 4, completed: true, source: 'driver' } as never,
-      {} as never,
-    );
-
-    expect(mockDebug).toHaveBeenCalledWith('db.execute', {
-      sql: plan.sql,
-      affectedRows: 2,
+    expect(debug).toHaveBeenCalledWith('db.execute', {
+      sql,
+      affectedRows: outcome === 'succeeded' ? 2 : 0,
       latencyMs: 4,
-      completed: true,
+      completed: outcome === 'succeeded',
       source: 'driver',
     });
-    expect(mockWarn).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(outcome === 'succeeded' ? 0 : 1);
   });
 
-  it('warns about a write that did not complete, with no rows touched', async () => {
-    await middleware.afterExecute?.(
-      asPlan,
-      { latencyMs: 4, completed: false, source: 'driver' } as never,
-      {} as never,
+  it('ignores transaction completion rather than logging it as another statement', async () => {
+    await queryLogger().activityEnded?.(
+      { kind: 'transaction' } as never,
+      { kind: 'transaction', outcome: 'succeeded' },
+      context(),
     );
+    expect(debug).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+  });
 
-    expect(mockWarn).toHaveBeenCalledWith(
-      'db.execute.failed',
-      expect.objectContaining({ affectedRows: 0, completed: false }),
+  it('records zero affected rows when a successful statement reports no statistics', async () => {
+    const middleware = queryLogger();
+    const ctx = context();
+    await middleware.beforeEncode?.({ sql } as never, ctx);
+    await middleware.activityEnded?.(
+      { kind: 'statement' } as never,
+      { kind: 'statement', returns: 'stats', latencyMs: 1, outcome: 'succeeded', source: 'driver' },
+      ctx,
+    );
+    expect(debug).toHaveBeenCalledWith(
+      'db.execute',
+      expect.objectContaining({ affectedRows: 0, completed: true }),
     );
   });
 
-  it('never logs the bound parameter values, which may be personal data', async () => {
-    await middleware.afterQuery?.(
-      asPlan,
-      { rowCount: 1, latencyMs: 1, completed: false, source: 'driver' } as never,
-      {} as never,
-    );
-
-    expect(JSON.stringify([...mockDebug.mock.calls, ...mockWarn.mock.calls])).not.toContain(
-      'jane.doe',
-    );
+  it('keeps SQL isolated between concurrent statement contexts', async () => {
+    const middleware = queryLogger();
+    const first = context();
+    const second = context();
+    await middleware.beforeEncode?.({ sql: 'SELECT 1' } as never, first);
+    await middleware.beforeEncode?.({ sql: 'SELECT 2' } as never, second);
+    const result = {
+      kind: 'statement',
+      returns: 'rows',
+      rowCount: 1,
+      latencyMs: 1,
+      outcome: 'succeeded',
+      source: 'driver',
+    } as const;
+    await middleware.activityEnded?.({ kind: 'statement' } as never, result, second);
+    await middleware.activityEnded?.({ kind: 'statement' } as never, result, first);
+    expect(debug.mock.calls.map(([, fields]) => fields.sql)).toEqual(['SELECT 2', 'SELECT 1']);
   });
 });

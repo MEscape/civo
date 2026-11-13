@@ -1,0 +1,31 @@
+// use prisma-8
+
+/// Venue, building or branch where appointments take place. It owns the time zone, so every
+/// slot is computed on the location's wall clock.
+model BookingLocation {
+  id           String   @id @onCreate(uuid())
+  tenantId     String
+  websiteId    String
+  name         String
+  address      String?
+  timeZone     String
+  openingHours Jsonb
+  /// Week in which employees may work here. NULL: the opening hours.
+  staffHours   Jsonb?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  website         Website                   @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  resources       BookableResource[]
+  bookings        Booking[]
+  serviceSettings BookableServiceLocation[]
+  homeServices    BookableService[]         @relation("ServiceHome")
+  copiedServices  BookableService[]         @relation("ServiceCopiedFrom")
+
+  @@unique([id, websiteId])
+  @@check(expression: sql`char_length("name") BETWEEN 1 AND 120`, name: "BookingLocation_name_rule")
+  @@check(expression: sql`"address" IS NULL OR char_length("address") <= 300`, name: "BookingLocation_address_rule")
+  @@check(expression: sql`char_length("timeZone") BETWEEN 1 AND 64`, name: "BookingLocation_zone_rule")
+  @@check(expression: sql`jsonb_typeof("openingHours") = 'object' AND ("staffHours" IS NULL OR jsonb_typeof("staffHours") = 'object')`, name: "BookingLocation_hours_rule")
+}

@@ -3,13 +3,14 @@ import { logger } from '@lib/logger';
 import type { SqlMiddleware } from '@prisma/orm-postgres/family-runtime';
 
 const dbLogger = logger.withContext({ module: 'infrastructure.prisma' });
+const STATEMENT_SQL = Symbol('query-logger.sql');
 
 /**
  * Query-observability middleware for the Prisma ORM Postgres runtime.
  *
  * Prisma 8 has no `log: [...]` client option; the runtime instead calls
- * `afterQuery`/`afterExecute` hooks on middleware registered in the
- * `middleware` array (see db.ts). `ctx.log` is a documented no-op on
+ * `beforeEncode`/`activityEnded` hooks on middleware registered in the
+ * `middleware` array (see `client.ts`). `ctx.log` is a documented no-op on
  * Postgres today, so this middleware routes through the app's own
  * `logger` instead — observability.md: "do not use console.log for
  * application observability", "log at application/infrastructure
@@ -33,33 +34,29 @@ export function queryLogger(): SqlMiddleware {
     name: 'query-logger',
     familyId: 'sql',
 
-    afterQuery(plan, result) {
-      const fields = {
-        sql: plan.sql,
-        rowCount: result.rowCount,
-        latencyMs: Math.round(result.latencyMs),
-        completed: result.completed,
-        source: result.source,
-      };
-      dbLogger.debug('db.query', fields);
-      if (!result.completed) {
-        dbLogger.warn('db.query.failed', fields);
-      }
-      return Promise.resolve();
+    beforeEncode(plan, ctx) {
+      const state = ctx.state(STATEMENT_SQL);
+      state['sql'] = plan.sql;
     },
 
-    afterExecute(plan, result) {
-      const affectedRows = result.completed ? result.stats.affectedRows : 0;
+    activityEnded(_activity, result, ctx) {
+      if (result.kind !== 'statement') {
+        return Promise.resolve();
+      }
+      const isQuery = result.returns === 'rows';
+      const completed = result.outcome === 'succeeded';
       const fields = {
-        sql: plan.sql,
-        affectedRows,
+        sql: ctx.state(STATEMENT_SQL)['sql'],
+        ...(isQuery
+          ? { rowCount: result.rowCount }
+          : { affectedRows: completed ? (result.stats?.affectedRows ?? 0) : 0 }),
         latencyMs: Math.round(result.latencyMs),
-        completed: result.completed,
+        completed,
         source: result.source,
       };
-      dbLogger.debug('db.execute', fields);
-      if (!result.completed) {
-        dbLogger.warn('db.execute.failed', fields);
+      dbLogger.debug(isQuery ? 'db.query' : 'db.execute', fields);
+      if (!completed) {
+        dbLogger.warn(isQuery ? 'db.query.failed' : 'db.execute.failed', fields);
       }
       return Promise.resolve();
     },

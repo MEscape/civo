@@ -1,0 +1,109 @@
+// use prisma-8
+
+/// `HELD` is a time-limited reservation during checkout; `EXPIRED` is a hold that ran out.
+enum BookingStatus {
+  HELD
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+  EXPIRED
+}
+
+/// A citizen's appointment. `start`/`end` is what the citizen sees; `occupiedStart`/`occupiedEnd`
+/// adds the preparation and clean-up buffers and is what blocks other bookings.
+model Booking {
+  id              String        @id @onCreate(uuid())
+  tenantId        String
+  websiteId       String
+  serviceId       String
+  locationId      String
+  /// Code the citizen quotes: ten Crockford base-32 characters.
+  reference       String        @unique
+  status          BookingStatus
+  start           DateTime
+  end             DateTime
+  occupiedStart   DateTime
+  occupiedEnd     DateTime
+  participants    Int
+  /// Groups bookings that share one session (service, location and start).
+  sessionKey      String
+  sessionCapacity Int
+  customer        Jsonb?
+  customerEmail   String?
+  /// Language the visitor booked in, used for messages about the booking. NULL: made by staff or before it was kept.
+  locale          String?
+  /// The service as it was at booking time (name and the requirements its employee units refer
+  /// to), so later edits cannot reinterpret an existing booking. NULL: made before it was kept.
+  serviceSnapshot Jsonb?
+  holdExpiresAt   DateTime?
+  rescheduleCount Int           @default(0)
+  cancelledAt     DateTime?
+  cancelledBy     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now())
+
+  website         Website             @relation(fields: [websiteId, tenantId], references: [id, tenantId], index: false, onDelete: Cascade)
+  service         BookableService     @relation(fields: [serviceId, websiteId], references: [id, websiteId], onDelete: Restrict)
+  location        BookingLocation     @relation(fields: [locationId, websiteId], references: [id, websiteId], onDelete: Restrict)
+  assignments     BookingAssignment[]
+  messages        ActorMessage[]
+
+  @@unique([id, websiteId])
+  @@index([websiteId, start])
+  @@index([websiteId, occupiedStart])
+  @@index([sessionKey])
+  @@index([websiteId, customerEmail])
+  // Serves the sweep of holds that ran out.
+  @@index([websiteId, holdExpiresAt], where: sql`"status" = 'HELD'`, name: "Booking_held_idx")
+  @@check(expression: sql`"start" < "end" AND "occupiedStart" <= "start" AND "end" <= "occupiedEnd"`, name: "Booking_span_check")
+  @@check(expression: sql`"participants" >= 1 AND "participants" <= "sessionCapacity"`, name: "Booking_group_size_rule")
+  @@check(expression: sql`"reference" ~ '^[0-9A-HJKMNP-TV-Z]{10}$'`, name: "Booking_reference_rule")
+  @@check(expression: sql`"rescheduleCount" >= 0`, name: "Booking_reschedules_rule")
+  @@check(expression: sql`"locale" IS NULL OR "locale" ~ '^[a-z]{2}$'`, name: "Booking_locale_rule")
+  @@check(expression: sql`"customer" IS NULL OR jsonb_typeof("customer") = 'object'`, name: "Booking_customer_rule")
+  @@check(expression: sql`"serviceSnapshot" IS NULL OR jsonb_typeof("serviceSnapshot") = 'object'`, name: "Booking_snapshot_rule")
+  // A confirmed booking, and every state after it, knows who booked. Only a hold may be anonymous.
+  @@check(expression: sql`"status" NOT IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW') OR "customer" IS NOT NULL`, name: "Booking_customer_known_rule")
+  // Exactly the cancelled bookings record when and by whom.
+  @@check(expression: sql`("status" = 'CANCELLED') = ("cancelledAt" IS NOT NULL AND "cancelledBy" IS NOT NULL)`, name: "Booking_cancelled_rule")
+}
+
+/// One row per unit of each requirement of a booking's service. It copies the booking's occupied
+/// span, session key and liveness for occupancy checks under the resource lock. The current
+/// contract has no exclusion constraint; direct writers must follow the repository protocol.
+/// Replaces `BookingResource`.
+model BookingAssignment {
+  bookingId        String
+  /// Position of the requirement in the service's `requirements`.
+  requirementIndex Int
+  /// Which of the requirement's `count` units this is.
+  unitIndex        Int
+  websiteId        String
+  resourceType     ResourceType
+  /// NULL: an employee unit nobody serves yet (open, or waiting for a manager).
+  resourceId       String?
+  occupiedStart    DateTime
+  occupiedEnd      DateTime
+  sessionKey       String
+  isActive         Boolean
+  /// The resource takes several bookings at once and this unit is one of its places. Such units
+  /// are counted under the resource lock, like single-place and employee units.
+  usesPlace        Boolean      @default(false)
+
+  booking          Booking           @relation(fields: [bookingId, websiteId], references: [id, websiteId], onDelete: Cascade)
+  // NO ACTION refuses a resource still referenced by an assignment. This key is immediate,
+  // not deferred: tenant cleanup deletes bookings before resource/service cascades.
+  resource         BookableResource? @relation(fields: [resourceId, websiteId, resourceType], references: [id, websiteId, type], index: false, onDelete: NoAction)
+
+  @@id([bookingId, requirementIndex, unitIndex])
+  // A resource serves a booking in at most one unit. NULLs (open units) never collide.
+  @@unique([bookingId, resourceId])
+  @@index([resourceId, occupiedStart], where: sql`"resourceId" IS NOT NULL`, name: "BookingAssignment_resource_idx")
+  // Serves the list of bookings that still wait for an employee.
+  @@index([websiteId, occupiedStart], where: sql`"resourceId" IS NULL AND "isActive"`, name: "BookingAssignment_open_idx")
+  @@check(expression: sql`"occupiedStart" < "occupiedEnd"`, name: "BookingAssignment_span_check")
+  @@check(expression: sql`"requirementIndex" BETWEEN 0 AND 5 AND "unitIndex" BETWEEN 0 AND 19`, name: "BookingAssignment_position_rule")
+  // Only an employee unit can be unfilled: a room or a desk is always held.
+  @@check(expression: sql`"resourceId" IS NOT NULL OR "resourceType" = 'employee'`, name: "BookingAssignment_open_rule")
+}

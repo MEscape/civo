@@ -1,0 +1,90 @@
+// use prisma-8
+
+/// How the employee units of a service's bookings are filled: pinned at booking time, by a
+/// manager later, or claimed by a qualified employee.
+enum AssignmentMode {
+  automatic
+  manual
+  open
+}
+
+/// A service offered to the public. The definition is shared; what differs per location lives in
+/// `BookableServiceLocation`.
+model BookableService {
+  id                     String         @id @onCreate(uuid())
+  tenantId               String
+  websiteId              String
+  name                   String
+  description            String?
+  category               String?
+  isActive               Boolean        @default(true)
+  durationMinutes        Int
+  preparationMinutes     Int            @default(0)
+  cleanupMinutes         Int            @default(0)
+  slotIntervalMinutes    Int
+  /// The part of what the service needs that is the same everywhere (employee and qualification).
+  /// Physical resources are per location, in `BookableServiceLocation`.
+  requirements           Jsonb
+  participantsPerBooking Int            @default(1)
+  participantsPerSession Int            @default(1)
+  noticeMinutes          Int            @default(0)
+  horizonDays            Int
+  availability           Jsonb?
+  cancellation           Jsonb
+  rescheduling           Jsonb
+  information            Jsonb
+  requiredDocuments      Jsonb
+  instructions           String?
+  /// For managers only; never part of a view a visitor gets.
+  internalNote           String?
+  /// Location where the service was created: "own" there, "linked" everywhere else.
+  homeLocationId         String?
+  /// Location a copy was taken from. Display only: a copy is independent from creation on.
+  copiedFromLocationId   String?
+  assignmentMode         AssignmentMode @default(automatic)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @default(now())
+
+  website    Website                   @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  // NO ACTION, not RESTRICT: a location in use is still refused, but the check runs when the
+  // transaction ends, so deleting a whole website goes through.
+  home       BookingLocation?          @relation("ServiceHome", fields: [homeLocationId, websiteId], references: [id, websiteId], index: false, onDelete: NoAction)
+  copiedFrom BookingLocation?          @relation("ServiceCopiedFrom", fields: [copiedFromLocationId, websiteId], references: [id, websiteId], index: false, onDelete: NoAction)
+  locations  BookableServiceLocation[]
+  bookings   Booking[]
+
+  @@unique([id, websiteId])
+  @@check(expression: sql`char_length("name") BETWEEN 1 AND 120`, name: "BookableService_name_rule")
+  @@check(expression: sql`"description" IS NULL OR char_length("description") <= 2000`, name: "BookableService_description_rule")
+  @@check(expression: sql`"category" IS NULL OR char_length("category") <= 64`, name: "BookableService_category_rule")
+  @@check(expression: sql`"instructions" IS NULL OR char_length("instructions") <= 2000`, name: "BookableService_instructions_rule")
+  @@check(expression: sql`"durationMinutes" BETWEEN 5 AND 1440 AND "slotIntervalMinutes" BETWEEN 5 AND 240`, name: "BookableService_timing_rule")
+  @@check(expression: sql`"preparationMinutes" BETWEEN 0 AND 240 AND "cleanupMinutes" BETWEEN 0 AND 240`, name: "BookableService_buffers_rule")
+  @@check(expression: sql`"noticeMinutes" BETWEEN 0 AND 525600 AND "horizonDays" BETWEEN 1 AND 730`, name: "BookableService_window_rule")
+  @@check(expression: sql`"participantsPerBooking" BETWEEN 1 AND 500 AND "participantsPerSession" BETWEEN "participantsPerBooking" AND 500`, name: "BookableService_participants_rule")
+  @@check(expression: sql`"internalNote" IS NULL OR char_length("internalNote") <= 2000`, name: "BookableService_note_rule")
+  @@check(expression: sql`jsonb_typeof("requirements") = 'array' AND jsonb_typeof("information") = 'array' AND jsonb_typeof("requiredDocuments") = 'array'`, name: "BookableService_lists_rule")
+  @@check(expression: sql`jsonb_typeof("cancellation") = 'object' AND jsonb_typeof("rescheduling") = 'object'`, name: "BookableService_rules_rule")
+}
+
+/// A service switched on at one location. Holds only what is local to that location, so a linked
+/// service is one `BookableService` row plus one row here per location.
+model BookableServiceLocation {
+  serviceId        String
+  locationId       String
+  tenantId         String
+  websiteId        String
+  isActive         Boolean  @default(true)
+  isOnlineBookable Boolean  @default(true)
+  /// `[{ "resourceId": …, "isRequired": … }]`. Required resources hold the slot; optional ones never block it.
+  resources        Jsonb
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+
+  website          Website         @relation(fields: [websiteId, tenantId], references: [id, tenantId], index: false, onDelete: Cascade)
+  service          BookableService @relation(fields: [serviceId, websiteId], references: [id, websiteId], index: false, onDelete: NoAction)
+  location         BookingLocation @relation(fields: [locationId, websiteId], references: [id, websiteId], onDelete: NoAction)
+
+  @@id([serviceId, locationId])
+  @@check(expression: sql`jsonb_typeof("resources") = 'array'`, name: "BookableServiceLocation_resources_rule")
+}

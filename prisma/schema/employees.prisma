@@ -1,0 +1,62 @@
+// use prisma-8
+
+/// What changed for an employee on a booking they serve. The row holds the type only; the screen
+/// words it, so messages follow the viewer's language.
+enum ActorMessageType {
+  assigned
+  unassigned
+  cancelled
+  rescheduled
+  /// A manager changed the employee's calendar (no booking): the parts changed are in `params`.
+  calendar_changed
+}
+
+/// What an employee would like to work on (BD-07). It only sorts open bookings and candidates; it
+/// never excludes anyone.
+model EmployeePreference {
+  /// The employee's calendar: preferences belong to the person through it.
+  resourceId  String   @id
+  tenantId    String
+  websiteId   String
+  /// Service ids, unordered.
+  serviceIds  Jsonb
+  /// Preferred part of the day as minutes after local midnight on the location's wall clock.
+  /// Both NULL: no preference.
+  windowStart Int?
+  windowEnd   Int?
+  updatedAt   DateTime @default(now())
+
+  website     Website          @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  resource    BookableResource @relation(fields: [resourceId, websiteId], references: [id, websiteId], onDelete: Cascade)
+
+  @@check(expression: sql`jsonb_typeof("serviceIds") = 'array'`, name: "EmployeePreference_lists_rule")
+  @@check(expression: sql`("windowStart" IS NULL AND "windowEnd" IS NULL) OR ("windowStart" BETWEEN 0 AND 1439 AND "windowEnd" BETWEEN 1 AND 1440 AND "windowStart" < "windowEnd")`, name: "EmployeePreference_window_rule")
+}
+
+/// In-app message about a change to a booking the member serves (BD-11). Written in the same
+/// transaction as the change, so a message exists exactly when the change committed.
+model ActorMessage {
+  id               String           @id @onCreate(uuid())
+  tenantId         String
+  websiteId        String
+  /// Recipient actor. No foreign key: actors live in the authentication database.
+  recipientActorId String
+  type             ActorMessageType
+  /// The booking the message is about; NULL for a message about the calendar itself.
+  bookingId        String?
+  /// A booking message: the booking as the change left it (serviceId, locationId, start and end, ISO-8601 UTC).
+  /// A calendar message: the location and the parts that changed.
+  params           Jsonb
+  createdAt        DateTime         @default(now())
+  /// NULL: not read yet.
+  readAt           DateTime?
+
+  website          Website @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  booking          Booking? @relation(fields: [bookingId, websiteId], references: [id, websiteId], onDelete: Cascade)
+
+  // Serves the inbox, newest first.
+  @@index([websiteId, recipientActorId, createdAt])
+  @@check(expression: sql`jsonb_typeof("params") = 'object'`, name: "ActorMessage_params_rule")
+  @@check(expression: sql`("type" = 'calendar_changed') = ("bookingId" IS NULL)`, name: "ActorMessage_booking_rule")
+  @@check(expression: sql`char_length("recipientActorId") BETWEEN 1 AND 128`, name: "ActorMessage_recipient_rule")
+}

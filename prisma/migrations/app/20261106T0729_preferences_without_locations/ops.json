@@ -1,0 +1,149 @@
+[
+  {
+    "id": "dropCheckConstraint.EmployeePreference.EmployeePreference_lists_rule_38ca54e6",
+    "label": "Drop check constraint \"EmployeePreference_lists_rule_38ca54e6\" on \"EmployeePreference\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "EmployeePreference_lists_rule_38ca54e6",
+        "table": "EmployeePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"EmployeePreference_lists_rule_38ca54e6\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EmployeePreference_lists_rule_38ca54e6",
+          "public",
+          "\"public\".\"EmployeePreference\""
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "constraint \"EmployeePreference_lists_rule_38ca54e6\" on \"EmployeePreference\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"EmployeePreference_lists_rule_38ca54e6\"",
+        "sql": "ALTER TABLE \"public\".\"EmployeePreference\" DROP CONSTRAINT \"EmployeePreference_lists_rule_38ca54e6\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"EmployeePreference_lists_rule_38ca54e6\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EmployeePreference_lists_rule_38ca54e6",
+          "public",
+          "\"public\".\"EmployeePreference\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"EmployeePreference_lists_rule_38ca54e6\" on \"EmployeePreference\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.EmployeePreference.locationIds",
+    "label": "Drop column \"locationIds\" from \"EmployeePreference\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "locationIds",
+        "table": "EmployeePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"locationIds\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "EmployeePreference",
+          "locationIds"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"locationIds\" on \"EmployeePreference\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"locationIds\"",
+        "sql": "ALTER TABLE \"public\".\"EmployeePreference\" DROP COLUMN \"locationIds\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"locationIds\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "EmployeePreference",
+          "locationIds"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"locationIds\" on \"EmployeePreference\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.EmployeePreference.EmployeePreference_lists_rule_d08a4f86",
+    "label": "Add check constraint \"EmployeePreference_lists_rule_d08a4f86\" on \"EmployeePreference\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "EmployeePreference_lists_rule_d08a4f86",
+        "table": "EmployeePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"EmployeePreference_lists_rule_d08a4f86\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EmployeePreference_lists_rule_d08a4f86",
+          "public",
+          "\"public\".\"EmployeePreference\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"EmployeePreference_lists_rule_d08a4f86\" on \"EmployeePreference\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"EmployeePreference_lists_rule_d08a4f86\"",
+        "sql": "ALTER TABLE \"public\".\"EmployeePreference\" ADD CONSTRAINT \"EmployeePreference_lists_rule_d08a4f86\" CHECK (jsonb_typeof(\"serviceIds\") = 'array')"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"EmployeePreference_lists_rule_d08a4f86\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "EmployeePreference_lists_rule_d08a4f86",
+          "public",
+          "\"public\".\"EmployeePreference\"",
+          "c"
+        ]
+      }
+    ]
+  }
+]

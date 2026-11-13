@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toJsonValue } from '@lib/db/json-value';
+import { toJsonValue } from '@lib/db/to-json-value';
 import { JsonStringifyError } from '@lib/utils';
 
 describe('toJsonValue', () => {

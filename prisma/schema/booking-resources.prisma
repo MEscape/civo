@@ -1,0 +1,62 @@
+// use prisma-8
+
+/// Decides which requirement of a service a resource can satisfy.
+enum ResourceType {
+  employee
+  room
+  office
+  service_desk = "service-desk"
+  sports_field = "sports-field"
+  meeting_room = "meeting-room"
+  vehicle
+  equipment
+  facility
+  workstation
+  other
+}
+
+/// A room, piece of equipment or employee calendar that a booking occupies.
+model BookableResource {
+  id              String       @id @onCreate(uuid())
+  tenantId        String
+  websiteId       String
+  locationId      String?
+  name            String
+  type            ResourceType
+  skills          Jsonb
+  capacity        Int?
+  availability    Jsonb?
+  isActive        Boolean      @default(true)
+  /// Minutes held before and after an appointment (laying out and clearing a room). An employee
+  /// is held for the service's own preparation and clean-up instead.
+  setupMinutes    Int          @default(0)
+  teardownMinutes Int          @default(0)
+  /// Managers' memo; never shown to citizens.
+  internalNote    String?
+  /// Employee (a Membership actor of this tenant) whose calendar this is. No foreign key: actors
+  /// live in the authentication database. NULL: not a person's calendar.
+  assignedActorId String?
+  /// Temporary work of an employee at other locations: [{ locationId, from, to }] with ISO dates, the
+  /// last day included. On those days the person is bookable there and not at their own location.
+  /// NULL: none.
+  coverage        Jsonb?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now())
+
+  website         Website              @relation(fields: [websiteId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  location        BookingLocation?     @relation(fields: [locationId, websiteId], references: [id, websiteId], onDelete: Restrict)
+  assignments     BookingAssignment[]
+  preferences     EmployeePreference[]
+
+  @@unique([id, websiteId])
+  // Target of the composite key on `BookingAssignment` that stops a unit of one type holding a resource of another.
+  @@unique([id, websiteId, type])
+  @@index([tenantId, assignedActorId], where: sql`"assignedActorId" IS NOT NULL`, name: "BookableResource_assignee_idx")
+  @@check(expression: sql`char_length("name") BETWEEN 1 AND 120`, name: "BookableResource_name_rule")
+  @@check(expression: sql`"capacity" IS NULL OR "capacity" BETWEEN 1 AND 10000`, name: "BookableResource_capacity_rule")
+  @@check(expression: sql`jsonb_typeof("skills") = 'array'`, name: "BookableResource_skills_rule")
+  @@check(expression: sql`"setupMinutes" BETWEEN 0 AND 240 AND "teardownMinutes" BETWEEN 0 AND 240`, name: "BookableResource_buffers_rule")
+  @@check(expression: sql`"assignedActorId" IS NULL OR char_length("assignedActorId") BETWEEN 1 AND 128`, name: "BookableResource_actor_rule")
+  @@check(expression: sql`"coverage" IS NULL OR jsonb_typeof("coverage") = 'array'`, name: "BookableResource_coverage_rule")
+  @@check(expression: sql`"internalNote" IS NULL OR char_length("internalNote") <= 2000`, name: "BookableResource_note_rule")
+}

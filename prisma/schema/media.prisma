@@ -1,0 +1,45 @@
+// use prisma-8
+
+/// PUBLIC files are served from the public origin to anyone; PRIVATE files only through a
+/// short-lived signed URL.
+enum MediaVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+/// `PENDING`: row exists and an upload was authorised, object not verified. `READY`: object
+/// verified, file usable. `DELETING`: hidden while the object is removed; retried until the row is gone.
+enum MediaAssetStatus {
+  PENDING
+  READY
+  DELETING
+}
+
+/// A file in object storage; the database holds ownership and metadata, the store holds the bytes.
+/// The row is created before any upload is authorised, so an abandoned upload can always be found here.
+model MediaAsset {
+  id               String           @id @onCreate(uuid())
+  tenantId         String
+  websiteId        String
+  /// Store reference derived from the tenant and the id, never from a user filename, so a
+  /// filename cannot steer a path.
+  objectKey        String           @unique
+  /// Display only; never part of a key and never trusted.
+  originalFilename String
+  contentType      String
+  byteSize         Int
+  visibility       MediaVisibility
+  status           MediaAssetStatus @default(PENDING)
+  /// Actor id of whoever authorised the upload, resolved to a name at display time.
+  createdBy        String
+  /// The signed upload URL works until then; afterwards an unfinished upload counts as abandoned.
+  uploadExpiresAt  DateTime
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now())
+
+  website          Website @relation(fields: [websiteId, tenantId], references: [id, tenantId], index: false, onDelete: Cascade)
+
+  @@index([websiteId, tenantId, status, createdAt])
+  @@check(expression: sql`"byteSize" > 0`, name: "MediaAsset_size_check")
+  @@check(expression: sql`char_length("originalFilename") BETWEEN 1 AND 255`, name: "MediaAsset_filename_rule")
+}
