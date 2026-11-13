@@ -19,7 +19,7 @@ export function AppBrand({ href, byline }: AppBrandProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-token-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="flex items-center gap-2.5 rounded-token-sm outline-none focus-visible:ring-2 focus-visible:ring-focus"
     >
       <ArtemisLogo variant="mark" className="h-7 text-primary-copy" />
       <span className="font-heading text-lg font-semibold text-copy">{APP_IDENTITY.name}</span>

@@ -1,9 +1,5 @@
-import React, {
-  type InputHTMLAttributes,
-  type LabelHTMLAttributes,
-  type TextareaHTMLAttributes,
-} from 'react';
 import { forwardRef } from 'react';
+import type { InputHTMLAttributes, LabelHTMLAttributes, TextareaHTMLAttributes } from 'react';
 
 import { cn } from '@lib/utils';
 
@@ -20,7 +16,7 @@ const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>
         'flex h-9 w-full rounded-token border border-border-strong bg-surface px-3 py-1 text-sm text-copy',
         'placeholder:text-copy-muted',
         'ring-offset-surface transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'aria-invalid:border-danger aria-invalid:ring-2 aria-invalid:ring-danger/30',
         className,
@@ -40,7 +36,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLText
         'flex min-h-20 w-full rounded-token border border-border-strong bg-surface px-3 py-2 text-sm text-copy',
         'placeholder:text-copy-muted',
         'ring-offset-surface transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'aria-invalid:border-danger aria-invalid:ring-2 aria-invalid:ring-danger/30',
         className,
@@ -69,27 +65,4 @@ function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
   );
 }
 
-/**
- * Field wrapper: stacks Label + Input/Textarea + optional hint/error message.
- * Usage:
- * ```tsx
- * <Field>
- *   <Label htmlFor="email">E-Mail</Label>
- *   <Input id="email" type="email" aria-invalid={!!error} />
- *   {error && <FieldError>{error.message}</FieldError>}
- * </Field>
- * ```
- */
-function Field({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col gap-1.5', className)} {...props} />;
-}
-
-function FieldHint({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-xs text-copy-muted', className)} {...props} />;
-}
-
-function FieldError({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p role="alert" className={cn('text-xs text-danger', className)} {...props} />;
-}
-
-export { Field, FieldError, FieldHint, Input, Label, Textarea };
+export { Input, Label, Textarea };

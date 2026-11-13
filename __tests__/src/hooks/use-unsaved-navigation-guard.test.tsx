@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ConfirmDialog } from '@components/shared/confirm-dialog';
+import { ConfirmDialog } from '@components/shared/dialog';
 
 import { useUnsavedNavigationGuard } from '@hooks/use-unsaved-navigation-guard';
 
@@ -31,7 +31,7 @@ function Page({ isDirty }: { readonly isDirty: boolean }) {
         }}
       />
       <a href="/websites/w1">Overview</a>
-      <a href="/websites/w1/bookings" target="_blank">
+      <a href="/bookings/w1" target="_blank">
         Other tab
       </a>
       <a href="https://example.org/page">External</a>

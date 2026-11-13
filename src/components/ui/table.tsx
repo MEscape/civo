@@ -2,6 +2,8 @@ import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 
 import { cn } from '@lib/utils';
 
+import { Skeleton } from './skeleton';
+
 interface TableProps extends HTMLAttributes<HTMLTableElement> {
   /** Styles the scrolling frame around the table, e.g. `rounded-none border-0` when a panel already frames it. */
   readonly containerClassName?: string;
@@ -87,10 +89,10 @@ function TableCaption({ className, ...props }: HTMLAttributes<HTMLTableCaptionEl
  */
 function TableSkeletonRow({ columns }: { columns: number }) {
   return (
-    <tr className="border-b border-border">
+    <tr aria-hidden="true" className="border-b border-border">
       {Array.from({ length: columns }).map((_, i) => (
         <td key={i} className="p-4">
-          <div className="h-4 w-full animate-pulse rounded-token-sm bg-canvas" />
+          <Skeleton className="h-4 w-full" />
         </td>
       ))}
     </tr>

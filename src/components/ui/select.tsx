@@ -5,7 +5,7 @@ import React, { forwardRef } from 'react';
 
 import * as SelectPrimitive from '@radix-ui/react-select';
 
-import { Icons } from '@components/ui/icons';
+import { Icons } from '@components/icons/icons';
 import { usePortalContainer } from '@components/ui/portal-container';
 
 import { cn } from '@lib/utils';
@@ -23,9 +23,9 @@ const SelectTrigger = forwardRef<
     className={cn(
       'flex h-9 w-full items-center justify-between rounded-token border border-border-strong bg-surface px-3 py-2',
       'text-sm placeholder:text-copy-muted',
-      'ring-offset-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+      'ring-offset-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2',
       'disabled:cursor-not-allowed disabled:opacity-50',
-      'data-[placeholder]:text-copy-muted [&>span]:line-clamp-1',
+      'min-w-0 data-[placeholder]:text-copy-muted [&>span]:min-w-0 [&>span]:line-clamp-1 [&>span]:text-start',
       className,
     )}
     {...props}
@@ -33,7 +33,7 @@ const SelectTrigger = forwardRef<
     {children}
     <SelectPrimitive.Icon asChild>
       <Icons.chevronRight
-        className="size-4 rotate-90 text-copy-muted opacity-50"
+        className="size-4 shrink-0 rotate-90 text-copy-muted opacity-50"
         aria-hidden="true"
       />
     </SelectPrimitive.Icon>
@@ -80,7 +80,7 @@ const SelectContent = forwardRef<
         ref={ref}
         className={cn(
           // Never taller than the room beside the trigger, so a long list scrolls instead of leaving the screen.
-          'relative z-50 max-h-[var(--radix-select-content-available-height)] min-w-32 overflow-hidden rounded-token border border-border bg-surface shadow-lg',
+          'relative z-50 max-h-[var(--radix-select-content-available-height)] max-w-[var(--radix-select-content-available-width)] min-w-32 overflow-hidden rounded-token border border-border bg-surface shadow-lg',
           'data-[state=open]:animate-in data-[state=closed]:animate-out',
           'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
           'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -96,7 +96,7 @@ const SelectContent = forwardRef<
           className={cn(
             'p-1',
             position === 'popper' &&
-              'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+              'h-[var(--radix-select-trigger-height)] w-full min-w-[min(var(--radix-select-trigger-width),var(--radix-select-content-available-width))]',
           )}
         >
           {children}
@@ -138,7 +138,9 @@ const SelectItem = forwardRef<
         <Icons.check className="size-4" aria-hidden="true" />
       </SelectPrimitive.ItemIndicator>
     </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemText className="min-w-0 [overflow-wrap:anywhere]">
+      {children}
+    </SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;

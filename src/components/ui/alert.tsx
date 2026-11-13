@@ -40,14 +40,14 @@ function Alert({ className, variant, ...props }: AlertProps) {
   );
 }
 
-function AlertTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return (
-    <h5 className={cn('mb-1 font-medium leading-none tracking-tight', className)} {...props} />
-  );
+/** A paragraph, not a heading: an alert's title must not enter the page's heading outline. */
+function AlertTitle({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={cn('mb-1 font-medium leading-none tracking-tight', className)} {...props} />;
 }
 
-function AlertDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-sm [&_p]:leading-relaxed', className)} {...props} />;
+/** A block, not a paragraph: its text may hold paragraphs and lists of its own, which a `<p>` cannot. */
+function AlertDescription({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('text-sm [&_p]:leading-relaxed', className)} {...props} />;
 }
 
 export { Alert, AlertDescription, AlertTitle };

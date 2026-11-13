@@ -1,44 +1,26 @@
-import { systemClock } from '@lib/clock';
 import type { Clock } from '@lib/clock';
+import { createRateLimiter } from '@lib/rate-limit';
 import type { ClientAddressProvider, RateLimiter } from '@lib/rate-limit';
-import { createRateLimiter } from '@lib/rate-limit/create-rate-limiter';
-import { InMemoryRateLimitStore } from '@lib/rate-limit/in-memory-rate-limit-store';
 
-const TEST_SECRET = 't'.repeat(32);
-const TEST_TIMEOUT_MS = 1000;
-const SILENT_LOG = { info: () => undefined, warn: () => undefined, error: () => undefined };
+import { InMemoryRateLimitStore } from '../lib/rate-limit/in-memory-rate-limit-store';
 
-/**
- * The real limiter on process memory, so the policies a use case declares behave in a test as they
- * do in production (the same windows, keys and refusals) without a Redis.
- */
-export function createTestRateLimiter(clock: Clock = systemClock): RateLimiter {
+const FIXED_CLOCK: Clock = { now: () => new Date('2026-10-28T10:00:00Z') };
+
+/** Uses the real limiter with a deterministic store; no network or process-global counters. */
+export function createTestRateLimiter(clock: Clock = FIXED_CLOCK): RateLimiter {
   return createRateLimiter({
     store: new InMemoryRateLimitStore(clock),
-    keySecret: TEST_SECRET,
+    keySecret: 'test-rate-limit-secret'.repeat(2),
     clock,
-    timeoutMs: TEST_TIMEOUT_MS,
-    log: SILENT_LOG,
+    timeoutMs: 1_000,
+    log: { info: () => undefined, warn: () => undefined, error: () => undefined },
   });
 }
 
-/** A caller whose address is known, as behind a trusted proxy. */
 export function clientAt(address: string): ClientAddressProvider {
   return { current: () => Promise.resolve({ kind: 'client', address }) };
 }
 
-/** A caller whose address could not be determined. */
 export const UNRESOLVED_CLIENT: ClientAddressProvider = {
   current: () => Promise.resolve({ kind: 'unresolved-client' }),
 };
-
-/** A limiter whose store is down, so each policy's `onBackendFailure` decides what happens. */
-export function createBrokenRateLimiter(): RateLimiter {
-  return createRateLimiter({
-    store: { hit: () => Promise.reject(new Error('store is down')) },
-    keySecret: TEST_SECRET,
-    clock: systemClock,
-    timeoutMs: TEST_TIMEOUT_MS,
-    log: SILENT_LOG,
-  });
-}

@@ -1,50 +1,40 @@
 'use client';
 
-import type { ComponentPropsWithoutRef } from 'react';
-import React, { forwardRef } from 'react';
+import type { ComponentProps } from 'react';
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 
 import { cn } from '@lib/utils';
 
 /**
- * Switch — Radix implementation mapped to Civo design tokens.
- *
- * Checked state: primary brand fill (`bg-primary`).
- * Unchecked state: strong border color (`bg-border-strong`) — meets WCAG 1.4.11
- *   non-text contrast (3:1) against the page background.
- * Thumb: white surface token so it pops on both checked and unchecked tracks.
- * Focus ring uses `ring-accent` consistent with the rest of the system.
- *
- * React 19: uses `React.ComponentRef<>` instead of deprecated `React.ElementRef<>`.
+ * Switch: Radix implementation mapped to Civo design tokens. One `switch` role with an on/off
+ * state: name it with a `<label htmlFor>` or `aria-label`. The checked track is primary and the
+ * thumb moves, so the state is told by position as well as by colour. Focus uses `ring-focus`
+ * like the rest of the system.
  */
-const Switch = forwardRef<
-  React.ComponentRef<typeof SwitchPrimitive.Root>,
-  ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <SwitchPrimitive.Root
-    ref={ref}
-    data-slot="switch"
-    className={cn(
-      'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full',
-      'border-2 border-transparent transition-colors',
-      // Checked / unchecked track colors use semantic tokens
-      'data-[state=checked]:bg-primary data-[state=unchecked]:bg-border-strong',
-      // Focus ring uses accent token
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
-      'disabled:cursor-not-allowed disabled:opacity-50',
-      className,
-    )}
-    {...props}
-  >
-    <SwitchPrimitive.Thumb
+function Switch({ className, ...props }: ComponentProps<typeof SwitchPrimitive.Root>) {
+  return (
+    <SwitchPrimitive.Root
+      data-slot="switch"
       className={cn(
-        'pointer-events-none block size-4 rounded-full bg-surface shadow-sm ring-0 transition-transform',
-        'data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0',
+        'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+        'data-[state=checked]:bg-primary data-[state=unchecked]:bg-border-strong',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
+        'disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none',
+        className,
       )}
-    />
-  </SwitchPrimitive.Root>
-));
-Switch.displayName = SwitchPrimitive.Root.displayName;
+      {...props}
+    >
+      <SwitchPrimitive.Thumb
+        data-slot="switch-thumb"
+        className={cn(
+          'pointer-events-none block size-4 rounded-full bg-surface shadow-sm transition-transform duration-200 ease-in-out',
+          'data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0 rtl:data-[state=checked]:-translate-x-4',
+          'motion-reduce:transition-none',
+        )}
+      />
+    </SwitchPrimitive.Root>
+  );
+}
 
 export { Switch };

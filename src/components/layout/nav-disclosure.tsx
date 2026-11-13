@@ -1,23 +1,25 @@
 'use client';
 
-import { useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { ChevronDown } from '@components/ui/icons';
+import { ChevronDown } from '@components/icons/icons';
 
-import { useDismiss } from '@hooks/use-dismiss';
+import { useNavDisclosure } from '@hooks/use-nav-disclosure';
 
 import { Link } from '@i18n';
 
 import { cn } from '@lib/utils';
 
-export interface NavDisclosureLink {
+interface NavDisclosureLink {
   readonly href: string;
   readonly label: string;
   readonly isCurrent: boolean;
+  /** Listed so the way exists, but not followable yet; `hint` says why. */
+  readonly isDisabled?: boolean;
+  readonly hint?: string | undefined;
 }
 
-export interface NavDisclosureProps {
+interface NavDisclosureProps {
   /** What the button says: the group's name, or on a narrow screen the current section. */
   readonly label: ReactNode;
   readonly links: readonly NavDisclosureLink[];
@@ -26,6 +28,8 @@ export interface NavDisclosureProps {
   readonly className?: string;
   /** Where the panel opens from: the button's left edge, or its right one near the screen edge. */
   readonly align?: 'start' | 'end';
+  /** Optional status about a bounded list of destinations. */
+  readonly notice?: ReactNode;
 }
 
 /**
@@ -40,26 +44,9 @@ export function NavDisclosure({
   isCurrent,
   className,
   align = 'start',
+  notice,
 }: NavDisclosureProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const panelId = useId();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  // Activity hiding the page closes it, so it is not open when the page is shown again.
-  useLayoutEffect(
-    () => () => {
-      setIsOpen(false);
-    },
-    [],
-  );
-
-  useDismiss(isOpen, rootRef, (reason) => {
-    setIsOpen(false);
-    if (reason === 'escape') {
-      buttonRef.current?.focus();
-    }
-  });
+  const { isOpen, panelId, rootRef, buttonRef, toggle, close } = useNavDisclosure();
 
   return (
     <div ref={rootRef} className={cn('relative flex', className)}>
@@ -68,11 +55,9 @@ export function NavDisclosure({
         type="button"
         aria-expanded={isOpen}
         aria-controls={panelId}
-        onClick={() => {
-          setIsOpen((open) => !open);
-        }}
+        onClick={toggle}
         className={cn(
-          'flex items-center gap-1 whitespace-nowrap border-b-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
+          'flex items-center gap-1 whitespace-nowrap border-b-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset',
           isCurrent
             ? 'border-primary text-copy'
             : 'border-transparent text-copy-muted hover:text-copy',
@@ -91,27 +76,36 @@ export function NavDisclosure({
         id={panelId}
         hidden={!isOpen}
         className={cn(
-          'absolute top-full z-40 mt-px min-w-48 rounded-token border border-border bg-surface py-1 shadow-lg',
+          'absolute top-full z-40 mt-px max-h-80 min-w-48 max-w-72 overflow-y-auto rounded-token border border-border bg-surface py-1 shadow-lg',
           align === 'end' ? 'right-0' : 'left-0',
         )}
       >
         {links.map((link) => (
           <li key={link.href}>
-            <Link
-              href={link.href}
-              aria-current={link.isCurrent ? 'page' : undefined}
-              onClick={() => {
-                setIsOpen(false);
-              }}
-              className={cn(
-                'block px-3 py-2 text-sm outline-none hover:bg-canvas focus-visible:bg-canvas focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
-                link.isCurrent ? 'font-medium text-copy' : 'text-copy-muted',
-              )}
-            >
-              {link.label}
-            </Link>
+            {link.isDisabled === true ? (
+              <span
+                aria-disabled="true"
+                title={link.hint}
+                className="block cursor-not-allowed px-3 py-2 text-sm text-copy-muted/60"
+              >
+                {link.label}
+              </span>
+            ) : (
+              <Link
+                href={link.href}
+                aria-current={link.isCurrent ? 'page' : undefined}
+                onClick={close}
+                className={cn(
+                  'block break-words px-3 py-2 text-sm outline-none hover:bg-canvas focus-visible:bg-canvas focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset',
+                  link.isCurrent ? 'font-medium text-copy' : 'text-copy-muted',
+                )}
+              >
+                {link.label}
+              </Link>
+            )}
           </li>
         ))}
+        {notice !== undefined && <li className="border-t border-border px-3 py-2">{notice}</li>}
       </ul>
     </div>
   );

@@ -5,7 +5,7 @@ import React, { forwardRef } from 'react';
 
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 
-import { Icons } from '@components/ui/icons';
+import { Icons } from '@components/icons/icons';
 
 import { cn } from '@lib/utils';
 
@@ -40,11 +40,11 @@ const AccordionTrigger = forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        'flex flex-1 items-center justify-between py-4',
-        'text-sm font-medium text-copy transition-all',
+        'flex flex-1 items-center justify-between gap-4 py-4 text-start',
+        'text-base font-medium text-copy transition-all',
         'hover:text-primary-copy',
-        // Focus ring uses accent token, consistent with the rest of the system
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+        // Focus ring uses the focus token, consistent with the rest of the system
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
         // Chevron rotates 180° when open
         '[&[data-state=open]>svg]:rotate-180',

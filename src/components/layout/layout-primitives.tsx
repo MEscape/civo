@@ -84,8 +84,32 @@ export function sectionToneClass(tone: SectionTone): string {
   return SECTION_TONE_CLASSES[tone];
 }
 
+const SECTION_DENSITY_CLASSES = {
+  tight: 'density-tight',
+  default: '',
+  airy: 'density-airy',
+} as const;
+
+/** Vertical room of the sections inside a wrapper: 0.6, 1 or 1.25 times the theme's section spacing. */
+export type SectionDensity = keyof typeof SECTION_DENSITY_CLASSES;
+
+/** The class that sets the density multiplier for every `Section` inside a wrapper. */
+export function sectionDensityClass(density: SectionDensity): string {
+  return SECTION_DENSITY_CLASSES[density];
+}
+
+/**
+ * Inverse is deliberately not a `SectionTone`. Its children must not use
+ * `text-copy` (dark on the primary fill), so only blocks built for it
+ * (CallToAction) may use it, and a grouping wrapper cannot offer it.
+ * It re-points the focus ring and falls back to plain paper in print,
+ * because browsers drop backgrounds and would leave light text on white.
+ */
+const INVERSE_CLASSES =
+  'bg-primary text-primary-foreground [--civo-focus-ring:var(--civo-color-primary-foreground)] print:bg-transparent print:text-copy';
+
 interface SectionProps extends HTMLAttributes<HTMLElement> {
-  tone?: SectionTone;
+  tone?: SectionTone | 'inverse';
 }
 
 /**
@@ -93,7 +117,19 @@ interface SectionProps extends HTMLAttributes<HTMLElement> {
  * Use for major content sections on marketing/content pages.
  */
 export function Section({ tone = 'default', className, ...props }: SectionProps) {
-  return <section className={cn('py-section', sectionToneClass(tone), className)} {...props} />;
+  // `cn` cannot tell that `py-section` and `py-8` collide, so a page that sets its own vertical
+  // padding (the admin pages) must replace the theme's section spacing, not stack under it.
+  const ownPadding = className !== undefined && /(^|\s)py-/.test(className);
+  return (
+    <section
+      className={cn(
+        !ownPadding && 'py-section',
+        tone === 'inverse' ? INVERSE_CLASSES : sectionToneClass(tone),
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 /**
@@ -160,6 +196,9 @@ export function EmptyState({
   );
 }
 
+/** Shared by `SectionHeading` and `Rail`, so a section heading looks the same wherever it sits. */
+export const SECTION_HEADING_CLASS = 'font-heading text-2xl font-semibold text-copy';
+
 /**
  * Heading of a content section on a public or canvas page. An `h2`: the
  * page's single `h1` is `PageHeading`.
@@ -170,7 +209,7 @@ export function SectionHeading({
   ...props
 }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h2 className={cn('mb-6 font-heading text-2xl font-semibold text-copy', className)} {...props}>
+    <h2 className={cn('mb-6', SECTION_HEADING_CLASS, className)} {...props}>
       {children}
     </h2>
   );

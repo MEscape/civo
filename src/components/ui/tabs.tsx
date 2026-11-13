@@ -7,17 +7,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 import { cn } from '@lib/utils';
 
-/** The look of a tab strip and of its tabs, shared by `Tabs` and by tabs that are links (`LinkTabs`). */
-export const TABS_LIST_CLASS_NAME =
-  'inline-flex h-9 items-center justify-center rounded-token bg-canvas p-1 text-copy-muted';
-export const TABS_TRIGGER_CLASS_NAME = [
-  'inline-flex items-center justify-center whitespace-nowrap rounded-token-sm px-3 py-1 text-sm font-medium transition-all',
-  'ring-offset-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
-  'hover:bg-surface/60 hover:text-copy',
-  'disabled:pointer-events-none disabled:opacity-50',
-  'data-[state=active]:bg-surface data-[state=active]:text-copy data-[state=active]:shadow-sm',
-  'aria-[current=page]:bg-surface aria-[current=page]:text-copy aria-[current=page]:shadow-sm',
-].join(' ');
+import { TABS_LIST_CLASS_NAME, TABS_TRIGGER_CLASS_NAME } from './tabs-styles';
 
 const Tabs = TabsPrimitive.Root;
 
@@ -44,7 +34,7 @@ const TabsContent = forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-2 ring-offset-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+      'mt-2 ring-offset-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2',
       className,
     )}
     {...props}

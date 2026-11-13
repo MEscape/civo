@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-const TICK_MS = 1000;
+import { MS_PER_SECOND } from '@lib/utils';
 
 /**
  * A countdown in whole seconds, for a button that may be pressed again only
@@ -20,7 +20,7 @@ export function useCountdown(initialSeconds: number): {
     }
     const timer = setTimeout(() => {
       setSecondsLeft((current) => current - 1);
-    }, TICK_MS);
+    }, MS_PER_SECOND);
     return () => {
       clearTimeout(timer);
     };

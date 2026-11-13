@@ -1,37 +1,34 @@
-import type { ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { LinkTabs } from '@components/shared/link-tabs';
+import { LinkTabs } from '@components/shared/filter-bar';
+import { TABS_TRIGGER_CLASS_NAME } from '@components/ui/tabs-styles';
 
 vi.mock('@i18n', () => ({
-  Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
-    <a href={href} {...rest}>
-      {children}
-    </a>
-  ),
+  Link: ({ children, ...props }: ComponentProps<'a'>) => <a {...props}>{children}</a>,
 }));
 
 describe('LinkTabs', () => {
-  it('are addresses, with the current one marked', () => {
-    render(
-      <LinkTabs
-        label="Parts"
-        activeKey="services"
-        tabs={[
-          { key: 'calendar', label: 'Calendar', href: '/bookings?tab=calendar' },
-          { key: 'services', label: 'Services', href: '/bookings?tab=services' },
-        ]}
-      />,
-    );
+  const tabs = [
+    { key: 'releases', label: 'Releases', href: '/releases' },
+    { key: 'updates', label: 'Updates', href: '/updates' },
+  ];
 
-    expect(screen.getByRole('navigation', { name: 'Parts' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Services' })).toHaveAttribute(
-      'href',
-      '/bookings?tab=services',
-    );
-    expect(screen.getByRole('link', { name: 'Services' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Calendar' })).not.toHaveAttribute('aria-current');
+  it('names the navigation and marks only the active destination as current', () => {
+    render(<LinkTabs label="Release sections" activeKey="updates" tabs={tabs} />);
+
+    expect(screen.getByRole('navigation', { name: 'Release sections' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Updates' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Releases' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('keeps every destination a plain link and styles it like a tab', () => {
+    render(<LinkTabs label="Release sections" activeKey="releases" tabs={tabs} />);
+
+    const link = screen.getByRole('link', { name: 'Releases' });
+    expect(link).toHaveAttribute('href', '/releases');
+    expect(link).toHaveClass(...TABS_TRIGGER_CLASS_NAME.split(' ').slice(0, 2));
   });
 });

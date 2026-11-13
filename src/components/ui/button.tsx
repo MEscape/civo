@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@lib/utils';
@@ -18,15 +19,16 @@ import { cn } from '@lib/utils';
  *   link        → inline text link style using primary-copy for readability
  *
  * Size map uses Tailwind scale utilities only — no arbitrary px/rem values.
- * Focus ring uses `ring-accent` to stay on brand across all themes.
+ * Focus ring uses the `focus` token (derived from accent-copy, 4.5:1 on the
+ * page by construction); a dark band re-points it via --civo-focus-ring.
  */
 const buttonVariants = cva(
   [
     'group/button inline-flex shrink-0 items-center justify-center',
     'rounded-token border border-transparent bg-clip-padding',
     'text-sm font-medium whitespace-nowrap transition-all outline-none select-none',
-    // Focus: accent-colored ring consistent across themes
-    'focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/50',
+    // Focus: a solid ring in the focus token, offset so it reads on a filled button too.
+    'focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
     'active:not-aria-[haspopup]:translate-y-px',
     'disabled:pointer-events-none disabled:opacity-50',
     // Validation error state uses danger semantic tokens
@@ -62,7 +64,6 @@ const buttonVariants = cva(
         destructive: [
           'bg-danger-subtle text-danger border-danger-border',
           'hover:bg-danger-subtle/80',
-          'focus-visible:border-danger/40 focus-visible:ring-danger/20',
         ],
         /**
          * The trigger of a delete, remove or withdraw: red text on no fill, a
@@ -70,10 +71,7 @@ const buttonVariants = cva(
          * "this takes something away" reads the same everywhere. It asks
          * first (`ConfirmDialog`, whose confirm is `destructive`).
          */
-        'destructive-ghost': [
-          'text-danger hover:bg-danger-subtle hover:text-danger',
-          'focus-visible:border-danger/40 focus-visible:ring-danger/20',
-        ],
+        'destructive-ghost': ['text-danger hover:bg-danger-subtle hover:text-danger'],
         /**
          * Inline text link. Uses `text-primary-copy` — the darkened brand
          * color that meets 4.5:1 contrast as text (not the raw brand fill).
@@ -102,12 +100,16 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {}
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  /** Renders the single child (e.g. a `Link`) with the button's look instead of a `<button>`. */
+  readonly asChild?: boolean;
+}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Component = asChild ? Slot : 'button';
     return (
-      <button
+      <Component
         ref={ref}
         data-slot="button"
         className={cn(buttonVariants({ variant, size, className }))}

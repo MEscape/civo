@@ -1,69 +1,80 @@
 import { Link } from '@i18n';
+import type { Locale } from '@i18n';
 
+import { getTranslations } from '@i18n/server';
+
+import { offsetOf } from '@lib/pagination';
+import type { Page } from '@lib/pagination';
 import { cn } from '@lib/utils';
 
-export interface PaginationLabels {
-  /** Names the landmark, e.g. "Users pages". */
-  readonly nav: string;
-  readonly previous: string;
-  readonly next: string;
-  /** "26-50 of 120", already formatted. */
-  readonly summary: string;
-  /** Accessible name of one page link, e.g. "Page 3". */
-  readonly pageLabel: (page: number) => string;
-}
+import { PAGER_FOCUS, PAGER_ITEM, visiblePages } from './pagination-parts';
 
 export interface PaginationProps {
-  readonly page: number;
-  readonly pageCount: number;
+  /** The URL's locale: a page prerenders on its own, so it must not be read from the request. */
+  readonly locale: Locale;
+  /** The slice of the list on screen. */
+  readonly slice: Page<unknown>;
   /** The address of a page, keeping the list's filters. */
   readonly hrefFor: (page: number) => string;
-  readonly labels: PaginationLabels;
+  /** Names the landmark, e.g. "Users pages": several lists can share a screen. */
+  readonly label: string;
 }
 
-/** Pages to show: the first, the last and the neighbours of the current one; `null` is a gap. */
-function visiblePages(page: number, pageCount: number): ReadonlyArray<number | null> {
-  const wanted = new Set([1, pageCount, page - 1, page, page + 1]);
-  const pages = [...wanted].filter((candidate) => candidate >= 1 && candidate <= pageCount);
-  pages.sort((a, b) => a - b);
-
-  const items: Array<number | null> = [];
-  pages.forEach((candidate, index) => {
-    const before = pages[index - 1];
-    if (before !== undefined && candidate - before > 1) {
-      items.push(null);
-    }
-    items.push(candidate);
-  });
-  return items;
+interface StepProps {
+  readonly rel: 'prev' | 'next';
+  /** `undefined` at the end of the list: there is nowhere to go, so there is no link. */
+  readonly href: string | undefined;
+  readonly label: string;
 }
 
-const LINK =
-  'inline-flex h-9 min-w-9 items-center justify-center rounded-token border border-border px-3 text-sm';
+/** Previous or next: a link, or at the end of the list plain text that is out of the tab order. */
+function Step({ rel, href, label }: StepProps) {
+  if (href === undefined) {
+    return (
+      <span aria-disabled="true" className={cn(PAGER_ITEM, 'opacity-50')}>
+        {label}
+      </span>
+    );
+  }
+  return (
+    <Link href={href} rel={rel} className={cn(PAGER_ITEM, PAGER_FOCUS, 'hover:bg-canvas')}>
+      {label}
+    </Link>
+  );
+}
 
 /**
  * Previous / next and the pages around the current one, as plain links: the
  * state is the address, so a page can be bookmarked, shared and reached
- * without script. Used by every list that paginates; filters are the
- * caller's, through `hrefFor`.
+ * without script. "26–50 of 120" is taken from the slice itself. Renders
+ * nothing for a single page. Used by every list that paginates; filters are
+ * the caller's, through `hrefFor`.
  */
-export function Pagination({ page, pageCount, hrefFor, labels }: PaginationProps) {
-  const disabled = 'pointer-events-none opacity-50';
+export async function Pagination({ locale, slice, hrefFor, label }: PaginationProps) {
+  const { page, pageCount } = slice;
+  if (pageCount <= 1) {
+    return null;
+  }
+
+  const t = await getTranslations({ locale, namespace: 'app' });
+  const first = offsetOf(slice) + 1;
 
   return (
-    <nav aria-label={labels.nav} className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-sm text-copy-muted">{labels.summary}</p>
+    <nav aria-label={label} className="flex flex-wrap items-center justify-between gap-3">
+      <p className="text-sm text-copy-muted">
+        {t('pagination.summary', {
+          first,
+          last: first + slice.items.length - 1,
+          total: slice.total,
+        })}
+      </p>
       <ul className="flex flex-wrap items-center gap-1">
         <li>
-          <Link
-            href={hrefFor(Math.max(1, page - 1))}
+          <Step
             rel="prev"
-            aria-disabled={page <= 1}
-            tabIndex={page <= 1 ? -1 : undefined}
-            className={cn(LINK, 'hover:bg-canvas', page <= 1 && disabled)}
-          >
-            {labels.previous}
-          </Link>
+            href={page > 1 ? hrefFor(page - 1) : undefined}
+            label={t('pagination.previous')}
+          />
         </li>
         {visiblePages(page, pageCount).map((entry, index) =>
           entry === null ? (
@@ -75,10 +86,11 @@ export function Pagination({ page, pageCount, hrefFor, labels }: PaginationProps
             <li key={entry}>
               <Link
                 href={hrefFor(entry)}
-                aria-label={labels.pageLabel(entry)}
+                aria-label={t('pagination.page', { page: entry })}
                 aria-current={entry === page ? 'page' : undefined}
                 className={cn(
-                  LINK,
+                  PAGER_ITEM,
+                  PAGER_FOCUS,
                   entry === page
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'hover:bg-canvas',
@@ -90,15 +102,11 @@ export function Pagination({ page, pageCount, hrefFor, labels }: PaginationProps
           ),
         )}
         <li>
-          <Link
-            href={hrefFor(Math.min(pageCount, page + 1))}
+          <Step
             rel="next"
-            aria-disabled={page >= pageCount}
-            tabIndex={page >= pageCount ? -1 : undefined}
-            className={cn(LINK, 'hover:bg-canvas', page >= pageCount && disabled)}
-          >
-            {labels.next}
-          </Link>
+            href={page < pageCount ? hrefFor(page + 1) : undefined}
+            label={t('pagination.next')}
+          />
         </li>
       </ul>
     </nav>
