@@ -84,6 +84,7 @@ jobs:
             NEXT_PUBLIC_APP_URL=${{ inputs.app-url }}
             NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=${{ vars.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN }}
             NEXT_PUBLIC_MAPBOX_STYLE_URL=${{ vars.NEXT_PUBLIC_MAPBOX_STYLE_URL }}
+            NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED=${{ vars.NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED }}
           provenance: false
           cache-from: type=gha,scope=image-arm64
           cache-to: type=gha,scope=image-arm64,mode=max

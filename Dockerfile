@@ -65,6 +65,7 @@ FROM base AS builder
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=""
 ARG NEXT_PUBLIC_MAPBOX_STYLE_URL=""
+ARG NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED=""
 
 # NEXT_PUBLIC_* values are inlined into the client bundle at build time.
 # Never pass private keys or runtime secrets as build arguments.
@@ -84,6 +85,7 @@ RUN npm run db:generate
 RUN --mount=type=cache,target=/app/.next/cache \
     [ -n "$NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN" ] || unset NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN; \
     [ -n "$NEXT_PUBLIC_MAPBOX_STYLE_URL" ] || unset NEXT_PUBLIC_MAPBOX_STYLE_URL; \
+    [ -n "$NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED" ] || unset NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED; \
     DATABASE_URL="postgresql://build:build@localhost:5432/build" \
     AUTH_ENABLED="true" \
     AUTH_SECRET="build-placeholder-not-a-secret-0000000000" \
