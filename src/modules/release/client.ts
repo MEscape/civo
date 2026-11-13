@@ -5,8 +5,7 @@
  * `composition.ts`.
  */
 
-export { toMigrationHistoryDto } from './presentation/dto/migration-history-dto';
-export { toReleaseHistoryDto } from './presentation/dto/release-history-dto';
-
 export { deleteUnusedDataAction } from './presentation/actions/delete-unused-data-action';
+export { deleteUnusedMapAction } from './presentation/actions/delete-unused-map-action';
+export { RELEASE_ERROR_CODES } from './domain/errors/release-errors';
 export { releaseRoutes } from './presentation/routes';

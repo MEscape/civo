@@ -7,5 +7,3 @@ export const rollbackReleaseSchema = z.object({
   websiteId: websiteIdSchema,
   releaseId: releaseIdSchema,
 });
-
-export type RollbackRelease = z.infer<typeof rollbackReleaseSchema>;

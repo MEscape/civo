@@ -7,7 +7,10 @@ import type { WebsiteId } from './ids';
  * from its structure. Bump it whenever a stored field is added, renamed or
  * removed.
  */
-export const RELEASE_SNAPSHOT_SCHEMA_VERSION = 1;
+export const RELEASE_SNAPSHOT_SCHEMA_VERSION = 2;
+
+/** Snapshots written before maps were part of a release; they read as having none. */
+export const LEGACY_SNAPSHOT_SCHEMA_VERSION = 1;
 
 /**
  * A page's configuration, frozen at publish time. The builder owns its
@@ -51,6 +54,17 @@ export interface SnapshotPage {
   readonly config: SnapshotPageConfig;
 }
 
+/**
+ * A saved map's configuration, frozen at publish time. Like a page config it is opaque JSON here:
+ * the map module owns its shape and the public renderer restores it with the map's own reader.
+ */
+export interface SnapshotMap {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly settings: Readonly<Record<string, JsonValue>>;
+}
+
 /** A contract version a component needed when the release was published. */
 export interface ComponentContractPin {
   readonly contract: string;
@@ -80,6 +94,8 @@ export interface ReleaseSnapshot {
   readonly website: SnapshotWebsite;
   readonly theme: ReleaseTheme;
   readonly pages: readonly SnapshotPage[];
+  /** Every saved map of the website at publish time, so a page's map never follows later edits. */
+  readonly maps: readonly SnapshotMap[];
   /** One entry per distinct component type across the whole release. */
   readonly dependencies: readonly ReleaseComponentDependency[];
 }

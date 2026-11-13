@@ -7,7 +7,7 @@ import { parseWebsiteId } from '../../domain/models/ids';
 import { toPublishedSnapshotView } from '../release-view-mappers';
 
 import type { Release } from '../../domain/models/release';
-import type { PublishedSnapshotView } from '../contracts/release-views';
+import type { PublishedSnapshotView } from '../contracts/snapshot-views';
 import type { PublicReleaseDependencies } from '../release-dependencies';
 
 /**

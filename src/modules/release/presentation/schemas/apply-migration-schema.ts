@@ -12,5 +12,3 @@ export const applyMigrationSchema = z.object({
   migrationId: migrationIdSchema,
   resolutions: z.record(z.string(), z.record(z.string(), z.record(z.string(), resolutionSchema))),
 });
-
-export type ApplyMigration = z.infer<typeof applyMigrationSchema>;

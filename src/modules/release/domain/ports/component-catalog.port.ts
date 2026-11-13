@@ -1,5 +1,5 @@
-import type { NodeProps } from '../models/page-tree';
-import type { ResolvedComponent } from '../models/publishable';
+import type { NodeProps } from '../migration/page-tree';
+import type { ResolvedComponent } from '../publishing/publishable';
 
 /**
  * The release module's only view of the component registry. In memory and

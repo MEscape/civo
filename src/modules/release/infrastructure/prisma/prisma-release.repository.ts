@@ -1,6 +1,6 @@
 import type { TenantId } from '@modules/auth';
 
-import { createPersistenceFailures, dateToInstant, db, toJsonValue } from '@lib/db';
+import { createPersistenceFailures, db } from '@lib/db';
 import type {
   ConflictAppError,
   InfrastructureAppError,
@@ -19,11 +19,10 @@ import {
   releaseNumberConflict,
 } from '../../domain/errors/release-errors';
 import { toReleaseId, toWebsiteId } from '../../domain/models/ids';
-import { nextReleaseNumber } from '../../domain/models/release';
 import { hashStoredSnapshot } from '../hashing/snapshot-hash';
+import { activateRelease, insertRelease } from '../transactions/release-writes';
 
 import {
-  RECORD_STATUS,
   RELEASE_SELECT,
   RELEASE_SUMMARY_SELECT,
   toRelease,
@@ -83,10 +82,7 @@ function restore(record: ReleaseRecord | null): AppResultAsync<Release | null, U
  * row inside the same transaction. That is the one write to a table this
  * module does not own; it is what makes the switch atomic.
  *
- * NOTE: like the website repository, this uses the Prisma-client delegate
- * style (`db.websiteRelease.findFirst`, `db.$transaction`, ...). If your
- * client spells queries differently, only the `db.*` expressions in this
- * file change; ports, mappers and use cases do not.
+ * Publish and restore take the same website lock; transient failures retry the whole transaction.
  */
 export class PrismaReleaseRepository implements ReleaseRepository {
   findHistory(
@@ -171,7 +167,10 @@ export class PrismaReleaseRepository implements ReleaseRepository {
   listPublishedDependencies(
     tenantId: TenantId,
     limit: number,
-  ): AppResultAsync<readonly PublishedDependencies[], InfrastructureAppError> {
+  ): AppResultAsync<
+    { readonly items: readonly PublishedDependencies[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  > {
     return fromThrowableAsync(
       async () =>
         db.orm.public.Website.where({ tenantId })
@@ -180,11 +179,12 @@ export class PrismaReleaseRepository implements ReleaseRepository {
           .select('id', 'publishedReleaseId')
           .include('publishedRelease', (r) => r.select('id', 'snapshot'))
           .orderBy([(w) => w.id.asc()])
-          .limit(limit)
+          .limit(limit + 1)
           .all(),
       failures.infraOnly('listPublishedDependencies'),
-    ).map((websites) =>
-      websites.flatMap((website) => {
+    ).map((websites) => {
+      const shown = websites.slice(0, limit);
+      const items = shown.flatMap((website) => {
         const release = website.publishedRelease;
         if (release === null) {
           return [];
@@ -201,48 +201,24 @@ export class PrismaReleaseRepository implements ReleaseRepository {
             dependencies,
           },
         ];
-      }),
-    );
+      });
+      return { items, isTruncated: websites.length > limit || items.length < shown.length };
+    });
   }
 
   publish(
     input: NewRelease,
   ): AppResultAsync<ReleaseSummary, ConflictAppError | InfrastructureAppError> {
-    const { websiteId, snapshot, note, changes, publishedBy, publishedAt } = input;
+    const { snapshot, changes, ...rest } = input;
     const stored = toStoredSnapshot(snapshot);
-    const snapshotHash = hashStoredSnapshot(stored);
 
     return fromThrowableAsync(
       () =>
-        db.transaction(async (tx) => {
-          const latest = await tx.orm.public.WebsiteRelease.where({ websiteId })
-            .select('releaseNumber')
-            .orderBy([(r) => r.releaseNumber.desc()])
-            .first();
-
-          // The unique (websiteId, releaseNumber) constraint turns a
-          // concurrent publish into a conflict instead of two releases
-          // sharing a number.
-          const created = await tx.orm.public.WebsiteRelease.select(
-            ...RELEASE_SUMMARY_SELECT,
-          ).create({
-            websiteId,
-            releaseNumber: nextReleaseNumber(latest?.releaseNumber ?? null),
-            status: RECORD_STATUS.published,
-            snapshot: toJsonValue(stored),
-            snapshotHash,
-            note,
-            changes: toJsonValue(changes),
-            publishedBy,
-            // Prisma 8 does not accept a `Date` for a `DateTime` column.
-            publishedAt: dateToInstant(publishedAt),
-          });
-
-          await tx.orm.public.Website.where({ id: websiteId }).update({
-            publishedReleaseId: created.id,
-          });
-
-          return created;
+        insertRelease({
+          ...rest,
+          snapshot: stored,
+          snapshotHash: hashStoredSnapshot(stored),
+          changes,
         }),
       failures.orConflict('publish', releaseNumberConflict),
     ).map(toReleaseSummary);
@@ -252,40 +228,8 @@ export class PrismaReleaseRepository implements ReleaseRepository {
     readonly websiteId: WebsiteId;
     readonly releaseId: ReleaseId;
   }): AppResultAsync<Activation, NotFoundAppError | InfrastructureAppError> {
-    const { websiteId, releaseId } = input;
-
     return fromThrowableAsync(
-      () =>
-        db.transaction(async (tx) => {
-          const website = await tx.orm.public.Website.where({ id: websiteId })
-            .select('publishedReleaseId')
-            .first();
-          const previous = website?.publishedReleaseId ?? null;
-
-          const activated = await tx.orm.public.WebsiteRelease.where({ id: releaseId, websiteId })
-            .select(...RELEASE_SUMMARY_SELECT)
-            .update({
-              status: RECORD_STATUS.published,
-            });
-
-          // Nothing has been written yet, so a release that is not this website's leaves the live one alone.
-          if (!activated) {
-            return null;
-          }
-
-          // History only: the replaced release's snapshot is never touched.
-          if (previous !== null && previous !== releaseId) {
-            await tx.orm.public.WebsiteRelease.where({ id: previous, websiteId }).update({
-              status: RECORD_STATUS.rolled_back,
-            });
-          }
-
-          await tx.orm.public.Website.where({ id: websiteId }).update({
-            publishedReleaseId: releaseId,
-          });
-
-          return { activated, previous };
-        }),
+      () => activateRelease(input.websiteId, input.releaseId),
       failures.infraOnly('activate'),
     ).andThen((result) => {
       if (result === null) {

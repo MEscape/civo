@@ -7,7 +7,7 @@ import type {
   ConflictResolutionsInput,
   MigrationPlanView,
   NodeMigrationView,
-} from '../../application/contracts/release-views';
+} from '../../application/contracts/migration-views';
 
 /**
  * What a reviewer has picked for one conflict. `custom` keeps the raw text

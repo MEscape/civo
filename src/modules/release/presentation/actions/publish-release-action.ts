@@ -7,7 +7,7 @@ import { websiteRoutes } from '@modules/website/client';
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { releaseCommands } from '../../composition';
+import { getReleaseCommands } from '../../composition';
 import { toReleaseSummaryDto } from '../dto/release-dto';
 import { parseReleaseInput } from '../schemas/parse-release-input';
 import { publishReleaseSchema } from '../schemas/publish-release-schema';
@@ -25,12 +25,12 @@ export async function publishReleaseAction(
   input: unknown,
 ): Promise<ActionResult<ReleaseSummaryDto>> {
   const result = await parseReleaseInput(publishReleaseSchema, input).asyncAndThen((command) =>
-    releaseCommands.publishRelease.execute(command),
+    getReleaseCommands().publishRelease.execute(command),
   );
 
   if (result.isOk()) {
     // The website's pages, the release screen and the bar above them all show what is live.
-    revalidatePath(websiteRoutes.detail(result.value.websiteId), 'layout');
+    revalidatePath(websiteRoutes.layout, 'layout');
   }
   return toActionResult(result.map(toReleaseSummaryDto));
 }

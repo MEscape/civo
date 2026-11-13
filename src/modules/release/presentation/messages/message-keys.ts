@@ -31,6 +31,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.notPublished]: fieldPath('errors', 'notPublished'),
   [ERRORS.notRestorable]: fieldPath('errors', 'notRestorable'),
   [ERRORS.numberConflict]: fieldPath('errors', 'numberConflict'),
+  [ERRORS.mapInUse]: fieldPath('errors', 'mapInUse'),
   [ERRORS.validationFailed]: fieldPath('errors', 'validationFailed'),
   [ERRORS.publishBlocked]: fieldPath('errors', 'publishBlocked'),
   [ERRORS.persistenceFailed]: fieldPath('errors', 'persistenceFailed'),
@@ -41,7 +42,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.migrationNotFound]: fieldPath('errors', 'migrationNotFound'),
   [ERRORS.migrationAlreadyApplied]: fieldPath('errors', 'migrationAlreadyApplied'),
   [ERRORS.migrationStale]: fieldPath('errors', 'migrationStale'),
-  [ERRORS.migrationPlanCorrupted]: fieldPath('errors', 'snapshotCorrupted'),
+  [ERRORS.migrationPlanCorrupted]: fieldPath('errors', 'migrationPlanCorrupted'),
   [VALIDATION.idInvalid]: fieldPath('validation', 'idInvalid'),
   [VALIDATION.noPages]: fieldPath('validation', 'noPages'),
   [VALIDATION.pageConfigMissing]: fieldPath('validation', 'pageConfigMissing'),
@@ -58,6 +59,12 @@ export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 
 export type MessageKey =
   (typeof MESSAGE_KEY_BY_CODE)[ReleaseCode] | typeof GENERIC_ERROR_MESSAGE_KEY;
+
+export const COMPONENT_UPDATE_MESSAGE_KEYS = {
+  upgradable: fieldPath('updates', 'status', 'upgradable'),
+  needs_review: fieldPath('updates', 'status', 'needsReview'),
+  unresolvable: fieldPath('updates', 'status', 'unresolvable'),
+} as const satisfies Record<'upgradable' | 'needs_review' | 'unresolvable', ValidKeys>;
 
 function isReleaseCode(code: string): code is ReleaseCode {
   return Object.hasOwn(MESSAGE_KEY_BY_CODE, code);

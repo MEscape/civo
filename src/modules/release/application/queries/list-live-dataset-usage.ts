@@ -1,12 +1,10 @@
 import type { AppResultAsync } from '@lib/result';
 
-import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
 import { liveDatasetUsageOf } from '../services/live-dataset-uses';
 
 import type { ReleaseReadError } from '../../domain/ports/release.repository';
-import type { LiveDatasetUsageView } from '../contracts/release-views';
-import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
-import type { DeleteUnusedDataDependencies } from '../release-dependencies';
+import type { LiveDatasetUsageView } from '../contracts/usage-views';
+import type { ReleaseOperationError, DeleteUnusedDataDependencies } from '../release-dependencies';
 
 /**
  * Which pages of the live site show each dataset, so the data screen can say
@@ -18,12 +16,13 @@ export class ListLiveDatasetUsage {
 
   execute(
     rawWebsiteId: string,
-  ): AppResultAsync<LiveDatasetUsageView, LoadReleaseWebsiteError | ReleaseReadError> {
-    return loadAuthorizedReleaseWebsite(this.deps, rawWebsiteId, 'release.read').andThen(
-      ({ website }) =>
+  ): AppResultAsync<LiveDatasetUsageView, ReleaseOperationError | ReleaseReadError> {
+    return this.deps.access
+      .authorizeWebsite('release.read', rawWebsiteId)
+      .andThen(({ websiteId }) =>
         this.deps.releases
-          .findPublished(website.id)
-          .map((live) => liveDatasetUsageOf(live, this.deps.data)),
-    );
+          .findPublished(websiteId)
+          .map((live) => liveDatasetUsageOf(live, this.deps)),
+      );
   }
 }

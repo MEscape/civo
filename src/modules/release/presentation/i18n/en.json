@@ -5,15 +5,12 @@
       "pagination": {
         "nav": "Release pages"
       },
-      "empty": "No releases published yet. Select “Publish” to put the current pages live.",
-      "publish": "Publish",
-      "publicSite": "Public site",
+      "empty": "No releases published yet",
+      "emptyHint": "Select “Publish” to put the current pages live.",
       "publishing": "Publishing…",
       "published": "Release #{number} is live.",
       "releaseNumber": "Release #{number}",
       "active": "Live",
-      "publishedAt": "Published: {date}",
-      "createdAt": "Created: {date}",
       "rollback": "Restore",
       "rollbackLabel": "Restore release #{number}",
       "buildFailed": "Build failed",
@@ -35,6 +32,7 @@
       "notPublished": "This website has not been published yet.",
       "notRestorable": "This release was never published successfully and cannot be restored.",
       "numberConflict": "Another release was published at the same time. Please try again.",
+      "mapInUse": "A page still shows this map. Remove it from the pages and publish before deleting it.",
       "validationFailed": "The input is invalid.",
       "publishBlocked": "The website cannot be published. Please check its pages.",
       "persistenceFailed": "The operation could not be completed. Please try again later.",
@@ -58,7 +56,6 @@
     },
     "migration": {
       "panel": {
-        "title": "Component updates",
         "check": "Check for updates",
         "review": "Review changes",
         "needLive": "Publish your website first, then its components can be checked.",
@@ -75,7 +72,13 @@
         "apply": "Apply updates to drafts",
         "applying": "Applying…",
         "applyNote": "Only your drafts change. The live website stays as it is until you publish.",
-        "showMore": "Show {count, plural, one {# more page} other {# more pages}}"
+        "showMore": "Show {count, plural, one {# more page} other {# more pages}}",
+        "leave": {
+          "title": "Leave the review?",
+          "description": "Your decisions on the component updates have not been applied yet. They are lost if you leave this page.",
+          "confirm": "Discard decisions",
+          "stay": "Keep reviewing"
+        }
       },
       "nodeStatus": {
         "unchanged": "Up to date",
@@ -117,21 +120,26 @@
         "failed": "Could not be saved. Please try again."
       },
       "history": {
-        "title": "Update history",
         "listLabel": "Update history",
         "pagination": {
           "nav": "Update history pages"
         },
         "empty": "No updates have been proposed yet.",
-        "proposedAt": "Proposed: {date}",
-        "appliedAt": "Applied: {date}",
+        "count": "{count, plural, one {# update} other {# updates}}",
+        "proposedAt": "Proposed",
+        "appliedAt": "Applied",
         "changeCount": "{count, plural, one {# component updated} other {# components updated}}",
         "detailsToggle": "{count, plural, one {Changes on # page} other {Changes on # pages}}",
         "noNodeChanges": "No component changes on this page",
         "pageChangeCount": "{count, plural, one {# change} other {# changes}}",
         "instanceCount": "{count, plural, one {# use} other {# uses}}",
         "versionUnchanged": "v{version}",
-        "versionChanged": "v{from} → v{to}"
+        "versionChanged": "v{from} → v{to}",
+        "columns": {
+          "status": "Update",
+          "dates": "Timeline",
+          "details": "Details"
+        }
       },
       "status": {
         "proposed": "Proposed",
@@ -145,7 +153,8 @@
         "tabs": {
           "label": "Release sections",
           "releases": "Releases",
-          "updates": "Component updates"
+          "updates": "Component updates",
+          "updatesCount": "Component updates ({count})"
         }
       }
     },
@@ -156,6 +165,7 @@
         "removed": "Removed"
       },
       "morePages": "+{count} more",
+      "mapLabel": "map",
       "blocked": "Publishing is blocked: {count, plural, one {# page needs} other {# pages need}} attention in the editor.",
       "allReleases": "All releases",
       "settings": {
@@ -193,14 +203,13 @@
       "release": "Release",
       "changes": "Changes",
       "pagesCount": "{count, plural, one {# page} other {# pages}}",
+      "mapsCount": "{count, plural, one {# map} other {# maps}}",
       "settingsChanged": "Settings",
       "noDetails": "No details kept",
-      "firstRelease": "First release",
-      "count": "{shown} of {total} releases",
+      "count": "{count, plural, one {# release} other {# releases}}",
       "preview": "Preview",
       "previewLabel": "Preview release #{number}",
-      "title": "Release history",
-      "liveShort": "Live"
+      "title": "Release history"
     },
     "restore": {
       "title": "Restore release #{number}?",
@@ -210,7 +219,6 @@
     },
     "updates": {
       "summary": "{count, plural, one {# update available} other {# updates available}}",
-      "detail": "{ready} compatible · {review} need your decision · {blocked} cannot be updated",
       "upToDateTitle": "All components are up to date",
       "columns": {
         "component": "Component",
@@ -220,20 +228,16 @@
       },
       "status": {
         "upgradable": "Compatible",
-        "needs_review": "Needs review",
-        "unresolvable": "Cannot be updated"
+        "unresolvable": "Cannot be updated",
+        "needsReview": "Needs review"
       },
       "versionChange": "v{from} → v{to}",
       "noTarget": "v{from} → none",
-      "historyTitle": "History ({count})",
-      "historyEmpty": "No updates proposed yet",
+      "historyTitle": "Update history",
       "uses": "{count, plural, one {# use} other {# uses}}",
       "blockedSummary": "{count, plural, one {# component cannot be updated} other {# components cannot be updated}}",
       "checkedAt": "Checked {time}",
       "refreshing": "Checking…",
-      "lastProposed": "Last proposed {date}",
-      "details": "Show details",
-      "detailsLabel": "Details for {component}",
       "noSettingChange": "No settings change.",
       "blockedHint": "The component or the version it was built with no longer exists. Replace it in the editor.",
       "panelTitle": "Components",
@@ -258,10 +262,15 @@
       "decisionSettings": "Settings you changed that the new version also changed",
       "readyCount": "{count} compatible",
       "reviewCount": "{count} need review",
-      "blockedCount": "{count} cannot be updated"
+      "blockedCount": "{count} cannot be updated",
+      "details": "Details",
+      "editComponent": "Open component in editor",
+      "instance": "{page} · Instance {number}",
+      "currentDrafts": "In the current draft",
+      "noDraftInstance": "This component is no longer present in the current draft."
     },
     "activity": {
-      "title": "Activity",
+      "title": "Latest releases",
       "published": "Release #{number} published",
       "empty": "Nothing published yet.",
       "by": "by {name}"
@@ -269,12 +278,10 @@
     "preview": {
       "title": "Preview of release #{number}",
       "description": "The pages exactly as they were published. Nothing here can be edited.",
-      "back": "All releases",
+      "breadcrumb": "Release navigation",
       "pagesLabel": "Pages of this release",
       "home": "Home page",
       "live": "Live now",
-      "crumbReleases": "Releases",
-      "crumbLabel": "You are here",
       "older": "Older",
       "newer": "Newer",
       "olderLabel": "Older release #{number}",

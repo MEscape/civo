@@ -1,101 +1,102 @@
-import { toMigrationPlanDto } from './migration-plan-dto';
-
-import type { MigrationPlanDto } from './migration-plan-dto';
-import type { NodeMigrationStatus } from '../../application/contracts/release-constraints';
 import type {
-  MigrationDetailView,
+  ApplyMigrationResultView,
+  MigrationPlanView,
+  MigrationProposalView,
   MigrationStatus,
-  MigrationSummaryPageDetailView,
-  MigrationSummaryView,
-} from '../../application/contracts/release-views';
+  PageOutcome,
+} from '../../application/contracts/migration-views';
 
 /**
- * JSON-safe summary of a migration.
+ * JSON-safe migration plan presented to the reviewer.
  *
- * This is the reusable migration identity used by history lists and other
- * views that need to describe a migration without exposing its full plan.
+ * The application-layer plan contains no non-serializable values, so the DTO
+ * currently has the same shape as the application view.
  *
- * Dates are represented as ISO-8601 strings because this DTO crosses the
- * Server Component / Client Component and Server Action boundaries.
+ * Keeping the DTO as a named type still gives the UI its own boundary and
+ * allows the transport representation to evolve independently later.
  */
-export interface MigrationSummaryPageDto {
-  readonly path: string;
-  readonly nodes: ReadonlyArray<{
-    readonly nodeId: string;
-    readonly type: string;
-    readonly fromVersion: number;
-    readonly toVersion?: number | undefined;
-    readonly status: NodeMigrationStatus;
-  }>;
-}
+export type MigrationPlanDto = MigrationPlanView;
 
-export interface MigrationSummaryDto {
-  readonly id: string;
-  readonly websiteId: string;
+/**
+ * Proposal returned after checking a website for migrations.
+ *
+ * `migrationId` is null when the check determines that no migration record
+ * needs to be reviewed. When a migration is recorded, the ID identifies the
+ * server-side proposal that can subsequently be applied.
+ */
+export interface MigrationProposalDto {
+  readonly migrationId: string | null;
   readonly sourceReleaseId: string;
-  readonly status: MigrationStatus;
-  readonly createdAt: string;
-  readonly appliedAt: string | null;
-  readonly pages?: readonly MigrationSummaryPageDto[] | undefined;
-  readonly changedNodeCount?: number | undefined;
-}
-
-/**
- * JSON-safe representation of a migration together with the plan that was
- * recorded for it.
- *
- * Use this when the consumer needs the migration's details rather than only
- * its history/list representation.
- */
-export interface MigrationDetailDto extends MigrationSummaryDto {
   readonly plan: MigrationPlanDto;
 }
 
-/** Converts one page of a migration's change summary into its JSON-safe DTO. */
-export function toMigrationSummaryPageDto(
-  view: MigrationSummaryPageDetailView,
-): MigrationSummaryPageDto {
-  return {
-    path: view.path,
-    nodes: view.nodes.map((node) => ({
-      nodeId: node.nodeId,
-      type: node.type,
-      fromVersion: node.fromVersion,
-      toVersion: node.toVersion,
-      status: node.status,
-    })),
-  };
+/**
+ * Converts an application-layer migration plan into its transport DTO.
+ *
+ * Migration plans are already JSON-safe, so no field-by-field mapping is
+ * currently necessary.
+ */
+export function toMigrationPlanDto(view: MigrationPlanView): MigrationPlanDto {
+  return view;
 }
 
 /**
- * Converts an application-layer migration summary view into the JSON-safe
- * DTO exposed to the UI.
+ * Converts the application-layer migration proposal into the JSON-safe
+ * contract returned by the proposal Server Action.
  */
-export function toMigrationSummaryDto(view: MigrationSummaryView): MigrationSummaryDto {
+export function toMigrationProposalDto(view: MigrationProposalView): MigrationProposalDto {
   return {
-    id: view.id,
-    websiteId: view.websiteId,
+    migrationId: view.migrationId,
     sourceReleaseId: view.sourceReleaseId,
-    status: view.status,
-    createdAt: view.createdAt.toISOString(),
-    appliedAt: view.appliedAt?.toISOString() ?? null,
-    pages: view.pages?.map(toMigrationSummaryPageDto),
-    changedNodeCount: view.changedNodeCount,
-  };
-}
-
-/**
- * Converts an application-layer migration detail view into the JSON-safe
- * DTO exposed to the UI.
- */
-export function toMigrationDetailDto(view: MigrationDetailView): MigrationDetailDto {
-  return {
-    id: view.id,
-    websiteId: view.websiteId,
-    sourceReleaseId: view.sourceReleaseId,
-    status: view.status,
-    createdAt: view.createdAt.toISOString(),
-    appliedAt: view.appliedAt?.toISOString() ?? null,
     plan: toMigrationPlanDto(view.plan),
+  };
+}
+
+/**
+ * JSON-safe outcome for one page during migration application.
+ *
+ * This intentionally exposes only the information needed by the UI to explain
+ * what happened to the page. Internal application details are not transported.
+ */
+export interface PageOutcomeDto {
+  readonly path: string;
+  readonly outcome: PageOutcome;
+}
+
+export function toPageOutcomeDto(view: {
+  readonly path: string;
+  readonly outcome: PageOutcome;
+}): PageOutcomeDto {
+  return { path: view.path, outcome: view.outcome };
+}
+
+/**
+ * Result returned after attempting to apply a migration.
+ *
+ * An apply can be incomplete: some pages/nodes may have been updated while
+ * others were skipped. The result therefore carries both the final migration
+ * status and the page-level outcomes needed by the reviewer.
+ */
+export interface ApplyMigrationResultDto {
+  readonly migrationId: string;
+  readonly websiteId: string;
+  readonly status: MigrationStatus;
+  readonly pages: readonly PageOutcomeDto[];
+  readonly updatedNodeCount: number;
+  readonly skippedNodeCount: number;
+}
+
+/**
+ * Converts the application-layer apply result into the JSON-safe DTO returned
+ * by the apply-migration Server Action.
+ */
+export function toApplyMigrationResultDto(view: ApplyMigrationResultView): ApplyMigrationResultDto {
+  return {
+    migrationId: view.migrationId,
+    websiteId: view.websiteId,
+    status: view.status,
+    pages: view.pages.map(toPageOutcomeDto),
+    updatedNodeCount: view.updatedNodeCount,
+    skippedNodeCount: view.skippedNodeCount,
   };
 }

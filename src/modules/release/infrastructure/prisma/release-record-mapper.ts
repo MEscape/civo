@@ -16,14 +16,21 @@ import type { JsonValue } from '@lib/utils';
 
 import { releaseSnapshotCorrupted } from '../../domain/errors/release-errors';
 import { toReleaseId, toWebsiteId } from '../../domain/models/ids';
-import { RELEASE_SNAPSHOT_SCHEMA_VERSION } from '../../domain/models/release-snapshot';
+import {
+  LEGACY_SNAPSHOT_SCHEMA_VERSION,
+  RELEASE_SNAPSHOT_SCHEMA_VERSION,
+} from '../../domain/models/release-snapshot';
 
 import type { Release, ReleaseStatus, ReleaseSummary } from '../../domain/models/release';
-import type { PageChangeKind, ReleaseChanges } from '../../domain/models/release-changes';
 import type {
   ReleaseComponentDependency,
   ReleaseSnapshot,
 } from '../../domain/models/release-snapshot';
+import type {
+  MapChange,
+  PageChangeKind,
+  ReleaseChanges,
+} from '../../domain/publishing/release-changes';
 
 /**
  * Persistence shapes. They mirror the columns the module reads and
@@ -90,12 +97,28 @@ export interface StoredReleaseSnapshot {
     readonly title: string;
     readonly config: Readonly<Record<string, JsonValue>>;
   }>;
+  readonly maps: StoredMap[];
   readonly dependencies: StoredDependency[];
 }
 
-const isStoredReleaseSnapshot = objectOf<StoredReleaseSnapshot>({
-  schemaVersion: (value): value is typeof RELEASE_SNAPSHOT_SCHEMA_VERSION =>
-    value === RELEASE_SNAPSHOT_SCHEMA_VERSION,
+interface StoredMap {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly settings: Readonly<Record<string, JsonValue>>;
+}
+
+const isStoredMap = objectOf<StoredMap>({
+  id: isString,
+  name: isString,
+  description: nullable(isString),
+  settings: isJsonRecord,
+});
+
+/** What every schema version stores the same way. */
+type StoredSnapshotBase = Omit<StoredReleaseSnapshot, 'schemaVersion' | 'maps'>;
+
+const isStoredSnapshotBase = objectOf<StoredSnapshotBase>({
   website: objectOf<StoredReleaseSnapshot['website']>({
     id: isString,
     name: isString,
@@ -121,6 +144,25 @@ const isStoredReleaseSnapshot = objectOf<StoredReleaseSnapshot>({
   dependencies: arrayOf(isStoredDependency),
 });
 
+const hasStoredMaps = objectOf<{ readonly maps: StoredMap[] }>({ maps: arrayOf(isStoredMap) });
+
+/**
+ * The stored snapshot as this build writes it. One written before maps were part of a release is
+ * the same snapshot with none; any other version, or a damaged row, is not read at all.
+ */
+function readStoredSnapshot(stored: unknown): StoredReleaseSnapshot | null {
+  if (!isStoredSnapshotBase(stored)) {
+    return null;
+  }
+  const version: unknown = (stored as { schemaVersion?: unknown }).schemaVersion;
+  if (version === LEGACY_SNAPSHOT_SCHEMA_VERSION) {
+    return { ...stored, schemaVersion: RELEASE_SNAPSHOT_SCHEMA_VERSION, maps: [] };
+  }
+  return version === RELEASE_SNAPSHOT_SCHEMA_VERSION && hasStoredMaps(stored)
+    ? { ...stored, schemaVersion: RELEASE_SNAPSHOT_SCHEMA_VERSION, maps: stored.maps }
+    : null;
+}
+
 const hasStoredDependencies = objectOf<{ readonly dependencies: StoredDependency[] }>({
   dependencies: arrayOf(isStoredDependency),
 });
@@ -135,21 +177,38 @@ export function toStoredDependencies(
 const isPageChangeKind = (value: unknown): value is PageChangeKind =>
   value === 'added' || value === 'changed' || value === 'removed';
 
+const isPageChange = objectOf<ReleaseChanges['pageChanges'][number]>({
+  path: isString,
+  title: isString,
+  kind: isPageChangeKind,
+});
+
+const isMapChange = objectOf<MapChange>({
+  id: isString,
+  name: isString,
+  kind: isPageChangeKind,
+});
+
 const isStoredChanges = objectOf<ReleaseChanges>({
-  pageChanges: arrayOf(
-    objectOf<ReleaseChanges['pageChanges'][number]>({
-      path: isString,
-      title: isString,
-      kind: isPageChangeKind,
-    }),
-  ),
+  pageChanges: arrayOf(isPageChange),
+  mapChanges: arrayOf(isMapChange),
+  websiteChanged: (value): value is boolean => typeof value === 'boolean',
+  themeChanged: (value): value is boolean => typeof value === 'boolean',
+});
+
+/** Change summaries stored before maps were part of a release: the same summary without map changes. */
+const isLegacyStoredChanges = objectOf<Omit<ReleaseChanges, 'mapChanges'>>({
+  pageChanges: arrayOf(isPageChange),
   websiteChanged: (value): value is boolean => typeof value === 'boolean',
   themeChanged: (value): value is boolean => typeof value === 'boolean',
 });
 
 /** A change summary that does not have the shape this build writes reads as absent, never as a failure. */
 function toReleaseChanges(stored: unknown): ReleaseChanges | null {
-  return isStoredChanges(stored) ? stored : null;
+  if (isStoredChanges(stored)) {
+    return stored;
+  }
+  return isLegacyStoredChanges(stored) ? { ...stored, mapChanges: [] } : null;
 }
 
 /** Select only what the use cases need (persistence.md): history never loads snapshots. */
@@ -232,6 +291,7 @@ function toSnapshot(stored: StoredReleaseSnapshot): ReleaseSnapshot {
       spacingScale: stored.theme.spacingScale,
     },
     pages: stored.pages,
+    maps: stored.maps,
     dependencies: stored.dependencies,
   };
 }
@@ -251,6 +311,7 @@ export function toStoredSnapshot(snapshot: ReleaseSnapshot): StoredReleaseSnapsh
       spacingScale: snapshot.theme.spacingScale,
     },
     pages: snapshot.pages.map((page) => ({ ...page })),
+    maps: snapshot.maps.map((map) => ({ ...map })),
     dependencies: snapshot.dependencies.map((dependency) => ({
       ...dependency,
       contracts: dependency.contracts.map((contract) => ({ ...contract })),
@@ -264,8 +325,8 @@ export function toStoredSnapshot(snapshot: ReleaseSnapshot): StoredReleaseSnapsh
  * understand) and must never be partially rendered.
  */
 export function toRelease(record: ReleaseRecord): AppResult<Release, UnexpectedAppError> {
-  const stored: unknown = record.snapshot;
-  return isStoredReleaseSnapshot(stored)
+  const stored = readStoredSnapshot(record.snapshot);
+  return stored !== null
     ? ok({ ...toReleaseSummary(record), snapshot: toSnapshot(stored) })
     : err(releaseSnapshotCorrupted(new Error('The stored snapshot has an unexpected shape.')));
 }

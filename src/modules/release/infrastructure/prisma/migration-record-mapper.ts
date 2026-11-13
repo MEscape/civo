@@ -4,10 +4,14 @@ import type { UnexpectedAppError } from '@lib/errors';
 import type { AppResult } from '@lib/result';
 import { literalGuard } from '@lib/utils';
 
+import { restoreMigrationPlan } from '../../domain/migration/stored-migration-plan';
 import { toMigrationId, toReleaseId, toWebsiteId } from '../../domain/models/ids';
-import { restoreMigrationPlan } from '../../domain/models/stored-migration-plan';
 
-import type { Migration, MigrationStatus, MigrationSummary } from '../../domain/models/migration';
+import type {
+  Migration,
+  MigrationStatus,
+  MigrationSummary,
+} from '../../domain/migration/migration';
 
 /**
  * Persistence shapes. They mirror the columns the module reads and

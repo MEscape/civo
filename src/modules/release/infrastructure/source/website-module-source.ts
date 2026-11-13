@@ -7,8 +7,8 @@ import type { AppResultAsync } from '@lib/result';
 import { toWebsiteId } from '../../domain/models/ids';
 
 import type { WebsiteId } from '../../domain/models/ids';
-import type { PublishableWebsite } from '../../domain/models/publishable';
 import type { WebsiteSource, WebsiteSourceError } from '../../domain/ports/website-source.port';
+import type { PublishableWebsite } from '../../domain/publishing/publishable';
 
 /**
  * The release module's ONLY dependency on the website module's data,

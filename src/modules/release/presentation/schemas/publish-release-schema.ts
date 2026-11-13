@@ -8,5 +8,3 @@ export const publishReleaseSchema = z.object({
   websiteId: websiteIdSchema,
   note: z.string().max(RELEASE_NOTE_MAX_LENGTH).optional(),
 });
-
-export type PublishRelease = z.infer<typeof publishReleaseSchema>;

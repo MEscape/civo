@@ -12,11 +12,11 @@ export type ActorLimitError = RateLimitedAppError | InfrastructureAppError;
  * Spends one attempt of the signed-in person's budget, or fails with the module's own rate-limit
  * error. The subject is the actor the use case authorized, never anything from the request.
  */
-export function limitActor(
+export function limitActor<TActor extends Pick<Actor, 'id' | 'tenantId'>>(
   deps: { readonly rateLimiter: RateLimiter },
   policy: RateLimitPolicy,
-  actor: Actor,
-): AppResultAsync<Actor, ActorLimitError> {
+  actor: TActor,
+): AppResultAsync<TActor, ActorLimitError> {
   return deps.rateLimiter
     .enforce({ policy, subject: { kind: 'actor', tenantId: actor.tenantId, actorId: actor.id } })
     .map(() => actor)

@@ -5,6 +5,7 @@ import type { AppResultAsync } from '@lib/result';
 import { parseDataSourceId, parseDatasetId } from '../../domain/models/ids';
 import { RELEASE_RATE_LIMITS } from '../rate-limits';
 import { liveDatasetsOf } from '../services/live-dataset-uses';
+import { loadAuthorizedDataRemoval } from '../services/load-authorized-data-removal';
 import { limitActor } from '../services/within-actor-limit';
 
 import type {
@@ -13,14 +14,11 @@ import type {
   DataRemovalGuard,
   DataRemovalGuardError,
 } from '../../domain/ports/data-source.port';
+import type { DeleteUnusedDataInput } from '../contracts/data-removal-inputs';
 import type { DeleteUnusedDataDependencies } from '../release-dependencies';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
-export interface DeleteUnusedDataInput {
-  /** A single dataset, or a source with all of its datasets. */
-  readonly kind: 'dataset' | 'source';
-  readonly id: string;
-}
+export type { DeleteUnusedDataInput } from '../contracts/data-removal-inputs';
 
 /** A guard failure the data module understands; anything else becomes an infrastructure failure. */
 function toGuardError(error: AppError): DataRemovalGuardError {
@@ -37,8 +35,9 @@ function toGuardError(error: AppError): DataRemovalGuardError {
 
 /**
  * Deletes data only while no page shows it: neither a saved draft (the
- * editor) nor the live release (the public site, where missing data is an
- * error, never sample data). The data module authorizes the deletion again
+ * editor), nor a saved map layer, nor the live release (the public site,
+ * where missing data is an error, never sample data), whose frozen maps
+ * count with its pages. The data module authorizes the deletion again
  * and asks this guard right before it deletes, so the check cannot be
  * skipped and runs against the stored website of the data, not a request's.
  *
@@ -50,10 +49,9 @@ export class DeleteUnusedData {
   execute(
     input: DeleteUnusedDataInput,
   ): AppResultAsync<DataRemoval, DataRemovalError | ActorLimitError> {
-    const { authorization, data } = this.deps;
-    return authorization
-      .requireInTenant(input.kind === 'dataset' ? 'dataset.delete' : 'datasource.delete')
-      .andThen((actor) => limitActor(this.deps, RELEASE_RATE_LIMITS.deleteUnusedData, actor))
+    const { data } = this.deps;
+    return loadAuthorizedDataRemoval(this.deps, input)
+      .andThen(({ actor }) => limitActor(this.deps, RELEASE_RATE_LIMITS.deleteUnusedData, actor))
       .andThen(() =>
         input.kind === 'dataset'
           ? parseDatasetId(input.id).asyncAndThen((id) => data.deleteDataset(id, this.guard))
@@ -65,11 +63,14 @@ export class DeleteUnusedData {
     const { data, releases } = this.deps;
     return combineAsync([
       data.datasetsInDrafts(websiteId),
-      releases.findPublished(websiteId).map((live) => liveDatasetsOf(live, data)),
+      data.datasetsInMaps(websiteId),
+      releases.findPublished(websiteId).map((live) => liveDatasetsOf(live, this.deps)),
     ] as const)
       .mapErr(toGuardError)
-      .andThen(([drafts, live]) =>
-        datasetIds.some((datasetId) => drafts.has(datasetId) || live.has(datasetId))
+      .andThen(([drafts, maps, live]) =>
+        datasetIds.some(
+          (datasetId) => drafts.has(datasetId) || maps.has(datasetId) || live.has(datasetId),
+        )
           ? errAsync(data.inUse())
           : okAsync(undefined),
       );

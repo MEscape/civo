@@ -41,6 +41,7 @@ export const RELEASE_ERROR_CODES = {
   notPublished: 'release.not_published',
   notRestorable: 'release.not_restorable',
   numberConflict: 'release.number_conflict',
+  mapInUse: 'release.map_in_use',
   validationFailed: 'release.validation_failed',
   publishBlocked: 'release.publish_blocked',
   persistenceFailed: 'release.persistence_failed',
@@ -93,6 +94,14 @@ export function releaseNotRestorable(): ConflictAppError {
   return conflictError(
     RELEASE_ERROR_CODES.notRestorable,
     'The release was never published successfully and cannot be restored.',
+  );
+}
+
+/** A page of the draft or of the live release still places the map. */
+export function releaseMapInUse(): ConflictAppError {
+  return conflictError(
+    RELEASE_ERROR_CODES.mapInUse,
+    'A page still shows this map. Remove it from the pages and publish before deleting it.',
   );
 }
 

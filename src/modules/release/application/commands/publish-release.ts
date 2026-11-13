@@ -1,27 +1,27 @@
 import type { Actor } from '@modules/auth';
 
 import type { ConflictAppError, InfrastructureAppError, ValidationAppError } from '@lib/errors';
-import { okAsync } from '@lib/result';
+import { combineAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 import { pick } from '@lib/utils';
 
-import { describeDraftChanges } from '../../domain/models/draft-changes';
-import { assembleReleaseSnapshot } from '../../domain/models/release-assembly';
-import { normalizeReleaseNote } from '../../domain/models/release-changes';
-import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
+import { describeDraftChanges } from '../../domain/publishing/draft-changes';
+import { assembleReleaseSnapshot } from '../../domain/publishing/release-assembly';
+import { normalizeReleaseNote } from '../../domain/publishing/release-changes';
 import { RELEASE_RATE_LIMITS } from '../rate-limits';
 import { toReleaseSummaryView } from '../release-view-mappers';
+import { findReleaseWebsite } from '../services/find-release-website';
 import { withinActorLimit } from '../services/within-actor-limit';
 
-import type { PublishableWebsite } from '../../domain/models/publishable';
-import type { PublishReleaseInput, ReleaseSummaryView } from '../contracts/release-views';
-import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
-import type { PublishReleaseDependencies } from '../release-dependencies';
+import type { PublishableWebsite } from '../../domain/publishing/publishable';
+import type { PublishReleaseInput } from '../contracts/release-inputs';
+import type { ReleaseSummaryView } from '../contracts/release-views';
+import type { ReleaseOperationError, PublishReleaseDependencies } from '../release-dependencies';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
 type PublishFailure = ValidationAppError | ConflictAppError | InfrastructureAppError;
 
-export type PublishReleaseError = LoadReleaseWebsiteError | ConflictAppError | ActorLimitError;
+export type PublishReleaseError = ReleaseOperationError | ConflictAppError | ActorLimitError;
 
 /**
  * Builds an immutable release from the website's current pages and makes
@@ -36,14 +36,20 @@ export class PublishRelease {
   constructor(private readonly deps: PublishReleaseDependencies) {}
 
   execute(input: PublishReleaseInput): AppResultAsync<ReleaseSummaryView, PublishReleaseError> {
-    const { pages, components, releases, audit, clock } = this.deps;
+    const { pages, maps, components, releases, audit, clock } = this.deps;
 
-    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.publish')
+    return this.deps.access
+      .authorizeWebsite('release.publish', input.websiteId)
       .andThen(withinActorLimit(this.deps, RELEASE_RATE_LIMITS.publish))
+      .andThen((scope) =>
+        findReleaseWebsite(this.deps.websites, scope.websiteId).map((website) => ({
+          ...scope,
+          website,
+        })),
+      )
       .andThen(({ actor, website }) =>
-        pages
-          .listForRelease(website.id)
-          .andThen((publishable) =>
+        combineAsync([pages.listForRelease(website.id), maps.listForRelease(website.id)] as const)
+          .andThen(([publishable, savedMaps]) =>
             // The live release is read only to say what changed; one that cannot be read must
             // not stop the fresh release that replaces it, so it is compared against as absent.
             releases
@@ -53,6 +59,7 @@ export class PublishRelease {
                 assembleReleaseSnapshot({
                   website,
                   pages: publishable,
+                  maps: savedMaps,
                   resolveComponent: (type) => components.resolve(type),
                 }).asyncAndThen((snapshot) =>
                   releases.publish({
@@ -60,11 +67,14 @@ export class PublishRelease {
                     snapshot,
                     note: normalizeReleaseNote(input.note),
                     publishedBy: actor.id,
-                    changes: pick(describeDraftChanges(live, website, publishable), [
-                      'pageChanges',
-                      'websiteChanged',
-                      'themeChanged',
-                    ]),
+                    changes: pick(
+                      describeDraftChanges(live, {
+                        website,
+                        pages: publishable,
+                        maps: savedMaps,
+                      }),
+                      ['pageChanges', 'mapChanges', 'websiteChanged', 'themeChanged'],
+                    ),
                     publishedAt: clock.now(),
                   }),
                 ),

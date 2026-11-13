@@ -12,16 +12,16 @@ import type { AppResult, AppResultAsync } from '@lib/result';
 import { releaseSnapshotCorrupted, releaseSourceFailed } from '../../domain/errors/release-errors';
 import { toPageId } from '../../domain/models/ids';
 
+import type { PageDraft } from '../../domain/migration/page-draft';
+import type { PageTree } from '../../domain/migration/page-tree';
 import type { WebsiteId } from '../../domain/models/ids';
-import type { PageDraft } from '../../domain/models/page-draft';
-import type { PageTree } from '../../domain/models/page-tree';
-import type { PublishablePage } from '../../domain/models/publishable';
 import type { SnapshotPage } from '../../domain/models/release-snapshot';
 import type {
   PageDraftError,
   PageSource,
   ReplaceChildrenInput,
 } from '../../domain/ports/page-source.port';
+import type { PublishablePage } from '../../domain/publishing/publishable';
 
 /**
  * The builder's own failures that mean something to the caller pass
@@ -46,12 +46,13 @@ function toSaveError(error: AppError): ConflictAppError | PageDraftError {
 }
 
 function toPublishablePage(view: ReleasePageView): PublishablePage {
-  const { path, title } = view;
+  const { path, title, pageId } = view;
   if (view.status !== 'ready') {
-    return { status: view.status, path, title };
+    return { status: view.status, path, title, pageId };
   }
   return {
     status: 'ready',
+    pageId,
     path,
     title,
     config: view.config,
@@ -105,7 +106,7 @@ export class BuilderPageSource implements PageSource {
 
   listDrafts(websiteId: WebsiteId): AppResultAsync<readonly PageDraft[], PageDraftError> {
     return this.listPagesForRelease(websiteId)
-      .map((views) => views.map((view) => this.toPageDraft(view)))
+      .map((views) => views.map((view) => this.toPageDraft(view, websiteId)))
       .mapErr(releaseSourceFailed);
   }
 
@@ -113,6 +114,7 @@ export class BuilderPageSource implements PageSource {
     input: ReplaceChildrenInput,
   ): AppResultAsync<void, ConflictAppError | PageDraftError> {
     return this.savePageDraft({
+      websiteId: input.websiteId,
       pageId: input.pageId,
       expectedVersion: input.expectedVersion,
       config: { type: 'page', children: input.children },
@@ -122,10 +124,11 @@ export class BuilderPageSource implements PageSource {
   }
 
   /** A draft without a readable configuration has no children: it is never overwritten. */
-  private toPageDraft(view: ReleasePageView): PageDraft {
+  private toPageDraft(view: ReleasePageView, websiteId: WebsiteId): PageDraft {
     const config = view.status === 'ready' ? this.restorePageConfig(view.config) : null;
 
     return {
+      websiteId,
       pageId: toPageId(view.pageId),
       path: view.path,
       version: view.version,

@@ -1,4 +1,4 @@
-import type { AuthorizationError } from '@modules/auth';
+import type { Actor, AuthorizationError } from '@modules/auth';
 
 import type {
   ConflictAppError,
@@ -39,16 +39,28 @@ export type DataRemovalError =
   | ConflictAppError
   | InfrastructureAppError;
 
+export interface DataRemovalAuthority {
+  readonly actor: Pick<Actor, 'id' | 'tenantId'>;
+  readonly websiteId: WebsiteId;
+}
+
 /**
  * The datasets the website's pages read, and their deletion: the data
  * module cannot see pages, so deleting data goes through here, where the
  * draft pages (builder) and the live release (this module) are both known.
  */
 export interface DataSourcePort {
+  /** Resolves DELETE authority against the resource's stored website, independent of selected context. */
+  authorizeRemoval(
+    kind: 'dataset' | 'source',
+    id: DatasetId | DataSourceId,
+  ): AppResultAsync<DataRemovalAuthority, DataRemovalError>;
   /** The datasets stored page JSON (a snapshot page) reads. */
   datasetsInStoredPage(stored: unknown): ReadonlySet<DatasetId>;
   /** The datasets the website's saved draft pages read, as the current actor may see them. */
   datasetsInDrafts(websiteId: WebsiteId): AppResultAsync<ReadonlySet<DatasetId>>;
+  /** Sources retained by reusable maps, even before a map is placed on a page. */
+  datasetsInMaps(websiteId: WebsiteId): AppResultAsync<ReadonlySet<DatasetId>>;
   /** The error a guard answers with when a page still shows the data. */
   inUse(): ConflictAppError;
   deleteDataset(

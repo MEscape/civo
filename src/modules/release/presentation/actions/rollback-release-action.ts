@@ -7,7 +7,7 @@ import { websiteRoutes } from '@modules/website/client';
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { releaseCommands } from '../../composition';
+import { getReleaseCommands } from '../../composition';
 import { toReleaseSummaryDto } from '../dto/release-dto';
 import { parseReleaseInput } from '../schemas/parse-release-input';
 import { rollbackReleaseSchema } from '../schemas/rollback-release-schema';
@@ -22,12 +22,12 @@ export async function rollbackReleaseAction(
   input: unknown,
 ): Promise<ActionResult<ReleaseSummaryDto>> {
   const result = await parseReleaseInput(rollbackReleaseSchema, input).asyncAndThen((command) =>
-    releaseCommands.rollbackRelease.execute(command),
+    getReleaseCommands().rollbackRelease.execute(command),
   );
 
   if (result.isOk()) {
     // The website's pages, the release screen and the bar above them all show what is live.
-    revalidatePath(websiteRoutes.detail(result.value.websiteId), 'layout');
+    revalidatePath(websiteRoutes.layout, 'layout');
   }
   return toActionResult(result.map(toReleaseSummaryDto));
 }

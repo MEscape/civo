@@ -25,10 +25,13 @@ export type PageId = Brand<string, 'PageId'>;
 export type DataSourceId = Brand<string, 'DataSourceId'>;
 export type DatasetId = Brand<string, 'DatasetId'>;
 
+/** The release module's own brand for a saved map, which pages refer to; the map module's `MapId` is never imported. */
+export type MapId = Brand<string, 'MapId'>;
+
 export const RELEASE_ID_MAX_LENGTH = 128;
 export const WEBSITE_ID_MAX_LENGTH = 128;
 export const MIGRATION_ID_MAX_LENGTH = 128;
-export const PAGE_ID_MAX_LENGTH = 128;
+const PAGE_ID_MAX_LENGTH = 128;
 export const DATA_ID_MAX_LENGTH = 128;
 
 function hasValidLength(raw: string, max: number): boolean {
@@ -51,6 +54,11 @@ export function toWebsiteId(raw: string): WebsiteId {
 /** Brands a data source id read from another module's adapter. */
 export function toDataSourceId(raw: string): DataSourceId {
   return raw as DataSourceId; // Brand constructor: the cast is only permitted here.
+}
+
+/** Brands a saved map id read from another module's adapter. */
+export function toMapId(raw: string): MapId {
+  return raw as MapId; // Brand constructor: the cast is only permitted here.
 }
 
 /** Brands a dataset id read from stored page JSON or from another module's adapter. */
@@ -89,7 +97,11 @@ export const parseMigrationId = createIdParser({
   mapError: () => fieldValidationFailed('migrationId', RELEASE_VALIDATION_CODES.idInvalid),
 });
 
-/** Brands a page id that arrived from a request, after checking its shape. */
+/**
+ * Brands a page id that arrived from a request, after checking its shape.
+ *
+ * @keep every branded id has a validating parser (architecture/branded-id-usage), whether or not a request carries it yet
+ */
 export const parsePageId = createIdParser({
   isValid: (raw: string) => hasValidLength(raw, PAGE_ID_MAX_LENGTH),
   brand: toPageId,
@@ -107,5 +119,12 @@ export const parseDatasetId = createIdParser({
 export const parseDataSourceId = createIdParser({
   isValid: (raw: string) => hasValidLength(raw, DATA_ID_MAX_LENGTH),
   brand: toDataSourceId,
+  mapError: () => fieldValidationFailed('id', RELEASE_VALIDATION_CODES.idInvalid),
+});
+
+/** A saved map id from a request; the map module re-validates and resolves it. */
+export const parseMapId = createIdParser({
+  isValid: (raw: string) => hasValidLength(raw, DATA_ID_MAX_LENGTH),
+  brand: toMapId,
   mapError: () => fieldValidationFailed('id', RELEASE_VALIDATION_CODES.idInvalid),
 });

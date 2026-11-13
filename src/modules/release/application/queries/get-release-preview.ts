@@ -3,18 +3,16 @@ import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { releaseNotFound } from '../../domain/errors/release-errors';
-import { toReleaseId } from '../../domain/models/ids';
-import { describePreviewFidelity } from '../../domain/models/preview-fidelity';
-import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
+import { parseReleaseId } from '../../domain/models/ids';
+import { describePreviewFidelity } from '../../domain/publishing/preview-fidelity';
 import { toReleasePreviewView } from '../release-view-mappers';
 
 import type { Release } from '../../domain/models/release';
 import type { ReleaseReadError } from '../../domain/ports/release.repository';
-import type { ReleasePreviewView } from '../contracts/release-views';
-import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
-import type { ReleasePreviewDependencies } from '../release-dependencies';
+import type { ReleasePreviewView } from '../contracts/preview-views';
+import type { ReleaseOperationError, ReleasePreviewDependencies } from '../release-dependencies';
 
-export type GetReleasePreviewError = LoadReleaseWebsiteError | ReleaseReadError | NotFoundAppError;
+export type GetReleasePreviewError = ReleaseOperationError | ReleaseReadError | NotFoundAppError;
 
 /**
  * What one release of a website froze, for looking at an earlier state: its
@@ -32,15 +30,16 @@ export class GetReleasePreview {
   ): AppResultAsync<ReleasePreviewView, GetReleasePreviewError> {
     const { releases, components } = this.deps;
 
-    return loadAuthorizedReleaseWebsite(this.deps, rawWebsiteId, 'release.read').andThen(
-      ({ website }) =>
-        releases
-          .findById(website.id, toReleaseId(rawReleaseId))
+    return this.deps.access
+      .authorizeWebsite('release.read', rawWebsiteId)
+      .andThen(({ websiteId }) =>
+        parseReleaseId(rawReleaseId)
+          .asyncAndThen((releaseId) => releases.findById(websiteId, releaseId))
           .andThen((release): AppResultAsync<Release, NotFoundAppError> =>
             release === null ? errAsync(releaseNotFound()) : okAsync(release),
           )
           .andThen((release) =>
-            releases.findNeighbours(website.id, release.releaseNumber).map((neighbours) =>
+            releases.findNeighbours(websiteId, release.releaseNumber).map((neighbours) =>
               toReleasePreviewView({
                 release,
                 neighbours,
@@ -48,6 +47,6 @@ export class GetReleasePreview {
               }),
             ),
           ),
-    );
+      );
   }
 }

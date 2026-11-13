@@ -1,4 +1,4 @@
-import { createPersistenceFailures, dateToInstant, db } from '@lib/db';
+import { createPersistenceFailures, dateToInstant, db, retryTransient } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError } from '@lib/errors';
 import { logger } from '@lib/logger';
 import { offsetOf, toPage } from '@lib/pagination';
@@ -10,8 +10,8 @@ import {
   RELEASE_ERROR_CODES,
   releaseMigrationAlreadyApplied,
 } from '../../domain/errors/release-errors';
-import { serializeConflictResolutions } from '../../domain/models/conflict-resolution';
-import { serializeMigrationPlan } from '../../domain/models/stored-migration-plan';
+import { serializeConflictResolutions } from '../../domain/migration/conflict-resolution';
+import { serializeMigrationPlan } from '../../domain/migration/stored-migration-plan';
 
 import {
   MIGRATION_RECORD_STATUS,
@@ -22,8 +22,8 @@ import {
 } from './migration-record-mapper';
 
 import type { MigrationRecord } from './migration-record-mapper';
+import type { Migration, MigrationSummary } from '../../domain/migration/migration';
 import type { MigrationId, WebsiteId } from '../../domain/models/ids';
-import type { Migration, MigrationSummary } from '../../domain/models/migration';
 import type {
   MarkApplied,
   MigrationReadError,
@@ -123,21 +123,28 @@ export class PrismaMigrationRepository implements MigrationRepository {
     input: MarkApplied,
   ): AppResultAsync<MigrationSummary, ConflictAppError | InfrastructureAppError> {
     return fromThrowableAsync(
-      async () =>
-        db.orm.public.WebsiteMigration.where({
-          id: input.id,
-          websiteId: input.websiteId,
-          // The condition is what makes two concurrent applies race safely.
-          status: MIGRATION_RECORD_STATUS.proposed,
-        })
-          .select(...MIGRATION_SUMMARY_SELECT)
-          .update({
-            status: MIGRATION_RECORD_STATUS.applied,
-            resolutions: serializeConflictResolutions(input.resolutions),
-            appliedBy: input.appliedBy,
-            // Prisma 8 does not accept a `Date` for a `DateTime` column.
-            appliedAt: dateToInstant(input.appliedAt),
+      () =>
+        retryTransient(() =>
+          db.transaction(async (tx) => {
+            const count = await tx.orm.public.WebsiteMigration.where({
+              id: input.id,
+              websiteId: input.websiteId,
+              // The condition is what makes two concurrent applies race safely.
+              status: MIGRATION_RECORD_STATUS.proposed,
+            }).updateAndCount({
+              status: MIGRATION_RECORD_STATUS.applied,
+              resolutions: serializeConflictResolutions(input.resolutions),
+              appliedBy: input.appliedBy,
+              // Prisma 8 does not accept a `Date` for a `DateTime` column.
+              appliedAt: dateToInstant(input.appliedAt),
+            });
+            return count === 0
+              ? null
+              : tx.orm.public.WebsiteMigration.where({ id: input.id, websiteId: input.websiteId })
+                  .select(...MIGRATION_SUMMARY_SELECT)
+                  .first();
           }),
+        ),
       failures.infraOnly('markApplied'),
     ).andThen((record): AppResultAsync<MigrationSummary, ConflictAppError> =>
       record === null

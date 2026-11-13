@@ -1,34 +1,36 @@
 import { pick } from '@lib/utils';
 
-import { hasDraftChanges } from '../domain/models/draft-changes';
 import {
   countNodesByStatus,
   isUpToDate,
   requiresReview,
   summarizeComponentUpdates,
-} from '../domain/models/migration-plan';
+} from '../domain/migration/migration-plan';
 import { canActivate } from '../domain/models/release';
+import { hasDraftChanges } from '../domain/publishing/draft-changes';
 
-import { PUBLICATION_CHANGE_PREVIEW } from './list-limits';
+import { PUBLICATION_CHANGE_PREVIEW } from './release-limits';
+import { componentEditorTargets } from './services/component-editor-targets';
 
 import type {
   MigrationDetailView,
   MigrationPlanView,
   MigrationProposalView,
   MigrationSummaryView,
-  PublicationStatusView,
-  PublishedSnapshotView,
-  ReleasePreviewView,
-  ReleaseHistoryView,
-  ReleaseSummaryView,
-} from './contracts/release-views';
-import type { DraftChanges } from '../domain/models/draft-changes';
+} from './contracts/migration-views';
+import type { ReleasePreviewView } from './contracts/preview-views';
+import type { PublicationStatusView } from './contracts/publication-views';
+import type { ReleaseHistoryView, ReleaseSummaryView } from './contracts/release-views';
+import type { PublishedSnapshotView } from './contracts/snapshot-views';
+import type { Migration, MigrationSummary } from '../domain/migration/migration';
+import type { MigrationPlan } from '../domain/migration/migration-plan';
+import type { PageTree } from '../domain/migration/page-tree';
 import type { ReleaseId } from '../domain/models/ids';
-import type { Migration, MigrationSummary } from '../domain/models/migration';
-import type { MigrationPlan } from '../domain/models/migration-plan';
-import type { PreviewFidelity } from '../domain/models/preview-fidelity';
 import type { Release, ReleaseHistory, ReleaseSummary } from '../domain/models/release';
 import type { ReleaseNeighbours } from '../domain/ports/release.repository';
+import type { DraftChanges } from '../domain/publishing/draft-changes';
+import type { PreviewFidelity } from '../domain/publishing/preview-fidelity';
+import type { PublishablePage } from '../domain/publishing/publishable';
 
 export function toReleaseSummaryView(
   summary: ReleaseSummary,
@@ -49,6 +51,8 @@ export function toReleaseSummaryView(
         : {
             pageChangeCount: summary.changes.pageChanges.length,
             pageChanges: summary.changes.pageChanges.slice(0, PUBLICATION_CHANGE_PREVIEW),
+            mapChangeCount: summary.changes.mapChanges.length,
+            mapChanges: summary.changes.mapChanges.slice(0, PUBLICATION_CHANGE_PREVIEW),
             websiteChanged: summary.changes.websiteChanged,
             themeChanged: summary.changes.themeChanged,
           },
@@ -70,6 +74,8 @@ export function toPublicationStatusView(input: {
   readonly changes: DraftChanges;
   readonly plan: MigrationPlan | null;
   readonly checkedAt: Date;
+  readonly editorPages?: readonly PublishablePage[];
+  readonly editorTrees?: readonly PageTree[];
 }): PublicationStatusView {
   const { live, history, changes, plan, checkedAt } = input;
   const updates = plan === null ? null : summarizeComponentUpdates(plan);
@@ -85,6 +91,8 @@ export function toPublicationStatusView(input: {
       blockedPageCount: changes.blockedPageCount,
       pageChangeCount: changes.pageChanges.length,
       pageChanges: changes.pageChanges.slice(0, PUBLICATION_CHANGE_PREVIEW),
+      mapChangeCount: changes.mapChanges.length,
+      mapChanges: changes.mapChanges.slice(0, PUBLICATION_CHANGE_PREVIEW),
       websiteChanged: changes.websiteChanged,
       themeChanged: changes.themeChanged,
       hasChanges: hasDraftChanges(changes),
@@ -96,7 +104,14 @@ export function toPublicationStatusView(input: {
             available: updates.filter((update) => update.status !== 'unresolvable').length,
             needReview: updates.filter((update) => update.status === 'needs_review').length,
             unresolvable: updates.filter((update) => update.status === 'unresolvable').length,
-            components: updates,
+            components: updates.map((update) => ({
+              ...update,
+              editorTargets: componentEditorTargets(
+                update.type,
+                input.editorPages ?? [],
+                input.editorTrees ?? [],
+              ),
+            })),
           },
   };
 }
@@ -124,6 +139,7 @@ export function toPublishedSnapshotView(release: Release): PublishedSnapshotView
     website: pick(snapshot.website, ['id', 'name', 'slug', 'description']),
     theme: snapshot.theme,
     pages: snapshot.pages,
+    maps: snapshot.maps,
     dependencies: snapshot.dependencies,
   };
 }

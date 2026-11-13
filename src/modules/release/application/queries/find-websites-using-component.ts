@@ -5,12 +5,10 @@ import { okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 import { trimToNull } from '@lib/utils';
 
-import { MAX_SCANNED_WEBSITES } from '../list-limits';
+import { MAX_SCANNED_WEBSITES } from '../release-limits';
 
-import type {
-  ComponentUsageView,
-  FindWebsitesUsingComponentInput,
-} from '../contracts/release-views';
+import type { FindWebsitesUsingComponentInput } from '../contracts/release-inputs';
+import type { ComponentUsageView } from '../contracts/usage-views';
 import type { ReleaseDependencies } from '../release-dependencies';
 
 type FindUsagesError = AuthorizationError | InfrastructureAppError;
@@ -28,18 +26,22 @@ export class FindWebsitesUsingComponent {
 
   execute(
     input: FindWebsitesUsingComponentInput,
-  ): AppResultAsync<readonly ComponentUsageView[], FindUsagesError> {
+  ): AppResultAsync<
+    { readonly usages: readonly ComponentUsageView[]; readonly isTruncated: boolean },
+    FindUsagesError
+  > {
     const componentType = trimToNull(input.componentType);
 
     return this.deps.authorization
       .requireInTenant('release.read')
       .andThen((actor) =>
         componentType === null
-          ? okAsync([])
+          ? okAsync({ items: [], isTruncated: false })
           : this.deps.releases.listPublishedDependencies(actor.tenantId, MAX_SCANNED_WEBSITES),
       )
-      .map((published) =>
-        published.flatMap((entry) => {
+      .map((published) => ({
+        isTruncated: published.isTruncated,
+        usages: published.items.flatMap((entry) => {
           const dependency = entry.dependencies.find(
             (candidate) => candidate.type === componentType,
           );
@@ -56,6 +58,6 @@ export class FindWebsitesUsingComponent {
             },
           ];
         }),
-      );
+      }));
   }
 }

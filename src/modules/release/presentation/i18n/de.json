@@ -5,15 +5,12 @@
       "pagination": {
         "nav": "Seiten des Release-Verlaufs"
       },
-      "empty": "Noch keine Veröffentlichung. Wählen Sie „Veröffentlichen“, um die aktuellen Seiten live zu schalten.",
-      "publish": "Veröffentlichen",
-      "publicSite": "Öffentliche Seite",
+      "empty": "Noch keine Veröffentlichung",
+      "emptyHint": "Wählen Sie „Veröffentlichen“, um die aktuellen Seiten live zu schalten.",
       "publishing": "Wird veröffentlicht…",
       "published": "Version #{number} ist live.",
       "releaseNumber": "Release #{number}",
       "active": "Aktiv",
-      "publishedAt": "Veröffentlicht: {date}",
-      "createdAt": "Erstellt: {date}",
       "rollback": "Wiederherstellen",
       "rollbackLabel": "Release #{number} wiederherstellen",
       "buildFailed": "Build fehlgeschlagen",
@@ -34,6 +31,7 @@
       "websiteNotFound": "Diese Website wurde nicht gefunden.",
       "notPublished": "Diese Website wurde noch nicht veröffentlicht.",
       "notRestorable": "Dieses Release wurde nie erfolgreich veröffentlicht und kann nicht wiederhergestellt werden.",
+      "mapInUse": "Eine Seite zeigt diese Karte noch. Entfernen Sie sie von den Seiten und veröffentlichen Sie, bevor Sie sie löschen.",
       "numberConflict": "Gleichzeitig wurde ein anderes Release veröffentlicht. Bitte versuchen Sie es erneut.",
       "validationFailed": "Die Eingabe ist ungültig.",
       "publishBlocked": "Die Website kann nicht veröffentlicht werden. Bitte prüfen Sie ihre Seiten.",
@@ -58,7 +56,6 @@
     },
     "migration": {
       "panel": {
-        "title": "Komponenten-Updates",
         "check": "Nach Updates suchen",
         "review": "Änderungen prüfen",
         "needLive": "Veröffentlichen Sie zuerst Ihre Website, danach können die Komponenten geprüft werden.",
@@ -75,7 +72,13 @@
         "apply": "Updates in Entwürfe übernehmen",
         "applying": "Wird übernommen…",
         "applyNote": "Nur Ihre Entwürfe ändern sich. Die Live-Website bleibt unverändert, bis Sie veröffentlichen.",
-        "showMore": "{count, plural, one {# weitere Seite} other {# weitere Seiten}} anzeigen"
+        "showMore": "{count, plural, one {# weitere Seite} other {# weitere Seiten}} anzeigen",
+        "leave": {
+          "title": "Prüfung verlassen?",
+          "description": "Ihre Entscheidungen zu den Komponenten-Updates sind noch nicht übernommen. Sie gehen verloren, wenn Sie die Seite verlassen.",
+          "confirm": "Entscheidungen verwerfen",
+          "stay": "Weiter prüfen"
+        }
       },
       "nodeStatus": {
         "unchanged": "Aktuell",
@@ -117,21 +120,26 @@
         "failed": "Konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
       },
       "history": {
-        "title": "Update-Verlauf",
         "listLabel": "Update-Verlauf",
         "pagination": {
           "nav": "Seiten des Update-Verlaufs"
         },
         "empty": "Es wurden noch keine Updates vorgeschlagen.",
-        "proposedAt": "Vorgeschlagen: {date}",
-        "appliedAt": "Übernommen: {date}",
+        "count": "{count, plural, one {# Update} other {# Updates}}",
+        "proposedAt": "Vorgeschlagen",
+        "appliedAt": "Übernommen",
         "changeCount": "{count, plural, one {# Komponente aktualisiert} other {# Komponenten aktualisiert}}",
         "detailsToggle": "{count, plural, one {Änderungen auf # Seite} other {Änderungen auf # Seiten}}",
         "noNodeChanges": "Keine Komponentenänderungen auf dieser Seite",
         "pageChangeCount": "{count, plural, one {# Änderung} other {# Änderungen}}",
         "instanceCount": "{count, plural, one {# Verwendung} other {# Verwendungen}}",
         "versionUnchanged": "v{version}",
-        "versionChanged": "v{from} → v{to}"
+        "versionChanged": "v{from} → v{to}",
+        "columns": {
+          "status": "Update",
+          "dates": "Verlauf",
+          "details": "Details"
+        }
       },
       "status": {
         "proposed": "Vorgeschlagen",
@@ -145,7 +153,8 @@
         "tabs": {
           "label": "Bereiche der Releases",
           "releases": "Releases",
-          "updates": "Komponenten-Updates"
+          "updates": "Komponenten-Updates",
+          "updatesCount": "Komponenten-Updates ({count})"
         }
       }
     },
@@ -155,6 +164,7 @@
         "changed": "Geändert",
         "removed": "Entfernt"
       },
+      "mapLabel": "Karte",
       "morePages": "+{count} weitere",
       "blocked": "Veröffentlichen ist blockiert: {count, plural, one {# Seite braucht} other {# Seiten brauchen}} Aufmerksamkeit im Editor.",
       "allReleases": "Alle Releases",
@@ -193,14 +203,13 @@
       "release": "Release",
       "changes": "Änderungen",
       "pagesCount": "{count, plural, one {# Seite} other {# Seiten}}",
+      "mapsCount": "{count, plural, one {# Karte} other {# Karten}}",
       "settingsChanged": "Einstellungen",
       "noDetails": "Keine Details gespeichert",
-      "firstRelease": "Erstes Release",
-      "count": "{shown} von {total} Releases",
+      "count": "{count, plural, one {# Release} other {# Releases}}",
       "preview": "Vorschau",
       "previewLabel": "Vorschau von Release #{number}",
-      "title": "Release-Verlauf",
-      "liveShort": "Live"
+      "title": "Release-Verlauf"
     },
     "restore": {
       "title": "Release #{number} wiederherstellen?",
@@ -210,7 +219,6 @@
     },
     "updates": {
       "summary": "{count, plural, one {# Update verfügbar} other {# Updates verfügbar}}",
-      "detail": "{ready} kompatibel · {review} brauchen Ihre Entscheidung · {blocked} nicht aktualisierbar",
       "upToDateTitle": "Alle Komponenten sind aktuell",
       "columns": {
         "component": "Komponente",
@@ -220,20 +228,16 @@
       },
       "status": {
         "upgradable": "Kompatibel",
-        "needs_review": "Prüfung nötig",
-        "unresolvable": "Nicht aktualisierbar"
+        "unresolvable": "Nicht aktualisierbar",
+        "needsReview": "Prüfung nötig"
       },
       "versionChange": "v{from} → v{to}",
       "noTarget": "v{from} → keine",
-      "historyTitle": "Verlauf ({count})",
-      "historyEmpty": "Noch keine Updates vorgeschlagen",
+      "historyTitle": "Update-Verlauf",
       "uses": "{count, plural, one {# Verwendung} other {# Verwendungen}}",
       "blockedSummary": "{count, plural, one {# Komponente kann nicht aktualisiert werden} other {# Komponenten können nicht aktualisiert werden}}",
       "checkedAt": "Geprüft {time}",
       "refreshing": "Wird geprüft…",
-      "lastProposed": "Zuletzt vorgeschlagen {date}",
-      "details": "Details anzeigen",
-      "detailsLabel": "Details zu {component}",
       "noSettingChange": "Keine Einstellungen ändern sich.",
       "blockedHint": "Die Komponente oder die Version, mit der sie gebaut wurde, gibt es nicht mehr. Ersetzen Sie sie im Editor.",
       "panelTitle": "Komponenten",
@@ -258,10 +262,15 @@
       "decisionSettings": "Von Ihnen geänderte Einstellungen, die auch die neue Version geändert hat",
       "readyCount": "{count} kompatibel",
       "reviewCount": "{count} brauchen Prüfung",
-      "blockedCount": "{count} nicht aktualisierbar"
+      "blockedCount": "{count} nicht aktualisierbar",
+      "details": "Details",
+      "editComponent": "Komponente im Editor öffnen",
+      "instance": "{page} · Instanz {number}",
+      "currentDrafts": "Im aktuellen Entwurf",
+      "noDraftInstance": "Im aktuellen Entwurf ist diese Komponente nicht mehr vorhanden."
     },
     "activity": {
-      "title": "Verlauf",
+      "title": "Letzte Veröffentlichungen",
       "published": "Release #{number} veröffentlicht",
       "empty": "Noch nichts veröffentlicht.",
       "by": "von {name}"
@@ -269,12 +278,10 @@
     "preview": {
       "title": "Vorschau von Release #{number}",
       "description": "Die Seiten genau so, wie sie veröffentlicht wurden. Hier lässt sich nichts bearbeiten.",
-      "back": "Alle Releases",
+      "breadcrumb": "Release-Navigation",
       "pagesLabel": "Seiten dieses Releases",
       "home": "Startseite",
       "live": "Jetzt live",
-      "crumbReleases": "Releases",
-      "crumbLabel": "Sie sind hier",
       "older": "Älter",
       "newer": "Neuer",
       "olderLabel": "Älteres Release #{number}",

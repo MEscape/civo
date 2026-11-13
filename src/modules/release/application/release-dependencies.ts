@@ -1,12 +1,15 @@
 import type { AuthorizationService } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
+import type { NotFoundAppError } from '@lib/errors';
 import type { RateLimiter } from '@lib/rate-limit';
 
 import type { ComponentCatalog } from '../domain/ports/component-catalog.port';
 import type { DataSourcePort } from '../domain/ports/data-source.port';
+import type { MapSource } from '../domain/ports/map-source.port';
 import type { MigrationRepository } from '../domain/ports/migration.repository';
 import type { PageSource } from '../domain/ports/page-source.port';
+import type { ReleaseAccess, ReleaseAccessError } from '../domain/ports/release-access.port';
 import type { ReleaseAuditLog } from '../domain/ports/release-audit-log.port';
 import type { ReleaseRepository } from '../domain/ports/release.repository';
 import type { WebsiteSource } from '../domain/ports/website-source.port';
@@ -16,6 +19,7 @@ import type { WebsiteSource } from '../domain/ports/website-source.port';
  * or remove its data spend a budget per person; the queries ignore it.
  */
 export interface ReleaseDependencies {
+  readonly access: ReleaseAccess;
   readonly authorization: AuthorizationService;
   readonly rateLimiter: RateLimiter;
   readonly websites: WebsiteSource;
@@ -23,9 +27,12 @@ export interface ReleaseDependencies {
   readonly audit: ReleaseAuditLog;
 }
 
+export type ReleaseOperationError = ReleaseAccessError | NotFoundAppError;
+
 /** Publishing also reads the pages and the component registry, and stamps a time. */
 export interface PublishReleaseDependencies extends ReleaseDependencies {
   readonly pages: PageSource;
+  readonly maps: MapSource;
   readonly components: ComponentCatalog;
   readonly clock: Clock;
 }
@@ -57,7 +64,14 @@ export interface ApplyMigrationDependencies extends MigrationDependencies {
   readonly clock: Clock;
 }
 
-/** Deleting data asks the pages and the live release whether they still show it. */
+/** Deleting data asks the pages, the maps and the live release whether they still show it. */
 export interface DeleteUnusedDataDependencies extends ReleaseDependencies {
   readonly data: DataSourcePort;
+  readonly maps: MapSource;
+}
+
+/** Deleting a map asks the draft pages and the live release whether they still place it. */
+export interface DeleteUnusedMapDependencies extends ReleaseDependencies {
+  readonly maps: MapSource;
+  readonly pages: PageSource;
 }

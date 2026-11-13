@@ -7,8 +7,8 @@ import { literalGuard } from '@lib/utils';
 import { releaseNotRestorable } from '../errors/release-errors';
 
 import type { ReleaseId, WebsiteId } from './ids';
-import type { ReleaseChanges } from './release-changes';
 import type { ReleaseSnapshot } from './release-snapshot';
+import type { ReleaseChanges } from '../publishing/release-changes';
 
 /**
  * `draft` and `failed` are not produced by the current publish flow but

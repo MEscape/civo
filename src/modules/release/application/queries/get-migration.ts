@@ -4,15 +4,13 @@ import type { AppResultAsync } from '@lib/result';
 
 import { releaseMigrationNotFound } from '../../domain/errors/release-errors';
 import { parseMigrationId } from '../../domain/models/ids';
-import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
 import { toMigrationDetailView } from '../release-view-mappers';
 
-import type { Migration } from '../../domain/models/migration';
-import type { MigrationDetailView } from '../contracts/release-views';
-import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
-import type { MigrationDependencies } from '../release-dependencies';
+import type { Migration } from '../../domain/migration/migration';
+import type { MigrationDetailView } from '../contracts/migration-views';
+import type { ReleaseOperationError, MigrationDependencies } from '../release-dependencies';
 
-export type GetMigrationError = LoadReleaseWebsiteError | UnexpectedAppError;
+export type GetMigrationError = ReleaseOperationError | UnexpectedAppError;
 
 /**
  * One migration with its stored plan, so a proposal can be reopened for
@@ -26,10 +24,11 @@ export class GetMigration {
     rawWebsiteId: string,
     rawMigrationId: string,
   ): AppResultAsync<MigrationDetailView, GetMigrationError> {
-    return loadAuthorizedReleaseWebsite(this.deps, rawWebsiteId, 'release.read')
-      .andThen(({ website }) =>
+    return this.deps.access
+      .authorizeWebsite('release.read', rawWebsiteId)
+      .andThen(({ websiteId }) =>
         parseMigrationId(rawMigrationId).asyncAndThen((id) =>
-          this.deps.migrations.findById(website.id, id),
+          this.deps.migrations.findById(websiteId, id),
         ),
       )
       .andThen((migration): AppResultAsync<Migration, NotFoundAppError> =>

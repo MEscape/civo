@@ -4,10 +4,10 @@ import type { ConflictAppError, InfrastructureAppError, UnexpectedAppError } fro
 import type { Page, PageRequest } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
-import type { ConflictResolutions } from '../models/conflict-resolution';
+import type { ConflictResolutions } from '../migration/conflict-resolution';
+import type { Migration, MigrationSummary } from '../migration/migration';
+import type { MigrationPlan } from '../migration/migration-plan';
 import type { MigrationId, ReleaseId, WebsiteId } from '../models/ids';
-import type { Migration, MigrationSummary } from '../models/migration';
-import type { MigrationPlan } from '../models/migration-plan';
 
 /** Reading a plan can also fail because the stored JSON is corrupted. */
 export type MigrationReadError = InfrastructureAppError | UnexpectedAppError;

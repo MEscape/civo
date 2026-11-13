@@ -1,11 +1,11 @@
 import type { UnexpectedAppError } from '@lib/errors';
 import type { AppResult } from '@lib/result';
 
-import { planMigration } from '../../domain/models/migration-plan';
-import { toMigrationSource } from '../../domain/models/migration-source';
+import { planMigration } from '../../domain/migration/migration-plan';
+import { toMigrationSource } from '../../domain/migration/migration-source';
 
-import type { MigrationPlan } from '../../domain/models/migration-plan';
-import type { MigrationSource } from '../../domain/models/migration-source';
+import type { MigrationPlan } from '../../domain/migration/migration-plan';
+import type { MigrationSource } from '../../domain/migration/migration-source';
 import type { Release } from '../../domain/models/release';
 import type { ProposeMigrationDependencies } from '../release-dependencies';
 

@@ -3,7 +3,7 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { invalidateRemovedData, releaseCommands } from '../../composition';
+import { invalidateRemovedData, getReleaseCommands } from '../../composition';
 import { deleteUnusedDataSchema } from '../schemas/delete-unused-data-schema';
 import { parseReleaseInput } from '../schemas/parse-release-input';
 
@@ -16,8 +16,8 @@ export async function deleteUnusedDataAction(
   input: unknown,
 ): Promise<ActionResult<{ readonly id: string }>> {
   const result = await parseReleaseInput(deleteUnusedDataSchema, input).asyncAndThen((command) =>
-    releaseCommands.deleteUnusedData
-      .execute(command)
+    getReleaseCommands()
+      .deleteUnusedData.execute(command)
       .map((removal) => ({ removal, id: command.id })),
   );
 

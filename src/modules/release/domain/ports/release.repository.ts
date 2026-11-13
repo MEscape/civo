@@ -11,8 +11,8 @@ import type { AppResultAsync } from '@lib/result';
 
 import type { ReleaseId, WebsiteId } from '../models/ids';
 import type { Release, ReleaseHistory, ReleaseSummary } from '../models/release';
-import type { ReleaseChanges } from '../models/release-changes';
 import type { ReleaseComponentDependency, ReleaseSnapshot } from '../models/release-snapshot';
+import type { ReleaseChanges } from '../publishing/release-changes';
 
 /** A release named only by what a link to it needs. */
 export interface ReleaseRef {
@@ -89,13 +89,17 @@ export interface ReleaseRepository {
 
   /**
    * The live releases' dependency records of one tenant. Bounded by
-   * `limit`; corrupted snapshots are skipped, they are not this query's
-   * concern.
+   * `limit`; `isTruncated` says there were more live websites than were read
+   * or some snapshot could not be read. Corrupted snapshots are skipped,
+   * they are not this query's concern.
    */
   listPublishedDependencies(
     tenantId: TenantId,
     limit: number,
-  ): AppResultAsync<readonly PublishedDependencies[], InfrastructureAppError>;
+  ): AppResultAsync<
+    { readonly items: readonly PublishedDependencies[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
 
   /**
    * Stores the next release and makes it live in one transaction. The

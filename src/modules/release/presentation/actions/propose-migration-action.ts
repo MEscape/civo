@@ -3,12 +3,12 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { releaseCommands } from '../../composition';
-import { toMigrationProposalDto } from '../dto/migration-plan-dto';
+import { getReleaseCommands } from '../../composition';
+import { toMigrationProposalDto } from '../dto/migration-dto';
 import { parseReleaseInput } from '../schemas/parse-release-input';
 import { proposeMigrationSchema } from '../schemas/propose-migration-schema';
 
-import type { MigrationProposalDto } from '../dto/migration-plan-dto';
+import type { MigrationProposalDto } from '../dto/migration-dto';
 
 /**
  * Framework adapter: validate, call the use case. The use case itself
@@ -21,7 +21,7 @@ export async function proposeMigrationAction(
   input: unknown,
 ): Promise<ActionResult<MigrationProposalDto>> {
   const result = await parseReleaseInput(proposeMigrationSchema, input).asyncAndThen((command) =>
-    releaseCommands.proposeMigration.execute(command),
+    getReleaseCommands().proposeMigration.execute(command),
   );
 
   return toActionResult(result.map(toMigrationProposalDto));

@@ -5,19 +5,18 @@ import type { AppResultAsync } from '@lib/result';
 import { releaseNotFound } from '../../domain/errors/release-errors';
 import { parseReleaseId } from '../../domain/models/ids';
 import { ensureActivatable } from '../../domain/models/release';
-import { loadAuthorizedReleaseWebsite } from '../load-authorized-release-website';
 import { RELEASE_RATE_LIMITS } from '../rate-limits';
 import { toReleaseSummaryView } from '../release-view-mappers';
 import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { Release } from '../../domain/models/release';
-import type { ReleaseSummaryView, RollbackReleaseInput } from '../contracts/release-views';
-import type { LoadReleaseWebsiteError } from '../load-authorized-release-website';
-import type { ReleaseDependencies } from '../release-dependencies';
+import type { RollbackReleaseInput } from '../contracts/release-inputs';
+import type { ReleaseSummaryView } from '../contracts/release-views';
+import type { ReleaseOperationError, ReleaseDependencies } from '../release-dependencies';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
 export type RollbackReleaseError =
-  LoadReleaseWebsiteError | ConflictAppError | UnexpectedAppError | ActorLimitError;
+  ReleaseOperationError | ConflictAppError | UnexpectedAppError | ActorLimitError;
 
 /**
  * Makes a previously published release live again. Only the pointer moves:
@@ -33,17 +32,18 @@ export class RollbackRelease {
   execute(input: RollbackReleaseInput): AppResultAsync<ReleaseSummaryView, RollbackReleaseError> {
     const { releases, audit } = this.deps;
 
-    return loadAuthorizedReleaseWebsite(this.deps, input.websiteId, 'release.rollback')
+    return this.deps.access
+      .authorizeWebsite('release.rollback', input.websiteId)
       .andThen(withinActorLimit(this.deps, RELEASE_RATE_LIMITS.rollback))
-      .andThen(({ actor, website }) =>
+      .andThen(({ actor, websiteId }) =>
         parseReleaseId(input.releaseId)
-          .asyncAndThen((releaseId) => releases.findById(website.id, releaseId))
+          .asyncAndThen((releaseId) => releases.findById(websiteId, releaseId))
           .andThen((release): AppResultAsync<Release, NotFoundAppError> =>
             release === null ? errAsync(releaseNotFound()) : okAsync(release),
           )
           .andThen((release) =>
             ensureActivatable(release).asyncAndThen(() =>
-              releases.activate({ websiteId: website.id, releaseId: release.id }),
+              releases.activate({ websiteId, releaseId: release.id }),
             ),
           )
           .map((activation) => {
@@ -51,7 +51,7 @@ export class RollbackRelease {
               type: 'release.rolled_back',
               actorId: actor.id,
               tenantId: actor.tenantId,
-              websiteId: website.id,
+              websiteId,
               releaseId: activation.release.id,
               releaseNumber: activation.release.releaseNumber,
               previousReleaseId: activation.previousReleaseId,

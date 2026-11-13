@@ -3,11 +3,11 @@ import type { AuthorizationError } from '@modules/auth';
 import type { ConflictAppError, InfrastructureAppError, UnexpectedAppError } from '@lib/errors';
 import type { AppResult, AppResultAsync } from '@lib/result';
 
+import type { PageDraft } from '../migration/page-draft';
+import type { PageTree, TreeNode } from '../migration/page-tree';
 import type { PageId, WebsiteId } from '../models/ids';
-import type { PageDraft } from '../models/page-draft';
-import type { PageTree, TreeNode } from '../models/page-tree';
-import type { PublishablePage } from '../models/publishable';
 import type { SnapshotPage } from '../models/release-snapshot';
+import type { PublishablePage } from '../publishing/publishable';
 
 /**
  * `unexpected` means the builder refused to read a stored page that
@@ -17,6 +17,7 @@ import type { SnapshotPage } from '../models/release-snapshot';
 export type PageDraftError = AuthorizationError | InfrastructureAppError | UnexpectedAppError;
 
 export interface ReplaceChildrenInput {
+  readonly websiteId: WebsiteId;
   readonly pageId: PageId;
   /** The revision that was read. A newer one means someone saved in between. */
   readonly expectedVersion: number;

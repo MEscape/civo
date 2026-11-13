@@ -4,7 +4,7 @@ import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
 import type { WebsiteId } from '../models/ids';
-import type { PublishableWebsite } from '../models/publishable';
+import type { PublishableWebsite } from '../publishing/publishable';
 
 export type WebsiteSourceError = AuthorizationError | InfrastructureAppError;
 

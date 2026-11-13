@@ -5,15 +5,17 @@ import { revalidatePath } from 'next/cache';
 import { builderRoutes } from '@modules/builder/client';
 import { websiteRoutes } from '@modules/website/client';
 
+import { revalidateLocalizedPath } from '@i18n/server';
+
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { releaseCommands } from '../../composition';
-import { toApplyMigrationResultDto } from '../dto/migration-result-dto';
+import { getReleaseCommands } from '../../composition';
+import { toApplyMigrationResultDto } from '../dto/migration-dto';
 import { applyMigrationSchema } from '../schemas/apply-migration-schema';
 import { parseReleaseInput } from '../schemas/parse-release-input';
 
-import type { ApplyMigrationResultDto } from '../dto/migration-result-dto';
+import type { ApplyMigrationResultDto } from '../dto/migration-dto';
 
 /**
  * Writes migrated page drafts and never touches the live release.
@@ -25,13 +27,13 @@ export async function applyMigrationAction(
   input: unknown,
 ): Promise<ActionResult<ApplyMigrationResultDto>> {
   const result = await parseReleaseInput(applyMigrationSchema, input).asyncAndThen((command) =>
-    releaseCommands.applyMigration.execute(command),
+    getReleaseCommands().applyMigration.execute(command),
   );
 
   if (result.isOk()) {
-    revalidatePath(builderRoutes.pages(result.value.websiteId));
+    revalidateLocalizedPath(builderRoutes.pages(result.value.websiteId));
     // The overview and the bar above it count the drafts this just wrote as unpublished changes.
-    revalidatePath(websiteRoutes.detail(result.value.websiteId), 'layout');
+    revalidatePath(websiteRoutes.layout, 'layout');
   }
   return toActionResult(result.map(toApplyMigrationResultDto));
 }
