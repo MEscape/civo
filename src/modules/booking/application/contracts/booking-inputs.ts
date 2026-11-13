@@ -1,163 +1,171 @@
-import type { AvailabilityPlanInput } from '../../domain/models/availability-plan';
-import type { BookableResourceInput } from '../../domain/models/bookable-resource';
-import type { BookableServiceInput } from '../../domain/models/bookable-service';
-import type { BookingLocationInput } from '../../domain/models/booking-location';
+import type { BookingCustomer } from '../../domain/models/booking';
 
 /**
- * Request shapes. Ids and instants arrive as text and are parsed by the use
- * case; nothing here is trusted. Dates are `YYYY-MM-DD` days of the
- * location's calendar; instants are ISO-8601 strings with an offset.
+ * What a caller sends, as plain values: every id, date and instant is untrusted text until the
+ * use case has parsed it. Nothing here names a tenant, a role, a price, a duration or a policy; those
+ * come from the server (the signed-in actor, the website's record, the stored service).
  */
 
-export type CreateBookingLocationInput = Omit<BookingLocationInput, 'websiteId'> & {
-  readonly websiteId: string;
-};
-export type UpdateBookingLocationInput = CreateBookingLocationInput & { readonly id: string };
-
-export type CreateBookableResourceInput = Omit<BookableResourceInput, 'websiteId'> & {
-  readonly websiteId: string;
-};
-export type UpdateBookableResourceInput = CreateBookableResourceInput & { readonly id: string };
-
-export type CreateBookableServiceInput = Omit<BookableServiceInput, 'websiteId'> & {
-  readonly websiteId: string;
-};
-export type UpdateBookableServiceInput = CreateBookableServiceInput & { readonly id: string };
-
-/** What the service form asks before saving: could the resources that exist serve this? */
-export interface PreviewServiceFeasibilityInput {
-  readonly websiteId: string;
-  /** The service being edited; absent for a new one. */
-  readonly serviceId?: string | undefined;
-  readonly locationIds: readonly string[];
-  readonly requirements: BookableServiceInput['requirements'];
-  readonly participantsPerBooking: number;
-  readonly participantsPerSession: number;
-}
-
-/** Working hours for employees: one, or many at once for "the same for everyone". */
-export interface SetTeamHoursInput {
-  readonly resourceIds: readonly string[];
-  /** The week to set; `null` returns them to the opening hours of their location. */
-  readonly availability: AvailabilityPlanInput | null;
-}
-
-/** The hours employees may work at a location, set by a manager. */
-export interface SetStaffHoursInput {
-  readonly locationId: string;
-  /** `null`: whenever the location is open. */
-  readonly staffHours: AvailabilityPlanInput | null;
-}
-
-/** The services an employee offers, set by a manager. */
-export interface SetTeamMemberServicesInput {
-  readonly resourceId: string;
-  readonly offeredServiceIds: readonly string[];
-}
-
-/** Whether a service is offered at one location; the rest of the service is left as it is. */
-export interface OfferServiceAtLocationInput {
-  readonly serviceId: string;
-  readonly locationId: string;
-  readonly isOffered: boolean;
-}
-
-export interface SearchAddressesInput {
-  readonly query: string;
-  /** Two-letter language of the suggestions, from the request's locale. */
-  readonly language: string;
-}
-
-export interface GetBookingCatalogInput {
-  readonly websiteId: string;
-  /** Narrows the catalog to services of one category key. */
-  readonly category?: string | undefined;
-  /** Narrows the catalog to specific services (the component's configuration). */
-  readonly serviceIds?: readonly string[] | undefined;
-}
-
+/** The days, `YYYY-MM-DD` on the location's calendar, whose start times are asked for. */
 export interface GetAvailableSlotsInput {
   readonly websiteId: string;
   readonly serviceId: string;
   readonly locationId: string;
   readonly from: string;
   readonly to: string;
-  readonly participants: number;
 }
 
-export interface SuggestAlternativeSlotsInput {
+/** What a public page offers, narrowed by the editor's choice of one service or one category. */
+export interface GetBookingCatalogInput {
   readonly websiteId: string;
-  readonly serviceId: string;
-  readonly locationId: string;
-  readonly start: string;
-  readonly participants: number;
-  readonly count?: number | undefined;
+  readonly serviceId?: string | undefined;
+  readonly category?: string | undefined;
 }
 
 export interface HoldSlotInput {
   readonly websiteId: string;
   readonly serviceId: string;
   readonly locationId: string;
+  /** ISO-8601 with its offset: the start the visitor picked from the answer of `GetAvailableSlots`. */
   readonly start: string;
-  readonly participants: number;
+  /** The language the visitor books in (`de`): their messages are written in it. Anything else is ignored. */
+  readonly locale?: string | undefined;
 }
 
 export interface ConfirmBookingInput {
   readonly websiteId: string;
-  readonly holdId: string;
-  /** The form's values by field name; anything the service did not ask for is dropped. */
-  readonly customer: Readonly<Record<string, string>>;
+  readonly bookingId: string;
+  readonly customer: BookingCustomer;
 }
 
 export interface ReleaseHoldInput {
   readonly websiteId: string;
-  readonly holdId: string;
+  readonly bookingId: string;
 }
 
-/** A visitor finds their booking with the reference they were given AND the e-mail address used. */
-export interface BookingAccessInput {
+/** A booking reached the way a visitor reaches it: the reference AND the address it was made with. */
+export interface PublicBookingKey {
   readonly websiteId: string;
   readonly reference: string;
   readonly email: string;
 }
 
-export interface RescheduleOwnBookingInput extends BookingAccessInput {
+export interface RescheduleOwnBookingInput extends PublicBookingKey {
   readonly start: string;
 }
 
-export interface GetOperationsCalendarInput {
-  readonly websiteId: string;
+/** The days a visitor looks at to move their own booking, `YYYY-MM-DD` on its location's calendar. */
+export interface GetOwnBookingSlotsInput extends PublicBookingKey {
   readonly from: string;
   readonly to: string;
+}
+
+/**
+ * What a manager's list is narrowed to by state: a status, except that a confirmed booking is told
+ * apart by whether an employee still has to take it (BD-04).
+ */
+export const BOOKING_LIST_STATES = [
+  'open',
+  'assigned',
+  'held',
+  'completed',
+  'cancelled',
+  'no_show',
+  'expired',
+] as const;
+export type BookingListState = (typeof BOOKING_LIST_STATES)[number];
+
+/** The filters a manager's list and calendar share. Days are `YYYY-MM-DD` on the locations' calendar. */
+export interface BookingFilterInput {
+  /** The website the work is in, authorized by the use case before anything is read. */
+  readonly websiteId: string;
+  /** The first day; today when absent. */
+  readonly from?: string | undefined;
+  /** The last day, included; `from` when absent. */
+  readonly to?: string | undefined;
+  /** Every state when absent. */
+  readonly state?: BookingListState | undefined;
   readonly locationId?: string | undefined;
   readonly serviceId?: string | undefined;
   readonly resourceId?: string | undefined;
+  readonly customerEmail?: string | undefined;
+  /** The code a visitor quotes; any case, surrounding spaces ignored. */
+  readonly reference?: string | undefined;
 }
 
-export interface CancelBookingAsStaffInput {
+/** The manager's list: the days whose bookings start in them, the filters, and the page. */
+export interface ListBookingsInput extends BookingFilterInput {
+  /** The page asked for, as the address carries it: untrusted, resolved and clamped by the use case. */
+  readonly page: { readonly page?: unknown; readonly pageSize?: unknown };
+}
+
+/** The calendar: every booking of the days shown (at most 42), with the list's filters. */
+export type GetBookingCalendarInput = BookingFilterInput;
+
+/**
+ * The free starts of one day for a manager: for a new booking (`serviceId` and `locationId`), or
+ * for moving `bookingId` (its own service and location; the booking does not block itself).
+ */
+export interface GetStaffSlotsInput {
+  /** The website the work is in, authorized by the use case before anything is read. */
+  readonly websiteId: string;
+  readonly day: string;
+  readonly bookingId?: string | undefined;
+  readonly serviceId?: string | undefined;
+  readonly locationId?: string | undefined;
+}
+
+/** An employee's own bookings in a span of start times. */
+export interface GetMyBookingsInput {
+  /** The website the work is in, authorized by the use case before anything is read. */
+  readonly websiteId: string;
+  readonly from: string;
+  readonly to: string;
+}
+
+/** A signed-in person's request that names nothing but the website it is for. */
+export interface WebsiteTargetInput {
+  readonly websiteId: string;
+}
+
+export interface BookingTargetInput {
+  /** The website the work is in, authorized by the use case before anything is read. */
+  readonly websiteId: string;
   readonly bookingId: string;
 }
 
-export interface RescheduleBookingAsStaffInput {
-  readonly bookingId: string;
+export interface CreateBookingAsStaffInput {
+  /** The website the work is in, authorized by the use case before anything is read. */
+  readonly websiteId: string;
+  readonly serviceId: string;
+  readonly locationId: string;
+  readonly start: string;
+  readonly customer: BookingCustomer;
+  /**
+   * Names this attempt. A retry with the same key (after a lost answer, a double click) meets the
+   * booking the first try made instead of making another; the key is only ever combined with the
+   * signed-in person and their tenant, so nobody can reach another's booking with it.
+   */
+  readonly requestKey?: string | undefined;
+}
+
+export interface RescheduleBookingInput extends BookingTargetInput {
   readonly start: string;
 }
 
-export interface FinishBookingInput {
-  readonly bookingId: string;
+export interface AssignEmployeeInput extends BookingTargetInput {
+  readonly resourceId: string;
+  /** Which requirement of the service the employee fills; the first with an open unit when absent. */
+  readonly requirementIndex?: number | undefined;
+  /** An employee already on the booking whom this one replaces. */
+  readonly replaces?: string | undefined;
 }
 
-export interface ReleaseExpiredHoldsInput {
-  readonly websiteId: string;
+export interface UnassignEmployeeInput extends BookingTargetInput {
+  readonly resourceId: string;
 }
 
-/** An employee's new working hours for a calendar assigned to them. */
-/** An employee's own place in the booking system: hours, where they work, which services they offer. */
-export interface SaveOwnProfileInput {
-  readonly websiteId: string;
-  readonly name: string;
-  /** The one location the employee works at. */
-  readonly locationId: string;
-  readonly offeredServiceIds: readonly string[];
-  readonly availability: AvailabilityPlanInput | null;
+export interface GetAssignmentCandidatesInput extends BookingTargetInput {
+  /** Which requirement of the service is being filled; the first with an open unit when absent. */
+  readonly requirementIndex?: number | undefined;
 }

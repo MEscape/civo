@@ -1,182 +1,98 @@
-import type { ActorId, TenantId } from '@modules/auth';
+import type { ActorId } from '@modules/auth';
 
-import type { Clock } from '@lib/clock';
-import { createPersistenceFailures, dateToInstant, toJsonValue } from '@lib/db';
-import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
+import { createPersistenceFailures } from '@lib/db';
+import type { InfrastructureAppError } from '@lib/errors';
 import { combine, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import {
-  BOOKING_ERROR_CODES,
-  resourceNotFound,
-  websiteNotFoundForBooking,
-} from '../../domain/errors/booking-errors';
-import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
-import { toBookableResourceId } from '../../domain/models/ids';
+import { BOOKING_ERROR_CODES as CODES } from '../../domain/errors/booking-errors';
+import { servesLocation } from '../../domain/models/bookable-resource';
+import { compareIds } from '../../domain/models/ids';
 
 import { RESOURCE_SELECT, toResource } from './bookable-resource-record-mapper';
-import { resourcesOf, createInWebsite } from './tenant-ownership';
+import { resourcesOf } from './tenant-ownership';
 
+import type { BookableResource } from '../../domain/models/bookable-resource';
+import type { BookableResourceId } from '../../domain/models/ids';
 import type {
-  BookableResource,
-  BookableResourceDraft,
-} from '../../domain/models/bookable-resource';
-import type { BookableResourceId, WebsiteId } from '../../domain/models/ids';
-import type { BookableResourceRepository } from '../../domain/ports/bookable-resource.repository';
-import type { WebsiteScope } from '../../domain/ports/booking.repository';
+  BookableResourceRepository,
+  ResourceListQuery,
+} from '../../domain/ports/bookable-resource.repository';
+import type { BookingScope } from '../../domain/ports/booking.repository';
 
 const failures = createPersistenceFailures({
   module: 'booking.persistence',
-  code: BOOKING_ERROR_CODES.persistenceFailed,
+  code: CODES.persistenceFailed,
   subject: 'Bookable resource',
 });
 
-function toColumns(draft: BookableResourceDraft) {
-  return {
-    locationId: draft.locationId,
-    name: draft.name,
-    type: draft.type,
-    skills: toJsonValue(draft.skills),
-    capacity: draft.capacity,
-    availability:
-      draft.availability === null ? null : toJsonValue(toAvailabilityPlanInput(draft.availability)),
-    isActive: draft.isActive,
-    assignedActorId: draft.assignedActorId,
-    managerChange:
-      draft.managerChange === null
-        ? null
-        : toJsonValue({
-            at: draft.managerChange.at.toISOString(),
-            kinds: [...draft.managerChange.kinds],
-          }),
-  };
-}
-
-/** Prisma 8 repository for resources; tenant scoping and clocks work as in the location repository. */
+/** Read-only access to the resources of a website, bound to its tenant and website in every statement. */
 export class PrismaBookableResourceRepository implements BookableResourceRepository {
-  constructor(private readonly clock: Clock) {}
-
   findById(
+    scope: BookingScope,
     id: BookableResourceId,
-    tenantId: TenantId,
   ): AppResultAsync<BookableResource | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
-        resourcesOf(tenantId)
-          .select(...RESOURCE_SELECT)
+        resourcesOf(scope)
           .where({ id })
+          .select(...RESOURCE_SELECT)
           .first(),
       failures.infraOnly('findById'),
     ).andThen((record) => (record === null ? okAsync(null) : toResource(record)));
   }
 
-  findNames(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    ids: readonly BookableResourceId[],
-  ): AppResultAsync<
-    ReadonlyArray<{ readonly id: BookableResourceId; readonly name: string }>,
-    InfrastructureAppError
-  > {
-    if (ids.length === 0) {
-      return okAsync([]);
-    }
+  findEmployeeOf(
+    scope: BookingScope,
+    actorId: ActorId,
+  ): AppResultAsync<BookableResource | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
-        resourcesOf(tenantId)
-          .where({ websiteId })
-          .where((resource) => resource.id.in([...ids]))
-          .select('id', 'name')
-          .limit(ids.length)
-          .all(),
-      failures.infraOnly('findNames'),
-    ).map((records) =>
-      records.map((record) => ({ id: toBookableResourceId(record.id), name: record.name })),
+        resourcesOf(scope)
+          .where({ assignedActorId: actorId, type: 'employee', isActive: true })
+          .select(...RESOURCE_SELECT)
+          // Nothing in the database says "one per member"; the same one every time if there are two.
+          .orderBy((resource) => resource.id.asc())
+          .first(),
+      failures.infraOnly('findEmployeeOf'),
+    ).andThen((record) => (record === null ? okAsync(null) : toResource(record)));
+  }
+
+  list(
+    scope: BookingScope,
+    { servingLocationId, types, limit }: ResourceListQuery,
+  ): AppResultAsync<readonly BookableResource[], InfrastructureAppError> {
+    return fromThrowableAsync(async () => {
+      let query = resourcesOf(scope).select(...RESOURCE_SELECT);
+      if (types !== undefined) {
+        query = query.where((resource) => resource.type.in([...types]));
+      }
+      const page = (matching: typeof query) =>
+        matching
+          .orderBy((resource) => resource.id.asc())
+          .limit(limit)
+          .all();
+      if (servingLocationId === undefined) {
+        return page(query);
+      }
+      // The location's own resources and those that serve every location (no location of their own).
+      const own = await page(query.where({ locationId: servingLocationId }));
+      const shared = await page(query.where((resource) => resource.locationId.isNull()));
+      // Employees sent here for some days (a few at most: only calendars that name another place).
+      const sent = await page(query.where((resource) => resource.coverage.isNotNull()));
+      return [...own, ...shared, ...sent]
+        .filter((record, index, all) => all.findIndex(({ id }) => id === record.id) === index)
+        .sort((a, b) => compareIds(a.id, b.id))
+        .slice(0, limit);
+    }, failures.infraOnly('list')).andThen((records) =>
+      combine(records.map((record) => toResource(record))).map((resources) =>
+        servingLocationId === undefined
+          ? resources
+          : resources.filter((resource) => servesLocation(resource, servingLocationId)),
+      ),
     );
   }
-
-  listByWebsite(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly BookableResource[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        resourcesOf(tenantId)
-          .select(...RESOURCE_SELECT)
-          .where({ websiteId })
-          .orderBy([(resource) => resource.name.asc(), (resource) => resource.id.asc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('listByWebsite'),
-    ).andThen((records) => combine(records.map((record) => toResource(record))));
-  }
-
-  listAssignedTo(
-    { websiteId, tenantId }: WebsiteScope,
-    actorId: ActorId,
-    limit: number,
-  ): AppResultAsync<readonly BookableResource[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        resourcesOf(tenantId)
-          .select(...RESOURCE_SELECT)
-          .where({ websiteId, assignedActorId: actorId })
-          .orderBy([(resource) => resource.name.asc(), (resource) => resource.id.asc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('listAssignedTo'),
-    ).andThen((records) => combine(records.map((record) => toResource(record))));
-  }
-
-  create(input: {
-    readonly tenantId: TenantId;
-    readonly draft: BookableResourceDraft;
-  }): AppResultAsync<BookableResource, NotFoundAppError | InfrastructureAppError> {
-    const { tenantId, draft } = input;
-    const now = dateToInstant(this.clock.now());
-
-    return fromThrowableAsync(
-      () =>
-        createInWebsite(tenantId, draft.websiteId, (tx) =>
-          tx.orm.public.BookableResource.select(...RESOURCE_SELECT).create({
-            tenantId,
-            websiteId: draft.websiteId,
-            ...toColumns(draft),
-            createdAt: now,
-            updatedAt: now,
-          }),
-        ),
-      failures.infraOnly('create'),
-    )
-      .andThen(failures.requireRow(websiteNotFoundForBooking))
-      .andThen(toResource);
-  }
-
-  deleteById(
-    id: BookableResourceId,
-    tenantId: TenantId,
-  ): AppResultAsync<void, InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () => resourcesOf(tenantId).where({ id }).deleteAndCount(),
-      failures.infraOnly('deleteById'),
-    ).map(() => undefined);
-  }
-
-  update(
-    id: BookableResourceId,
-    tenantId: TenantId,
-    draft: BookableResourceDraft,
-  ): AppResultAsync<BookableResource, NotFoundAppError | InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        resourcesOf(tenantId)
-          .select(...RESOURCE_SELECT)
-          .where({ id })
-          .update({ ...toColumns(draft), updatedAt: dateToInstant(this.clock.now()) }),
-      failures.infraOnly('update'),
-    )
-      .andThen(failures.requireRow(resourceNotFound))
-      .andThen(toResource);
-  }
 }
+
+/** The one instance the composition root wires (the adapter holds no state). */
+export const prismaBookableResourceRepository = new PrismaBookableResourceRepository();

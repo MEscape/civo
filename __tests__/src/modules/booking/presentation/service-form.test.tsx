@@ -1,305 +1,426 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { previewServiceFeasibilityAction } from '@modules/booking/presentation/actions/preview-service-feasibility-action';
-import { saveServiceAction } from '@modules/booking/presentation/actions/save-service-action';
-import type { ServiceFeasibilityDto } from '@modules/booking/presentation/dto/setup-dto';
+import type { ServiceDto, ServiceFormOptionsDto } from '@modules/booking/client';
+import { ServiceForm } from '@modules/booking/presentation/components/services/service-form.client';
+import type { ServiceStepKey } from '@modules/booking/presentation/forms/service-steps';
+import enBooking from '@modules/booking/presentation/i18n/en.json';
 
-import { serviceDto } from './fixtures';
-import { renderBooking, setup } from './ui-support';
-import { ServicesAtLocation } from './workspace-support';
+import enApp from '@i18n/messages/en.json';
 
-vi.mock('@i18n', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
+import { expectNoViolations } from '../../../support/a11y';
+import {
+  COUNTER,
+  MEETING_ROOM,
+  OPTIONS,
+  SHARED_SERVICE,
+  serviceDto,
+} from '../support/service-dtos';
+
+const mocks = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  searchParams: new URLSearchParams(),
 }));
-vi.mock('@modules/booking/presentation/actions/save-service-action', () => ({
-  saveServiceAction: vi.fn(),
+
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  useSearchParams: () => mocks.searchParams,
 }));
-vi.mock('@modules/booking/presentation/actions/preview-service-feasibility-action', () => ({
-  previewServiceFeasibilityAction: vi.fn(),
+
+vi.mock('@i18n', () => ({
+  Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+}));
+vi.mock('@modules/booking/presentation/actions/create-bookable-service-action', () => ({
+  createBookableServiceAction: mocks.create,
+}));
+vi.mock('@modules/booking/presentation/actions/update-bookable-service-action', () => ({
+  updateBookableServiceAction: mocks.update,
 }));
 
-const save = vi.mocked(saveServiceAction);
-const preview = vi.mocked(previewServiceFeasibilityAction);
-
-const OPTIONS = {
-  locations: [
-    { id: 'loc-berlin', name: 'Town hall', timeZone: 'Europe/Berlin' },
-    { id: 'loc-annex', name: 'Annex', timeZone: 'Europe/Berlin' },
-  ],
-  resources: [
-    { id: 'r-desk', name: 'Desk 1', type: 'service-desk', locationId: null, skills: ['passport'] },
-    {
-      id: 'r-room',
-      name: 'Meeting room',
-      type: 'room',
-      locationId: null,
-      skills: ['projector', 'wheelchair'],
-    },
-  ],
-  services: [],
-  skills: ['passport', 'projector', 'wheelchair'],
-  categories: ['citizen-services', 'sports'],
-} as const;
-
-const BLOCKED: ServiceFeasibilityDto = {
-  canBePublished: false,
-  locations: [
-    {
-      locationId: 'loc-berlin',
-      locationName: 'Town hall',
-      readiness: 'blocked',
-      block: 'not-enough-resources',
-      blockedRequirementIndex: 0,
-      largestGroup: 0,
-      coverage: [
-        {
-          requirementIndex: 0,
-          resourceType: 'room',
-          needed: 1,
-          eligibleCount: 0,
-          eligible: [],
-          funnel: { ofType: 0, withSkills: 0, atLocation: 0, inPool: 0 },
-          awaitingEmployees: 0,
-        },
-      ],
-    },
-  ],
-};
-
-const READY: ServiceFeasibilityDto = {
-  canBePublished: true,
-  locations: [
-    {
-      locationId: 'loc-berlin',
-      locationName: 'Town hall',
-      readiness: 'ready',
-      block: null,
-      blockedRequirementIndex: null,
-      largestGroup: 4,
-      coverage: [
-        {
-          requirementIndex: 0,
-          resourceType: 'service-desk',
-          needed: 1,
-          eligibleCount: 1,
-          eligible: [{ id: 'r-desk', name: 'Desk 1' }],
-          funnel: { ofType: 1, withSkills: 1, atLocation: 1, inPool: 1 },
-          awaitingEmployees: 0,
-        },
-      ],
-    },
-  ],
-};
-
-function renderForm(items = [serviceDto()]) {
-  return renderBooking(<ServicesAtLocation services={items} options={OPTIONS} canConfigure />);
-}
-
-function checkPanel() {
-  return screen.getByRole('region', { name: 'Is this service bookable?' });
-}
-
-async function openNew(user: ReturnType<typeof setup>) {
-  renderForm([]);
-  await user.click(await screen.findByRole('button', { name: 'New service' }));
+function renderForm(
+  service: ServiceDto | null,
+  part: ServiceStepKey | 'wizard' = 'general',
+  step: ServiceStepKey = 'general',
+  options: ServiceFormOptionsDto = OPTIONS,
+) {
+  return render(
+    <NextIntlClientProvider
+      locale="en"
+      messages={{ ...enBooking, app: enApp }}
+      timeZone="Europe/Berlin"
+    >
+      <ServiceForm
+        websiteId="site"
+        locationId="loc-mitte"
+        service={service}
+        part={part}
+        step={step}
+        options={options}
+      />
+    </NextIntlClientProvider>,
+  );
 }
 
 beforeEach(() => {
-  save.mockReset();
-  save.mockResolvedValue({ ok: true, data: serviceDto() });
-  preview.mockReset();
-  preview.mockResolvedValue({ ok: true, data: READY });
+  vi.clearAllMocks();
+  mocks.searchParams = new URLSearchParams();
 });
 
-describe('choosing the category', () => {
-  it('finds an existing category by typing part of it, and stores its key', async () => {
-    const user = setup();
-    await openNew(user);
-    await user.type(screen.getByLabelText('Name'), 'Passport');
-    const category = screen.getByRole('combobox', { name: 'Category' });
-    fireEvent.focus(category);
-    fireEvent.change(category, { target: { value: 'citizen' } });
-    fireEvent.mouseDown(screen.getByRole('option', { name: 'citizen services' }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+describe('the steps of a new service', () => {
+  it('starts on General, says how far along it is, and offers the next step by name', () => {
+    renderForm(null, 'wizard');
+
+    expect(screen.getByRole('heading', { level: 2, name: 'General' })).toBeInTheDocument();
+    expect(screen.getByText('Step 1 of 5')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next: Duration & buffers' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+  });
+
+  it('does not go on while the name is missing: it says so at the field and stays', async () => {
+    renderForm(null, 'wizard');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Duration & buffers' }));
+
+    expect(await screen.findByText(/Enter a name/i)).toHaveAttribute('role', 'alert');
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Name of the service')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('goes on to the next step, in the address, once the step is valid', async () => {
+    renderForm(null, 'wizard');
+
+    fireEvent.change(screen.getByLabelText('Name of the service'), {
+      target: { value: 'Personalausweis beantragen' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Duration & buffers' }));
 
     await waitFor(() => {
-      expect(save).toHaveBeenCalled();
+      expect(mocks.push).toHaveBeenCalledWith(
+        '/bookings/site/locations/loc-mitte/services/new?step=timing',
+      );
     });
-    expect(save.mock.calls[0]?.[0]).toMatchObject({ category: 'citizen-services' });
   });
 
-  it('adds a new category in the shape the domain stores, without duplicating an old one', async () => {
-    const user = setup();
-    await openNew(user);
-    await user.type(screen.getByLabelText('Name'), 'Passport');
-    const category = screen.getByRole('combobox', { name: 'Category' });
-    fireEvent.focus(category);
-    fireEvent.change(category, { target: { value: 'Bürger Dienste' } });
-    fireEvent.mouseDown(screen.getByRole('option', { name: 'Add “buerger-dienste”' }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+  it('goes back by the address and cancels to the list', () => {
+    renderForm(null, 'wizard', 'resources');
 
-    await waitFor(() => {
-      expect(save).toHaveBeenCalled();
-    });
-    expect(save.mock.calls[0]?.[0]).toMatchObject({ category: 'buerger-dienste' });
-  });
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 
-  it('offers no "add" row for a category that already exists', async () => {
-    const user = setup();
-    await openNew(user);
-    const category = screen.getByRole('combobox', { name: 'Category' });
-    fireEvent.focus(category);
-    fireEvent.change(category, { target: { value: 'sports' } });
-
-    expect(screen.getByRole('option', { name: 'sports' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: /^Add/ })).toBeNull();
-  });
-});
-
-describe('where the service is offered', () => {
-  it('is made at the location it is made in, with no choice about where', async () => {
-    const user = setup();
-    await openNew(user);
-    await user.type(screen.getByLabelText('Name'), 'Passport');
-
-    expect(screen.queryByRole('combobox', { name: 'Also offer at' })).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => {
-      expect(save).toHaveBeenCalled();
-    });
-    expect(save.mock.calls[0]?.[0]).toMatchObject({ locationIds: ['loc-berlin'] });
-  });
-
-  it('keeps the other locations of a service that is changed here', async () => {
-    const user = setup();
-    renderForm([serviceDto({ locationIds: ['loc-annex', 'loc-berlin'] })]);
-    await user.click(await screen.findByRole('button', { name: /Edit Passport/ }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
-
-    await waitFor(() => {
-      expect(save).toHaveBeenCalled();
-    });
-    expect(save.mock.calls[0]?.[0]).toMatchObject({ locationIds: ['loc-annex', 'loc-berlin'] });
-  });
-});
-
-describe('what the form says about the place', () => {
-  it('names the location the service is made at', async () => {
-    const user = setup();
-    await openNew(user);
-
-    expect(screen.getByText('Location: Town hall')).toBeInTheDocument();
-    expect(screen.queryByRole('note')).toBeNull();
-  });
-
-  it('warns that a change reaches the other locations that offer the service', async () => {
-    const user = setup();
-    renderForm([serviceDto({ locationIds: ['loc-annex', 'loc-berlin'] })]);
-    await user.click(await screen.findByRole('button', { name: /Edit Passport/ }));
-
-    expect(screen.getByRole('note')).toHaveTextContent(
-      'This service is also offered at 1 other location. Changes apply there as well.',
+    expect(mocks.push).toHaveBeenCalledWith(
+      '/bookings/site/locations/loc-mitte/services/new?step=timing',
+    );
+    expect(screen.getByRole('link', { name: 'Cancel' })).toHaveAttribute(
+      'href',
+      '/bookings/site/locations/loc-mitte/services',
     );
   });
-});
 
-describe('what a service can require', () => {
-  const HINT = /Rooms and equipment are set up in the “Rooms and equipment” section/;
+  it('takes the manager to the step that holds the problem when the last step is saved with one, and back to the review once it is put right', async () => {
+    renderForm(null, 'wizard', 'review');
 
-  it('points to the rooms section while there is nothing but employees to require', async () => {
-    const user = setup();
-    renderBooking(
-      <ServicesAtLocation services={[]} options={{ ...OPTIONS, resources: [] }} canConfigure />,
-    );
-    await user.click(await screen.findByRole('button', { name: 'New service' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save service' }));
 
-    expect(screen.getByText(HINT)).toBeInTheDocument();
-  });
-
-  it('says nothing of the kind once rooms or equipment exist', async () => {
-    const user = setup();
-    await openNew(user);
-
-    expect(screen.queryByText(HINT)).toBeNull();
-  });
-});
-
-describe('the start-time spacing', () => {
-  it('shows what visitors will see for the chosen spacing', async () => {
-    const user = setup();
-    await openNew(user);
-
-    expect(
-      screen.getByText(/Visitors see, for example: 08:00, 08:15, 08:30, 08:45/),
-    ).toBeInTheDocument();
-  });
-});
-
-describe('the required capabilities', () => {
-  it('offers only what resources of the chosen type have', async () => {
-    const user = setup();
-    renderForm();
-    await user.click(await screen.findByRole('button', { name: /Edit Passport/ }));
-
-    expect(screen.getByRole('button', { name: 'Remove passport' })).toBeInTheDocument();
-    const skills = screen.getByRole('combobox', { name: 'Required capabilities' });
-    fireEvent.focus(skills);
-    // The desk has "passport"; the room's capabilities do not belong to the desk type.
-    expect(screen.queryByRole('option', { name: 'projector' })).toBeNull();
-    expect(
-      screen.getByText(
-        'No capabilities exist for this type yet. They are created on the resource.',
-      ),
-    ).toBeInTheDocument();
-  });
-});
-
-describe('the bookability check', () => {
-  it('explains why nothing can serve the service, in terms of what is missing', async () => {
-    preview.mockResolvedValue({ ok: true, data: BLOCKED });
-    const user = setup();
-    await openNew(user);
-
-    expect(
-      await screen.findByText('There is no active resource of type Room.', {}, { timeout: 3000 }),
-    ).toBeInTheDocument();
-    expect(within(checkPanel()).getByText('Not bookable')).toBeInTheDocument();
-    expect(screen.getByText(/save it as a draft|saved as a draft/i)).toBeInTheDocument();
-  });
-
-  it('names the resources that can serve it and how large a group they fit', async () => {
-    const user = setup();
-    await openNew(user);
-
-    expect(await screen.findByText(/Desk 1/, {}, { timeout: 3000 })).toBeInTheDocument();
-    expect(within(checkPanel()).getByText('Bookable')).toBeInTheDocument();
-    expect(screen.getByText('Largest possible group: 4')).toBeInTheDocument();
-  });
-
-  it('asks the server once the form is still, and sends only what the rules need', async () => {
-    const user = setup();
-    await openNew(user);
-    await within(checkPanel()).findByText('Bookable', {}, { timeout: 3000 });
-
-    expect(preview).toHaveBeenCalledTimes(1);
-    expect(preview.mock.calls[0]?.[0]).toMatchObject({
-      websiteId: 'site-1',
-      locationIds: ['loc-berlin'],
-      participantsPerBooking: 1,
+    await waitFor(() => {
+      expect(mocks.push).toHaveBeenCalledWith(
+        '/bookings/site/locations/loc-mitte/services/new?step=general&back=review',
+      );
     });
-    expect(preview.mock.calls[0]?.[0]).not.toHaveProperty('name');
+    expect(mocks.create).not.toHaveBeenCalled();
   });
 
-  it('says the check is unavailable when the server cannot answer, and still allows saving', async () => {
-    preview.mockResolvedValue({ ok: false, error: { code: 'x', message: 'x' } });
-    const user = setup();
-    await openNew(user);
+  it('offers one way on from a step opened from the review: back to it, with no step in between', () => {
+    mocks.searchParams.set('back', 'review');
+    renderForm(null, 'wizard', 'general');
 
+    expect(screen.getByRole('button', { name: 'Back to review' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+  });
+
+  it('shows what will be saved on the review step, with a way back to every part, and the note about booking', () => {
+    renderForm(null, 'wizard', 'review');
+
+    const rows = screen.getByRole('list', { name: 'Parts of the service' });
+    expect(within(rows).getAllByRole('button', { name: /^Edit:/ })).toHaveLength(4);
+    expect(screen.getByText(/bookable online as soon as it is saved/)).toBeInTheDocument();
+  });
+});
+
+describe('saving a change to a service', () => {
+  it('sends the versions it was read at and what the form holds, and arrives at the service after the server answers', async () => {
+    mocks.update.mockResolvedValue({ ok: true, data: { id: 'svc-ausweis' } });
+    renderForm(serviceDto());
+
+    fireEvent.change(screen.getByLabelText('Name of the service'), {
+      target: { value: 'Personalausweis neu' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mocks.push).toHaveBeenCalledWith(
+        '/bookings/site/locations/loc-mitte/services/svc-ausweis?saved=1',
+      );
+    });
+    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Personalausweis neu',
+        locationId: 'loc-mitte',
+        serviceId: 'svc-ausweis',
+        expectedVersion: '2027-01-10T11:00:00.000Z',
+        expectedSettingVersion: '2027-01-10T11:00:00.000Z',
+        acknowledgeShared: false,
+        durationMinutes: 20,
+        resources: [
+          { resourceId: 'res-counter', isRequired: true },
+          { resourceId: 'res-room', isRequired: false },
+        ],
+      }),
+    );
+  });
+
+  it('says how many locations a change to a shared service reaches, and saves for all of them only after the manager agrees', async () => {
+    mocks.update.mockResolvedValue({ ok: true, data: { id: 'svc-ausweis' } });
+    renderForm(SHARED_SERVICE);
+
+    fireEvent.change(screen.getByLabelText('Name of the service'), {
+      target: { value: 'Geteilt und geändert' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'This change applies at 2 locations',
+    });
+    expect(within(dialog).getByText(/Bürgerbüro Süd/)).toBeInTheDocument();
+    expect(mocks.update).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save for all locations' }));
+
+    await waitFor(() => {
+      expect(mocks.update).toHaveBeenCalledWith(
+        expect.objectContaining({ acknowledgeShared: true }),
+      );
+    });
+  });
+
+  it('does not ask when only this location’s own part changed', async () => {
+    mocks.update.mockResolvedValue({ ok: true, data: { id: 'svc-ausweis' } });
+    renderForm(SHARED_SERVICE);
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Bookable online' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mocks.update).toHaveBeenCalledWith(
+        expect.objectContaining({ acknowledgeShared: false, isOnlineBookable: false }),
+      );
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('keeps the input and says somebody else saved first when the version has moved on', async () => {
+    mocks.update.mockResolvedValue({
+      ok: false,
+      error: { code: 'booking.service_stale', message: 'stale' },
+    });
+    renderForm(serviceDto());
+
+    fireEvent.change(screen.getByLabelText('Name of the service'), {
+      target: { value: 'Meine Eingabe' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText('The service has changed in the meantime')).toBeInTheDocument();
+    expect(screen.getByLabelText('Name of the service')).toHaveValue('Meine Eingabe');
+    expect(mocks.push).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(mocks.refresh).toHaveBeenCalled();
+  });
+
+  it('puts the server’s refusal of a field on that field, and shows no success', async () => {
+    mocks.update.mockResolvedValue({
+      ok: false,
+      error: {
+        code: 'booking.validation_failed',
+        message: 'invalid',
+        fieldErrors: { name: ['booking.validation.name_invalid'] },
+      },
+    });
+    renderForm(serviceDto());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText(/Enter a name/i)).toBeInTheDocument();
+    expect(mocks.push).not.toHaveBeenCalled();
+  });
+
+  it('sends one request however often the button is pressed while it waits', async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    mocks.update.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    renderForm(serviceDto());
+    const button = screen.getByRole('button', { name: 'Save' });
+
+    fireEvent.click(button);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Saving …' })).toBeDisabled();
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Saving …' }));
+    finish({ ok: true, data: { id: 'svc-ausweis' } });
+
+    await waitFor(() => {
+      expect(mocks.update).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+describe('what each part of the form shows', () => {
+  it('General: says an inactive existing service keeps its bookings, and keeps the internal note out of sight until asked for', () => {
+    renderForm(serviceDto({ isActive: false }));
+
+    expect(screen.getByText(/Existing appointments stay valid/)).toBeInTheDocument();
+    const advanced = screen.getByText('Advanced').closest('details');
+    expect(advanced).not.toHaveAttribute('open');
+    expect(within(advanced as HTMLElement).getByLabelText('Internal note')).toHaveValue(
+      'nur intern',
+    );
+  });
+
+  it('Rules: asks the booking deadline once, says who may change and that preferences only sort', () => {
+    renderForm(serviceDto(), 'rules');
+
+    expect(screen.getAllByLabelText('Booking deadline')).toHaveLength(1);
+    expect(screen.getByRole('checkbox', { name: 'Citizen' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Employee' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Manager' })).toBeChecked();
+    expect(screen.getByText('Preferences: only an order')).toBeInTheDocument();
+    expect(screen.getByText(/Nobody is excluded by preferences/)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Who takes the appointment?' })).toHaveTextContent(
+      'Ausweise',
+    );
+  });
+
+  it('Rules: refuses a service nobody may cancel, saying who has to be chosen', async () => {
+    renderForm(serviceDto(), 'rules');
+
+    for (const name of ['Citizen', 'Employee', 'Manager']) {
+      fireEvent.click(screen.getByRole('checkbox', { name }));
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText(/Choose at least one person/)).toBeInTheDocument();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it('Resources: names each resource and says how many services use it, without a way to make one mid-form', () => {
+    renderForm(serviceDto(), 'resources');
+
+    const list = screen.getByRole('list', { name: 'Resources of the service' });
+    expect(within(list).getByText('Schalter')).toBeInTheDocument();
+    expect(within(list).getByText('Besprechungsraum')).toBeInTheDocument();
+    expect(screen.getByText('Schalter is already used by 6 services.')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Create a new resource' })).not.toBeInTheDocument();
+  });
+
+  it('Resources: with none at the location, a single part leads to making one, and the wizard has no such step', () => {
+    const none = { ...OPTIONS, resources: [] };
+    renderForm(serviceDto({ resources: [] }), 'resources', 'general', none);
     expect(
-      await screen.findByText(/The check is not available right now/, {}, { timeout: 3000 }),
-    ).toBeInTheDocument();
+      screen.getByRole('link', { name: 'Create a new resource' }).getAttribute('href'),
+    ).toMatch(/\/resources\/new$/);
+  });
+
+  it('Wizard: skips the resources step where the location has no resources', () => {
+    renderForm(null, 'wizard', 'timing', { ...OPTIONS, resources: [] });
+
+    expect(screen.getByText('Step 2 of 4')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next: Rules & permissions' })).toBeInTheDocument();
+  });
+
+  it('General: a category is chosen from a list or added from what is typed, and a category-less location says how to add the first', () => {
+    renderForm(null, 'wizard', 'general', { ...OPTIONS, categories: [] });
+
+    const field = screen.getByRole('combobox', { name: 'Category' });
+    fireEvent.focus(field);
+    expect(screen.getByText(/No category yet/)).toBeInTheDocument();
+    fireEvent.change(field, { target: { value: 'Ausweise' } });
+    fireEvent.mouseDown(screen.getByRole('option', { name: 'Add “Ausweise”' }));
+    expect(field).toHaveValue('Ausweise');
+  });
+
+  it('General: documents to bring are added inside the field with Enter and taken away again', () => {
+    renderForm(null, 'wizard', 'general');
+
+    const field = screen.getByRole('combobox', { name: 'Documents to bring' });
+    fireEvent.change(field, { target: { value: 'ID card' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+
+    expect(screen.getByText('ID card')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove ID card' }));
+    expect(screen.queryByText('ID card')).not.toBeInTheDocument();
+  });
+
+  it('Resources: every resource of the location is a row with one choice, so nothing is added or taken away', () => {
+    renderForm(serviceDto(), 'resources');
+
+    const meetingRoom = screen.getByRole('radiogroup', {
+      name: 'Besprechungsraum: what the service needs',
+    });
+    fireEvent.click(within(meetingRoom).getByRole('radio', { name: 'Needed' }));
+    expect(within(meetingRoom).getByRole('radio', { name: 'Needed' })).toBeChecked();
+
+    fireEvent.click(within(meetingRoom).getByRole('radio', { name: 'If free' }));
+    expect(within(meetingRoom).getByRole('radio', { name: 'If free' })).toBeChecked();
+
+    fireEvent.click(within(meetingRoom).getByRole('radio', { name: 'Not needed' }));
+    expect(within(meetingRoom).getByRole('radio', { name: 'Not needed' })).toBeChecked();
+    expect(screen.getByText('Besprechungsraum', { selector: 'p' })).toBeInTheDocument();
+  });
+
+  it('Resources: warns, without blocking, that a required resource is not active', () => {
+    const inactive = serviceDto({
+      resources: [
+        {
+          id: 'res-counter',
+          name: 'Schalter',
+          type: 'service-desk',
+          capacity: 1,
+          isActive: false,
+          setupMinutes: 0,
+          teardownMinutes: 0,
+          usedByServices: 0,
+          isRequired: true,
+        },
+      ],
+    });
+    renderForm(inactive, 'resources', 'resources', {
+      ...OPTIONS,
+      resources: [{ ...COUNTER, isActive: false }, MEETING_ROOM],
+    });
+
+    expect(screen.getByText(/Schalter is not active at the moment/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
   });
+});
+
+describe('accessibility of each part', () => {
+  it.each(['general', 'timing', 'resources', 'rules', 'review'] as const)(
+    'has no violations axe can find on the %s step',
+    async (part) => {
+      const { container } = renderForm(serviceDto(), 'wizard', part);
+
+      await expectNoViolations(container);
+    },
+  );
 });

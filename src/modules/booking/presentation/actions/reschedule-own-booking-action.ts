@@ -3,18 +3,25 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { bookingFlowCommands } from '../../composition';
-import { toBookingDto } from '../dto/booking-dto';
-import { rescheduleOwnBookingSchema } from '../schemas/booking-access-schema';
+import { getBookingCommands } from '../../composition';
+import { invalidateBookingAdmin } from '../cache/invalidate';
 import { parseBookingInput } from '../schemas/parse-booking-input';
+import { rescheduleOwnBookingSchema } from '../schemas/public-booking-schema';
 
-import type { BookingDto } from '../dto/booking-dto';
+import type { PublicBookingDto } from '../dto/booking-dto';
 
+/**
+ * A visitor moves their booking. A thin adapter: it validates the request, hands it to the use case, which authorizes and
+ * applies every rule, and returns the typed result with stable error codes, never a message.
+ */
 export async function rescheduleOwnBookingAction(
   input: unknown,
-): Promise<ActionResult<BookingDto>> {
+): Promise<ActionResult<PublicBookingDto>> {
   const result = await parseBookingInput(rescheduleOwnBookingSchema, input).asyncAndThen(
-    (request) => bookingFlowCommands.rescheduleOwnBooking.execute(request),
+    (command) => getBookingCommands().rescheduleOwnBooking.execute(command),
   );
-  return toActionResult(result.map(toBookingDto));
+  if (result.isOk()) {
+    invalidateBookingAdmin(result.value.websiteId);
+  }
+  return toActionResult(result);
 }

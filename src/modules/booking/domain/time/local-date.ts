@@ -1,12 +1,11 @@
 import { MS_PER_DAY } from '@lib/utils';
 
 /**
- * A calendar date with no time and no zone ("2026-03-29").
+ * A calendar date with no time and no zone ("2027-03-28").
  *
- * Opening hours, absences and booking horizons are statements about calendar
- * days in a place, not about instants, so scheduling reasons in `LocalDate`
- * and converts to an instant only through a time zone (`time-zone.ts`).
- * Arithmetic goes through the proleptic Gregorian epoch day, which never
+ * Opening hours, absences and booking horizons are statements about calendar days in a place, not
+ * about instants, so scheduling reasons in `LocalDate` and reaches an instant only through a time
+ * zone (`time-zone.ts`). Arithmetic goes through the proleptic Gregorian epoch day, which never
  * depends on the machine's zone or on daylight saving.
  */
 export interface LocalDate {
@@ -18,15 +17,17 @@ export interface LocalDate {
 }
 
 /** ISO weekday: 1 is Monday, 7 is Sunday. */
-// eslint-disable-next-line no-magic-numbers -- the ISO 8601 weekday numbers are the definition itself, not a tunable
-export const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
-export type Weekday = (typeof WEEKDAYS)[number];
+// eslint-disable-next-line no-magic-numbers -- the ISO 8601 weekday numbers are the definition itself
+export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-const YEAR_DIGITS = 4;
-const MIN_YEAR = 1970;
-const MAX_YEAR = 2200;
+/** The years the scheduling engine supports; instants and dates outside them are refused. */
+export const MIN_YEAR = 1970;
+export const MAX_YEAR = 2200;
+
 const MONTHS_PER_YEAR = 12;
-const DAYS_PER_WEEK = 7;
+const YEAR_DIGITS = 4;
+const SUNDAY = 0;
+const ISO_SUNDAY = 7;
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function daysInMonth(year: number, month: number): number {
@@ -34,9 +35,9 @@ function daysInMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-/** Whether the three numbers name a real calendar day inside the supported years. */
-export function isValidLocalDate(year: number, month: number, day: number): boolean {
-  return (
+/** Builds a date from its parts; `null` when they do not name a real day in the supported years. */
+export function createLocalDate(year: number, month: number, day: number): LocalDate | null {
+  const isReal =
     Number.isInteger(year) &&
     Number.isInteger(month) &&
     Number.isInteger(day) &&
@@ -45,16 +46,11 @@ export function isValidLocalDate(year: number, month: number, day: number): bool
     month >= 1 &&
     month <= MONTHS_PER_YEAR &&
     day >= 1 &&
-    day <= daysInMonth(year, month)
-  );
+    day <= daysInMonth(year, month);
+  return isReal ? { year, month, day } : null;
 }
 
-/** Builds a date from its parts; `null` when they do not name a real day. */
-export function createLocalDate(year: number, month: number, day: number): LocalDate | null {
-  return isValidLocalDate(year, month, day) ? { year, month, day } : null;
-}
-
-/** Parses `YYYY-MM-DD`; `null` for anything else, including `2026-02-30`. */
+/** Parses `YYYY-MM-DD`; `null` for anything else, including `2027-02-29`. */
 export function parseLocalDate(text: string): LocalDate | null {
   const match = ISO_DATE_PATTERN.exec(text);
   if (match === null) {
@@ -69,7 +65,7 @@ export function formatLocalDate(date: LocalDate): string {
   return `${pad(date.year, YEAR_DIGITS)}-${pad(date.month, 2)}-${pad(date.day, 2)}`;
 }
 
-/** Days since 1970-01-01. Two dates are compared and subtracted through this. */
+/** Days since 1970-01-01. Dates are compared and subtracted through this. */
 export function toEpochDay(date: LocalDate): number {
   return Date.UTC(date.year, date.month - 1, date.day) / MS_PER_DAY;
 }
@@ -79,7 +75,8 @@ export function fromEpochDay(epochDay: number): LocalDate {
   return { year: utc.getUTCFullYear(), month: utc.getUTCMonth() + 1, day: utc.getUTCDate() };
 }
 
-export function addDays(date: LocalDate, days: number): LocalDate {
+/** Calendar arithmetic; the caller keeps the result within the supported years. */
+export function addLocalDays(date: LocalDate, days: number): LocalDate {
   return fromEpochDay(toEpochDay(date) + days);
 }
 
@@ -88,29 +85,9 @@ export function daysBetween(from: LocalDate, to: LocalDate): number {
   return toEpochDay(to) - toEpochDay(from);
 }
 
-/** Negative, zero or positive, like a sort comparator. */
-export function compareLocalDates(a: LocalDate, b: LocalDate): number {
-  return toEpochDay(a) - toEpochDay(b);
-}
-
-export function isSameLocalDate(a: LocalDate, b: LocalDate): boolean {
-  return a.year === b.year && a.month === b.month && a.day === b.day;
-}
-
 export function weekdayOf(date: LocalDate): Weekday {
   const sundayBased = new Date(Date.UTC(date.year, date.month - 1, date.day)).getUTCDay();
-  // 0 (Sunday) becomes 7; 1 (Monday) stays 1.
-  const iso = sundayBased === 0 ? DAYS_PER_WEEK : sundayBased;
-  return WEEKDAYS.find((weekday) => weekday === iso) ?? 1;
-}
-
-/** Every date from `from` to `to`, both included; empty when `to` precedes `from`. */
-export function eachLocalDate(from: LocalDate, to: LocalDate): readonly LocalDate[] {
-  const first = toEpochDay(from);
-  const last = toEpochDay(to);
-  const dates: LocalDate[] = [];
-  for (let epochDay = first; epochDay <= last; epochDay += 1) {
-    dates.push(fromEpochDay(epochDay));
-  }
-  return dates;
+  // 0 (Sunday) becomes 7; 1 (Monday) to 6 (Saturday) stay. `getUTCDay` is 0 to 6, so the cast
+  // only names what the check above has left: 1 to 6.
+  return sundayBased === SUNDAY ? ISO_SUNDAY : (sundayBased as Weekday);
 }

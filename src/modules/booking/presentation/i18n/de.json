@@ -1,819 +1,1883 @@
 {
   "booking": {
-    "errors": {
-      "serviceNotFound": "Diese Leistung existiert nicht oder wird nicht mehr angeboten.",
-      "serviceInactive": "Diese Leistung kann derzeit nicht gebucht werden.",
-      "locationNotFound": "Dieser Standort existiert nicht.",
-      "locationUnavailable": "Diese Leistung wird am gewählten Standort nicht angeboten.",
-      "resourceNotFound": "Diese Ressource existiert nicht.",
-      "bookingNotFound": "Wir haben keine Buchung mit dieser Referenz und E-Mail-Adresse gefunden. Bitte prüfen Sie beide Angaben und versuchen Sie es erneut.",
-      "websiteNotFound": "Auf dieser Website ist keine Buchung möglich.",
-      "slotUnavailable": "Dieser Termin ist nicht mehr verfügbar. Bitte wählen Sie eine andere Zeit.",
-      "resourceUnavailable": "Alles, was für diesen Termin nötig ist, wurde soeben vergeben. Bitte wählen Sie eine andere Zeit.",
-      "capacityExceeded": "Zu dieser Zeit sind nicht mehr genug Plätze frei. Bitte wählen Sie eine andere Zeit oder eine kleinere Gruppe.",
-      "bookingConflict": "Jemand anderes hat diesen Termin soeben gebucht. Bitte wählen Sie eine andere Zeit.",
-      "bookingExpired": "Ihre Reservierung ist abgelaufen. Bitte wählen Sie die Zeit erneut.",
-      "bookingStale": "Diese Buchung wurde zwischenzeitlich geändert. Bitte laden Sie neu und versuchen Sie es erneut.",
-      "invalidStateTransition": "Das ist im aktuellen Zustand der Buchung nicht möglich.",
-      "bookingNotStarted": "Das ist erst möglich, wenn der Termin begonnen hat.",
-      "outsideBookingWindow": "Diese Zeit liegt außerhalb des Zeitraums, in dem Buchungen angenommen werden.",
-      "cancellationNotAllowed": "Diese Buchung kann nicht online storniert werden. Bitte kontaktieren Sie uns.",
-      "cancellationDeadlinePassed": "Die Frist für eine Online-Stornierung dieser Buchung ist abgelaufen. Bitte kontaktieren Sie uns.",
-      "reschedulingNotAllowed": "Diese Buchung kann nicht online verschoben werden. Bitte kontaktieren Sie uns.",
-      "reschedulingDeadlinePassed": "Die Frist für eine Online-Verschiebung dieser Buchung ist abgelaufen. Bitte kontaktieren Sie uns.",
-      "tooManyActiveBookings": "Sie haben für diese Leistung bereits die maximale Anzahl offener Buchungen.",
-      "tooManyActiveHolds": "Sie halten zu viele Zeiten gleichzeitig. Bitte schließen Sie eine ab oder geben Sie eine frei.",
-      "rateLimited": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
-      "configurationInvalid": "Diese Leistung ist noch nicht vollständig eingerichtet. Bitte wenden Sie sich an die Verwaltung.",
-      "validation": "Bitte prüfen Sie Ihre Eingaben.",
-      "infrastructure": "Die Buchung ist gerade nicht verfügbar. Bitte versuchen Sie es später erneut.",
-      "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
-      "signInRequired": "Bitte melden Sie sich an, um fortzufahren.",
-      "permissionDenied": "Sie haben dafür keine Berechtigung.",
-      "hasBookings": "Es gibt noch Buchungen dazu, auch vergangene. Schalten Sie es stattdessen aus, dann bleiben sie unverändert.",
-      "hasUpcomingBookings": "In diesem Kalender liegen noch kommende Buchungen. Verschieben oder stornieren Sie diese zuerst.",
-      "locationNotEmpty": "An diesem Standort sind noch Räume, Ausstattung oder Mitarbeitende zugeordnet. Entfernen oder verschieben Sie diese zuerst.",
-      "serviceOnlyHere": "Eine Leistung wird nur an diesem Standort angeboten. Bieten Sie sie anderswo an oder entfernen Sie sie zuerst.",
-      "resourceInUse": "Eine Leistung nennt diese Ressource als Voraussetzung. Ändern Sie zuerst diese Leistung."
-    },
-    "validation": {
-      "idInvalid": "Diese Auswahl ist ungültig.",
-      "referenceInvalid": "Bitte geben Sie die Buchungsreferenz aus Ihrer Bestätigung ein.",
-      "nameRequired": "Bitte geben Sie einen Namen ein.",
-      "textTooLong": "Bitte verwenden Sie höchstens {textMax} Zeichen.",
-      "categoryInvalid": "Bitte verwenden Sie nur Kleinbuchstaben, Ziffern und Bindestriche.",
-      "timeZoneInvalid": "Bitte wählen Sie eine gültige Zeitzone.",
-      "dateInvalid": "Bitte geben Sie ein gültiges Datum ein.",
-      "dateRangeInvalid": "Das Enddatum darf nicht vor dem Startdatum liegen.",
-      "dateRangeTooLong": "Dieser Zeitraum ist zu lang.",
-      "timeRangeInvalid": "Die Endzeit muss nach der Startzeit liegen.",
-      "timeRangesOverlap": "Diese Zeiten überschneiden sich.",
-      "tooMany": "Es gibt zu viele Einträge.",
-      "exceptionKindUnknown": "Bitte wählen Sie eine gültige Art der Ausnahme.",
-      "durationInvalid": "Die Dauer muss zwischen {durationMin} und {durationMax} Minuten liegen.",
-      "bufferInvalid": "Der Puffer muss zwischen 0 und {bufferMax} Minuten liegen.",
-      "slotIntervalInvalid": "Der Abstand muss zwischen {slotIntervalMin} und {slotIntervalMax} Minuten liegen.",
-      "noticeInvalid": "Bitte geben Sie eine gültige Vorlaufzeit ein.",
-      "horizonInvalid": "Der Buchungszeitraum muss zwischen 1 und {horizonMax} Tagen liegen.",
-      "capacityInvalid": "Die Kapazität muss eine ganze Zahl zwischen 1 und {capacityMax} sein.",
-      "participantsInvalid": "Bitte geben Sie eine gültige Personenzahl ein.",
-      "skillInvalid": "Fähigkeiten dürfen nur Buchstaben, Ziffern und Bindestriche enthalten.",
-      "resourceTypeUnknown": "Bitte wählen Sie einen gültigen Ressourcentyp.",
-      "assignmentInvalid": "Nur eine Mitarbeiter-Ressource kann einer Person zugewiesen werden, und das Bearbeiten eigener Zeiten setzt eine zugewiesene Person voraus.",
-      "employeeSelfManaged": "Mitarbeitende richten ihren Kalender selbst ein. Hier werden Räume, Plätze und Ausstattung angelegt.",
-      "requirementsRequired": "Fügen Sie mindestens eine Ressourcenanforderung hinzu.",
-      "requirementCountInvalid": "Die Anzahl der Ressourcen muss zwischen 1 und {requirementCountMax} liegen.",
-      "locationsRequired": "Wählen Sie mindestens einen Standort.",
-      "informationFieldUnknown": "Dieses Feld ist nicht verfügbar.",
-      "emailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
-      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-      "fieldRequired": "Bitte füllen Sie dieses Feld aus.",
-      "changePolicyInvalid": "Bitte prüfen Sie die Änderungsregeln.",
-      "actorUnknown": "Bitte wählen Sie, wer das tun darf.",
-      "statusUnknown": "Bitte wählen Sie einen gültigen Status.",
-      "serviceNotBookable": "Diese Leistung kann so nicht buchbar geschaltet werden: An keinem Standort gibt es passende Ressourcen. Speichern Sie sie als Entwurf (Haken bei „Buchbar“ entfernen) oder legen Sie zuerst die fehlenden Ressourcen an.",
-      "holidayInvalid": "Das ist kein bekannter Feiertag.",
-      "hoursOutsideLocation": "Diese Zeiten reichen über die Öffnungszeiten des Standorts hinaus. Kürzen Sie sie oder erweitern Sie zuerst die Öffnungszeiten.",
-      "hoursUsedByOthers": "Etwas an diesem Standort ist zu diesen Zeiten noch geöffnet. Passen Sie zuerst die Zeiten dieser Leistungen, Räume oder Mitarbeitenden an.",
-      "hoursOutsideStaffHours": "Diese Zeiten reichen über die Zeiten hinaus, in denen Mitarbeitende an diesem Standort arbeiten dürfen. Kürzen Sie sie zuerst."
-    },
     "status": {
       "held": "Reserviert",
-      "confirmed": "Bestätigt",
+      "open": "Offen",
+      "assigned": "Zugewiesen",
+      "completed": "Erledigt",
       "cancelled": "Storniert",
-      "completed": "Abgeschlossen",
-      "no_show": "Nicht erschienen",
+      "noShow": "Nicht erschienen",
       "expired": "Abgelaufen"
     },
-    "resourceTypes": {
-      "employee": "Mitarbeitende",
-      "room": "Raum",
-      "office": "Büro",
-      "serviceDesk": "Schalter",
-      "sportsField": "Sportplatz",
-      "meetingRoom": "Besprechungsraum",
-      "vehicle": "Fahrzeug",
-      "equipment": "Ausstattung",
-      "facility": "Einrichtung",
-      "workstation": "Arbeitsplatz",
-      "other": "Sonstiges"
+    "errors": {
+      "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "infrastructure": "Das hat nicht geklappt. Bitte versuchen Sie es später erneut.",
+      "validation": "Bitte prüfen Sie Ihre Eingaben.",
+      "invalidStateTransition": "Das ist im aktuellen Status der Buchung nicht möglich.",
+      "bookingExpired": "Die Reservierung ist abgelaufen.",
+      "holdNotExpired": "Die Reservierung ist noch aktiv.",
+      "bookingNotStarted": "Der Termin hat noch nicht begonnen.",
+      "serviceInactive": "Diese Leistung ist derzeit nicht buchbar.",
+      "locationNotOffered": "Diese Leistung wird an diesem Standort nicht angeboten.",
+      "slotUnavailable": "Dieser Termin ist leider nicht mehr frei. Bitte wählen Sie eine andere Zeit.",
+      "assignmentIncomplete": "Für den Termin sind noch Mitarbeiterplätze offen.",
+      "alreadyAssigned": "Dieser Termin wurde bereits vergeben.",
+      "notAssigned": "Der Termin ist dieser Person nicht zugewiesen.",
+      "notEligible": "Diese Person kann den Termin nicht übernehmen.",
+      "unassignNotAllowed": "Die Zuweisung kann nicht aufgehoben werden.",
+      "bookingStarted": "Der Termin hat bereits begonnen. Wer ihn betreut, lässt sich nicht mehr ändern.",
+      "cancellationNotAllowed": "Dieser Termin kann nicht storniert werden.",
+      "cancellationDeadlinePassed": "Die Frist zum Stornieren ist abgelaufen.",
+      "reschedulingNotAllowed": "Dieser Termin kann nicht verschoben werden.",
+      "reschedulingDeadlinePassed": "Die Frist zum Verschieben ist abgelaufen.",
+      "reschedulingLimitReached": "Dieser Termin wurde schon so oft verschoben, wie es erlaubt ist.",
+      "resourceTaken": "Eine benötigte Ressource ist zu dieser Zeit schon belegt.",
+      "capacityExceeded": "Für diesen Termin sind keine Plätze mehr frei.",
+      "bookingStale": "Die Buchung wurde in der Zwischenzeit geändert. Bitte laden Sie die Ansicht neu und versuchen Sie es erneut.",
+      "referenceTaken": "Die Buchungsnummer ist schon vergeben. Bitte versuchen Sie es erneut.",
+      "bookingNotFound": "Die Buchung wurde nicht gefunden.",
+      "websiteNotFound": "Die Website wurde nicht gefunden.",
+      "scheduleTooLarge": "Der gewählte Zeitraum ist zu groß. Bitte wählen Sie einen kürzeren.",
+      "serviceNotFound": "Die Leistung wurde nicht gefunden.",
+      "locationNotFound": "Der Standort wurde nicht gefunden.",
+      "resourceNotFound": "Die Ressource wurde nicht gefunden.",
+      "tooManyHolds": "Gerade sind sehr viele Termine reserviert. Bitte versuchen Sie es in einigen Minuten erneut.",
+      "tooManyBookings": "Für diese E-Mail-Adresse gibt es schon zu viele offene Buchungen.",
+      "rateLimited": "Zu viele Anfragen. Bitte versuchen Sie es gleich noch einmal.",
+      "notYourBooking": "Auf diese Buchung haben Sie keinen Zugriff.",
+      "notClaimable": "Dieser Termin kann nicht übernommen werden.",
+      "timeZoneLocked": "Die Zeitzone kann nicht geändert werden, solange der Standort künftige Buchungen hat.",
+      "locationImpactUnacknowledged": "Die Änderung betrifft bestehende Buchungen. Bitte prüfen Sie diese vor dem Speichern.",
+      "locationStale": "Der Standort wurde in der Zwischenzeit von jemand anderem geändert.",
+      "serviceStale": "Der Service wurde inzwischen geändert. Laden Sie neu, um den aktuellen Stand zu sehen.",
+      "serviceSharedUnacknowledged": "Die Änderung betrifft alle Standorte, die diesen Service anbieten. Bitte bestätigen Sie das.",
+      "serviceImpactUnresolved": "Für jede Buchung fehlt noch eine Entscheidung.",
+      "serviceAlreadyOffered": "Dieser Service wird an diesem Standort bereits angeboten.",
+      "resourceStale": "Die Ressource wurde in der Zwischenzeit von jemand anderem geändert.",
+      "resourceImpactUnacknowledged": "Die Änderung betrifft bestehende Buchungen. Bitte prüfen Sie diese vor dem Speichern."
     },
-    "fields": {
-      "firstName": "Vorname",
-      "lastName": "Nachname",
-      "email": "E-Mail-Adresse",
-      "phone": "Telefonnummer",
-      "referenceNumber": "Aktenzeichen",
-      "notes": "Anmerkungen"
+    "validation": {
+      "dateRangeInvalid": "Bitte wählen Sie einen gültigen Zeitraum.",
+      "dateRangeTooLong": "Der Zeitraum ist zu lang.",
+      "durationInvalid": "Die Dauer ist ungültig.",
+      "bufferInvalid": "Die Pufferzeit ist ungültig.",
+      "slotIntervalInvalid": "Der Abstand der Startzeiten ist ungültig.",
+      "noticeInvalid": "Die Vorlaufzeit ist ungültig.",
+      "horizonInvalid": "Der Buchungszeitraum im Voraus ist ungültig.",
+      "requirementCountInvalid": "Die Anzahl der benötigten Ressourcen ist ungültig.",
+      "tooMany": "Das sind zu viele Einträge.",
+      "fieldRequired": "Dieses Feld ist erforderlich.",
+      "idInvalid": "Die Auswahl ist ungültig.",
+      "referenceInvalid": "Bitte geben Sie eine gültige Buchungsnummer ein.",
+      "startInvalid": "Die Startzeit ist ungültig.",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+      "limitInvalid": "Der Wert ist ungültig.",
+      "nameInvalid": "Bitte geben Sie einen Namen mit 1 bis {nameMax} Zeichen ein.",
+      "addressInvalid": "Die Adresse darf höchstens {addressMax} Zeichen lang sein.",
+      "timeZoneInvalid": "Bitte wählen Sie eine gültige Zeitzone.",
+      "weekInvalid": "Die Woche muss aus sieben Tagen bestehen.",
+      "timeRangeInvalid": "Bitte geben Sie eine gültige Zeit ein; das Ende muss nach dem Beginn liegen.",
+      "timeRangesOverlap": "Diese Zeiten überschneiden sich mit anderen.",
+      "breakOutsideHours": "Eine Pause muss innerhalb der Öffnungszeiten liegen.",
+      "exceptionInvalid": "Bitte prüfen Sie diese Ausnahme: den Zeitraum und, wenn geöffnet ist, die Öffnungszeiten.",
+      "exceptionsOverlap": "Zwei Ausnahmen mit anderen Öffnungszeiten dürfen sich nicht überschneiden: Es wäre unklar, welche gilt.",
+      "categoryInvalid": "Die Kategorie darf höchstens {categoryMax} Zeichen haben.",
+      "descriptionInvalid": "Die Beschreibung darf höchstens {descriptionMax} Zeichen haben.",
+      "documentsInvalid": "Höchstens {documentsMax} Unterlagen mit je höchstens {documentMax} Zeichen.",
+      "instructionsInvalid": "Die Hinweise dürfen höchstens {instructionsMax} Zeichen haben.",
+      "noteInvalid": "Die interne Notiz darf höchstens {noteMax} Zeichen haben.",
+      "actorsRequired": "Wählen Sie mindestens eine Person, die stornieren und ändern darf.",
+      "noticeNotBeforeHorizon": "Der Buchungsschluss muss vor der weitesten Buchung im Voraus liegen.",
+      "deadlineInvalid": "Die Frist darf nicht negativ sein.",
+      "resourceInvalid": "Diese Ressource kann an diesem Standort nicht verwendet werden.",
+      "qualificationInvalid": "Wählen Sie, wer den Termin übernimmt, und bei einer Qualifikation, welche.",
+      "adoptModeInvalid": "Wählen Sie, ob der Service kopiert oder verknüpft wird.",
+      "resourceTypeInvalid": "Bitte wählen Sie eine Art.",
+      "capacityInvalid": "Die Kapazität muss eine ganze Zahl von 1 bis 10000 sein.",
+      "locationInvalid": "Bitte wählen Sie einen Standort.",
+      "serviceInvalid": "Diese Leistung gibt es auf dieser Website nicht.",
+      "coverageOverlap": "Eine Person kann an einem Tag nicht an zwei Standorten sein: Die Tage zweier Einsätze dürfen sich nicht überschneiden."
+    },
+    "auditEvents": {
+      "booking": {
+        "held": "Termin reserviert",
+        "hold_released": "Reservierung freigegeben",
+        "confirmed": "Buchung bestätigt",
+        "cancelled": "Buchung storniert",
+        "rescheduled": "Buchung verschoben",
+        "assigned": "Mitarbeiter zugewiesen",
+        "unassigned": "Zuweisung aufgehoben",
+        "completed": "Termin abgeschlossen",
+        "no_show": "Nicht erschienen",
+        "conflict_detected": "Konflikt bei gleichzeitiger Buchung",
+        "location_created": "Standort angelegt",
+        "location_updated": "Standort geändert",
+        "service_created": "Service angelegt",
+        "service_updated": "Service geändert",
+        "service_adopted": "Service übernommen",
+        "service_deactivated": "Service deaktiviert",
+        "service_reactivated": "Service aktiviert",
+        "resource_created": "Ressource angelegt",
+        "resource_updated": "Ressource geändert",
+        "team_member_set_up": "Mitarbeiterkalender eingerichtet",
+        "team_member_updated": "Mitarbeiterkalender geändert",
+        "team_member_removed": "Mitarbeiter/in aus dem Team entfernt",
+        "team_member_moved": "Mitarbeiter/in in ein anderes Team verschoben"
+      }
     },
     "weekdays": {
-      "monday": "Montag",
-      "tuesday": "Dienstag",
-      "wednesday": "Mittwoch",
-      "thursday": "Donnerstag",
-      "friday": "Freitag",
-      "saturday": "Samstag",
-      "sunday": "Sonntag"
-    },
-    "exceptionKinds": {
-      "closed": "Geschlossen",
-      "override": "Abweichende Zeiten",
-      "additional": "Zusätzliche Zeiten"
-    },
-    "actors": {
-      "customer": "Kundschaft",
-      "staff": "Personal"
-    },
-    "steps": {
-      "service": "Leistung",
-      "location": "Standort",
-      "participants": "Gruppengröße",
-      "time": "Datum und Uhrzeit",
-      "details": "Ihre Angaben",
-      "review": "Prüfen",
-      "done": "Buchung bestätigt"
-    },
-    "progress": {
-      "label": "Buchungsfortschritt",
-      "completed": "abgeschlossen"
-    },
-    "actions": {
-      "back": "Zurück",
-      "continue": "Weiter",
-      "review": "Buchung prüfen"
-    },
-    "sample": {
-      "idCard": {
-        "name": "Personalausweis beantragen",
-        "description": "Vereinbaren Sie einen Termin, um Ihren Personalausweis zu beantragen oder zu verlängern.",
-        "category": "Bürgerservice"
+      "long": {
+        "mon": "Montag",
+        "tue": "Dienstag",
+        "wed": "Mittwoch",
+        "thu": "Donnerstag",
+        "fri": "Freitag",
+        "sat": "Samstag",
+        "sun": "Sonntag"
       },
-      "registration": {
-        "name": "Ummeldung",
-        "description": "Melden Sie Ihre neue Adresse persönlich an.",
-        "category": "Bürgerservice"
-      },
-      "location": {
-        "name": "Bürgerbüro",
-        "address": "Rathaus, Erdgeschoss"
-      },
-      "instructions": "Bitte bringen Sie Ihren aktuellen Personalausweis mit."
+      "short": {
+        "mon": "Mo",
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "So"
+      }
     },
-    "state": {
-      "empty": "Hier kann noch nichts gebucht werden. Bitte schauen Sie später noch einmal vorbei.",
-      "empty-draft": "Es kann noch nichts gebucht werden, daher zeigt die Vorschau Beispielleistungen. Legen Sie in der Buchungsverwaltung eine aktive Leistung mit Standort und Öffnungszeiten an.",
-      "unavailable": "Die Buchung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut."
+    "holidays": {
+      "newYear": "Neujahr",
+      "epiphany": "Heilige Drei Könige",
+      "womensDay": "Internationaler Frauentag",
+      "goodFriday": "Karfreitag",
+      "easterSunday": "Ostersonntag",
+      "easterMonday": "Ostermontag",
+      "labourDay": "Tag der Arbeit",
+      "ascension": "Christi Himmelfahrt",
+      "whitSunday": "Pfingstsonntag",
+      "whitMonday": "Pfingstmontag",
+      "corpusChristi": "Fronleichnam",
+      "assumption": "Mariä Himmelfahrt",
+      "germanUnity": "Tag der Deutschen Einheit",
+      "childrensDay": "Weltkindertag",
+      "reformationDay": "Reformationstag",
+      "allSaints": "Allerheiligen",
+      "repentanceDay": "Buß- und Bettag",
+      "christmasDay": "1. Weihnachtstag",
+      "boxingDay": "2. Weihnachtstag"
     },
-    "preview": {
-      "notice": "Vorschau: Sie können die Schritte durchklicken, es wird aber nichts reserviert oder gebucht.",
-      "disabled": "In der Vorschau deaktiviert."
+    "regions": {
+      "DE": "Bundesweit",
+      "BW": "Baden-Württemberg",
+      "BY": "Bayern",
+      "BE": "Berlin",
+      "BB": "Brandenburg",
+      "HB": "Bremen",
+      "HH": "Hamburg",
+      "HE": "Hessen",
+      "MV": "Mecklenburg-Vorpommern",
+      "NI": "Niedersachsen",
+      "NW": "Nordrhein-Westfalen",
+      "RP": "Rheinland-Pfalz",
+      "SL": "Saarland",
+      "SN": "Sachsen",
+      "ST": "Sachsen-Anhalt",
+      "SH": "Schleswig-Holstein",
+      "TH": "Thüringen"
     },
-    "summary": {
-      "service": "Leistung",
-      "when": "Wann",
-      "where": "Wo",
-      "participants": "Personen"
-    },
-    "service": {
-      "intro": "Was möchten Sie buchen?",
-      "search": "Leistungen durchsuchen",
-      "noMatch": "Keine Leistung entspricht Ihrer Suche.",
-      "duration": "{minutes, plural, one {# Minute} other {# Minuten}}"
-    },
-    "location": {
-      "intro": "Wohin möchten Sie gehen?",
-      "virtual": "Online"
-    },
-    "participants": {
-      "label": "Anzahl der Personen",
-      "hint": "Zwischen 1 und {max}.",
-      "invalid": "Bitte geben Sie eine Zahl zwischen 1 und {max} ein."
-    },
-    "time": {
-      "parts": {
-        "morning": "Vormittag",
-        "afternoon": "Nachmittag",
-        "evening": "Abend"
-      },
-      "chooseDay": "Wählen Sie einen Tag und dann eine Uhrzeit.",
-      "dayGroup": "Tage des Monats",
-      "dayAvailable": "{date}, {count, plural, one {# Termin verfügbar} other {# Termine verfügbar}}",
-      "dayUnavailable": "{date}, keine Termine verfügbar",
-      "timesOn": "Uhrzeiten am {date}",
-      "placesLeft": "{count, plural, one {# Platz frei} other {# Plätze frei}}",
-      "previousMonth": "Voriger Monat",
-      "nextMonth": "Nächster Monat",
-      "noTimesInMonth": "Im {month} sind keine Termine verfügbar.",
-      "zoneNote": "Alle Zeiten sind Ortszeit ({zone}).",
-      "loading": "Verfügbare Termine werden geladen …",
-      "retry": "Erneut versuchen",
-      "selected": "Ausgewählt: {date} um {time}",
-      "reserving": "Wird reserviert …",
-      "alternativesLabel": "Alternative Termine",
-      "alternativesIntro": "Dieser Termin wurde soeben vergeben. Diese Zeiten liegen in der Nähe:",
-      "alternativeOption": "{date}, {time}"
-    },
-    "hold": {
-      "reservedFor": "Für Sie reserviert: {time}",
-      "endingSoon": "Ihre Reservierung endet in weniger als zwei Minuten.",
-      "expired": "Ihre Reservierung ist abgelaufen. Bitte wählen Sie die Zeit erneut."
-    },
-    "details": {
-      "required": "Pflichtfeld",
-      "optional": "optional",
-      "errorSummary": "Bitte korrigieren Sie Folgendes:",
-      "documents": "Bitte mitbringen",
-      "instructions": "Gut zu wissen",
-      "customer": "Kundschaft",
-      "resources": "Ressourcen",
-      "rescheduled": "Mal verschoben",
-      "cancelledBy": "Storniert von",
-      "reschedule": "Verschieben",
-      "cancel": "Buchung stornieren",
-      "confirmCancel": "Diese Buchung stornieren?",
-      "confirmCancelYes": "Ja, stornieren",
-      "keep": "Behalten",
-      "complete": "Als abgeschlossen markieren",
-      "noShow": "Als nicht erschienen markieren",
-      "close": "Schließen",
-      "readOnly": "Sie können Buchungen ansehen, aber nicht ändern."
-    },
-    "review": {
-      "yourDetails": "Ihre Angaben",
-      "notProvided": "Nicht angegeben",
-      "privacy": "Wir verwenden Ihre Angaben nur, um diese Buchung zu bearbeiten.",
-      "confirm": "Verbindlich buchen",
-      "confirming": "Wird gebucht …"
-    },
-    "confirmation": {
-      "referenceLabel": "Ihre Buchungsreferenz",
-      "keepSafe": "Bitte bewahren Sie diese Referenz und die E-Mail-Adresse {email} auf. Sie benötigen beides, um Ihre Buchung zu ändern oder zu stornieren. Eine Bestätigung senden wir zusätzlich an diese Adresse.",
-      "copy": "Referenz kopieren",
-      "copied": "Kopiert",
-      "copyFailed": "Kopieren nicht möglich. Bitte notieren Sie sich die Referenz.",
-      "addToCalendar": "Zum Kalender hinzufügen",
-      "manage": "Buchung ändern oder stornieren",
-      "bookAnother": "Weiteren Termin buchen"
-    },
-    "manage": {
-      "title": "Buchung ändern oder stornieren",
-      "intro": "Geben Sie die Referenz und die E-Mail-Adresse ein, die Sie bei der Buchung verwendet haben.",
-      "link": "Ich habe bereits eine Buchung",
-      "reference": "Buchungsreferenz",
-      "referenceRequired": "Bitte geben Sie Ihre Buchungsreferenz ein.",
-      "email": "E-Mail-Adresse",
-      "emailRequired": "Bitte geben Sie die E-Mail-Adresse der Buchung ein.",
-      "find": "Buchung suchen",
-      "searching": "Suche läuft …",
-      "limited": "Einige Änderungen sind online nicht mehr möglich. Bitte kontaktieren Sie uns.",
-      "notActive": "Diese Buchung ist nicht mehr aktiv.",
-      "reschedule": "Auf eine andere Zeit verschieben",
-      "rescheduleTitle": "Neue Zeit wählen",
-      "moveChoose": "Neue Zeit wählen",
-      "moveTo": "Verschieben auf {date}, {time}",
-      "cancel": "Buchung stornieren",
-      "cancelling": "Wird storniert …",
-      "confirmCancel": "Möchten Sie diese Buchung wirklich stornieren?",
-      "confirmCancelYes": "Ja, Buchung stornieren",
-      "keep": "Buchung behalten",
-      "backToBooking": "Zurück zur Buchung"
-    },
-    "admin": {
+    "locations": {
+      "title": "Standorte",
+      "description": "Standorte, Öffnungszeiten und Ausnahmen verwalten.",
+      "create": "Standort erstellen",
+      "filterLabel": "Standorte filtern",
+      "searchLabel": "Standort suchen",
+      "searchPlaceholder": "Standort suchen …",
+      "apply": "Anwenden",
+      "reset": "Zurücksetzen",
+      "tabsLabel": "Status der Standorte",
       "tabs": {
-        "calendar": "Kalender",
-        "setup": "Einrichtung",
-        "team": "Team"
+        "all": "Alle",
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
       },
-      "title": "Buchungen",
-      "description": "Der Kalender mit allen Buchungen und die Einrichtung der Standorte, Leistungen und Räume.",
-      "tabsLabel": "Bereiche des Buchungssystems"
+      "panelTitle": "Standorte",
+      "count": "{count, plural, one {# Standort} other {# Standorte}}",
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
+      },
+      "today": {
+        "open": "Heute geöffnet {hours}",
+        "closed": "Heute geschlossen",
+        "off": "Ausgeschaltet"
+      },
+      "empty": {
+        "title": "Noch kein Standort",
+        "description": "Legen Sie den ersten Standort an: mit Adresse, Öffnungszeiten und Ausnahmen.",
+        "readOnly": "Es ist noch kein Standort angelegt."
+      },
+      "emptyFiltered": {
+        "title": "Keine Standorte gefunden",
+        "description": "Zu dieser Auswahl gibt es keinen Standort.",
+        "reset": "Auswahl zurücksetzen"
+      },
+      "legend": {
+        "title": "Aktiv und inaktiv",
+        "body": "Ein aktiver Standort arbeitet normal. Ein inaktiver Standort ist ausgeschaltet. Bestehende Buchungen bleiben in beiden Fällen bestehen."
+      },
+      "pagination": "Seiten der Standorte",
+      "map": {
+        "title": "{count, plural, one {# Standort} other {# Standorte}}",
+        "pin": "{number}. {name}",
+        "unplaced": "{count, plural, one {# Standort konnte nicht auf der Karte platziert werden. Prüfen Sie die Adresse.} other {# Standorte konnten nicht auf der Karte platziert werden. Prüfen Sie die Adressen.}}",
+        "emptyTitle": "Noch keine Standorte auf der Karte",
+        "emptyBody": "Jeder Standort, den Sie anlegen, erscheint hier als nummerierter Pin."
+      },
+      "columns": {
+        "name": "Standort",
+        "status": "Status",
+        "today": "Heute",
+        "open": "Öffnen"
+      },
+      "open": "Öffnen",
+      "openNamed": "{name} öffnen"
+    },
+    "overview": {
+      "back": "Alle Standorte",
+      "hint": "Sie müssen nicht alle Schritte durchgehen. Ändern Sie nur, was nötig ist.",
+      "editAll": "Alle Schritte durchgehen",
+      "edit": "Bearbeiten",
+      "sectionsLabel": "Bereiche des Standorts",
+      "savedTitle": "Gespeichert",
+      "savedBody": "Ihre Änderungen am Standort sind gespeichert.",
+      "futureBookings": "{count, plural, =0 {Keine künftigen Buchungen} one {# künftige Buchung} other {# künftige Buchungen}}",
+      "rows": {
+        "basics": "Grunddaten",
+        "hours": "Öffnungszeiten",
+        "exceptions": "Ausnahmen",
+        "services": "Services"
+      },
+      "noAddress": "Keine Adresse",
+      "exceptionsNone": "Keine Ausnahmen",
+      "exceptionsSummary": "{count, plural, one {# Eintrag} other {# Einträge}}: {holidays} Feiertage, {special} Sonderzeiten, {closures} Schließungen",
+      "hoursNone": "An keinem Tag geöffnet",
+      "mapNoAddress": "Ohne Adresse gibt es keinen Kartenpunkt.",
+      "mapNotFound": "Die Adresse wurde auf der Karte nicht gefunden. Prüfen Sie die Schreibweise.",
+      "takeOverTitle": "{count, plural, one {# Service} other {# Services}} konnten nicht übernommen werden",
+      "takeOverBody": "Der Standort ist gespeichert.",
+      "takeOverAction": "Services übernehmen"
+    },
+    "week": {
+      "group": "{days} {hours}",
+      "withBreak": "{hours} (Pause {breaks})",
+      "range": "{from}–{to}",
+      "closed": "geschlossen",
+      "total": "{hours} Std. {minutes} Min. pro Woche"
     },
     "form": {
-      "save": "Speichern",
-      "saving": "Wird gespeichert …",
+      "createTitle": "Neuer Standort",
+      "editTitle": "Standort bearbeiten",
+      "sectionTitle": "{location}: {section}",
+      "steps": {
+        "basics": "Grunddaten",
+        "hours": "Öffnungszeiten",
+        "exceptions": "Ausnahmen",
+        "review": "Prüfen & speichern",
+        "services": "Services"
+      },
+      "actions": {
+        "next": "Weiter: {step}",
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "saveLocation": "Standort speichern",
+        "saving": "Speichert …",
+        "toReview": "Zurück zur Prüfung"
+      },
+      "unsaved": "Änderungen noch nicht gespeichert",
+      "unsavedTitle": "Änderungen verwerfen?",
+      "unsavedBody": "Ihre Änderungen am Standort sind noch nicht gespeichert und gehen verloren, wenn Sie die Seite verlassen.",
+      "unsavedConfirm": "Verwerfen",
+      "unsavedCancel": "Weiter bearbeiten",
+      "stale": {
+        "title": "Der Standort wurde inzwischen geändert",
+        "body": "Jemand anderes hat gespeichert. Ihre Eingaben bleiben hier erhalten. Wenn Sie neu laden, sehen Sie den aktuellen Stand, und Ihre Eingaben gehen verloren.",
+        "reload": "Neu laden"
+      },
+      "basics": {
+        "name": "Name des Standorts",
+        "nameHint": "So sehen Bürger den Standort bei der Buchung.",
+        "address": "Adresse",
+        "addressHint": "Straße, Hausnummer, PLZ und Ort. Wählen Sie einen Vorschlag oder tippen Sie die Adresse selbst.",
+        "timeZone": "Zeitzone",
+        "timeZoneHint": "Alle Zeiten dieses Standorts gelten in dieser Zeitzone. Tippen Sie zum Beispiel „Berlin“.",
+        "timeZoneLocked": "Die Zeitzone kann nicht geändert werden, solange der Standort künftige Buchungen hat.",
+        "active": "Standort aktiv",
+        "activeHint": "Der Standort ist im Betrieb.",
+        "inactiveNote": "Bestehende Buchungen bleiben bestehen. Der Standort ist nur ausgeschaltet.",
+        "mapLabel": "Standort auf der Karte",
+        "mapEmpty": "Geben Sie eine Adresse ein, um den Standort auf der Karte zu sehen.",
+        "sectionStatus": "Status"
+      },
+      "services": {
+        "title": "Services Ihrer anderen Standorte",
+        "description": "Wählen Sie die Services, mit denen dieser Standort startet. Sie können sie auch später unter Services hinzufügen.",
+        "all": "Alle auswählen",
+        "none": "Keine auswählen",
+        "chosen": "{count, plural, =0 {Nichts gewählt} one {# Service gewählt} other {# Services gewählt}}",
+        "later": "Jetzt wird nichts angelegt: die gewählten Services werden übernommen, sobald der Standort gespeichert ist. Ressourcen weisen Sie ihnen danach zu.",
+        "reviewNone": "Nichts von anderen Standorten übernommen",
+        "reviewSome": "{count, plural, one {# Service} other {# Services}} von anderen Standorten"
+      }
+    },
+    "hours": {
+      "templates": {
+        "label": "Vorlage wählen",
+        "hint": "Eine Vorlage zeigt vorher, was sich ändert.",
+        "standardOffice": "Standard Amt",
+        "mornings": "Nur vormittags",
+        "extended": "Verlängert",
+        "closed": "Geschlossen"
+      },
+      "preview": {
+        "title": "Das ändert die Vorlage „{template}“",
+        "unchanged": "Die Woche entspricht schon dieser Vorlage.",
+        "change": "{day}: {before} → {after}",
+        "apply": "Vorlage anwenden",
+        "cancel": "Abbrechen",
+        "body": "Die Öffnungszeiten der unten genannten Tage werden ersetzt. Gespeichert wird erst, wenn Sie den Standort speichern."
+      },
+      "weekLabel": "Öffnungszeiten der Woche",
+      "open": "Geöffnet",
+      "closed": "Geschlossen",
+      "breakWord": "Pause {breaks}",
+      "addInterval": "Zeitraum hinzufügen",
+      "addBreak": "Pause hinzufügen",
+      "intervalStart": "{day}, Zeitraum {n}: Beginn",
+      "intervalEnd": "{day}, Zeitraum {n}: Ende",
+      "breakStart": "{day}, Pause {n}: Beginn",
+      "breakEnd": "{day}, Pause {n}: Ende",
+      "removeInterval": "{day}, Zeitraum {n} entfernen",
+      "removeBreak": "{day}, Pause {n} entfernen",
+      "copy": "Kopieren",
+      "copyTitle": "Auf andere Tage kopieren",
+      "copyApply": "Übernehmen",
+      "total": "Gesamt: {hours} Std. {minutes} Min. pro Woche",
+      "legend": {
+        "open": "Geöffnet",
+        "pause": "Pause",
+        "closed": "Geschlossen"
+      },
+      "timeHint": "Zeiten im Format Stunden:Minuten.",
+      "legendBreak": "Pause",
+      "openDay": "Öffnen",
+      "editTimes": "Genaue Zeiten",
+      "editTimesFor": "Genaue Zeiten und Kopieren für {day}",
+      "dayColumn": "Tag",
+      "actionsColumn": "Aktionen",
+      "kindOpen": "Geöffnet",
+      "kindBreak": "Pause",
+      "rangeNamed": "{kind} {n}",
+      "copyBody": "Übernimmt Zeiten und Pausen von {day} für die gewählten Tage.",
+      "outsideLocation": "Außerhalb der Öffnungszeiten des Standorts",
+      "closedAtLocation": "Der Standort ist an diesem Tag geschlossen"
+    },
+    "exceptions": {
+      "hint": "Eine Ausnahme ersetzt für diesen Tag die Wochenzeiten.",
+      "add": "Ausnahme hinzufügen",
+      "tabsLabel": "Ausnahmen filtern",
+      "tabs": {
+        "all": "Alle {count}",
+        "holidays": "Feiertage {count}",
+        "special": "Sonderzeiten {count}",
+        "closures": "Schließungen {count}"
+      },
+      "listLabel": "Ausnahmen",
+      "empty": "Noch keine Ausnahmen.",
+      "emptyTab": "In diesem Bereich gibt es keine Ausnahmen.",
+      "kind": {
+        "closed": "Geschlossen",
+        "override": "Andere Zeiten",
+        "additional": "Zusätzliche Zeiten"
+      },
+      "kindLabel": "Art",
+      "from": "Von",
+      "to": "Bis (einschließlich)",
+      "holiday": "Feiertag: {name}",
+      "newRow": "Neue Ausnahme",
+      "range": "{from} bis {to}",
+      "details": "Details {title}",
+      "hoursOf": "Zeiten der Ausnahme",
+      "remove": "Entfernen",
+      "removeTitle": "Ausnahme entfernen?",
+      "removeBody": "Die Ausnahme wird aus der Liste entfernt. Gespeichert wird erst, wenn Sie den Standort speichern.",
+      "removeConfirm": "Entfernen",
+      "removeCancel": "Abbrechen",
+      "showMore": "Weitere anzeigen",
+      "shown": "{shown} von {total} angezeigt",
+      "import": {
+        "title": "Feiertage übernehmen",
+        "region": "Bundesland",
+        "year": "Jahr",
+        "apply": "Feiertage hinzufügen",
+        "hint": "Feiertage werden als Schließungen eingetragen. Bereits eingetragene Tage bleiben unverändert.",
+        "added": "{count, plural, one {# Feiertag hinzugefügt.} other {# Feiertage hinzugefügt.}}",
+        "none": "Es gibt keine neuen Feiertage: alle Tage sind schon eingetragen."
+      },
+      "addTitle": "Ausnahme hinzufügen",
+      "editTitle": "Ausnahme bearbeiten",
+      "save": "Ausnahme speichern",
       "cancel": "Abbrechen",
+      "problems": "Einige Angaben brauchen Ihre Aufmerksamkeit, bevor die Ausnahme hinzugefügt werden kann.",
+      "showing": "{from}–{to} von {total} angezeigt",
+      "columns": {
+        "when": "Tage",
+        "kind": "Art",
+        "hours": "Zeiten",
+        "actions": "Aktionen"
+      },
+      "pager": {
+        "label": "Seiten der Ausnahmen",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "page": "Seite {page} von {count}"
+      }
+    },
+    "review": {
+      "hintsTitle": "Hinweise vor dem Speichern",
+      "noHints": "Keine Hinweise.",
+      "hoursNone": "An keinem Wochentag ist geöffnet. Der Standort ist nur an Tagen mit zusätzlichen Zeiten buchbar.",
+      "inactive": "Der Standort ist nicht aktiv. Bestehende Buchungen bleiben bestehen.",
       "edit": "Bearbeiten",
-      "inactive": "Inaktiv",
-      "errorSummary": "Das Formular konnte nicht gespeichert werden. Bitte korrigieren Sie Folgendes:",
-      "readOnly": "Sie können dies ansehen, aber nicht ändern.",
-      "noMatches": "Keine Treffer",
-      "addValue": "„{value}“ hinzufügen",
-      "removeValue": "{label} entfernen",
-      "paths": {
-        "exception": "Ausnahme {number}",
-        "hoursOn": "Öffnungszeiten am {day}",
-        "breaksOn": "Pausen am {day}",
-        "exceptionFields": {
-          "kind": "Art",
-          "from": "Von-Datum",
-          "to": "Bis-Datum",
-          "label": "Beschreibung",
-          "day": "Zeiten",
-          "holiday": "Feiertag"
+      "rowsLabel": "Zusammenfassung"
+    },
+    "impact": {
+      "title": "{count, plural, one {# Buchung ist betroffen} other {# Buchungen sind betroffen}}",
+      "titleMore": "Es sind mehr Buchungen betroffen, als gezeigt werden können",
+      "description": "Diese Änderung lässt bestehende Buchungen außerhalb der Öffnungszeiten. Prüfen Sie, welche das sind.",
+      "changesTitle": "Das ändert sich",
+      "closesEarlier": "{day} schließt künftig um {to} statt um {from}.",
+      "closesLater": "{day} schließt künftig um {to} statt um {from}.",
+      "opensEarlier": "{day} öffnet künftig um {to} statt um {from}.",
+      "opensLater": "{day} öffnet künftig um {to} statt um {from}.",
+      "closed": "{day} ist künftig geschlossen.",
+      "opened": "{day} ist künftig geöffnet ({to}).",
+      "other": "{day}: Pausen oder Zeiten ändern sich.",
+      "exceptionsChanged": "Die Ausnahmen ändern sich.",
+      "listLabel": "Betroffene Buchungen",
+      "reason": {
+        "outsideOpeningHours": "Außerhalb der neuen Öffnungszeiten",
+        "resourceUnavailable": "Ressource nicht verfügbar",
+        "overCapacity": "Mehr Buchungen gleichzeitig als Plätze"
+      },
+      "note": "Nichts wird automatisch storniert oder verschoben. Die Buchungen bleiben bestehen, und Sie klären sie danach selbst. Bürger werden nicht benachrichtigt.",
+      "truncated": "Es gibt mehr betroffene Buchungen, als hier gezeigt werden können.",
+      "confirm": "Trotzdem speichern",
+      "cancel": "Zurück",
+      "undecided": "{count, plural, one {# Buchung noch offen} other {# Buchungen noch offen}}",
+      "choose": "Lösung für diese Buchung",
+      "confirmWithOpen": "{label} ({open})"
+    },
+    "area": {
+      "label": "Bereiche der Buchung",
+      "locations": "Standorte",
+      "services": "Services",
+      "resources": "Ressourcen",
+      "team": "Team",
+      "breadcrumb": "Wo Sie sich befinden",
+      "allLocations": "Alle Standorte"
+    },
+    "services": {
+      "title": "Services",
+      "titleAt": "Services · {location}",
+      "description": "Alle Leistungen, die dieser Standort anbietet.",
+      "create": "Service hinzufügen",
+      "edit": "Bearbeiten",
+      "reactivate": "Aktivieren",
+      "duration": "{minutes} Min.",
+      "menu": {
+        "create": {
+          "title": "Neuen Service erstellen",
+          "description": "Von Grund auf neu – gilt nur für diesen Standort."
+        },
+        "adopt": {
+          "title": "Vorhandenen Service übernehmen",
+          "description": "Aus einem anderen Standort suchen. Danach wählen Sie: Kopie oder verknüpft."
+        }
+      },
+      "legend": {
+        "title": "Herkunft",
+        "body": "„Eigener Service“ gibt es nur hier · „Kopie von …“ wurde übernommen und ist danach unabhängig · „Verknüpft mit …“ folgt dem Original."
+      },
+      "filters": {
+        "label": "Services filtern",
+        "apply": "Anwenden",
+        "reset": "Zurücksetzen",
+        "searchLabel": "Service suchen",
+        "searchPlaceholder": "Service suchen …",
+        "category": "Kategorie",
+        "categoryAny": "Kategorie: Alle",
+        "origin": "Herkunft",
+        "originAny": "Herkunft: Alle",
+        "originOptions": {
+          "own": "Herkunft: Eigener Service",
+          "copy": "Herkunft: Kopie",
+          "linked": "Herkunft: Verknüpft"
+        },
+        "status": "Status",
+        "statusOptions": {
+          "active": "Aktiv",
+          "inactive": "Inaktiv",
+          "all": "Alle"
+        }
+      },
+      "list": {
+        "panelTitle": "Services nach Kategorie",
+        "summary": "Zeige {categories, plural, one {# Kategorie} other {# Kategorien}} · {services, plural, one {# Service} other {# Services}}",
+        "pagination": "Seiten der Kategorien",
+        "truncated": "Dieser Standort hat mehr Services, als hier gezeigt werden können. Grenzen Sie die Auswahl ein.",
+        "expandAll": "Alle erweitern",
+        "collapseAll": "Alle zuklappen",
+        "noCategory": "Ohne Kategorie",
+        "groupCount": "{count, plural, one {# Service} other {# Services}}",
+        "columns": {
+          "duration": "Dauer",
+          "origin": "Herkunft",
+          "status": "Status",
+          "service": "Leistung"
+        }
+      },
+      "origin": {
+        "own": "Eigener Service",
+        "copy": "Kopie von {from}",
+        "copyUnknown": "Kopie",
+        "linked": "Verknüpft mit {from}",
+        "linkedUnknown": "Verknüpft"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "onlineBookable": "Online buchbar",
+        "notOnlineBookable": "Nicht online buchbar"
+      },
+      "empty": {
+        "title": "Noch kein Service",
+        "description": "Legen Sie den ersten Service an oder übernehmen Sie einen aus einem anderen Standort.",
+        "readOnly": "Es ist noch kein Service angelegt.",
+        "create": "Service erstellen"
+      },
+      "emptyFiltered": {
+        "title": "Keine Services gefunden",
+        "description": "Zu dieser Auswahl gibt es keinen Service.",
+        "reset": "Auswahl zurücksetzen"
+      },
+      "picker": {
+        "title": "Standort wählen",
+        "description": "Services werden pro Standort verwaltet. Wählen Sie den Standort.",
+        "open": "Services ansehen",
+        "openNamed": "Services ansehen: {name}"
+      },
+      "adopt": {
+        "title": "Service übernehmen",
+        "subtitle": "{location} · Aus einem anderen Standort",
+        "step1": "1 · Service wählen",
+        "step2": "2 · Wie soll er übernommen werden?",
+        "filterLabel": "Services anderer Standorte filtern",
+        "searchLabel": "Name suchen",
+        "searchPlaceholder": "Name suchen …",
+        "sourceLabel": "Quelle",
+        "sourceAny": "Quelle: Alle Standorte",
+        "none": "Es gibt keinen Service, den dieser Standort übernehmen kann.",
+        "listLabel": "Services anderer Standorte",
+        "picked": "Ausgewählt",
+        "pagination": "Seiten der Services",
+        "pickFirst": "Wählen Sie einen Service aus der Liste. Danach entscheiden Sie, wie er übernommen wird.",
+        "modeLegend": "Übernahme",
+        "modes": {
+          "copy": {
+            "label": "Eigenständige Kopie",
+            "description": "Sie können alles an diesem Standort ändern. Das Original bleibt unverändert.",
+            "example": "Beispiel: Dauer hier auf 25 Min. ändern – das Original behält seine Dauer."
+          },
+          "link": {
+            "label": "Verknüpft mit dem Original",
+            "description": "Änderungen am Original gelten automatisch auch hier. Lokal änderbar: Status, Ressourcen, Online-Buchung.",
+            "example": "Beispiel: Das Original ändert die Dauer auf 25 Min. – hier ebenfalls."
+          }
+        },
+        "carried": "Wird mitgenommen: Beschreibung, Dauer, Pufferzeiten, Fristen, Unterlagen. Ressourcen ordnen Sie danach zu. Online buchbar wird der Service erst, wenn Sie das einschalten.",
+        "submitCopy": "Als Kopie übernehmen",
+        "submitLink": "Verknüpft übernehmen",
+        "count": "{count, plural, one {# Service} other {# Services}}",
+        "emptyTitle": "Kein Service zum Übernehmen",
+        "emptyBody": "Die anderen Standorte dieser Website haben noch keinen Service, oder dieser Standort hat bereits alle. Legen Sie stattdessen einen neuen Service an.",
+        "createNew": "Neuen Service anlegen",
+        "pickFirstTitle": "Noch nichts gewählt"
+      },
+      "form": {
+        "createTitle": "Neuer Service",
+        "editTitle": "Service bearbeiten",
+        "saveService": "Service speichern",
+        "unsavedBody": "Ihre Änderungen am Service sind noch nicht gespeichert und gehen verloren, wenn Sie die Seite verlassen."
+      },
+      "steps": {
+        "general": "Allgemein",
+        "timing": "Dauer & Puffer",
+        "resources": "Ressourcen",
+        "rules": "Regeln & Rechte",
+        "review": "Prüfen"
+      },
+      "parts": {
+        "general": "Allgemein",
+        "timing": "Dauer & Puffer",
+        "resources": "Ressourcen",
+        "rules": "Regeln & Rechte"
+      },
+      "general": {
+        "name": "Name des Service",
+        "nameHint": "So sehen Bürger den Service bei der Buchung.",
+        "description": "Beschreibung für Bürger",
+        "descriptionHint": "Kurz und einfach formuliert.",
+        "category": "Kategorie",
+        "categoryHint": "Gruppiert den Service in Listen. Wählen Sie eine aus oder fügen Sie eine neue hinzu.",
+        "documents": "Mitzubringende Unterlagen",
+        "documentsHint": "Wird in der Bestätigung angezeigt.",
+        "documentsEmpty": "Geben Sie eine Unterlage ein und drücken Sie Enter, um sie hinzuzufügen.",
+        "documentsCreate": "„{value}“ hinzufügen",
+        "documentsRemove": "{value} entfernen",
+        "instructions": "Hinweise zum Termin",
+        "instructionsHint": "Optionaler Text für die Bestätigung, höchstens {max} Zeichen.",
+        "onlineBookable": "Online buchbar",
+        "onlineBookableHint": "Bürger können diesen Service selbst buchen.",
+        "active": "Aktiv",
+        "activeHint": "Der Service ist im Betrieb.",
+        "inactiveNote": "Der Service wird angelegt, aber nicht angeboten.",
+        "inactiveNoteExisting": "Bestehende Termine bleiben gültig. Um bestehende Buchungen zu prüfen, nutzen Sie „Deaktivieren“ in der Übersicht.",
+        "advanced": "Erweitert",
+        "advancedHint": "Interne Notiz",
+        "internalNote": "Interne Notiz",
+        "internalNoteHint": "Nur für Manager sichtbar. Bürger und Mitarbeiter sehen sie nie.",
+        "sectionAbout": "Über den Service",
+        "sectionAppointment": "Für den Termin",
+        "sectionOffer": "Angebot",
+        "categoryPlaceholder": "Kategorie wählen oder hinzufügen",
+        "categoryCreate": "„{value}“ hinzufügen",
+        "categoryEmpty": "Noch keine Kategorie. Geben Sie einen Namen ein, um die erste hinzuzufügen.",
+        "documentsPlaceholder": "Unterlage hinzufügen …"
+      },
+      "timing": {
+        "setTimes": "Zeiten festlegen",
+        "duration": "Termindauer (Bürger/in)",
+        "durationHint": "Diese Zeit sieht die Bürgerin bei der Buchung.",
+        "preparation": "Vorbereitung (Mitarbeiter/in)",
+        "preparationHint": "Vor dem Termin, für den Mitarbeiter reserviert.",
+        "cleanup": "Nachbereitung (Mitarbeiter/in)",
+        "cleanupHint": "Nach dem Termin, z. B. Akte abschließen.",
+        "previewTitle": "So wird die Zeit belegt",
+        "previewExample": "Beispiel: Termin um {time} Uhr",
+        "previewInvalid": "Wählen Sie eine gültige Dauer, um die Belegung zu sehen.",
+        "citizen": "Bürger/in sieht",
+        "employee": "Mitarbeiter/in belegt",
+        "resource": "{name} belegt",
+        "textCitizen": "Bürger/in sieht den Termin {span}, {minutes} Min.",
+        "textEmployee": "Mitarbeiter/in belegt {span}, {minutes} Min.",
+        "textNoEmployee": "Dieser Service braucht keine Mitarbeiter/in.",
+        "textResource": "{name} belegt {span}, {minutes} Min. (mit Auf- und Abbau der Ressource)"
+      },
+      "units": {
+        "minutes": "{count, plural, one {# Minute} other {# Minuten}}",
+        "hours": "{count, plural, one {# Stunde} other {# Stunden}}",
+        "days": "{count, plural, one {# Tag} other {# Tage}}",
+        "untilStart": "bis zum Beginn des Termins",
+        "beforeAppointment": "{length} vor dem Termin",
+        "short": {
+          "minutes": "{count} Min.",
+          "hours": "{count} Std.",
+          "days": "{count, plural, one {# Tag} other {# Tage}}"
+        }
+      },
+      "resources": {
+        "title": "Ressourcen",
+        "question": "Legen Sie fest, was dieser Service während eines Termins von den Ressourcen dieses Standorts braucht.",
+        "listLabel": "Ressourcen des Service",
+        "need": "{name}: was der Service braucht",
+        "capacity": "Kapazität {count}",
+        "buffers": "Aufbau {setup} Min. · Abbau {teardown} Min.",
+        "usedBy": "{name} wird bereits von {count, plural, one {# Service} other {# Services}} genutzt.",
+        "inactiveWarning": "{name} ist derzeit nicht aktiv. Solange eine erforderliche Ressource nicht aktiv ist, kann der Service nicht gebucht werden.",
+        "noneAvailable": "An diesem Standort gibt es noch keine Ressource.",
+        "create": "Neue Ressource anlegen",
+        "createHint": "Öffnet den Assistenten für eine neue Ressource. Vor dem Verlassen werden Sie gefragt, ob ungespeicherte Angaben verworfen werden sollen.",
+        "needs": {
+          "none": "Nicht nötig",
+          "required": "Nötig",
+          "optional": "Wenn frei"
+        },
+        "explainTitle": "Was die Auswahl bedeutet",
+        "requiredHint": "Der Termin wird nur angeboten, wenn diese Ressource frei ist. Sie ist für den Termin sowie Aufbau und Abbau belegt.",
+        "optionalHint": "Wird genutzt, wenn sie frei ist. Der Termin wird auch dann angeboten, wenn sie es nicht ist, sie verhindert also nie eine Buchung.",
+        "employeeTitle": "Wer den Termin durchführt",
+        "employeeNote": "Die Mitarbeiter/in ist hier keine Ressource. Wer den Termin übernehmen darf, legen Sie im nächsten Schritt „Regeln & Rechte“ fest."
+      },
+      "rules": {
+        "deadlines": "Fristen",
+        "notice": "Buchungsschluss",
+        "noticeHint": "So lange vor dem Termin kann ein Bürger noch buchen.",
+        "horizon": "Weiteste Buchung im Voraus",
+        "horizonHint": "Danach sind keine Termine sichtbar.",
+        "cancelUntil": "Stornieren bis",
+        "cancelUntilHint": "Danach nur noch durch Mitarbeiter.",
+        "changeUntil": "Ändern bis",
+        "changeUntilHint": "Danach nur noch durch Mitarbeiter.",
+        "actorsTitle": "Wer darf stornieren oder ändern?",
+        "actors": {
+          "customer": "Bürger/in",
+          "employee": "Mitarbeiter/in",
+          "manager": "Manager/in"
+        },
+        "qualification": "Wer übernimmt den Termin?",
+        "noEmployee": "Keine Mitarbeiter/in nötig (reine Ressourcenbuchung)",
+        "anyEmployee": "Beliebige Mitarbeiter/in",
+        "qualificationHint": "Eine Fähigkeit, die die Leitung einer Mitarbeiter/in zuweist. Nur wer die hier genannte hat, darf den Termin übernehmen.",
+        "qualificationEmpty": "Es gibt noch keine Qualifikation. Sie entsteht, wenn einer Mitarbeiter/in eine Fähigkeit zugewiesen wird.",
+        "preferencesNote": "Jede Mitarbeiter/in gibt an, welche Standorte, Services und Zeiten sie bevorzugt. Offene Termine werden ihr in dieser Reihenfolge gezeigt. Präferenzen schließen niemanden aus.",
+        "whoTitle": "Mitarbeiter",
+        "qualifiedOption": "Nur Mitarbeiter mit Qualifikation „{skill}“",
+        "qualificationTitle": "Qualifikation: eine Voraussetzung",
+        "preferencesTitle": "Präferenzen: nur eine Reihenfolge"
+      },
+      "resourceTypes": {
+        "employee": "Mitarbeiter/in",
+        "room": "Raum",
+        "office": "Büro",
+        "serviceDesk": "Schalter",
+        "sportsField": "Sportplatz",
+        "meetingRoom": "Besprechungsraum",
+        "vehicle": "Fahrzeug",
+        "equipment": "Gerät",
+        "facility": "Einrichtung",
+        "workstation": "Arbeitsplatz",
+        "other": "Sonstiges"
+      },
+      "review": {
+        "rowsLabel": "Teile des Service",
+        "immediate": "Der Service ist nach dem Speichern sofort online buchbar. Sie können das unter „Allgemein“ ändern.",
+        "notOnline": "Der Service ist nicht online buchbar. Mitarbeiter können ihn trotzdem buchen.",
+        "inactive": "Der Service ist ausgeschaltet.",
+        "nothingReserved": "Der Service braucht weder Mitarbeiter noch eine erforderliche Ressource. Es wird also nichts reserviert, und Termine können sich überschneiden."
+      },
+      "summary": {
+        "noCategory": "Ohne Kategorie",
+        "online": "online buchbar",
+        "notOnline": "nicht online buchbar",
+        "documents": "Unterlagen: {list}",
+        "appointment": "{length} Termin",
+        "staff": "Mitarbeiter {length}",
+        "held": "{name} {length}",
+        "noResources": "Keine Ressource zugeordnet",
+        "resourceRequired": "{name} (erforderlich)",
+        "resourceOptional": "{name} (optional)",
+        "booking": "Buchung {notice}–{horizon}",
+        "cancelUntil": "Stornierung bis {length}",
+        "qualification": "Qualifikation {name}",
+        "anyEmployee": "Beliebige Mitarbeiter/in",
+        "noEmployee": "Keine Mitarbeiter/in"
+      },
+      "overview": {
+        "savedTitle": "Gespeichert",
+        "savedBody": "Ihre Änderungen am Service sind gespeichert.",
+        "futureBookings": "{count, plural, =0 {Keine künftigen Buchungen} one {# künftige Buchung} other {# künftige Buchungen}}",
+        "hint": "Sie müssen nicht alle Schritte durchgehen. Ändern Sie nur, was nötig ist.",
+        "newBookingsOnly": "Änderungen an Dauer, Puffern, Regeln oder Qualifikation gelten nur für neue Buchungen. {count, plural, one {Die # künftige Buchung bleibt} other {Die # künftigen Buchungen bleiben}} unverändert.",
+        "sharedTitle": "Geteilt mit {count, plural, one {# Standort} other {# Standorten}}",
+        "sharedBody": "Dieser Service ist auch an diesen Standorten angeboten: {names}. Änderungen an Name, Beschreibung, Dauer, Fristen, Unterlagen und Qualifikation gelten überall.",
+        "localBody": "Nur hier änderbar: ob der Service läuft, ob er online buchbar ist und welche Ressourcen er nutzt.",
+        "serviceOff": "Der Service ist als Ganzes ausgeschaltet und an keinem Standort buchbar.",
+        "nothingReserved": "Der Service braucht weder Mitarbeiter noch eine erforderliche Ressource: Es wird nichts reserviert.",
+        "sectionsLabel": "Bereiche des Service",
+        "editAll": "Alle Schritte durchgehen"
+      },
+      "shared": {
+        "title": "Diese Änderung wirkt an {count} Standorten",
+        "description": "Der Service wird auch an diesen Standorten angeboten: {names}. Gespeicherte Änderungen gelten dort sofort für neue Buchungen.",
+        "bookings": "Bestehende Buchungen behalten Dauer, Puffer und Anforderungen, mit denen sie gemacht wurden.",
+        "confirm": "Für alle Standorte speichern",
+        "cancel": "Zurück"
+      },
+      "stale": {
+        "title": "Der Service wurde inzwischen geändert",
+        "body": "Jemand anderes hat gespeichert. Ihre Eingaben bleiben hier erhalten. Wenn Sie neu laden, sehen Sie den aktuellen Stand, und Ihre Eingaben gehen verloren."
+      },
+      "deactivate": {
+        "trigger": "Deaktivieren",
+        "title": "Service deaktivieren?",
+        "description": "„{name}“ hat {count, plural, =0 {keine künftigen Buchungen} one {# künftige Buchung} other {# künftige Buchungen}}.",
+        "scopeLegend": "Wo?",
+        "scopes": {
+          "location": {
+            "label": "Nur an diesem Standort",
+            "description": "Der Service bleibt an den anderen Standorten unverändert."
+          },
+          "all": {
+            "label": "Überall",
+            "description": "Der Service wird an allen {count} Standorten ausgeschaltet: {names}."
+          }
+        },
+        "modeLegend": "Was geschieht mit bestehenden Buchungen?",
+        "modes": {
+          "block-new": {
+            "label": "Nur neue Buchungen sperren",
+            "description": "Bestehende Termine bleiben gültig. Empfohlen."
+          },
+          "review": {
+            "label": "Bestehende Buchungen prüfen",
+            "description": "Sie entscheiden für jede Buchung: bestehen lassen oder stornieren."
+          }
+        },
+        "note": "Nichts wird automatisch storniert. Bürger werden erst nach Ihrer Bestätigung informiert.",
+        "proceedReview": "Buchungen prüfen",
+        "confirm": "Service deaktivieren",
+        "cancel": "Abbrechen",
+        "reviewChange": "„{name}“ wird ausgeschaltet. Neue Buchungen sind danach nicht mehr möglich.",
+        "resolutions": {
+          "leave": "Bleibt bestehen",
+          "cancel": "Stornieren"
         }
       }
     },
-    "availability": {
-      "hoursFor": "Öffnungszeiten am {day}",
-      "breaksFor": "Pausen am {day}",
-      "closed": "Geschlossen",
-      "from": "Von",
-      "to": "Bis",
-      "addHours": "Zeiten hinzufügen",
-      "addBreak": "Pause hinzufügen",
-      "remove": "Entfernen",
-      "copyMonday": "Montag auf Werktage kopieren",
-      "exceptions": "Ausnahmen",
-      "exceptionsHint": "Feiertage, Abwesenheiten und besondere Öffnungszeiten für einzelne Tage oder Zeiträume.",
-      "noExceptions": "Keine Ausnahmen.",
-      "addException": "Ausnahme hinzufügen",
-      "removeException": "Ausnahme entfernen",
-      "kind": "Art",
-      "label": "Beschreibung",
-      "fromDate": "Von Datum",
-      "toDate": "Bis Datum",
-      "presets": {
-        "label": "Mit einer Vorlage beginnen",
-        "office": "Bürozeiten",
-        "mornings": "Nur vormittags",
-        "everyDay": "Jeden Tag"
+    "resources": {
+      "title": "Ressourcen",
+      "titleAt": "Ressourcen · {location}",
+      "description": "Schalter, Räume und Geräte",
+      "create": "Ressource hinzufügen",
+      "picker": {
+        "title": "Standort wählen",
+        "description": "Ressourcen gehören zu einem Standort. Wählen Sie den Standort.",
+        "open": "Ressourcen ansehen",
+        "openNamed": "Ressourcen ansehen: {name}"
+      },
+      "filters": {
+        "label": "Ressourcen filtern",
+        "apply": "Anwenden",
+        "reset": "Zurücksetzen",
+        "searchLabel": "Ressource suchen",
+        "searchPlaceholder": "Ressource suchen …",
+        "type": "Art",
+        "typeAny": "Alle"
+      },
+      "list": {
+        "panelTitle": "Ressourcen",
+        "summary": "{count, plural, one {# Ressource} other {# Ressourcen}}",
+        "pagination": "Seiten der Ressourcen",
+        "columns": {
+          "name": "Name",
+          "type": "Art",
+          "places": "Kapazität",
+          "usedBy": "Genutzt von",
+          "status": "Status"
+        },
+        "usedByCount": "{count, plural, =0 {Kein Service} one {# Service} other {# Services}}",
+        "details": "Details zu {name}",
+        "open": "Öffnen",
+        "openNamed": "Öffnen: {name}"
+      },
+      "status": {
+        "active": "Aktiv",
+        "blocked": "Gesperrt",
+        "inactive": "Inaktiv"
+      },
+      "today": {
+        "title": "Heute belegt",
+        "closed": "Der Standort ist heute geschlossen.",
+        "free": "Heute nicht belegt",
+        "peak": "Spitze {peak} von {places} · {hours}",
+        "full": "Voll belegt {hours}",
+        "inUse": "Belegt {hours}",
+        "legendFree": "Frei",
+        "legendInUse": "Belegt",
+        "legendFull": "Voll belegt"
+      },
+      "usedBy": {
+        "title": "Genutzt von",
+        "none": "Noch von keinem Service genutzt",
+        "optional": "{name} (optional)",
+        "shared": "Geteilt: Kapazität zählt über alle Services."
+      },
+      "empty": {
+        "title": "Noch keine Ressource",
+        "description": "Legen Sie Schalter, Räume und Geräte an, die Ihre Services brauchen.",
+        "readOnly": "Es ist noch keine Ressource angelegt.",
+        "filteredTitle": "Keine Ressourcen gefunden",
+        "filteredDescription": "Zu dieser Auswahl gibt es keine Ressource.",
+        "reset": "Auswahl zurücksetzen"
+      },
+      "form": {
+        "newTitle": "Neue Ressource",
+        "editTitle": "{name} bearbeiten",
+        "steps": {
+          "basics": "Grunddaten",
+          "availability": "Verfügbarkeit",
+          "review": "Prüfen"
+        },
+        "name": "Name",
+        "type": "Art",
+        "typeLocked": "Die Art bleibt, wie sie angelegt wurde: Buchungen und Services hängen davon ab.",
+        "location": "Standort",
+        "capacity": "Kapazität",
+        "capacityHint": "Wie viele Termine gleichzeitig? Ein Raum mit Kapazität 4 ist nicht dasselbe wie 4 einzelne Räume.",
+        "setup": "Rüstzeit",
+        "setupHint": "Vor jedem Termin belegt",
+        "teardown": "Aufräumzeit",
+        "teardownHint": "Nach jedem Termin belegt",
+        "note": "Interne Notiz",
+        "noteHint": "Nur für Manager sichtbar. Bürger und Mitarbeiter sehen sie nie.",
+        "when": "Wann ist die Ressource nutzbar?",
+        "followsLocation": "Wie der Standort",
+        "followsLocationDescription": "{hours}. Änderungen am Standort gelten automatisch.",
+        "own": "Eigene Zeiten",
+        "ownDescription": "Nur wenn sie anders verfügbar ist, z. B. nur vormittags. Gilt nur innerhalb der Öffnungszeiten des Standorts.",
+        "blocks": {
+          "title": "Sperrzeiten",
+          "description": "An diesen Tagen ist die Ressource nicht buchbar, z. B. wegen Wartung.",
+          "add": "Sperrzeit hinzufügen",
+          "remove": "Entfernen",
+          "removeNamed": "Sperrzeit {from} bis {to} entfernen",
+          "from": "Von",
+          "to": "Bis",
+          "none": "Keine Sperrzeiten",
+          "addTitle": "Zeitraum sperren",
+          "editTitle": "Sperrzeit ändern",
+          "removeTitle": "Sperrzeit entfernen?",
+          "removeBody": "Die Sperrzeit wird aus der Liste entfernt. Gespeichert wird erst, wenn Sie die Ressource speichern.",
+          "problems": "Einige Angaben brauchen Ihre Aufmerksamkeit, bevor die Sperrzeit hinzugefügt werden kann."
+        },
+        "actions": {
+          "next": "Weiter: {step}",
+          "cancel": "Abbrechen",
+          "save": "Speichern",
+          "saveResource": "Ressource speichern",
+          "saving": "Speichert …"
+        },
+        "notUsed": "Diese Ressource ist noch keinem Service zugeordnet. Das blockiert das Speichern nicht.",
+        "stale": {
+          "title": "Inzwischen geändert",
+          "body": "Jemand anderes hat diese Ressource gespeichert. Ihre Eingaben sind noch da; laden Sie neu, um die aktuelle Fassung zu sehen.",
+          "reload": "Neu laden"
+        },
+        "unsavedBody": "Ihre Änderungen an der Ressource sind noch nicht gespeichert und gehen verloren, wenn Sie die Seite verlassen.",
+        "sections": {
+          "what": "Über die Ressource",
+          "use": "Belegung"
+        },
+        "nameHint": "So heißt die Ressource in Listen und bei den Ressourcen eines Service.",
+        "advanced": "Erweitert",
+        "advancedHint": "Interne Notiz"
+      },
+      "overview": {
+        "subtitle": "Ressource bearbeiten · {location}",
+        "hint": "Sie müssen nicht alle Schritte durchgehen. Ändern Sie nur, was nötig ist.",
+        "editAll": "Alle Schritte durchgehen",
+        "edit": "Bearbeiten",
+        "sectionsLabel": "Bereiche der Ressource",
+        "rows": {
+          "basics": "Grunddaten",
+          "availability": "Verfügbarkeit",
+          "usedBy": "Genutzt von"
+        },
+        "todayPeak": "Heute max. {peak} von {places} belegt",
+        "places": "Kapazität {count}",
+        "setup": "Rüstzeit {minutes} Min.",
+        "teardown": "Aufräumzeit {minutes} Min.",
+        "followsLocation": "Wie der Standort",
+        "ownHours": "Eigene Zeiten",
+        "blocksNone": "keine Sperrzeiten",
+        "blocksCount": "{count, plural, one {# Sperrzeit} other {# Sperrzeiten}}",
+        "savedTitle": "Gespeichert",
+        "savedBody": "Ihre Änderungen an der Ressource sind gespeichert."
+      },
+      "block": {
+        "open": "Sperren",
+        "title": "{name} sperren",
+        "description": "Zeitraum festlegen, z. B. für Wartung.",
+        "from": "Von",
+        "to": "Bis",
+        "confirm": "Sperren",
+        "cancel": "Abbrechen",
+        "saving": "Sperrt …",
+        "impactNote": "Nichts wird automatisch storniert oder verschoben. Die Buchungen bleiben bestehen, und Sie klären sie danach selbst. Bürger werden nicht benachrichtigt.",
+        "impactConfirm": "Trotzdem sperren",
+        "impactDescription": "Diese Änderung lässt bestehende Buchungen ohne die Ressource. Prüfen Sie, welche das sind."
       }
     },
-    "locations": {
-      "new": "Neuer Standort",
-      "name": "Name",
-      "address": "Adresse",
-      "addressHint": "Tippen, um Vorschläge zu sehen. Eine eigene Schreibweise ist immer möglich. Wird Besuchenden mit ihrer Buchung angezeigt.",
-      "timeZone": "Zeitzone",
-      "timeZoneHint": "Alle Zeiten an diesem Standort gelten in dieser Zeitzone.",
-      "active": "Buchbar",
-      "activeHint": "Inaktive Standorte werden Besuchenden nicht angezeigt.",
-      "addressPlaceholder": "Straße und Ort suchen …",
-      "addressSearching": "Adressen werden gesucht …",
-      "addressNone": "Keine Vorschläge. Die Adresse lässt sich auch selbst eintippen.",
-      "addressUnavailable": "Die Adresssuche ist gerade nicht erreichbar. Die Adresse lässt sich selbst eintippen.",
-      "addressUseTyped": "„{value}“ so übernehmen",
-      "nameHint": "Zum Beispiel „Rathaus“ oder „Bürgerbüro Nord“.",
-      "startWith": "Mit diesen Öffnungszeiten beginnen",
-      "startWithHint": "Sie ändern sie danach auf dem Standort selbst per Ziehen.",
-      "startLater": "Später festlegen"
+    "team": {
+      "title": "Team",
+      "titleAt": "Team · {location}",
+      "description": "Mitarbeitende am Standort, ihre Arbeitszeiten, Abwesenheiten und Qualifikationen.",
+      "picker": {
+        "title": "Standort wählen",
+        "description": "Das Team gehört zu einem Standort. Wählen Sie den Standort.",
+        "open": "Team ansehen",
+        "openNamed": "Team ansehen: {name}"
+      },
+      "list": {
+        "title": "Mitarbeitende: {location}",
+        "count": "{count, plural, one {# Person} other {# Personen}}",
+        "emptyTitle": "Hier hat noch niemand einen Kalender",
+        "emptyDescription": "Termine übernehmen können nur Mitglieder mit der Rolle „Mitarbeitende“. Geben Sie jemandem diese Rolle unter Benutzer, und richten Sie hier danach den Kalender ein.",
+        "qualifications": "Qualifikationen: {list}",
+        "noQualifications": "keine",
+        "absences": "{count, plural, =0 {keine Abwesenheiten} one {# Abwesenheit} other {# Abwesenheiten}}",
+        "edit": "Bearbeiten",
+        "editNamed": "{name} bearbeiten",
+        "emptyWithCandidates": "{count, plural, one {# Mitglied hat} other {# Mitglieder haben}} die Rolle „Mitarbeitende“, aber hier noch keinen Kalender. Wählen Sie mit „Mitarbeiter/in hinzufügen“ aus, wer.",
+        "emptyAction": "Mitglieder verwalten",
+        "columns": {
+          "name": "Mitarbeiter/in",
+          "week": "Arbeitet",
+          "qualifications": "Qualifikationen",
+          "absences": "Abwesenheiten"
+        },
+        "absenceCount": "{count, plural, =0 {keine} one {# Abwesenheit} other {# Abwesenheiten}}",
+        "filteredTitle": "Keine Mitarbeitenden gefunden",
+        "filteredDescription": "Kein Mitarbeiter passt zur Suche. Ändern Sie die Filter oder setzen Sie sie zurück.",
+        "pagination": "Seiten der Mitarbeitenden",
+        "details": {
+          "week": "Arbeitszeiten",
+          "absences": "Abwesenheiten",
+          "noAbsences": "Keine Abwesenheiten eingetragen.",
+          "coverage": "Einsatz an anderen Standorten"
+        },
+        "moreNamed": "Weitere Aktionen für {name}"
+      },
+      "setUp": {
+        "title": "Mitarbeiter/in hinzufügen",
+        "description": "Wählen Sie ein Mitglied mit der Rolle „Mitarbeitende“. Es bekommt einen Kalender am Standort {location}, der danach zum Ausfüllen öffnet.",
+        "member": "Mitglied",
+        "placeholder": "Person wählen",
+        "submit": "Einrichten",
+        "saving": "Richtet ein …",
+        "open": "Mitarbeiter/in hinzufügen"
+      },
+      "member": {
+        "subtitle": "Kalender am Standort {location}"
+      },
+      "form": {
+        "title": "Arbeitszeiten und Abwesenheiten",
+        "hours": "Arbeitszeiten",
+        "hoursHint": "Innerhalb der Öffnungszeiten des Standorts: {hours}",
+        "save": "Speichern",
+        "saving": "Speichert …",
+        "cancel": "Abbrechen",
+        "unsavedBody": "Ihre Änderungen am Kalender sind noch nicht gespeichert und gehen verloren, wenn Sie die Seite verlassen.",
+        "stale": {
+          "title": "Inzwischen geändert",
+          "body": "Jemand anderes hat diesen Kalender gespeichert. Ihre Eingaben sind noch da; laden Sie neu, um die aktuelle Fassung zu sehen.",
+          "reload": "Neu laden"
+        }
+      },
+      "absences": {
+        "title": "Abwesenheiten",
+        "description": "An diesen Tagen arbeitet die Person nicht, z. B. wegen Urlaub oder Fortbildung.",
+        "add": "Abwesenheit hinzufügen",
+        "remove": "Entfernen",
+        "removeNamed": "Abwesenheit {from} bis {to} entfernen",
+        "from": "Von",
+        "to": "Bis",
+        "none": "Keine Abwesenheiten",
+        "descriptionOwn": "An diesen Tagen arbeiten Sie nicht, zum Beispiel im Urlaub oder bei einer Fortbildung.",
+        "addTitle": "Abwesenheit hinzufügen",
+        "editTitle": "Abwesenheit ändern",
+        "removeTitle": "Abwesenheit entfernen?",
+        "removeBody": "Die Abwesenheit wird aus der Liste entfernt. Gespeichert wird erst, wenn Sie den Kalender speichern.",
+        "problems": "Einige Angaben brauchen Ihre Aufmerksamkeit, bevor die Abwesenheit hinzugefügt werden kann."
+      },
+      "qualifications": {
+        "title": "Qualifikationen",
+        "label": "Qualifikationen",
+        "hint": "Nur die Leitung vergibt Qualifikationen. Ein Service, der eine Qualifikation verlangt, geht nur an Personen, die sie haben.",
+        "empty": "Geben Sie einen Namen ein und drücken Sie Enter, um eine Qualifikation hinzuzufügen.",
+        "create": "„{value}“ hinzufügen",
+        "remove": "{label} entfernen",
+        "placeholder": "Qualifikation hinzufügen …"
+      },
+      "impact": {
+        "impactDescription": "Diese Termine bleiben ohne diese Person.",
+        "impactNote": "Es wird nichts storniert. Die Person wird von diesen Terminen genommen, sie sind danach wieder offen: Eine Führungskraft weist jemand anderen zu, oder Mitarbeitende übernehmen sie, wo der Service das erlaubt. Bürger werden nicht benachrichtigt."
+      },
+      "profile": {
+        "title": "Mein Profil",
+        "description": "Ihr Standort, Ihre Qualifikationen, Ihre Arbeitszeiten und Abwesenheiten.",
+        "formTitle": "Meine Arbeitszeiten und Abwesenheiten",
+        "factsTitle": "Einsatz",
+        "factsHint": "Standort und Qualifikationen legt die Leitung fest.",
+        "location": "Standort",
+        "qualifications": "Qualifikationen",
+        "notSetUpTitle": "Noch kein Kalender",
+        "notSetUpDescription": "Die Leitung richtet Ihren Kalender an einem Standort ein. Danach tragen Sie hier Ihre Arbeitszeiten und Abwesenheiten ein.",
+        "preferencesNote": "Diese Zeiten entscheiden, wann Sie gebucht werden können, und die Leitung legt sie mit Ihnen fest. Wann Sie gern arbeiten möchten, ist etwas anderes: es ordnet nur die offenen Buchungen, die Ihnen gezeigt werden, und wird eingestellt unter",
+        "preferencesLink": "Meine Präferenzen",
+        "coverage": "Arbeitet außerdem in",
+        "coverageNone": "Nur an Ihrem eigenen Standort",
+        "coverageValue": "{location}, {period}"
+      },
+      "errors": {
+        "alreadySetUp": "Diese Person hat schon einen Kalender."
+      },
+      "validation": {
+        "hoursOutsideLocation": "Die Arbeitszeit liegt außerhalb der Öffnungszeiten des Standorts."
+      },
+      "truncated": "Hier stehen nur die ersten Mitarbeitenden der Website; sie hat mehr.",
+      "filters": {
+        "label": "Team filtern",
+        "apply": "Anwenden",
+        "reset": "Zurücksetzen",
+        "searchLabel": "Name",
+        "searchPlaceholder": "Nach Namen suchen",
+        "qualification": "Qualifikation",
+        "qualificationAny": "Alle Qualifikationen",
+        "resetSelection": "Auswahl zurücksetzen"
+      },
+      "coverage": {
+        "title": "Einsatz an anderen Standorten",
+        "description": "Schicken Sie die Person für einige Tage an einen anderen Standort, zum Beispiel als Vertretung bei Krankheit. An diesen Tagen ist sie dort buchbar und nicht an ihrem eigenen Standort; Arbeitszeiten, Abwesenheiten und Qualifikationen bleiben gleich.",
+        "add": "An Standort entsenden",
+        "none": "An keinen anderen Standort entsandt",
+        "addTitle": "An anderen Standort entsenden",
+        "editTitle": "Einsatz ändern",
+        "dialogHint": "Wählen Sie, wo die Person arbeitet und an welchen Tagen. Termine, die sie an diesen Tagen an ihrem eigenen Standort hat, werden vor dem Speichern angezeigt.",
+        "location": "Standort",
+        "locationPlaceholder": "Standort wählen",
+        "from": "Von",
+        "to": "Bis",
+        "problems": "Einige Angaben brauchen Ihre Aufmerksamkeit, bevor der Einsatz hinzugefügt werden kann.",
+        "removeTitle": "Diesen Einsatz entfernen?",
+        "removeBody": "An diesen Tagen ist die Person wieder an ihrem eigenen Standort. Gespeichert wird erst, wenn Sie den Kalender speichern.",
+        "columns": {
+          "location": "Standort",
+          "period": "Tage"
+        },
+        "edit": "Ändern",
+        "editNamed": "Einsatz bei {location} ändern",
+        "remove": "Entfernen",
+        "removeNamed": "Einsatz bei {location} entfernen",
+        "noPlaces": "Es gibt keinen anderen Standort, an den die Person entsandt werden kann.",
+        "row": "{location}, {period}"
+      },
+      "visitors": {
+        "title": "Für einige Tage hier im Einsatz",
+        "description": "Mitarbeitende anderer Standorte, die hierher entsandt werden. Ihr Kalender wird an ihrem eigenen Standort geändert.",
+        "columns": {
+          "name": "Mitarbeiter/in",
+          "home": "Eigener Standort",
+          "period": "Tage"
+        },
+        "label": "Von anderen Standorten hierher entsandte Mitarbeitende",
+        "open": "Kalender öffnen"
+      },
+      "leave": {
+        "impactDescription": "Diese Termine haben noch nicht begonnen und liegen bei dieser Person.",
+        "impactNote": "Es wird nichts storniert. Die Person wird von diesen Terminen genommen, sie sind danach wieder offen: Eine Führungskraft weist jemand anderen zu, oder Mitarbeitende übernehmen sie, wo der Service das erlaubt. Bürger werden nicht benachrichtigt."
+      },
+      "membership": {
+        "move": "In anderes Team verschieben",
+        "remove": "Aus Team entfernen",
+        "moveTitle": "{name} in ein anderes Team verschieben?",
+        "removeTitle": "{name} aus dem Team entfernen?",
+        "moveBody": "Der Kalender hier wird abgeschaltet und im gewählten Team entsteht ein neuer, mit den Qualifikationen dieser Person und den Zeiten des Standorts. Termine dieses Kalenders, die noch nicht begonnen haben, sind wieder offen.",
+        "removeBody": "Der Kalender wird abgeschaltet, nicht gelöscht. Termine, die noch nicht begonnen haben, sind wieder offen, und die Person kann jederzeit wieder einem Team hinzugefügt werden. Qualifikationen gehören zum Kalender jeder einzelnen Person: niemand sonst verliert eine. Eine Leistung, für die nur diese Person qualifiziert war, hat keine freien Zeiten, bis es jemand anderes ist.",
+        "location": "Verschieben nach",
+        "locationPlaceholder": "Standort wählen",
+        "cancel": "Abbrechen"
+      }
     },
-    "resources": {
-      "new": "Neue Ressource",
-      "edit": "Ressource bearbeiten",
-      "name": "Name",
-      "type": "Typ",
-      "location": "Standort",
-      "locationHint": "Wo diese Ressource eingesetzt wird. „An allen Standorten“ eignet sich für Dinge, die mitgenommen werden, etwa einen Beamer oder ein Fahrzeug.",
-      "anyLocation": "An allen Standorten",
-      "capacity": "Kapazität",
-      "capacityHint": "Die meisten Personen, die diese Ressource gleichzeitig aufnehmen kann. Leer lassen für unbegrenzt.",
-      "skills": "Fähigkeiten",
-      "skillsHint": "Vorhandene auswählen oder neue eintippen und mit Enter hinzufügen.",
-      "ownHours": "Nur zu bestimmten Zeiten",
-      "ownHoursHint": "Ohne Haken ist die Ressource immer verfügbar, wenn der Standort geöffnet ist. Mit Haken legen Sie die Zeiten innerhalb davon fest.",
-      "active": "Buchbar",
-      "onlyHere": "Nur {name}"
-    },
-    "services": {
-      "new": "Neue Leistung",
-      "edit": "Leistung bearbeiten",
-      "name": "Name",
-      "description": "Beschreibung",
-      "category": "Kategorie",
-      "categoryHint": "Vorhandene Kategorie wählen oder eine neue eintippen. Ein Buchungsbaustein kann damit nur einen Teil der Leistungen zeigen.",
-      "active": "Buchbar",
-      "activeHint": "Inaktive Leistungen werden Besuchenden nicht angezeigt.",
-      "sections": {
-        "basics": "Grunddaten",
-        "timing": "Zeiten",
-        "timingHint": "Wie lange sie dauert und wann sie gebucht werden kann.",
-        "capacity": "Gruppengröße",
-        "capacityHint": "Wie viele Personen gemeinsam buchen können und wie viele eine Sitzung aufnimmt.",
-        "resources": "Ressourcen",
-        "resourcesHint": "Was frei sein muss, damit die Leistung stattfinden kann.",
-        "availability": "Buchbare Zeiten",
-        "information": "Informationen für Besuchende",
-        "informationHint": "Was Besuchende eingeben und was sie mitbringen oder wissen sollten.",
-        "changes": "Änderungen",
-        "changesHint": "Kundschaft kann Buchungen selbst ändern, solange die Frist nicht abgelaufen ist. Personal ist nie an die Frist gebunden.",
-        "more": "Weitere Einstellungen"
-      },
-      "duration": "Dauer (Minuten)",
-      "preparation": "Vorbereitung davor (Minuten)",
-      "preparationHint": "Zeit, in der die Ressourcen vor dem Termin blockiert sind.",
-      "cleanup": "Nachbereitung danach (Minuten)",
-      "cleanupHint": "Zeit, in der die Ressourcen nach dem Termin blockiert sind.",
-      "slotInterval": "Abstand zwischen Startzeiten",
-      "slotIntervalHint": "Wie dicht Termine angeboten werden. Die Startzeiten werden ab Mitternacht gezählt und nur innerhalb der Öffnungszeiten angeboten.",
-      "notice": "Mindestvorlauf (Minuten)",
-      "noticeHint": "Wie lange im Voraus eine Buchung erfolgen muss.",
-      "horizon": "Buchungszeitraum (Tage)",
-      "horizonHint": "Wie weit im Voraus Besuchende buchen können.",
-      "perBooking": "Höchstens Personen pro Buchung",
-      "perBookingHint": "1 bedeutet, dass Besuchende nur für sich selbst buchen.",
-      "perSession": "Höchstens Personen pro Sitzung",
-      "perSessionHint": "Bei mehr als 1 teilen sich mehrere Buchungen eine Sitzung, zum Beispiel einen Kurs.",
-      "addRequirement": "Anforderung hinzufügen",
-      "removeRequirement": "Anforderung entfernen",
-      "requirementType": "Art der Ressource",
-      "requirementCount": "Gleichzeitig benötigt",
-      "requirementSkills": "Erforderliche Fähigkeiten",
-      "requirementSkillsHint": "Nur Ressourcen mit allen gewählten Fähigkeiten kommen infrage.",
-      "requirementPool": "Nur bestimmte Ressourcen (optional)",
-      "requirementPoolHint": "Leer lassen, um jede passende Ressource zu verwenden.",
-      "ownHours": "Nur zu bestimmten Zeiten",
-      "ownHoursHint": "Ohne Haken gelten die Öffnungszeiten des Standorts. Mit Haken legen Sie fest, an welchen Zeiten innerhalb davon die Leistung buchbar ist.",
-      "fieldRequired": "Pflichtfeld",
-      "emailAlwaysRequired": "Die E-Mail-Adresse ist immer erforderlich, weil die Buchung damit wiedergefunden wird.",
-      "documents": "Mitzubringende Unterlagen (eine pro Zeile)",
-      "instructions": "Hinweise für Besuchende",
-      "cancellation": "Stornierung",
-      "rescheduling": "Verschiebung",
-      "policyAllowed": "Änderung ist möglich",
-      "policyActors": "Wer darf das?",
-      "policyDeadline": "Kundschaft darf bis …",
-      "policyDeadlineHint": "Danach ist die Änderung nur noch über das Personal möglich.",
-      "documentsHint": "Wird Besuchenden vor der Bestätigung und auf der Bestätigungsseite angezeigt.",
-      "instructionsHint": "Wird Besuchenden beim Ausfüllen ihrer Angaben angezeigt, zum Beispiel wie sie sich vorbereiten.",
-      "feasibility": {
-        "title": "Ist diese Leistung buchbar?",
-        "hint": "Prüft, ob die angelegten Mitarbeitenden, Räume und Geräte ausreichen. Öffnungszeiten und bestehende Buchungen zählen hier nicht.",
-        "checking": "Wird geprüft …",
-        "unavailable": "Die Prüfung ist gerade nicht möglich. Speichern ist trotzdem möglich, es wird beim Speichern erneut geprüft.",
-        "incomplete": "Sobald die Leistung eine Anforderung hat, erscheint hier die Prüfung.",
-        "ready": "Buchbar",
-        "awaiting": "Wartet auf Mitarbeitende",
-        "blocked": "Nicht buchbar",
-        "fits": "Benötigt {needed}× {type}, verfügbar: {names}",
-        "noType": "Es gibt keine aktive Ressource vom Typ {type}.",
-        "noSkills": "Keine Ressource vom Typ {type} hat alle geforderten Fähigkeiten.",
-        "noLocation": "Keine passende Ressource gehört zu diesem Standort.",
-        "noPool": "Die ausgewählten Ressourcen erfüllen die Anforderung nicht.",
-        "tooFew": "{type}: {needed} gleichzeitig nötig, aber nur {available} passen.",
-        "shared": "Jede Anforderung ist einzeln erfüllbar, aber sie brauchen dieselben Ressourcen gleichzeitig.",
-        "employees": "Noch bietet niemand diese Leistung an. Mitarbeitende wählen sie selbst, oder Sie weisen sie unter Team zu; danach ist sie hier buchbar.",
-        "group": "Größte mögliche Gruppe: {count}",
-        "groupTooSmall": "Mit den vorhandenen Ressourcen passen höchstens {count} Personen in eine Buchung, eingestellt sind {max}.",
-        "draftHint": "Eine nicht buchbare Leistung lässt sich als Entwurf speichern: Entfernen Sie den Haken bei „Buchbar“."
-      },
-      "requirementCountHint": "Wie viele Ressourcen dieser Art ein einzelner Termin zugleich braucht, zum Beispiel 2 für zwei Mitarbeitende.",
-      "requirementSkillsEmpty": "Für diese Art gibt es noch keine Fähigkeiten. Sie werden an der Ressource angelegt.",
-      "requirementsNoEquipment": "Räume und Ausstattung legen Sie im Bereich „Räume und Ausstattung“ dieser Seite an. Danach können Sie sie hier verlangen.",
-      "atLocation": "Standort: {name}",
-      "sharedNote": "Diese Leistung wird auch an {count, plural, one {# weiteren Standort} other {# weiteren Standorten}} angeboten. Änderungen gelten dort ebenfalls.",
-      "requirementPoolEmpty": "Keine Ressource dieser Art vorhanden.",
-      "slotIntervalOption": "Alle {minutes} Minuten",
-      "slotIntervalExample": "Besuchende sehen zum Beispiel: {times} …",
-      "categoryPlaceholder": "Kategorie suchen oder anlegen",
-      "deadline": {
-        "atStart": "zum Beginn des Termins",
-        "before": "{duration} vor Beginn",
-        "duration": "{amount, number} {unit, select, minute {{amount, plural, one {Minute} other {Minuten}}} hour {{amount, plural, one {Stunde} other {Stunden}}} day {{amount, plural, one {Tag} other {Tage}}} week {{amount, plural, one {Woche} other {Wochen}}} other {}}"
-      },
-      "policyVerb": {
-        "cancel": "stornieren",
-        "move": "verschieben"
-      },
-      "policySummary": {
-        "nobody": "Niemand kann hier {verb}. Auch das Personal nicht.",
-        "staffOnly": "Nur das Personal kann {verb}. Kundschaft muss sich an Sie wenden.",
-        "customersOnly": "Kundschaft kann bis {deadline} selbst {verb}. Danach geht es nicht mehr.",
-        "customersAndStaff": "Kundschaft kann bis {deadline} selbst {verb}. Danach geht es nur noch über das Personal, das jederzeit {verb} kann."
-      },
-      "infoAsk": "Was wir von Besuchenden abfragen",
+    "public": {
       "preview": {
-        "title": "So sehen Besuchende es",
-        "required": "Pflichtfeld",
-        "optional": "freiwillig",
-        "documents": "Bitte mitbringen:",
-        "instructions": "Hinweis:"
+        "title": "Online-Terminbuchung",
+        "description": "Auf der veröffentlichten Seite buchen Besucherinnen und Besucher hier ihre Termine. Im Editor wird nichts reserviert.",
+        "notice": "Vorschau: Sie können die Buchung durchspielen, es wird aber nichts reserviert oder gespeichert."
       },
-      "durationHint": "So lange dauert der Termin.",
-      "glance": {
-        "timing": "Start alle {interval} Min. · {horizon} Tage im Voraus",
-        "information": "{count, plural, one {# Angabe} other {# Angaben}} abgefragt",
-        "changesCustomers": "Kundschaft darf selbst ändern",
-        "changesStaffOnly": "Nur über das Personal",
-        "hoursSame": "Wie der Standort",
-        "hoursOwn": "Nur zu bestimmten Zeiten"
+      "loadFailed": {
+        "title": "Die Terminbuchung kann gerade nicht geladen werden",
+        "description": "Bitte laden Sie die Seite in einem Moment neu."
+      },
+      "empty": {
+        "title": "Derzeit keine Online-Termine",
+        "description": "Für diese Leistungen können gerade keine Termine online gebucht werden. Eine bestehende Buchung können Sie trotzdem ansehen."
+      },
+      "views": {
+        "label": "Terminbuchung",
+        "book": "Termin buchen",
+        "manage": "Meine Buchung"
+      },
+      "steps": {
+        "service": "Leistung",
+        "location": "Ort",
+        "date": "Tag",
+        "time": "Uhrzeit",
+        "details": "Angaben",
+        "review": "Prüfen",
+        "done": "Gebucht"
+      },
+      "headings": {
+        "service": "Welche Leistung möchten Sie buchen?",
+        "location": "Wo möchten Sie den Termin wahrnehmen?",
+        "date": "An welchem Tag?",
+        "time": "Um welche Uhrzeit?",
+        "details": "Ihre Angaben",
+        "review": "Bitte prüfen Sie Ihre Buchung",
+        "done": "Ihr Termin ist gebucht"
+      },
+      "back": "Zurück",
+      "next": "Weiter",
+      "duration": "{minutes} Minuten",
+      "documents": "Bitte mitbringen: {documents}",
+      "calendar": {
+        "previous": "Vorheriger Monat",
+        "next": "Nächster Monat",
+        "loading": "Freie Tage werden geladen …",
+        "noDays": "In diesem Monat ist kein Termin frei. Bitte sehen Sie im nächsten Monat nach.",
+        "hint": "Wählbar sind die Tage mit freien Terminen.",
+        "dayFree": "{date}, Termine frei",
+        "dayFull": "{date}, kein Termin frei"
+      },
+      "times": {
+        "label": "Freie Uhrzeiten am {date}",
+        "loading": "Uhrzeiten werden geladen …",
+        "none": "An diesem Tag ist nichts mehr frei. Bitte wählen Sie einen anderen Tag.",
+        "zone": "Alle Zeiten in Ortszeit ({zone})."
+      },
+      "notice": {
+        "slotTaken": "Diese Uhrzeit wurde gerade vergeben. Ihre Angaben bleiben erhalten: Bitte wählen Sie eine der Zeiten, die noch frei sind.",
+        "holdExpired": "Die Reservierung ist abgelaufen. Ihre Angaben bleiben erhalten: Bitte wählen Sie die Uhrzeit erneut."
+      },
+      "held": "Diese Uhrzeit ist einige Minuten lang für Sie reserviert.",
+      "fields": {
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail-Adresse",
+        "phone": "Telefon",
+        "referenceNumber": "Aktenzeichen",
+        "notes": "Anmerkungen"
+      },
+      "optional": "{label} (freiwillig)",
+      "emailHint": "An diese Adresse senden wir die Bestätigung. Mit ihr und der Buchungsnummer können Sie den Termin später ändern.",
+      "summary": {
+        "label": "Ihre Buchung",
+        "service": "Leistung",
+        "when": "Wann",
+        "where": "Wo",
+        "reference": "Buchungsnummer",
+        "status": "Status",
+        "details": "Ihre Angaben",
+        "zone": "Ortszeit {zone}",
+        "copyReference": "Buchungsnummer kopieren",
+        "copied": "Buchungsnummer kopiert"
+      },
+      "confirm": "Verbindlich buchen",
+      "confirming": "Wird gebucht …",
+      "done": {
+        "mail": "Eine Bestätigung ist an Ihre E-Mail-Adresse unterwegs.",
+        "reference": "Bitte notieren Sie die Buchungsnummer.",
+        "manage": "Buchung ansehen, verschieben oder absagen"
+      },
+      "rules": {
+        "cancelUntil": "Online absagen können Sie bis {date}.",
+        "cancelNever": "Online absagen ist bei dieser Leistung nicht möglich.",
+        "moveUntil": "Online verschieben können Sie bis {date}.",
+        "moveNever": "Online verschieben ist bei dieser Leistung nicht möglich."
+      },
+      "manage": {
+        "intro": "Geben Sie die Buchungsnummer und die E-Mail-Adresse ein, mit der Sie gebucht haben.",
+        "reference": "Buchungsnummer",
+        "email": "E-Mail-Adresse",
+        "find": "Buchung anzeigen",
+        "finding": "Wird gesucht …",
+        "other": "Andere Buchung anzeigen",
+        "notActive": "Diese Buchung kann online nicht mehr geändert werden.",
+        "cancel": "Termin absagen",
+        "move": "Termin verschieben",
+        "cancelTitle": "Termin absagen?",
+        "cancelDescription": "Der Termin wird freigegeben. Das lässt sich nicht rückgängig machen.",
+        "cancelConfirm": "Absagen",
+        "keep": "Termin behalten",
+        "cancelled": "Der Termin ist abgesagt. Wir haben Ihnen eine Bestätigung geschickt.",
+        "moveTitle": "Neue Zeit wählen",
+        "moveTo": "Auf {time} verschieben",
+        "moving": "Wird verschoben …",
+        "moved": "Der Termin ist verschoben. Wir haben Ihnen eine Bestätigung geschickt.",
+        "title": "Ihre Buchung"
+      }
+    },
+    "employee": {
+      "nav": {
+        "label": "Mitarbeiter-Bereich",
+        "start": "Start",
+        "open": "Offene Buchungen ({count})",
+        "plan": "Mein Tagesplan",
+        "preferences": "Meine Präferenzen",
+        "messages": "Nachrichten ({count})",
+        "profile": "Mein Profil",
+        "group": "Meine Arbeit",
+        "openPlain": "Offene Buchungen",
+        "messagesPlain": "Nachrichten"
+      },
+      "unnamedService": "Leistung nicht mehr vorhanden",
+      "noCalendar": {
+        "title": "Noch kein eigener Kalender",
+        "description": "Sobald Ihre Verwaltung Sie im Team einträgt, sehen Sie hier Ihre Termine."
+      },
+      "phase": {
+        "done": "Erledigt",
+        "missed": "Nicht erschienen",
+        "past": "Vorbei",
+        "now": "Jetzt dran",
+        "upcoming": "Geplant"
+      },
+      "fit": {
+        "level": {
+          "very-good": "Sehr gut",
+          "good": "Gut",
+          "possible": "Möglich"
+        },
+        "reason": {
+          "service-preferred": "Ihre Leistung",
+          "service-not-preferred": "Leistung nicht unter Ihren Präferenzen",
+          "time-in-window": "Ihre Zeit",
+          "time-outside-window": "Außerhalb Ihrer bevorzugten Zeit"
+        },
+        "noPreference": "Keine Präferenz getroffen – Sie sind qualifiziert"
+      },
+      "start": {
+        "title": "Guten Tag",
+        "description": "Das steht heute für Sie an.",
+        "next": "Nächster Termin · in {minutes, plural, one {# Minute} other {# Minuten}}",
+        "check": "Bitte prüfen: {documents}",
+        "open": "Termin öffnen",
+        "today": "Heute · {count, plural, =0 {keine Termine} one {# Termin} other {# Termine}}",
+        "emptyToday": "Heute stehen keine Termine für Sie an.",
+        "actions": "Was möchten Sie tun?",
+        "toOpen": "Offene Buchungen ansehen ({count} passend)",
+        "toPlan": "Meinen Tagesplan ansehen",
+        "toPreferences": "Meine Präferenzen anpassen",
+        "fresh": "Neu für Sie",
+        "nothingNew": "Keine neuen Nachrichten.",
+        "tiles": {
+          "today": "Heute",
+          "todayNone": "Nichts geplant",
+          "todayDone": "{done} von {total} erledigt",
+          "next": "Nächster Termin",
+          "nextNone": "Heute nichts mehr",
+          "open": "Offene Buchungen",
+          "openDetail": "Die zu Ihnen passen",
+          "messages": "Neue Nachrichten",
+          "messagesDetail": "Ungelesen"
+        },
+        "todayLabel": "Termine von heute",
+        "emptyTodayBody": "Offene Buchungen, die zu Ihnen passen, finden Sie unter „Offene Buchungen“.",
+        "actionsTitle": "Was möchten Sie tun?",
+        "toOpenAction": "Offene Buchungen ansehen",
+        "toOpenHint": "{count, plural, =0 {Im Moment passt nichts} one {# passt zu Ihnen} other {# passen zu Ihnen}}",
+        "toPlanAction": "Meinen Tagesplan ansehen",
+        "toPlanHint": "Alle Ihre Termine der Reihe nach",
+        "toPreferencesHint": "Sagen Sie, wo, was und wann Sie am liebsten arbeiten",
+        "allMessages": "Alle Nachrichten",
+        "planLink": "Tagesplan"
+      },
+      "plan": {
+        "title": "Mein Tagesplan",
+        "description": "Ihre Termine in zeitlicher Reihenfolge.",
+        "nav": {
+          "label": "Tag wählen",
+          "previous": "Vorheriger Tag",
+          "today": "Heute",
+          "next": "Nächster Tag",
+          "pick": "Datum",
+          "show": "Anzeigen"
+        },
+        "summary": "{count, plural, =0 {Keine Termine} one {# Termin} other {# Termine}}",
+        "empty": {
+          "title": "An diesem Tag haben Sie keine Termine.",
+          "description": "Offene Buchungen, die zu Ihnen passen, finden Sie unter „Offene Buchungen“."
+        },
+        "asideLabel": "Überblick über den Tag",
+        "progress": {
+          "title": "Fortschritt",
+          "done": "{done} von {total} Terminen erledigt"
+        },
+        "tips": {
+          "title": "Gut zu wissen",
+          "details": "Unter „Details“ sehen Sie alle Informationen zum Termin.",
+          "handBack": "Termin nicht mehr möglich? Über „Details“ können Sie ihn abgeben.",
+          "messages": "Bei Änderungen erhalten Sie eine Nachricht."
+        },
+        "bring": "Mitbringen: {documents}",
+        "details": "Details: {name}",
+        "noInstructions": "Keine besonderen Hinweise zu dieser Leistung.",
+        "columns": {
+          "time": "Zeit",
+          "what": "Termin",
+          "state": "Stand",
+          "details": "Details"
+        },
+        "workday": {
+          "title": "Ihr Tag",
+          "works": "Sie arbeiten {hours}",
+          "breakAt": "Pause {hours}",
+          "dayOff": "Heute keine Arbeitszeit.",
+          "breakRow": "Pause {hours}"
+        }
+      },
+      "handBack": {
+        "trigger": "Termin abgeben",
+        "triggerNamed": "Termin abgeben: {name}",
+        "title": "Termin abgeben?",
+        "description": "Der Termin „{name}“ bleibt bestehen und wird wieder für Ihre Kolleginnen und Kollegen offen. Die Bürgerin oder der Bürger wird nicht benachrichtigt.",
+        "confirm": "Abgeben",
+        "cancel": "Behalten"
+      },
+      "open": {
+        "title": "Offene Buchungen",
+        "description": "Alle Termine, für die Sie qualifiziert und zeitlich frei sind.",
+        "hint": "So funktioniert es: Die Liste ist nach Ihren Präferenzen sortiert. Sie können trotzdem jeden Termin übernehmen – Präferenzen sind nur eine Empfehlung.",
+        "filters": {
+          "label": "Offene Buchungen filtern",
+          "apply": "Anwenden",
+          "reset": "Zurücksetzen",
+          "searchLabel": "Leistung oder Standort suchen",
+          "searchPlaceholder": "Leistung oder Standort suchen",
+          "date": "Datum",
+          "location": "Standort",
+          "locationAny": "Alle Standorte",
+          "part": "Uhrzeit",
+          "partAny": "Ganztägig",
+          "parts": {
+            "morning": "Vormittags",
+            "afternoon": "Nachmittags"
+          }
+        },
+        "tabs": {
+          "label": "Nach Passung",
+          "all": "Alle ({count})",
+          "very-good": "Sehr gut passend ({count})",
+          "good": "Gut passend ({count})",
+          "other": "Weitere ({count})"
+        },
+        "panelTitle": "Termine",
+        "summary": "{count, plural, =0 {Keine Termine} one {# Termin} other {# Termine}}",
+        "pagination": "Seiten der offenen Buchungen",
+        "empty": {
+          "title": "Gerade gibt es keine offenen Buchungen für Sie.",
+          "description": "Sobald ein passender Termin frei wird, erscheint er hier."
+        },
+        "claim": "Termin übernehmen",
+        "claimNamed": "Termin übernehmen: {name}",
+        "claimed": "Übernommen. Der Termin steht jetzt in Ihrem Tagesplan.",
+        "taken": "Bereits vergeben. Jemand anderes hat den Termin gerade übernommen.",
+        "toPlan": "Zum Tagesplan",
+        "refresh": "Liste aktualisieren",
+        "columns": {
+          "when": "Wann",
+          "what": "Termin",
+          "fit": "Passung"
+        },
+        "places": "Ihnen werden Termine an Ihrem eigenen Standort angeboten, {home}{others, plural, =0 {} other { und, an den Tagen, an die eine Führungskraft Sie entsendet, in {list}}}. Ihre Vorlieben ordnen sie nur."
+      },
+      "preferences": {
+        "title": "Meine Präferenzen",
+        "description": "Sagen Sie uns, was Ihnen liegt – wir zeigen passende Termine zuerst.",
+        "hint": "Wichtig: Präferenzen sortieren Ihre Vorschläge. Sie schließen nichts aus – Sie können weiterhin jeden Termin übernehmen, für den Sie qualifiziert sind.",
+        "services": {
+          "title": "1 · Leistungen",
+          "description": "Suchen Sie oder öffnen Sie eine Kategorie.",
+          "search": "Leistung suchen",
+          "count": "{chosen} von {total} Leistungen ausgewählt",
+          "groupCount": "{chosen} von {total}",
+          "noCategory": "Ohne Kategorie",
+          "remove": "{name} entfernen",
+          "more": "+ {count} weitere",
+          "none": "Es gibt noch keine Leistung zur Auswahl.",
+          "noMatch": "Keine Leistung passt zu „{search}“."
+        },
+        "window": {
+          "title": "2 · Wunschzeiten",
+          "description": "Wann arbeiten Sie am liebsten? Es gilt die Uhr des jeweiligen Standorts.",
+          "add": "Zeitfenster festlegen",
+          "start": "Beginn",
+          "end": "Ende",
+          "remove": "Zeitfenster entfernen",
+          "none": "Keine Wunschzeit: Termine des ganzen Tages werden gleich behandelt.",
+          "effect": "Termine in diesem Zeitfenster werden Ihnen zuerst gezeigt.",
+          "difference": "Das sind nicht Ihre Arbeitszeiten. Sie entscheiden, wann Sie gebucht werden können, und stehen in",
+          "differenceLink": "Mein Profil"
+        },
+        "saved": "Gespeichert.",
+        "reset": "Zurücksetzen",
+        "save": "Änderungen speichern"
+      },
+      "messages": {
+        "title": "Nachrichten",
+        "description": "Änderungen an Ihren Terminen.",
+        "panelTitle": "Posteingang",
+        "unread": "{count, plural, =0 {Alles gelesen} one {# ungelesen} other {# ungelesen}}",
+        "markAll": "Alle als gelesen markieren",
+        "markOne": "Als gelesen markieren",
+        "markOneNamed": "Als gelesen markieren: {what}, {time}",
+        "pagination": "Seiten der Nachrichten",
+        "empty": "Noch keine Nachrichten.",
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "read": "Gelesen",
+        "new": "Ungelesen",
+        "type": {
+          "assigned": "Termin zugewiesen",
+          "unassigned": "Zuweisung aufgehoben",
+          "cancelled": "Termin storniert",
+          "rescheduled": "Termin verschoben",
+          "calendar_changed": "Ihr Kalender wurde geändert"
+        },
+        "columns": {
+          "state": "Stand",
+          "message": "Nachricht",
+          "time": "Uhrzeit"
+        },
+        "emptyBody": "Hier steht, was mit Ihren Terminen passiert: neue Buchungen, Änderungen und was die Leitung an Ihrem Kalender geändert hat.",
+        "calendarAbout": "Eine Führungskraft hat geändert: {parts}",
+        "calendarParts": {
+          "setup": "Kalender eingerichtet",
+          "hours": "Arbeitszeiten",
+          "absences": "Abwesenheiten",
+          "qualifications": "Qualifikationen",
+          "coverage": "Einsatz an anderen Standorten"
+        }
+      },
+      "setup": {
+        "title": "Erste Schritte",
+        "calendar": {
+          "title": "Ihr Kalender ist eingerichtet",
+          "description": "Die Leitung hat Ihnen einen Kalender an Ihrem Standort gegeben."
+        },
+        "preferences": {
+          "title": "Präferenzen wählen",
+          "description": "Sagen Sie, welche Leistungen und welche Tageszeit Sie gern arbeiten. Passende offene Buchungen werden Ihnen zuerst gezeigt.",
+          "action": "Präferenzen festlegen"
+        }
+      },
+      "outcome": {
+        "complete": "Als erledigt markieren",
+        "completeNamed": "Als erledigt markieren: {name}",
+        "noShow": "Nicht erschienen",
+        "noShowNamed": "Nicht erschienen zu: {name}",
+        "hint": "Halten Sie fest, was aus diesem Termin geworden ist. Verschieben oder Stornieren ist Sache der Leitung."
+      },
+      "cover": {
+        "titleNow": "Heute arbeiten Sie in {location}",
+        "titleSoon": "Sie arbeiten bald in {location}",
+        "line": "{location}: {period}",
+        "body": "An diesen Tagen sind Sie nicht an Ihrem eigenen Standort: Ihre Termine und die offenen Termine, die Sie übernehmen können, liegen an dem hier genannten Ort. Ihre Führungskraft hat Sie dorthin entsandt.",
+        "stripNow": "Heute arbeiten Sie in {location}, bis {until}.",
+        "stripSoon": "Ab {from} arbeiten Sie in {location}."
+      }
+    },
+    "bookings": {
+      "tab": "Buchungen",
+      "title": "Buchungen",
+      "description": "Suchen, filtern und Termine zuweisen.",
+      "noLocations": {
+        "title": "Noch kein Standort",
+        "body": "Legen Sie zuerst einen Standort an. Danach erscheinen hier seine Buchungen."
+      },
+      "filters": {
+        "label": "Buchungen filtern",
+        "from": "Von",
+        "to": "Bis",
+        "location": "Standort",
+        "locationAny": "Alle Standorte",
+        "service": "Leistung",
+        "serviceAny": "Alle Leistungen",
+        "searchLabel": "Buchungsnummer",
+        "searchPlaceholder": "Buchungsnummer",
+        "apply": "Anwenden",
+        "reset": "Zurücksetzen",
+        "staff": "Mitarbeiter",
+        "staffAny": "Alle Mitarbeitenden",
+        "periods": {
+          "today": "Heute",
+          "week": "Nächste 7 Tage",
+          "month": "Nächste 30 Tage",
+          "custom": "Eigener Zeitraum",
+          "label": "Zeitraum",
+          "any": "Jeder Zeitraum"
+        }
+      },
+      "states": {
+        "label": "Buchungen nach Status",
+        "all": "Alle",
+        "tab": "{label} {count}"
+      },
+      "list": {
+        "panelTitle": "Buchungen",
+        "summary": "{count, plural, =0 {Keine Buchung} one {# Buchung} other {# Buchungen}}",
+        "pagination": "Seiten der Buchungen",
+        "columns": {
+          "time": "Uhrzeit",
+          "service": "Leistung",
+          "location": "Standort",
+          "customer": "Bürger/in",
+          "status": "Status",
+          "staff": "Mitarbeitende"
+        },
+        "details": "Details",
+        "detailsFor": "Details zu {service} am {time}",
+        "emptyTitle": "Keine Buchungen",
+        "emptyBody": "Für diese Tage und Filter gibt es keine Buchung.",
+        "unknown": "Unbekannt"
+      },
+      "panel": {
+        "reference": "Buchungsnummer",
+        "customer": "Bürger/in",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "notes": "Anmerkung",
+        "staff": "Mitarbeitende",
+        "resources": "Ressourcen",
+        "openUnit": "Noch niemand zugewiesen",
+        "close": "Details schließen",
+        "notFound": "Diese Buchung gibt es nicht mehr, oder sie gehört nicht zu dieser Website."
+      },
+      "actions": {
+        "label": "Aktionen zur Buchung",
+        "assign": "Mitarbeiter zuweisen",
+        "replace": "{name} ersetzen",
+        "unassign": "{name} entfernen",
+        "reschedule": "Verschieben",
+        "cancel": "Stornieren",
+        "complete": "Als erledigt markieren",
+        "noShow": "Als nicht erschienen markieren",
+        "create": "Buchung anlegen",
+        "saved": "Gespeichert.",
+        "refreshed": "Die Buchung wurde inzwischen geändert. Die Ansicht zeigt jetzt den aktuellen Stand: Bitte prüfen Sie ihn und versuchen Sie es erneut.",
+        "cancelTitle": "Buchung stornieren?",
+        "cancelBody": "Der Termin wird freigegeben. Das lässt sich nicht rückgängig machen.",
+        "back": "Zurück",
+        "menu": "Aktionen",
+        "replaceOne": "Ersetzen",
+        "unassignOne": "Entfernen"
+      },
+      "assign": {
+        "title": "Mitarbeiter zuweisen",
+        "replacing": "Ersetzt {name}.",
+        "recommended": "Empfohlen {count}",
+        "eligible": "Alle geeigneten {count}",
+        "unavailable": "Nicht verfügbar {count}",
+        "loading": "Mitarbeitende werden geladen …",
+        "none": "Hier ist niemand.",
+        "choose": "Mitarbeiter wählen",
+        "confirm": "{name} zuweisen",
+        "confirmEmpty": "Zuweisen",
+        "cancel": "Abbrechen",
+        "fit": {
+          "veryGood": "Sehr gute Passung",
+          "good": "Gute Passung",
+          "possible": "Möglich"
+        },
+        "reasons": {
+          "bookingNotAssignable": "Diese Buchung wird nicht von Hand zugewiesen",
+          "bookingOver": "Der Termin ist vorbei",
+          "resourceInactive": "Nicht aktiv",
+          "wrongResourceType": "Passt nicht zur Art der Anforderung",
+          "missingQualification": "Keine Qualifikation „{skills}“",
+          "wrongLocation": "Arbeitet an einem anderen Standort",
+          "notInPinnedPool": "Für diese Leistung nicht vorgesehen",
+          "alreadyOnBooking": "Ist schon auf dieser Buchung",
+          "outsideWorkingHours": "Arbeitet zu dieser Zeit nicht",
+          "timeConflict": "Termin überschneidet sich: {time}"
+        },
+        "preferred": "Bevorzugt: {what}",
+        "notPreferred": "Nicht bevorzugt: {what}",
+        "noPreference": "Keine Präferenz angegeben",
+        "aspect": {
+          "service": "diese Leistung",
+          "time": "diese Zeit"
+        }
+      },
+      "slots": {
+        "day": "Tag",
+        "slot": "Uhrzeit",
+        "slotPlaceholder": "Uhrzeit wählen",
+        "loading": "Freie Zeiten werden geladen …",
+        "choose": "Wählen Sie zuerst Leistung, Standort und Tag.",
+        "empty": {
+          "none": "An diesem Tag ist keine Zeit frei.",
+          "closed": "Der Standort ist an diesem Tag geschlossen. Wählen Sie einen anderen Tag.",
+          "no-employee": "Dieser Service braucht eine Mitarbeiter/in, aber an diesem Standort hat noch niemand einen Kalender.",
+          "no-resource": "Etwas, das dieser Service braucht, fehlt hier oder ist nicht aktiv. Prüfen Sie die Ressourcen des Service.",
+          "fully-booked": "Jede Zeit an diesem Tag ist vergeben. Wählen Sie einen anderen Tag.",
+          "setUpTeam": "Team einrichten"
+        }
+      },
+      "reschedule": {
+        "title": "Buchung verschieben",
+        "description": "Wählen Sie eine freie Zeit am selben Standort.",
+        "confirm": "Verschieben",
+        "cancel": "Abbrechen"
+      },
+      "create": {
+        "title": "Buchung anlegen",
+        "description": "Für jemanden, der anruft oder vorbeikommt. Die Zeit wird erst beim Anlegen verbindlich geprüft.",
+        "service": "Leistung",
+        "location": "Standort",
+        "choose": "Bitte wählen",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "confirm": "Anlegen",
+        "cancel": "Abbrechen"
       }
     },
     "calendar": {
-      "truncated": "Dieser Zeitraum enthält mehr Buchungen, als angezeigt werden können. Wählen Sie einen kürzeren Zeitraum oder filtern Sie nach Leistung oder Ressource.",
-      "today": "Heute",
-      "previous": "Zurück",
-      "next": "Weiter",
-      "viewGroup": "Kalenderansicht",
+      "tab": "Kalender",
+      "title": "Kalender",
+      "description": "Alle Buchungen aller Standorte auf einen Blick. Jede Zeit ist die Uhrzeit des Standorts. Wählen Sie einen Termin für Details.",
       "views": {
+        "label": "Ansicht",
         "day": "Tag",
         "week": "Woche",
         "month": "Monat",
         "list": "Liste"
       },
-      "filterLocation": "Standort",
-      "filterService": "Leistung",
-      "filterResource": "Ressource",
-      "firstLocation": "Erster Standort",
-      "allServices": "Alle Leistungen",
-      "allResources": "Alle Ressourcen",
-      "noLocations": "Legen Sie im Reiter Einrichtung einen Standort an, um den Kalender zu sehen.",
-      "loading": "Buchungen werden geladen …",
+      "nav": {
+        "label": "Zeitraum wechseln",
+        "previous": "Zurück",
+        "today": "Heute",
+        "next": "Weiter",
+        "range": "{from} bis {to}"
+      },
+      "states": {
+        "label": "Nur einen Status zeigen"
+      },
+      "filters": {
+        "locationAny": "Alle Standorte"
+      },
+      "loading": "Kalender wird geladen …",
+      "truncated": "In diesem Zeitraum gibt es mehr Buchungen, als der Kalender zeigen kann. Bitte wählen Sie einen Standort oder einen kürzeren Zeitraum.",
       "noEvents": "Keine Buchungen in diesem Zeitraum.",
-      "retry": "Erneut versuchen"
-    },
-    "own": {
-      "title": "Mein Kalender",
-      "description": "Ihr Platz im Buchungssystem: Ihre Arbeitszeiten, Ihr Standort und die Leistungen, die Sie anbieten.",
-      "profileTitle": "Mein Kalender und meine Leistungen",
-      "profileNew": "Richten Sie Ihren Kalender ein, damit Sie buchbar sind: Arbeitszeiten, Standort und Leistungen.",
-      "profileIntro": "Besucher werden in diesen Kalender gebucht. Änderungen gelten sofort.",
-      "name": "Angezeigter Name",
-      "nameHint": "Wie Ihr Kalender für Kolleginnen und Kollegen heißt, zum Beispiel Ihr Name.",
-      "location": "Wo ich arbeite",
-      "locationHint": "Sie arbeiten an jeweils einem Standort. Zum Wechseln wählen Sie einen anderen, was nur möglich ist, solange keine Buchung in Ihrem Kalender ansteht.",
-      "services": "Leistungen, die ich anbiete",
-      "servicesHint": "Die Leistungen, die an Ihrem Standort angeboten werden. Gebucht werden Sie nur für die, die Sie auswählen.",
-      "noServices": "An diesem Standort werden noch keine Leistungen angeboten. Eine Verwaltungsperson richtet sie zuerst ein.",
-      "hoursTitle": "Meine Arbeitszeiten",
-      "hoursHint": "Besucher können Sie nur innerhalb dieser Zeiten buchen.",
-      "save": "Meinen Kalender speichern",
-      "saved": "Gespeichert.",
-      "upcoming": "Nächste 14 Tage",
-      "empty": "Keine Buchungen in den nächsten zwei Wochen.",
-      "servicesPlaceholder": "Leistungen suchen …",
-      "hoursChooseLocationFirst": "Wählen Sie zuerst Ihren Standort: Ihre Arbeitszeiten liegen innerhalb der Zeiten, zu denen dort gearbeitet werden darf.",
-      "chooseLocationFirst": "Wählen Sie zuerst Ihren Standort: Sie bieten die Leistungen des Ortes an, an dem Sie arbeiten.",
-      "servicesDropped": "{count, plural, one {# Leistung wurde entfernt: Sie wird an diesem Standort nicht angeboten.} other {# Leistungen wurden entfernt: Sie werden an diesem Standort nicht angeboten.}}",
-      "tabs": {
-        "calendar": "Meine Buchungen",
-        "profile": "Arbeitszeiten und Leistungen"
+      "popover": {
+        "customer": "Bürger/in: {name}",
+        "staff": "Mitarbeitende: {names}",
+        "details": "In der Liste öffnen",
+        "close": "Schließen"
       },
-      "change": {
-        "hours": "Ihre Arbeitszeiten",
-        "services": "die Leistungen, die Sie anbieten",
-        "notice": "Eine verantwortliche Person hat am {date} {what} geändert. Bitte prüfen Sie, ob es für Sie noch passt.",
-        "seen": "Verstanden"
-      }
-    },
-    "presets": {
-      "label": "Vorlagen",
-      "start": "Mit einer Vorlage beginnen:",
-      "services": {
-        "citizenService": "Bürgerservice (20 Min.)",
-        "consultation": "Beratung (45 Min.)",
-        "roomBooking": "Raumbuchung (2 Std.)"
-      },
-      "resources": {
-        "meetingRoom": "Besprechungsraum",
-        "sportsField": "Sportplatz",
-        "vehicle": "Fahrzeug",
-        "equipment": "Ausstattung"
-      }
-    },
-    "holidays": {
-      "open": "Gesetzliche Feiertage übernehmen …",
-      "title": "Gesetzliche Feiertage",
-      "hint": "Wählen Sie das Bundesland. Es ändert sich nichts, bis Sie die Tage hinzufügen und speichern. Zuvor importierte Feiertage dieses Jahres werden ersetzt; Tage, die Sie selbst eingetragen haben, bleiben unverändert. Bestehende Buchungen bleiben unberührt.",
-      "region": "Bundesland",
-      "year": "Jahr",
-      "apply": "{count, plural, =0 {Alle schon eingetragen} one {# Feiertag als Schließtag eintragen} other {# Feiertage als Schließtage eintragen}}",
-      "close": "Schließen",
-      "limit": "Es passen nicht alle Tage hinein: Höchstens {max} Ausnahmen sind möglich.",
-      "note": "Örtliche Feiertage (zum Beispiel in einzelnen bayerischen Gemeinden) sind nicht enthalten. Tragen Sie sie als Ausnahme selbst ein.",
-      "names": {
-        "newYear": "Neujahr",
-        "epiphany": "Heilige Drei Könige",
-        "womensDay": "Internationaler Frauentag",
-        "goodFriday": "Karfreitag",
-        "easterSunday": "Ostersonntag",
-        "easterMonday": "Ostermontag",
-        "labourDay": "Tag der Arbeit",
-        "ascension": "Christi Himmelfahrt",
-        "whitSunday": "Pfingstsonntag",
-        "whitMonday": "Pfingstmontag",
-        "corpusChristi": "Fronleichnam",
-        "assumption": "Mariä Himmelfahrt",
-        "germanUnity": "Tag der Deutschen Einheit",
-        "childrensDay": "Weltkindertag",
-        "reformationDay": "Reformationstag",
-        "allSaints": "Allerheiligen",
-        "repentanceDay": "Buß- und Bettag",
-        "christmasDay": "1. Weihnachtstag",
-        "boxingDay": "2. Weihnachtstag"
-      },
-      "regions": {
-        "DE": "Bundesweit (nur die Feiertage in ganz Deutschland)",
-        "BW": "Baden-Württemberg",
-        "BY": "Bayern",
-        "BE": "Berlin",
-        "BB": "Brandenburg",
-        "HB": "Bremen",
-        "HH": "Hamburg",
-        "HE": "Hessen",
-        "MV": "Mecklenburg-Vorpommern",
-        "NI": "Niedersachsen",
-        "NW": "Nordrhein-Westfalen",
-        "RP": "Rheinland-Pfalz",
-        "SL": "Saarland",
-        "SN": "Sachsen",
-        "ST": "Sachsen-Anhalt",
-        "SH": "Schleswig-Holstein",
-        "TH": "Thüringen"
-      },
-      "status": {
-        "replaces": "wird ersetzt",
-        "covered": "Ihr eigener Eintrag bleibt"
-      },
-      "skipped": "{count, plural, one {# Tag wird übersprungen: Dafür haben Sie selbst eine Ausnahme eingetragen.} other {# Tage werden übersprungen: Dafür haben Sie selbst Ausnahmen eingetragen.}}"
-    },
-    "timeline": {
-      "hint": "Klicken Sie auf einen leeren Bereich, um Zeiten anzulegen. Ziehen Sie einen Balken, um ihn zu verschieben, an den Rändern, um ihn zu verlängern. Pausen liegen unter den Öffnungszeiten.",
-      "boundedHint": "Die helle Fläche ist, wann der Standort geöffnet ist. Zeiten lassen sich nur dort einstellen.",
-      "bar": "{day}: {start} bis {end} Uhr",
-      "start": "{day}, Beginn",
-      "end": "{day}, Ende",
-      "removeHours": "Zeiten am {day} entfernen",
-      "removePause": "Pause am {day} entfernen",
-      "keys": "Ziehen zum Verschieben. Pfeiltasten verschieben, Umschalt verschiebt um eine Stunde, Entf löscht.",
-      "addHours": "Geschlossen. Klicken, um Zeiten anzulegen.",
-      "addPause": "Klicken für eine Pause",
-      "pauseBar": "{day}, Pause: {start} bis {end} Uhr",
-      "pauseStart": "{day}, Pause beginnt",
-      "pauseEnd": "{day}, Pause endet",
-      "applying": "Wird angewendet …",
-      "clearDay": "{day} leeren"
+      "more": "+{count} weitere"
     },
     "setup": {
-      "title": "Standorte",
-      "intro": "Hier richten Sie ein, was gebucht werden kann. Öffnen Sie einen Standort, um seine Öffnungszeiten, Leistungen und Räume zu bearbeiten.",
-      "empty": {
-        "title": "Beginnen Sie mit Ihrem ersten Standort",
-        "description": "Ein Standort ist der Ort, an dem Termine stattfinden, zum Beispiel das Rathaus. Danach legen Sie dort fest, wann geöffnet ist, was Besuchende buchen können und welche Räume dafür gebraucht werden.",
-        "action": "Ersten Standort anlegen"
-      },
-      "card": {
-        "noHours": "Öffnungszeiten fehlen",
-        "services": "{count, plural, =0 {Keine Leistungen} one {# Leistung} other {# Leistungen}}",
-        "resources": "{count, plural, =0 {Keine Räume} one {# Raum oder Gerät} other {# Räume oder Geräte}}"
-      }
-    },
-    "workspace": {
-      "title": "Standort",
-      "back": "Alle Standorte",
-      "editDetails": "Name und Adresse ändern",
-      "hours": {
-        "title": "Öffnungszeiten",
-        "intro": "Wann dieser Standort geöffnet ist. Leistungen und Ressourcen sind nur innerhalb dieser Zeiten buchbar.",
-        "save": "Öffnungszeiten speichern",
-        "reset": "Zurücksetzen",
-        "saved": "Gespeichert.",
-        "conflictTitle": "Diese Änderungen passen nicht zu dem, was hier eingerichtet ist.",
-        "conflictHint": "Zu Zeiten geöffnet, die dadurch schließen würden: {names}. Passen Sie zuerst deren Zeiten an und speichern Sie dann die Öffnungszeiten."
+      "title": "Buchung einrichten",
+      "progress": "{done} von {total} Schritten erledigt",
+      "done": "Erledigt",
+      "addAt": "Am Standort {location}",
+      "locationFirst": "Zuerst einen Standort anlegen",
+      "truncated": "Die Website hat mehr, als hier gezählt werden kann; die Zahlen sind eine Untergrenze.",
+      "location": {
+        "title": "Standort anlegen",
+        "description": "Wo Termine stattfinden: ein Amt, ein Gebäude oder ein Gelände.",
+        "action": "Standort anlegen"
       },
       "services": {
-        "title": "Leistungen",
-        "intro": "Was Besuchende an diesem Standort buchen können.",
-        "empty": "Hier wird noch nichts angeboten. Wählen Sie eine Vorlage, legen Sie eine neue Leistung an oder bieten Sie eine bestehende hier an.",
-        "sharedWith": "Auch an {count, plural, one {# weiteren Standort} other {# weiteren Standorten}}",
-        "glance": "{minutes} Min. · Start alle {interval} Min.",
-        "needs": "Benötigt {needs}",
-        "removeHere": "Hier nicht mehr anbieten",
-        "offerExisting": "Bestehende Leistung hier anbieten",
-        "offerExistingHint": "Leistungen anderer Standorte lassen sich übernehmen, statt sie neu anzulegen. Eine Änderung gilt dann an allen Standorten.",
-        "offerPlaceholder": "Leistung suchen …",
-        "offerFailed": "Die Leistung konnte hier nicht angeboten werden.",
-        "adjustHint": "„{name}“ ist zu Zeiten geöffnet, an denen dieser Standort geschlossen ist. Die Tage, die nicht passen, sind markiert: Passen Sie sie an und speichern Sie, um die Leistung hier anzubieten.",
-        "offerNone": "Alle Leistungen dieser Website werden hier bereits angeboten."
+        "title": "Leistungen anlegen",
+        "description": "Was Besuchende buchen können, mit Dauer und Regeln.",
+        "action": "Leistung anlegen"
       },
       "resources": {
-        "title": "Räume und Ausstattung",
-        "intro": "Was die Leistungen hier belegen. Mitarbeitende richten ihren Kalender selbst ein, Sie sehen sie im Reiter Team.",
-        "empty": "Noch nichts angelegt. Eine Leistung wie „Raumbuchung“ braucht mindestens einen Raum.",
-        "everywhere": "An allen Standorten",
-        "capacity": "bis {count, plural, one {# Person} other {# Personen}}"
+        "title": "Ressourcen anlegen",
+        "description": "Die Räume, Schalter oder Geräte, die ein Termin braucht.",
+        "action": "Ressource anlegen"
       },
-      "hoursConflict": "Zeiten außerhalb der Öffnungszeiten"
-    },
-    "team": {
-      "title": "Team",
-      "intro": "Die Mitarbeitenden und ihre Arbeitszeiten. Jede Person richtet ihren Kalender selbst ein. Hier sehen Sie alle nebeneinander und können Zeiten setzen, für eine Person oder für alle.",
-      "empty": {
-        "title": "Noch niemand im Team",
-        "description": "Laden Sie Mitarbeitende mit der Rolle „Mitarbeitende“ ein. Sobald sie ihren Kalender angelegt haben, erscheinen sie hier mit ihren Arbeitszeiten.",
-        "action": "Mitarbeitende einladen"
-      },
-      "everywhere": "Alle Standorte",
-      "followsLocation": "Wie der Standort",
-      "ownHours": "Eigene Zeiten",
-      "offers": "{count, plural, =0 {Keine Leistungen} one {# Leistung} other {# Leistungen}}",
-      "followsLocationHint": "Diese Person ist verfügbar, wann immer der Standort geöffnet ist. Ziehen Sie die Zeiten enger, um sie zu beschränken.",
-      "ownHoursHint": "Diese Person ist nur zu diesen Zeiten verfügbar, innerhalb der Öffnungszeiten des Standorts.",
-      "save": "Zeiten speichern",
-      "applyToAll": "Für alle {count} übernehmen",
-      "followLocation": "Wie der Standort",
-      "unsaved": "Noch nicht gespeichert.",
-      "noLocation": "Kein Standort",
-      "noLocationHint": "Diese Person hat noch nicht gewählt, wo sie arbeitet, deshalb gibt es keine Zeiten zu setzen. Sie wählt zuerst in ihrem eigenen Kalender einen Standort.",
-      "hoursTitle": "Arbeitszeiten",
-      "followStaffHours": "Wie die erlaubten Zeiten",
-      "servicesTitle": "Leistungen",
-      "servicesLabel": "Leistungen dieser Person",
-      "servicesHint": "Die Leistungen, die an ihrem Standort angeboten werden. Die Person wird informiert, dass Sie das geändert haben.",
-      "noServicesAtLocation": "An diesem Standort werden noch keine Leistungen angeboten.",
-      "saveServices": "Leistungen speichern",
-      "policy": {
-        "title": "Wann Mitarbeitende arbeiten dürfen",
-        "intro": "Je Standort. Mitarbeitende legen ihre eigenen Zeiten innerhalb dieser fest. Wenn Sie sie verengen, werden die Zeiten derer gekürzt, die darüber hinausreichen, und jede dieser Personen wird informiert.",
-        "open": "Immer, wenn geöffnet ist",
-        "limited": "Eingeschränkt",
-        "toggle": "Mitarbeitende dürfen nur zu bestimmten Zeiten arbeiten",
-        "toggleHint": "Zeichnen Sie die Zeiten, in denen Mitarbeitende hier arbeiten dürfen. Sie bleiben innerhalb der Öffnungszeiten.",
-        "affected": "Beim Speichern werden die Zeiten gekürzt von: {names}. Jede dieser Personen wird in ihrem Kalender informiert, dass Sie sie geändert haben.",
-        "save": "Erlaubte Zeiten speichern",
-        "saved": "Gespeichert."
+      "team": {
+        "title": "Team einrichten",
+        "description": "Geben Sie Mitarbeitenden einen Kalender, damit Buchungen ihnen zugewiesen werden können.",
+        "action": "Team einrichten"
       }
     },
-    "leave": {
-      "title": "Ohne Speichern verlassen?",
-      "description": "Einige Ihrer Änderungen sind noch nicht gespeichert. Wenn Sie jetzt gehen, gehen sie verloren.",
-      "confirm": "Verlassen und Änderungen verwerfen",
-      "stay": "Bleiben und weiter bearbeiten"
+    "websiteOverview": {
+      "locations": "Standorte",
+      "services": "Leistungen",
+      "resources": "Ressourcen",
+      "team": "Team",
+      "finish": "Richten Sie alles ein, damit Besuchende buchen können."
     },
-    "picker": {
-      "choose": "Tag wählen"
-    },
-    "exceptions": {
-      "number": "Ausnahme {number}",
-      "needsAttention": "Bitte prüfen",
-      "preview": "Vorschau",
-      "hidePreview": "Vorschau ausblenden",
-      "previewNeedsDate": "Wählen Sie ein Datum, um zu sehen, was sich ändert.",
-      "previewRange": "{from} bis {to}",
-      "previewRegular": "Normalerweise am {day}",
-      "previewResult": "Mit dieser Ausnahme",
-      "previewClosedLane": "Am {day} geschlossen",
-      "previewClosedResult": "Geschlossen",
-      "previewSameEveryDay": "Gezeigt ist der erste Tag. Die übrigen Tage des Zeitraums folgen derselben Regel.",
-      "groupTitle": "Feiertage {year}: {region}",
-      "groupCount": "{count, plural, one {# Tag} other {# Tage}}",
-      "showDays": "Tage anzeigen",
-      "hideDays": "Tage ausblenden",
-      "removeGroup": "Alle entfernen",
-      "removeHoliday": "{name} entfernen",
-      "showMore": "{count, plural, one {# weitere anzeigen} other {# weitere anzeigen}}",
-      "showFewer": "Weniger anzeigen"
-    },
-    "list": {
-      "search": "Nach Namen suchen",
-      "showMore": "{count} weitere anzeigen"
-    },
-    "delete": {
-      "confirm": "Löschen",
-      "keep": "Behalten",
-      "location": {
-        "button": "Standort löschen",
-        "title": "{name} löschen?",
-        "description": "Der Standort wird endgültig entfernt. Das geht nur, solange dort nichts gebucht wurde und nichts zugeordnet ist."
+    "workspace": {
+      "title": "Buchungsbereich",
+      "overview": "Übersicht",
+      "description": "Termine planen und die zugehörigen Standorte, Services und Ressourcen verwalten.",
+      "contextHint": "Services, Ressourcen und Team gehören zu einem Standort. Wählen Sie, wo Sie arbeiten möchten.",
+      "chooseLocation": "Standort wählen",
+      "location": "Standort: {name}",
+      "allLocations": "Alle Standorte",
+      "locked": "Legen Sie zuerst einen Standort an, um Services, Ressourcen, Team und Termine freizuschalten.",
+      "more": "Mehr",
+      "quickActions": "Schnellaktionen",
+      "locationTitle": "An einem Standort arbeiten",
+      "locationDescription": "Öffnen Sie einen Standort oder direkt seine Services und Ressourcen. Der Standort bleibt beim Navigieren ausgewählt.",
+      "openLocation": "Öffnen",
+      "openNamed": "{name} öffnen",
+      "lowerBound": "Mindestens diese Anzahl; die Liste ist unvollständig.",
+      "openCalendar": "Kalender für {field} öffnen",
+      "dateHint": "JJJJ-MM-TT",
+      "hoursHint": "Klicken Sie auf einen Balken, um eine Zeit zu öffnen, ziehen Sie ihn zum Verschieben, die Ränder zum Anpassen. Pfeiltasten ändern um 15 Minuten, mit Umschalt um eine Stunde.",
+      "facts": {
+        "locations": "Wo Termine stattfinden",
+        "services": "Was Besucher buchen können",
+        "resources": "Räume, Arbeitsplätze und Geräte",
+        "team": "Personen mit Arbeitskalender"
       },
-      "service": {
-        "button": "Leistung löschen",
-        "title": "{name} löschen?",
-        "description": "Die Leistung wird endgültig entfernt. Das geht nur, solange sie nie gebucht wurde; andernfalls schalten Sie sie aus."
+      "hubTitle": "Buchungen",
+      "hubDescription": "Wählen Sie den Bereich, dessen Termine Sie verwalten möchten.",
+      "hubEmpty": "Kein Buchungsbereich verfügbar",
+      "hubEmptyDescription": "Sie benötigen Buchungszugriff auf eine Website, um deren Bereich zu öffnen.",
+      "hubOpen": "Bereich öffnen",
+      "hubName": "Bereich",
+      "chooseTime": "Zeit für {field} wählen",
+      "website": "Zurück zur Website",
+      "websiteNamed": "Zurück zur Verwaltung von {name}",
+      "switch": "Workspace wechseln",
+      "allWorkspaces": "Alle Workspaces",
+      "truncated": "Es gibt mehr Workspaces, als aufgelistet sind.",
+      "workingAt": "Aktueller Standort",
+      "rowOpen": "Buchungen"
+    },
+    "home": {
+      "today": {
+        "title": "Heute",
+        "count": "{count, plural, =0 {Keine Buchung} one {# Buchung} other {# Buchungen}}",
+        "all": "Alle Buchungen",
+        "emptyTitle": "Für heute ist nichts gebucht",
+        "emptyBody": "Neue Buchungen erscheinen hier, sobald sie gemacht werden.",
+        "lockedTitle": "Noch keine Termine"
       },
-      "resource": {
-        "button": "Löschen",
-        "title": "{name} löschen?",
-        "description": "Sie wird endgültig entfernt. Das geht nur, solange sie nie gebucht wurde und keine Leistung sie ausdrücklich verlangt."
-      }
-    },
-    "overview": {
-      "title": "Termine",
-      "link": "Kalender",
-      "today": "Heute",
-      "upcoming": "Nächste {days} Tage",
-      "empty": "Keine anstehenden Termine.",
-      "noLocation": "Legen Sie einen Standort an, um Termine anzunehmen.",
-      "noCustomer": "Kein Name angegeben"
-    },
-    "auditEvents": {
-      "booking": {
-        "service_created": "Leistung angelegt",
-        "service_updated": "Leistung geändert",
-        "service_deleted": "Leistung gelöscht",
-        "location_created": "Standort angelegt",
-        "location_updated": "Standort geändert",
-        "location_deleted": "Standort gelöscht",
-        "resource_created": "Ressource angelegt",
-        "resource_updated": "Ressource geändert",
-        "resource_deleted": "Ressource gelöscht",
-        "manager_change_acknowledged": "Kalenderänderung bestätigt",
-        "resources_imported": "Ressourcen importiert",
-        "confirmed": "Termin gebucht",
-        "cancelled": "Termin storniert",
-        "rescheduled": "Termin verschoben",
-        "completed": "Termin abgeschlossen",
-        "no_show": "Als nicht erschienen markiert"
+      "locations": {
+        "title": "Standorte",
+        "all": "Alle Standorte"
+      },
+      "tiles": {
+        "today": "Buchungen heute",
+        "todayDetail": "Auf den Kalendern der Standorte",
+        "open": "Heute offen",
+        "openDetail": "Warten auf einen Mitarbeiter",
+        "assigned": "Heute zugewiesen",
+        "assignedDetail": "Von einem Mitarbeiter übernommen",
+        "locationsDetail": "{services, plural, one {# Service} other {# Services}} · {resources, plural, one {# Ressource} other {# Ressourcen}} · {team, plural, one {# Teammitglied} other {# Teammitglieder}}"
+      },
+      "week": {
+        "title": "Nächste 7 Tage",
+        "link": "Kalender",
+        "total": "Buchungen",
+        "waiting": "Warten auf Mitarbeiter",
+        "covered": "Von Mitarbeitern übernommen",
+        "waitingSeries": "Warten auf Mitarbeiter",
+        "emptyTitle": "Keine Buchungen in den nächsten 7 Tagen",
+        "emptyBody": "Sie erscheinen hier, sobald sie gemacht werden.",
+        "daySummary": "{date}: {total, plural, one {# Buchung} other {# Buchungen}}, {waiting} warten auf Mitarbeiter",
+        "tableCaption": "Buchungen pro Tag, nächste 7 Tage",
+        "day": "Tag"
       }
     }
   }

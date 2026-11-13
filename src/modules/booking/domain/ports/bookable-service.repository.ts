@@ -1,50 +1,18 @@
-import type { TenantId } from '@modules/auth';
-
-import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
+import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
-import type { BookableService, BookableServiceDraft } from '../models/bookable-service';
-import type { BookableServiceId, WebsiteId } from '../models/ids';
+import type { BookingScope } from './booking.repository';
+import type { BookableService } from '../models/bookable-service';
+import type { BookableServiceId } from '../models/ids';
 
-/** Persistence for bookable services. Tenant-scoped like every repository here. */
+/**
+ * Read-only access to the services of a website, reduced to what the booking rules read. Creating
+ * and editing them belongs to the administration (later steps). Answers `null` for a service of
+ * another website, exactly as for one that does not exist.
+ */
 export interface BookableServiceRepository {
   findById(
+    scope: BookingScope,
     id: BookableServiceId,
-    tenantId: TenantId,
   ): AppResultAsync<BookableService | null, InfrastructureAppError>;
-
-  /** The names of those of `ids` that are services of the website; nothing else is read. */
-  findNames(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    ids: readonly BookableServiceId[],
-  ): AppResultAsync<
-    ReadonlyArray<{ readonly id: BookableServiceId; readonly name: string }>,
-    InfrastructureAppError
-  >;
-
-  /** Bounded: never more than `limit` items. */
-  listByWebsite(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly BookableService[], InfrastructureAppError>;
-
-  /** Fails with "not found" when the website does not exist in this tenant. */
-  create(input: {
-    readonly tenantId: TenantId;
-    readonly draft: BookableServiceDraft;
-  }): AppResultAsync<BookableService, NotFoundAppError | InfrastructureAppError>;
-
-  /** Idempotent. The caller has checked that no booking refers to the service. */
-  deleteById(
-    id: BookableServiceId,
-    tenantId: TenantId,
-  ): AppResultAsync<void, InfrastructureAppError>;
-
-  update(
-    id: BookableServiceId,
-    tenantId: TenantId,
-    draft: BookableServiceDraft,
-  ): AppResultAsync<BookableService, NotFoundAppError | InfrastructureAppError>;
 }

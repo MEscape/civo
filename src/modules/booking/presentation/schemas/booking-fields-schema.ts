@@ -1,58 +1,81 @@
 import { z } from 'zod';
 
 import {
-  BOOKING_REFERENCE_LENGTH,
+  BOOKING_ID_MAX_LENGTH,
+  BOOKING_INPUT_LIMITS as LIMITS,
   BOOKING_VALIDATION_CODES as CODES,
-  CUSTOMER_LIMITS,
   INFORMATION_FIELDS,
-  SERVICE_LIMITS,
+} from '../../application/contracts/booking-constraints';
+
+import type {
+  BookingCustomer,
+  InformationField,
 } from '../../application/contracts/booking-constraints';
 
 /**
- * Field-level building blocks shared by the action schemas. A schema only
- * checks the SHAPE of a request (type, length, a plausible format) so a
- * malformed one is refused before it reaches a use case; what a value MEANS
- * (does the service exist, is the time free) is decided by the use case.
- * Messages are stable codes, never prose (errors.md).
+ * Field schemas shared by the actions. Messages are stable codes, never prose (the UI translates
+ * them); limits come from the constants, so a number is defined exactly once. These check the SHAPE
+ * and the size of untrusted text; what a value means is the use case's and the domain's to decide.
  */
+export const idSchema = z
+  .string()
+  .min(1, { message: CODES.idInvalid })
+  .max(BOOKING_ID_MAX_LENGTH, { message: CODES.idInvalid });
 
-const ID_MAX = 128;
-const ISO_INSTANT_MAX = 40;
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-export const idSchema = z.string().min(1, CODES.idInvalid).max(ID_MAX, CODES.idInvalid);
-
-export const optionalIdSchema = idSchema.optional();
-
-/** An instant as ISO-8601 text; the use case parses it for real. */
+/** ISO-8601 with an offset; the use case parses it with the booking time model. */
 export const instantSchema = z
   .string()
-  .min(1, CODES.dateInvalid)
-  .max(ISO_INSTANT_MAX, CODES.dateInvalid);
+  .min(1, { message: CODES.startInvalid })
+  .max(LIMITS.instantMax, { message: CODES.startInvalid });
 
 /** A calendar day, `YYYY-MM-DD`. */
-export const localDateSchema = z.string().regex(ISO_DATE_PATTERN, CODES.dateInvalid);
-
-export const participantsSchema = z
-  .number()
-  .int(CODES.participantsInvalid)
-  .min(1, CODES.participantsInvalid)
-  .max(SERVICE_LIMITS.participantsMax, CODES.participantsInvalid);
-
-export const referenceSchema = z
+export const daySchema = z
   .string()
-  .trim()
-  .toUpperCase()
-  .length(BOOKING_REFERENCE_LENGTH, CODES.referenceInvalid);
+  .regex(/^\d{4}-\d{2}-\d{2}$/, { message: CODES.dateRangeInvalid });
 
 export const emailSchema = z
   .string()
   .trim()
-  .min(1, CODES.emailRequired)
-  .max(CUSTOMER_LIMITS.emailMax, CODES.emailInvalid);
+  .max(LIMITS.emailMax, { message: CODES.emailInvalid })
+  .pipe(z.email({ message: CODES.emailInvalid }));
 
-/** The booking form's values by field name; only the closed list of fields is accepted. */
-export const customerValuesSchema = z.partialRecord(
-  z.enum(INFORMATION_FIELDS),
-  z.string().max(CUSTOMER_LIMITS.notesMax, CODES.textTooLong),
-);
+export const referenceSchema = z
+  .string()
+  .trim()
+  .min(1, { message: CODES.referenceInvalid })
+  .max(LIMITS.referenceMax, {
+    message: CODES.referenceInvalid,
+  });
+
+export const requirementIndexSchema = z
+  .number()
+  .int({ message: CODES.idInvalid })
+  .min(0, { message: CODES.idInvalid })
+  .max(LIMITS.requirementIndexMax, { message: CODES.idInvalid });
+
+const optionalText = (max: number) =>
+  z.string().trim().max(max, { message: CODES.fieldRequired }).optional();
+
+/**
+ * What the booking form carries. A field left empty is the same as a field not sent, so the rules
+ * see only what the person wrote.
+ */
+export const customerSchema = z
+  .object({
+    firstName: optionalText(LIMITS.nameMax),
+    lastName: optionalText(LIMITS.nameMax),
+    email: z.union([emailSchema, z.literal('')]).optional(),
+    phone: optionalText(LIMITS.phoneMax),
+    referenceNumber: optionalText(LIMITS.referenceNumberMax),
+    notes: optionalText(LIMITS.notesMax),
+  })
+  .transform((customer): BookingCustomer => {
+    const written: Partial<Record<InformationField, string>> = {};
+    for (const field of INFORMATION_FIELDS) {
+      const value = customer[field];
+      if (value !== undefined && value !== '') {
+        written[field] = value;
+      }
+    }
+    return written;
+  });

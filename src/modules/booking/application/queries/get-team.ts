@@ -1,82 +1,72 @@
-import type { AuthorizationError } from '@modules/auth';
-
-import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
+import type { InfrastructureAppError, NotFoundAppError, ValidationAppError } from '@lib/errors';
+import { ResultAsync, errAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
-import { employeeHoursOf } from '../../domain/models/booking-location';
-import { parseWebsiteId } from '../../domain/models/ids';
-import { offeredServiceIdsOf } from '../../domain/models/service-skill';
-import {
-  MAX_LOCATIONS_PER_WEBSITE,
-  MAX_RESOURCES_PER_WEBSITE,
-  MAX_SERVICES_PER_WEBSITE,
-} from '../booking-limits';
-import { toLocationView, toResourceView } from '../booking-view-mappers';
+import { locationNotFound } from '../../domain/errors/booking-errors';
+import { parseBookingLocationId } from '../../domain/models/ids';
+import { MAX_RESOURCES_PER_WEBSITE } from '../booking-limits';
+import { scopeOfActor } from '../services/booking-scope';
+import { employeeNames, placesOf } from '../services/team-access';
+import { toTeamMemberSummary, visitorsOf } from '../services/team-views';
 
-import type { BookingDependencies } from '../booking-dependencies';
-import type { TeamView } from '../contracts/setup-views';
+import type { BookingAccessError } from '../../domain/ports/booking-access.port';
+import type { TeamDependencies } from '../booking-dependencies';
+import type { GetTeamInput } from '../contracts/team-inputs';
+import type { TeamView } from '../contracts/team-views';
+
+export type GetTeamError =
+  BookingAccessError | ValidationAppError | NotFoundAppError | InfrastructureAppError;
 
 /**
- * The employees of a website with their working hours, for those who manage
- * the bookings: who works where and when, next to the week their location is
- * open. An employee's calendar is theirs (they set it up themselves), but the
- * people who run the bookings need to see it, and to set it when asked.
+ * The employees at a location, by name, with their week, absences and qualifications, and the
+ * members with the role `employee` who have no calendar anywhere yet (they can be set up here).
+ * Names come from the member directory, never an e-mail address. Needs `booking.configure`.
  */
 export class GetTeam {
-  constructor(private readonly deps: BookingDependencies) {}
+  constructor(private readonly deps: TeamDependencies) {}
 
-  execute(
-    rawWebsiteId: string,
-  ): AppResultAsync<TeamView, AuthorizationError | ValidationAppError | InfrastructureAppError> {
-    const { authorization, locations, resources, services } = this.deps;
+  execute(input: GetTeamInput): AppResultAsync<TeamView, GetTeamError> {
+    const { access, locations, team } = this.deps;
 
-    return authorization.requireInTenant('booking.manage').andThen((actor) =>
-      parseWebsiteId(rawWebsiteId).asyncAndThen((websiteId) =>
-        locations
-          .listByWebsite(websiteId, actor.tenantId, MAX_LOCATIONS_PER_WEBSITE)
-          .andThen((storedLocations) =>
-            resources
-              .listByWebsite(websiteId, actor.tenantId, MAX_RESOURCES_PER_WEBSITE)
-              .andThen((storedResources) =>
-                services
-                  .listByWebsite(websiteId, actor.tenantId, MAX_SERVICES_PER_WEBSITE)
-                  .map((storedServices) => ({ storedResources, storedServices })),
-              )
-              .map(({ storedResources, storedServices }) => ({
-                members: storedResources
-                  .filter((resource) => resource.type === 'employee')
-                  .map((resource) => {
-                    const view = toResourceView(resource);
-                    return {
-                      id: view.id,
-                      name: view.name,
-                      locationId: view.locationId,
-                      availability: view.availability,
-                      isActive: view.isActive,
-                      offeredServiceIds: offeredServiceIdsOf(view.skills),
-                    };
-                  }),
-                locations: storedLocations.map((location) => {
-                  const view = toLocationView(location);
-                  return {
-                    id: view.id,
-                    name: view.name,
-                    openingHours: view.openingHours,
-                    staffHours: view.staffHours,
-                    employeeHours: toAvailabilityPlanInput(employeeHoursOf(location)),
-                  };
+    return access.authorizeWebsite('booking.configure', input.websiteId).andThen(({ actor }) => {
+      const scope = scopeOfActor(actor);
+      return parseBookingLocationId(input.locationId).asyncAndThen((locationId) =>
+        locations.findById(scope, locationId).andThen((location) => {
+          if (location === null) {
+            return errAsync(locationNotFound());
+          }
+          return ResultAsync.combine([
+            team.listAt(scope, location.id, MAX_RESOURCES_PER_WEBSITE),
+            team.listVisiting(scope, location.id, MAX_RESOURCES_PER_WEBSITE),
+            team.listActorIds(scope, MAX_RESOURCES_PER_WEBSITE),
+            employeeNames(this.deps, scope.websiteId),
+            placesOf(this.deps, scope),
+          ] as const).map(([listed, visiting, withCalendar, { names, isTruncated }, places]) => {
+            const { members } = listed;
+            const hasCalendar = new Set(withCalendar.actorIds.map(String));
+            return {
+              location: { id: location.id, name: location.name },
+              members: members.map((employee) =>
+                toTeamMemberSummary(employee, {
+                  location,
+                  name: names.get(employee.actorId),
+                  places,
                 }),
-                services: storedServices
-                  .filter((service) => service.isActive)
-                  .map((service) => ({
-                    id: service.id,
-                    name: service.name,
-                    locationIds: service.locationIds,
-                  })),
-              })),
-          ),
-      ),
-    );
+              ),
+              moveTargets: places.filter(({ id }) => id !== location.id),
+              visitors: visitorsOf(visiting.members, { here: location.id, names, places }),
+              candidates: [...names]
+                .filter(([id]) => !hasCalendar.has(id))
+                .map(([actorId, name]) => ({ actorId, name })),
+              isTruncated:
+                isTruncated ||
+                listed.isTruncated ||
+                visiting.isTruncated ||
+                withCalendar.isTruncated,
+            };
+          });
+        }),
+      );
+    });
   }
 }

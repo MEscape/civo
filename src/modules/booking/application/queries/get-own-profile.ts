@@ -1,70 +1,49 @@
-import type { AuthorizationError } from '@modules/auth';
-
-import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
-import { errAsync } from '@lib/result';
+import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
-import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
-import { employeeHoursOf } from '../../domain/models/booking-location';
-import { parseWebsiteId } from '../../domain/models/ids';
-import { offeredServiceIdsOf } from '../../domain/models/service-skill';
-import { MAX_LOCATIONS_PER_WEBSITE, MAX_SERVICES_PER_WEBSITE } from '../booking-limits';
-import { toResourceView } from '../booking-view-mappers';
+import { formatLocalDate } from '../../domain/time/local-date';
+import { localDateOf } from '../../domain/time/time-zone';
+import { currentInstant } from '../services/clock-instant';
+import { loadOwnEmployee } from '../services/team-access';
+import { toTeamMemberView } from '../services/team-views';
 
-import type { BookingDependencies } from '../booking-dependencies';
-import type { OwnProfileView } from '../contracts/setup-views';
+import type { BookingAccessError } from '../../domain/ports/booking-access.port';
+import type { TeamDependencies } from '../booking-dependencies';
+import type { WebsiteTargetInput } from '../contracts/booking-inputs';
+import type { OwnProfileView } from '../contracts/team-views';
 
 /**
- * What an employee needs to set up their own calendar: the calendar that is
- * theirs, and the active services and the locations they can choose from.
- * The calendar is selected by the person in the store; the lists are the
- * website's public offer, names only.
+ * The signed-in employee's own calendar: their location, their qualifications (read only), their
+ * week and absences, where a manager sends them, and what day it is for them. `null` while nobody has set
+ * it up. Found by the person, never by an id. Needs `booking.profile.own`.
  */
 export class GetOwnProfile {
-  constructor(private readonly deps: BookingDependencies) {}
+  constructor(private readonly deps: TeamDependencies) {}
 
   execute(
-    rawWebsiteId: string,
+    input: WebsiteTargetInput,
   ): AppResultAsync<
-    OwnProfileView,
-    AuthorizationError | ValidationAppError | InfrastructureAppError
+    OwnProfileView | null,
+    BookingAccessError | NotFoundAppError | InfrastructureAppError
   > {
-    const { authorization, resources, services, locations } = this.deps;
-
-    return authorization.requireInTenant('booking.read.own').andThen((actor) => {
-      const parsed = parseWebsiteId(rawWebsiteId);
-      if (parsed.isErr()) {
-        return errAsync(parsed.error);
-      }
-      const scope = { websiteId: parsed.value, tenantId: actor.tenantId };
-
-      return resources.listAssignedTo(scope, actor.id, 1).andThen(([own]) =>
-        services
-          .listByWebsite(scope.websiteId, actor.tenantId, MAX_SERVICES_PER_WEBSITE)
-          .andThen((storedServices) =>
-            locations
-              .listByWebsite(scope.websiteId, actor.tenantId, MAX_LOCATIONS_PER_WEBSITE)
-              .map((storedLocations) => ({
-                profile: own === undefined ? null : toResourceView(own),
-                offeredServiceIds: offeredServiceIdsOf(own?.skills ?? []),
-                services: storedServices
-                  .filter((service) => service.isActive)
-                  .map((service) => ({
-                    id: service.id,
-                    name: service.name,
-                    locationIds: service.locationIds,
-                  })),
-                locations: storedLocations
-                  .filter((location) => location.isActive)
-                  .map((location) => ({
-                    id: location.id,
-                    name: location.name,
-                    timeZone: location.timeZone,
-                    employeeHours: toAvailabilityPlanInput(employeeHoursOf(location)),
-                  })),
-              })),
-          ),
+    return this.deps.access
+      .authorizeWebsite('booking.profile.own', input.websiteId)
+      .andThen(({ actor }) => loadOwnEmployee(this.deps, actor))
+      .map((context) =>
+        context === null
+          ? null
+          : {
+              ...toTeamMemberView(context.employee, {
+                websiteId: context.scope.websiteId,
+                location: context.location,
+                name: undefined,
+                knownQualifications: [],
+                places: context.places,
+              }),
+              today: formatLocalDate(
+                localDateOf(currentInstant(this.deps.clock), context.location.zone),
+              ),
+            },
       );
-    });
   }
 }

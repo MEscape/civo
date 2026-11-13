@@ -6,12 +6,14 @@ import type { AppResultAsync } from '@lib/result';
 import type { WebsiteId } from '../models/ids';
 
 /**
- * Who owns a website. The public booking flow has no signed-in actor, so the
- * tenant is read from the website's stored record, never from the request:
- * every later query is scoped by it, which keeps one tenant's visitors out of
- * another tenant's calendar even if an id is guessed.
+ * Who owns a website. The public booking flow has no signed-in actor, so the tenant is read from
+ * the website's stored record, never from the request: every later query is scoped by it, which
+ * keeps one tenant's visitors out of another tenant's calendar even if an id is guessed.
  */
 export interface WebsiteDirectoryRepository {
-  /** The tenant that owns the website, or `null` when there is no such website. */
+  /**
+   * The tenant that owns the website, or `null` when there is no such website or it is not
+   * published: a site that is not online yet takes no public bookings and shows nothing of its setup.
+   */
   findTenantOf(websiteId: WebsiteId): AppResultAsync<TenantId | null, InfrastructureAppError>;
 }

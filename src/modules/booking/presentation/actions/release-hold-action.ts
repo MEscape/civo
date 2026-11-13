@@ -3,14 +3,23 @@
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { bookingFlowCommands } from '../../composition';
+import { getBookingCommands } from '../../composition';
+import { invalidateBookingAdmin } from '../cache/invalidate';
 import { parseBookingInput } from '../schemas/parse-booking-input';
-import { releaseHoldSchema } from '../schemas/release-hold-schema';
+import { releaseHoldSchema } from '../schemas/public-booking-schema';
 
-/** Gives the time back when the visitor leaves the form; the hold would lapse on its own anyway. */
-export async function releaseHoldAction(input: unknown): Promise<ActionResult<{ released: true }>> {
-  const result = await parseBookingInput(releaseHoldSchema, input).asyncAndThen((request) =>
-    bookingFlowCommands.releaseHold.execute(request),
+import type { PublicBookingDto } from '../dto/booking-dto';
+
+/**
+ * A visitor gives their reservation back. A thin adapter: it validates the request, hands it to the use case, which authorizes and
+ * applies every rule, and returns the typed result with stable error codes, never a message.
+ */
+export async function releaseHoldAction(input: unknown): Promise<ActionResult<PublicBookingDto>> {
+  const result = await parseBookingInput(releaseHoldSchema, input).asyncAndThen((command) =>
+    getBookingCommands().releaseHold.execute(command),
   );
-  return toActionResult(result.map(() => ({ released: true as const })));
+  if (result.isOk()) {
+    invalidateBookingAdmin(result.value.websiteId);
+  }
+  return toActionResult(result);
 }

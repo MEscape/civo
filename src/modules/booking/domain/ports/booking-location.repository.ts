@@ -1,55 +1,31 @@
-import type { TenantId } from '@modules/auth';
-
-import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
+import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
-import type { BookingLocation, BookingLocationDraft } from '../models/booking-location';
-import type { BookingLocationId, WebsiteId } from '../models/ids';
+import type { BookingScope } from './booking.repository';
+import type { BookingLocationId } from '../models/ids';
+import type { AvailabilityPlan } from '../scheduling/availability-plan';
+import type { TimeZone } from '../time/time-zone';
+
+/** A location as the booking rules use it: where it is on the clock, whether it takes bookings, and what a visitor is told of it. */
+export interface BookingLocationFacts {
+  readonly id: BookingLocationId;
+  /** What visitors are told the place is called, and where it is. */
+  readonly name: string;
+  readonly address: string | null;
+  readonly zone: TimeZone;
+  readonly isActive: boolean;
+  /** When the location is open for appointments. */
+  readonly openingHours: AvailabilityPlan;
+}
 
 /**
- * Persistence for locations. Every read and write takes the tenant and
- * matches on it, so another tenant's id behaves like an id that does not
- * exist. Finders return `null` for "absent"; whether that is an error is the
- * use case's decision.
+ * Read-only access to the locations of a website. Its opening hours are read in the shape the first version
+ * stored (`availability-record-mapper.ts`); the administration (P06) may change it. Answers `null` for a location of another
+ * website.
  */
 export interface BookingLocationRepository {
   findById(
+    scope: BookingScope,
     id: BookingLocationId,
-    tenantId: TenantId,
-  ): AppResultAsync<BookingLocation | null, InfrastructureAppError>;
-
-  /** The names of those of `ids` that are locations of the website; nothing else is read. */
-  findNames(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    ids: readonly BookingLocationId[],
-  ): AppResultAsync<
-    ReadonlyArray<{ readonly id: BookingLocationId; readonly name: string }>,
-    InfrastructureAppError
-  >;
-
-  /** Bounded: never more than `limit` items. */
-  listByWebsite(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly BookingLocation[], InfrastructureAppError>;
-
-  /** Fails with "not found" when the website does not exist in this tenant. */
-  create(input: {
-    readonly tenantId: TenantId;
-    readonly draft: BookingLocationDraft;
-  }): AppResultAsync<BookingLocation, NotFoundAppError | InfrastructureAppError>;
-
-  /** Idempotent. The caller has checked that nothing refers to the location any more. */
-  deleteById(
-    id: BookingLocationId,
-    tenantId: TenantId,
-  ): AppResultAsync<void, InfrastructureAppError>;
-
-  update(
-    id: BookingLocationId,
-    tenantId: TenantId,
-    draft: BookingLocationDraft,
-  ): AppResultAsync<BookingLocation, NotFoundAppError | InfrastructureAppError>;
+  ): AppResultAsync<BookingLocationFacts | null, InfrastructureAppError>;
 }

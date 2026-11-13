@@ -1,63 +1,52 @@
 import type { InformationField } from '../../domain/models/bookable-service';
 
-/** What a visitor sees while choosing: services, places and free times. */
+/**
+ * What a visitor may book on a website: the services that take online bookings and the places
+ * that offer them. No resource, employee or internal note is part of it.
+ */
 
-/** A place a visitor can choose. */
-export interface PublicLocationView {
-  readonly id: string;
-  readonly name: string;
-  readonly address: string | null;
-  readonly timeZone: string;
+/** What a visitor is told of the service's rules for cancelling or moving a booking. */
+export interface CatalogChangeRuleView {
+  /** Visitors may do it themselves. */
+  readonly isAllowed: boolean;
+  /** Until this many minutes before the start. */
+  readonly deadlineMinutes: number;
 }
 
-/**
- * What a visitor needs to choose and book a service. The booking flow adapts
- * to it: one location means no location step, a group size of one means no
- * participants step, and no required documents means no checklist.
- */
-export interface PublicServiceView {
+export interface CatalogServiceView {
   readonly id: string;
   readonly name: string;
   readonly description: string | null;
   readonly category: string | null;
+  readonly instructions: string | null;
+  readonly requiredDocuments: readonly string[];
   readonly durationMinutes: number;
-  readonly locations: readonly PublicLocationView[];
-  readonly maxParticipantsPerBooking: number;
+  /** How many days ahead it can be booked. */
+  readonly horizonDays: number;
+  /** What the booking form asks for, in the service's order. */
   readonly information: ReadonlyArray<{
     readonly field: InformationField;
     readonly isRequired: boolean;
   }>;
-  readonly requiredDocuments: readonly string[];
-  readonly instructions: string | null;
-  /** The furthest ahead a booking can be made, in days. */
-  readonly horizonDays: number;
-  readonly cancellationAllowed: boolean;
-  readonly cancellationDeadlineMinutes: number;
+  readonly cancellation: CatalogChangeRuleView;
+  readonly rescheduling: CatalogChangeRuleView;
+  /** Where it can be booked online, in the order of `locations`. */
+  readonly locationIds: readonly string[];
 }
 
-export interface PublicCatalogView {
-  readonly services: readonly PublicServiceView[];
-}
-
-/** One bookable start time. It names no resource: who serves the appointment is not the visitor's concern. */
-export interface SlotView {
-  readonly start: Date;
-  readonly end: Date;
-  /** Places left at this time; 1 for a service that holds its resources alone. */
-  readonly remainingParticipants: number;
-}
-
-export interface AvailabilityView {
-  readonly serviceId: string;
-  readonly locationId: string;
-  /** The zone slot times must be shown in: the location's, whatever zone the visitor is in. */
+export interface CatalogLocationView {
+  readonly id: string;
+  readonly name: string;
+  readonly address: string | null;
   readonly timeZone: string;
-  readonly from: string;
-  readonly to: string;
-  readonly slots: readonly SlotView[];
+  /** The calendar day it is there now, `YYYY-MM-DD`: where a visitor's calendar starts. */
+  readonly today: string;
 }
 
-export interface AlternativeSlotsView {
-  readonly timeZone: string;
-  readonly slots: readonly SlotView[];
+export interface BookingCatalogView {
+  readonly services: readonly CatalogServiceView[];
+  /** Only the locations at which some service of `services` can be booked. */
+  readonly locations: readonly CatalogLocationView[];
+  /** The website offers more services or locations than one answer carries. */
+  readonly isTruncated: boolean;
 }

@@ -6,15 +6,15 @@ import type { Brand } from '@lib/utils';
 import { BOOKING_VALIDATION_CODES, fieldValidationFailed } from '../errors/booking-errors';
 
 /**
- * The short code a visitor is given and quotes to look a booking up
- * ("7KQ3M9XD2P"). It is not a secret on its own: changing a booking also
- * needs the e-mail address it was made with.
+ * The short code a visitor is given and quotes to look a booking up ("7KQ3M9XD2P"). It is not a
+ * secret on its own: looking a booking up or changing it also needs the e-mail address it was made
+ * with.
  */
 export type BookingReference = Brand<string, 'BookingReference'>;
 
 export const BOOKING_REFERENCE_LENGTH = 10;
 
-/** Crockford's base 32: no I, L, O or U, so a code read over the phone survives. */
+/** Crockford's base 32: no I, L, O or U, so a code read over the phone survives. The database accepts exactly this. */
 export const BOOKING_REFERENCE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 const REFERENCE_PATTERN = new RegExp(
@@ -23,7 +23,8 @@ const REFERENCE_PATTERN = new RegExp(
 
 /** Brands a reference read from storage or produced by the generator. */
 export function toBookingReference(raw: string): BookingReference {
-  return raw as BookingReference; // Brand constructor: the cast is only permitted here.
+  // Brand constructor: the cast is only permitted here.
+  return raw as BookingReference;
 }
 
 /** Brands a reference that arrived from a request; case and surrounding spaces do not matter. */

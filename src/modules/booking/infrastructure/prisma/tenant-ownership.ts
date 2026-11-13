@@ -1,42 +1,49 @@
-import type { TenantId } from '@modules/auth';
-
 import { db } from '@lib/db';
 
-/**
- * Tenant-scoped starting points for every booking query. Each table carries
- * its own `tenantId`, so the filter is part of the statement: another
- * tenant's id behaves exactly like an id that does not exist, and a write
- * cannot touch a row outside the tenant. Start from these instead of
- * `db.orm.public.*` and the scope cannot be forgotten.
- */
-export const locationsOf = (tenantId: TenantId) =>
-  db.orm.public.BookingLocation.where({ tenantId });
-
-export const resourcesOf = (tenantId: TenantId) =>
-  db.orm.public.BookableResource.where({ tenantId });
-
-export const servicesOf = (tenantId: TenantId) => db.orm.public.BookableService.where({ tenantId });
-
-export const bookingsOf = (tenantId: TenantId) => db.orm.public.Booking.where({ tenantId });
+import type { BookingScope } from '../../domain/ports/booking.repository';
+import type { Instant } from '../../domain/time/instant';
 
 /** The handle `db.transaction` passes to its callback. */
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
+/** What a query starts from: the client, or the transaction a write runs in. */
+type Source = Pick<Transaction, 'orm'>;
+
 /**
- * Runs `create` only when the website belongs to the tenant, and in the same
- * transaction as that check, so the answer cannot change between the two
- * statements. Another tenant's website behaves like one that does not exist
- * (`null`); the foreign key stays the final guard.
+ * Starting points for every booking query: the tenant and the website are part of the statement,
+ * so another website's id behaves exactly like an id that does not exist, and a write cannot touch
+ * a row outside the scope. Start from these instead of `db.orm.public.*`. Inside a transaction pass
+ * the transaction as `source`: a query started from `db` runs outside it, on another connection,
+ * and is neither rolled back with it nor part of its locks.
  */
-export function createInWebsite<T>(
-  tenantId: TenantId,
-  websiteId: string,
-  create: (tx: Transaction) => Promise<T>,
-): Promise<T | null> {
-  return db.transaction(async (tx) => {
-    const website = await tx.orm.public.Website.where({ id: websiteId, tenantId })
-      .select('id')
-      .first();
-    return website === null ? null : create(tx);
-  });
+export const bookingsOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.Booking.where({ tenantId, websiteId });
+
+/** The units of the website's bookings (each row carries the `websiteId` of its booking). */
+export const assignmentsOf = ({ websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.BookingAssignment.where({ websiteId });
+
+/** The transaction a write runs in, with the scope it is bound to and the moment it happens. */
+export interface WriteScope {
+  readonly tx: Transaction;
+  readonly scope: BookingScope;
+  readonly now: Instant;
 }
+
+export const servicesOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.BookableService.where({ tenantId, websiteId });
+
+export const serviceLocationsOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.BookableServiceLocation.where({ tenantId, websiteId });
+
+export const resourcesOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.BookableResource.where({ tenantId, websiteId });
+
+export const locationsOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.BookingLocation.where({ tenantId, websiteId });
+
+export const preferencesOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.EmployeePreference.where({ tenantId, websiteId });
+
+export const messagesOf = ({ tenantId, websiteId }: BookingScope, source: Source = db) =>
+  source.orm.public.ActorMessage.where({ tenantId, websiteId });

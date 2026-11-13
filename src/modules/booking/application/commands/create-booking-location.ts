@@ -1,42 +1,51 @@
-import type { AuthorizationError } from '@modules/auth';
-
-import type { InfrastructureAppError, NotFoundAppError, ValidationAppError } from '@lib/errors';
+import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
-import { createBookingLocationDraft } from '../../domain/models/booking-location';
-import { parseWebsiteId } from '../../domain/models/ids';
-import { toLocationView } from '../booking-view-mappers';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
+import { scopeOfActor } from '../services/booking-scope';
+import { currentInstant } from '../services/clock-instant';
+import { withinActorLimit } from '../services/limit-actor';
+import { toLocationView } from '../services/location-views';
+import { parseLocationInput } from '../services/parse-location-input';
 
-import type { BookingDependencies } from '../booking-dependencies';
-import type { CreateBookingLocationInput } from '../contracts/booking-inputs';
-import type { LocationView } from '../contracts/setup-views';
+import type { BookingAccessError } from '../../domain/ports/booking-access.port';
+import type { LocationAdminDependencies } from '../booking-dependencies';
+import type { CreateLocationInput } from '../contracts/location-inputs';
+import type { LocationView } from '../contracts/location-views';
+import type { ActorLimitError } from '../services/limit-actor';
 
-/** Adds a place where services are offered, with its time zone and opening hours. */
+export type CreateBookingLocationError =
+  BookingAccessError | ActorLimitError | ValidationAppError | InfrastructureAppError;
+
+/**
+ * A manager adds a location. What the form sent is read into the rules' own types first (every
+ * field problem is reported at once, by path); the website and the person come from the session. A
+ * new location has no bookings, so there is nothing for the change to affect. Needs `booking.configure`.
+ */
 export class CreateBookingLocation {
-  constructor(private readonly deps: BookingDependencies) {}
+  constructor(private readonly deps: LocationAdminDependencies) {}
 
-  execute(
-    input: CreateBookingLocationInput,
-  ): AppResultAsync<
-    LocationView,
-    AuthorizationError | ValidationAppError | NotFoundAppError | InfrastructureAppError
-  > {
-    const { authorization, locations, audit } = this.deps;
+  execute(input: CreateLocationInput): AppResultAsync<LocationView, CreateBookingLocationError> {
+    const { access, locations, audit, clock } = this.deps;
+    const now = currentInstant(clock);
 
-    return authorization.requireInTenant('booking.configure').andThen((actor) =>
-      parseWebsiteId(input.websiteId)
-        .andThen((websiteId) => createBookingLocationDraft({ ...input, websiteId }))
-        .asyncAndThen((draft) => locations.create({ tenantId: actor.tenantId, draft }))
-        .map((location) => {
-          audit.record({
-            type: 'booking.location_created',
-            actorId: actor.id,
-            tenantId: actor.tenantId,
-            websiteId: location.websiteId,
-            locationId: location.id,
+    return access
+      .authorizeWebsite('booking.configure', input.websiteId)
+      .andThen(({ actor }) => withinActorLimit(this.deps, BOOKING_RATE_LIMITS.staffActor, actor))
+      .andThen((actor) => {
+        const scope = scopeOfActor(actor);
+        return parseLocationInput(input)
+          .asyncAndThen((parsed) => locations.create(scope, parsed, now))
+          .map((created) => {
+            audit.record({
+              type: 'booking.location_created',
+              tenantId: scope.tenantId,
+              websiteId: scope.websiteId,
+              actorId: actor.id,
+              locationId: created.id,
+            });
+            return toLocationView(created, scope.websiteId, 0);
           });
-          return toLocationView(location);
-        }),
-    );
+      });
   }
 }

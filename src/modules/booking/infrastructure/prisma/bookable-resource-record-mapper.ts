@@ -1,82 +1,81 @@
-import { toTenantId } from '@modules/auth';
-
-import { instantToDate } from '@lib/db';
-import type { InstantRecord } from '@lib/db';
 import type { InfrastructureAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
+import { arrayOf, isString, literalGuard } from '@lib/utils';
 
-import { persistenceFailed } from '../../domain/errors/booking-errors';
-import {
-  createBookableResourceDraft,
-  managerChangeOf,
-} from '../../domain/models/bookable-resource';
-import { toBookableResourceId, toWebsiteId } from '../../domain/models/ids';
-import { readStoredResource } from '../../domain/models/stored-shapes';
+import { bookingDataInvalid } from '../../domain/errors/booking-errors';
+import { RESOURCE_TYPES } from '../../domain/models/bookable-resource';
+import { toBookableResourceId, toBookingLocationId } from '../../domain/models/ids';
+import { parseMinutes } from '../../domain/time/minutes';
+
+import { readOptionalAvailability } from './availability-record-mapper';
+import { readCoverage } from './coverage-record-mapper';
 
 import type { BookableResource } from '../../domain/models/bookable-resource';
 
 export interface ResourceRecord {
   readonly id: string;
-  readonly tenantId: string;
-  readonly websiteId: string;
-  readonly locationId: string | null;
   readonly name: string;
+  readonly capacity: number | null;
+  readonly locationId: string | null;
   readonly type: string;
   readonly skills: unknown;
-  readonly capacity: number | null;
-  readonly availability: unknown;
   readonly isActive: boolean;
-  readonly assignedActorId: string | null;
-  readonly managerChange: unknown;
-  readonly createdAt: InstantRecord;
-  readonly updatedAt: InstantRecord;
+  readonly setupMinutes: number;
+  readonly teardownMinutes: number;
+  readonly availability: unknown;
+  readonly coverage: unknown;
 }
 
 export const RESOURCE_SELECT = [
   'id',
-  'tenantId',
-  'websiteId',
-  'locationId',
   'name',
+  'capacity',
+  'locationId',
   'type',
   'skills',
-  'capacity',
-  'availability',
   'isActive',
-  'assignedActorId',
-  'managerChange',
-  'createdAt',
-  'updatedAt',
+  'setupMinutes',
+  'teardownMinutes',
+  'availability',
+  'coverage',
 ] as const satisfies ReadonlyArray<keyof ResourceRecord>;
+
+const isResourceKind = literalGuard(RESOURCE_TYPES);
+const isStringList = arrayOf(isString);
 
 export function toResource(
   record: ResourceRecord,
 ): AppResult<BookableResource, InfrastructureAppError> {
-  const stored = readStoredResource(record);
-  if (stored === null) {
-    return err(persistenceFailed(new Error('A stored resource has JSON of an unexpected shape.')));
+  const setupMinutes = parseMinutes(record.setupMinutes);
+  const teardownMinutes = parseMinutes(record.teardownMinutes);
+  if (
+    !isResourceKind(record.type) ||
+    !isStringList(record.skills) ||
+    setupMinutes === null ||
+    teardownMinutes === null
+  ) {
+    return err(bookingDataInvalid('resource'));
   }
-  const draft = createBookableResourceDraft({
-    websiteId: toWebsiteId(record.websiteId),
-    locationId: record.locationId,
-    name: record.name,
-    type: record.type,
-    skills: stored.skills,
-    capacity: record.capacity,
-    availability: stored.availability,
-    isActive: record.isActive,
-    assignedActorId: record.assignedActorId,
-    managerChange: stored.managerChange === null ? null : managerChangeOf(stored.managerChange),
-  });
-  if (draft.isErr()) {
-    return err(persistenceFailed(draft.error));
+  const availability = readOptionalAvailability(record.availability);
+  if (availability.isErr()) {
+    return err(availability.error);
+  }
+  const coverage = readCoverage(record.coverage);
+  if (coverage.isErr()) {
+    return err(coverage.error);
   }
   return ok({
-    ...draft.value,
     id: toBookableResourceId(record.id),
-    tenantId: toTenantId(record.tenantId),
-    createdAt: instantToDate(record.createdAt),
-    updatedAt: instantToDate(record.updatedAt),
+    name: record.name,
+    capacity: record.capacity,
+    type: record.type,
+    skills: record.skills,
+    locationId: record.locationId === null ? null : toBookingLocationId(record.locationId),
+    isActive: record.isActive,
+    setupMinutes,
+    teardownMinutes,
+    availability: availability.value,
+    coverage: coverage.value,
   });
 }

@@ -1,231 +1,133 @@
-import { toAvailabilityPlanInput } from '../domain/models/availability-plan';
-import { checkCancellation, checkRescheduling } from '../domain/policies/change-policy';
+import { assignmentStateOf } from '../domain/assignment/booking-assignment';
+import { evaluateCancellation, evaluateRescheduling } from '../domain/policies/change-policy';
+import { subtractMinutes } from '../domain/time/instant';
+import { formatInstantInZone } from '../domain/time/instant-format';
 
-import type { BookingView, HoldView } from './contracts/booking-views';
-import type { CalendarBookingView, UpcomingBookingView } from './contracts/calendar-views';
 import type {
-  AvailabilityView,
-  PublicLocationView,
-  PublicServiceView,
+  BookingView,
+  EmployeeBookingView,
+  FitView,
+  OwnChangeView,
+  PublicBookingView,
   SlotView,
-} from './contracts/catalog-views';
-import type { LocationView, ResourceView, ServiceView } from './contracts/setup-views';
-import type { BookableResource } from '../domain/models/bookable-resource';
-import type { BookableService } from '../domain/models/bookable-service';
+} from './contracts/booking-views';
+import type { Fit } from '../domain/assignment/assignment-fit';
+import type { BookableService, ChangePolicy } from '../domain/models/bookable-service';
 import type { Booking } from '../domain/models/booking';
-import type { BookingLocation } from '../domain/models/booking-location';
-import type { AvailableSlot } from '../domain/scheduling/scheduling-types';
+import type { WebsiteId } from '../domain/models/ids';
+import type { ChangeDenial } from '../domain/policies/change-policy';
+import type { BookingLocationFacts } from '../domain/ports/booking-location.repository';
+import type { StoredBooking } from '../domain/ports/booking.repository';
+import type { Instant } from '../domain/time/instant';
+import type { TimeInterval } from '../domain/time/time-interval';
+import type { TimeZone } from '../domain/time/time-zone';
 
-export function toLocationView(location: BookingLocation): LocationView {
+/** An instant as the text a screen draws, on the wall clock of the location. */
+const at = (instant: Instant, zone: TimeZone) => formatInstantInZone(instant, zone);
+
+const optionalAt = (instant: Instant | null, zone: TimeZone) =>
+  instant === null ? null : at(instant, zone);
+
+/** What an employee may see of a booking: every fact of it but the customer. */
+export function toEmployeeBookingView(
+  { booking, placement }: StoredBooking,
+  zone: TimeZone,
+  websiteId: WebsiteId,
+): EmployeeBookingView {
   return {
-    id: location.id,
-    websiteId: location.websiteId,
-    name: location.name,
-    address: location.address,
-    timeZone: location.timeZone,
-    openingHours: toAvailabilityPlanInput(location.openingHours),
-    staffHours: location.staffHours === null ? null : toAvailabilityPlanInput(location.staffHours),
-    isActive: location.isActive,
-    createdAt: location.createdAt,
-    updatedAt: location.updatedAt,
-  };
-}
-
-export function toResourceView(resource: BookableResource): ResourceView {
-  return {
-    id: resource.id,
-    websiteId: resource.websiteId,
-    locationId: resource.locationId,
-    name: resource.name,
-    type: resource.type,
-    skills: resource.skills,
-    capacity: resource.capacity,
-    availability:
-      resource.availability === null ? null : toAvailabilityPlanInput(resource.availability),
-    isActive: resource.isActive,
-    assignedActorId: resource.assignedActorId,
-    managerChange: resource.managerChange,
-    createdAt: resource.createdAt,
-    updatedAt: resource.updatedAt,
-  };
-}
-
-export function toServiceView(service: BookableService): ServiceView {
-  return {
-    id: service.id,
-    websiteId: service.websiteId,
-    name: service.name,
-    description: service.description,
-    category: service.category,
-    isActive: service.isActive,
-    durationMinutes: service.durationMinutes,
-    preparationMinutes: service.preparationMinutes,
-    cleanupMinutes: service.cleanupMinutes,
-    slotIntervalMinutes: service.slotIntervalMinutes,
-    locationIds: service.locationIds,
-    requirements: service.requirements,
-    participantsPerBooking: service.capacity.participantsPerBooking,
-    participantsPerSession: service.capacity.participantsPerSession,
-    noticeMinutes: service.noticeMinutes,
-    horizonDays: service.horizonDays,
-    availability:
-      service.availability === null ? null : toAvailabilityPlanInput(service.availability),
-    cancellation: service.cancellation,
-    rescheduling: service.rescheduling,
-    information: service.information,
-    requiredDocuments: service.requiredDocuments,
-    instructions: service.instructions,
-    createdAt: service.createdAt,
-    updatedAt: service.updatedAt,
-  };
-}
-
-export function toPublicLocationView(location: BookingLocation): PublicLocationView {
-  return {
-    id: location.id,
-    name: location.name,
-    address: location.address,
-    timeZone: location.timeZone,
-  };
-}
-
-/** What a visitor sees of a service: no resource requirements, no internal buffers, no staff policy. */
-export function toPublicServiceView(
-  service: BookableService,
-  locations: readonly BookingLocation[],
-): PublicServiceView {
-  return {
-    id: service.id,
-    name: service.name,
-    description: service.description,
-    category: service.category,
-    durationMinutes: service.durationMinutes,
-    locations: locations.map(toPublicLocationView),
-    maxParticipantsPerBooking: service.capacity.participantsPerBooking,
-    information: service.information,
-    requiredDocuments: service.requiredDocuments,
-    instructions: service.instructions,
-    horizonDays: service.horizonDays,
-    cancellationAllowed:
-      service.cancellation.isAllowed && service.cancellation.allowedActors.includes('customer'),
-    cancellationDeadlineMinutes: service.cancellation.deadlineMinutes,
-  };
-}
-
-export function toSlotView(slot: AvailableSlot): SlotView {
-  return {
-    start: new Date(slot.start),
-    end: new Date(slot.end),
-    remainingParticipants: slot.remainingParticipants,
-  };
-}
-
-export function toAvailabilityView(
-  { service, location }: { readonly service: BookableService; readonly location: BookingLocation },
-  range: { readonly from: string; readonly to: string },
-  slots: readonly AvailableSlot[],
-): AvailabilityView {
-  return {
-    serviceId: service.id,
-    locationId: location.id,
-    timeZone: location.timeZone,
-    from: range.from,
-    to: range.to,
-    slots: slots.map(toSlotView),
-  };
-}
-
-export function toHoldView(
-  booking: Booking,
-  service: BookableService,
-  location: BookingLocation,
-): HoldView {
-  return {
-    holdId: booking.id,
-    expiresAt: booking.holdExpiresAt ?? booking.createdAt,
-    start: booking.start,
-    end: booking.end,
-    participants: booking.participants,
-    timeZone: location.timeZone,
-    serviceName: service.name,
-    locationName: location.name,
-  };
-}
-
-/** The visitor's own view of a booking, with what they may still do to it right now. */
-export function toBookingView(
-  {
-    booking,
-    service,
-    location,
-  }: {
-    readonly booking: Booking;
-    readonly service: BookableService;
-    readonly location: BookingLocation;
-  },
-  now: Date,
-): BookingView {
-  const isStanding = booking.status === 'confirmed';
-  return {
-    reference: booking.reference,
-    status: booking.status,
-    serviceId: service.id,
-    serviceName: service.name,
-    locationId: location.id,
-    locationName: location.name,
-    locationAddress: location.address,
-    timeZone: location.timeZone,
-    start: booking.start,
-    end: booking.end,
-    participants: booking.participants,
-    firstName: booking.customer?.firstName ?? null,
-    lastName: booking.customer?.lastName ?? null,
-    email: booking.customer?.email ?? null,
-    requiredDocuments: service.requiredDocuments,
-    instructions: service.instructions,
-    canCancel: isStanding && checkCancellation(service, booking, { actor: 'customer', now }).isOk(),
-    canReschedule:
-      isStanding && checkRescheduling(service, booking, { actor: 'customer', now }).isOk(),
-    rescheduleCount: booking.rescheduleCount,
-  };
-}
-
-function customerName(booking: Booking): string | null {
-  const parts = [booking.customer?.firstName, booking.customer?.lastName].filter(
-    (part): part is string => part !== null && part !== undefined,
-  );
-  return parts.length > 0 ? parts.join(' ') : null;
-}
-
-export function toUpcomingBookingView(booking: Booking, serviceName: string): UpcomingBookingView {
-  return {
+    websiteId,
     id: booking.id,
-    start: booking.start,
-    end: booking.end,
-    serviceName,
-    customerName: customerName(booking),
-  };
-}
-
-export function toCalendarBookingView(booking: Booking, serviceName: string): CalendarBookingView {
-  return {
-    id: booking.id,
-    reference: booking.reference,
+    reference: placement.reference,
     status: booking.status,
     serviceId: booking.serviceId,
-    serviceName,
     locationId: booking.locationId,
-    resourceIds: booking.resourceIds,
-    start: booking.start,
-    end: booking.end,
-    occupiedStart: booking.occupiedStart,
-    occupiedEnd: booking.occupiedEnd,
-    participants: booking.participants,
-    customerName: customerName(booking),
-    customerEmail: booking.customer?.email ?? null,
-    customerPhone: booking.customer?.phone ?? null,
-    notes: booking.customer?.notes ?? null,
-    cancelledBy: booking.cancelledBy,
+    timeZone: zone,
+    start: at(booking.start, zone),
+    end: at(booking.end, zone),
+    units: booking.assignments.map((unit) => ({
+      requirementIndex: unit.requirementIndex,
+      resourceType: unit.resourceType,
+      resourceId: unit.resourceId,
+    })),
+    // A conflict is computed against the current setup (`findAffectedBookings`), not stored, so a
+    // stored booking is `open` or `assigned`.
+    assignment: assignmentStateOf(booking, false) === 'open' ? 'open' : 'assigned',
+    holdExpiresAt: optionalAt(booking.holdExpiresAt, zone),
     rescheduleCount: booking.rescheduleCount,
+    cancelledAt: optionalAt(booking.cancelledAt, zone),
+    createdAt: at(booking.createdAt, zone),
   };
+}
+
+/** What a manager sees of a booking, the customer's details included. */
+export function toBookingView(
+  stored: StoredBooking,
+  zone: TimeZone,
+  websiteId: WebsiteId,
+): BookingView {
+  return { ...toEmployeeBookingView(stored, zone, websiteId), customer: stored.booking.customer };
+}
+
+/** What the service's policy lets the visitor do with a booking, now and until when. */
+function ownChangeOf(
+  policy: ChangePolicy,
+  denial: ChangeDenial | null,
+  { booking, zone }: { readonly booking: Booking; readonly zone: TimeZone },
+): OwnChangeView {
+  const customerMay = policy.isAllowed && policy.allowedActors.includes('customer');
+  return {
+    isAllowed: booking.status === 'confirmed' && denial === null,
+    until: customerMay ? at(subtractMinutes(booking.start, policy.deadlineMinutes), zone) : null,
+  };
+}
+
+/** Where a visitor's booking is read from: its service, its location and the moment of asking. */
+export interface PublicBookingContext {
+  readonly service: BookableService;
+  readonly location: BookingLocationFacts;
+  readonly now: Instant;
+}
+
+/** What a visitor sees of their own booking, with what they may still change. */
+export function toPublicBookingView(
+  { booking, placement }: StoredBooking,
+  { service, location, now }: PublicBookingContext,
+  websiteId: WebsiteId,
+): PublicBookingView {
+  const zone = location.zone;
+  const attempt = { actor: 'customer', now } as const;
+  return {
+    websiteId,
+    id: booking.id,
+    reference: placement.reference,
+    status: booking.status,
+    serviceId: booking.serviceId,
+    serviceName: placement.snapshot?.serviceName ?? service.name,
+    locationId: booking.locationId,
+    locationName: location.name,
+    locationAddress: location.address,
+    timeZone: zone,
+    start: at(booking.start, zone),
+    end: at(booking.end, zone),
+    holdExpiresAt: optionalAt(booking.holdExpiresAt, zone),
+    rescheduleCount: booking.rescheduleCount,
+    cancellation: ownChangeOf(
+      service.cancellation,
+      evaluateCancellation(service, booking, attempt),
+      { booking, zone },
+    ),
+    rescheduling: ownChangeOf(
+      service.rescheduling,
+      evaluateRescheduling(service, booking, attempt),
+      { booking, zone },
+    ),
+  };
+}
+
+export function toSlotView(slot: TimeInterval, zone: TimeZone): SlotView {
+  return { start: at(slot.start, zone), end: at(slot.end, zone) };
+}
+
+export function toFitView(fit: Fit): FitView {
+  return { level: fit.level, reasons: fit.reasons };
 }

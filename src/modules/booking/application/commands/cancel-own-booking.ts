@@ -1,53 +1,80 @@
+import type { ConflictAppError, InfrastructureAppError } from '@lib/errors';
+import { okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { toBookingView } from '../booking-view-mappers';
+import { cancelBooking } from '../../domain/lifecycle/booking-lifecycle';
+import { toPublicBookingView } from '../booking-view-mappers';
 import { BOOKING_RATE_LIMITS } from '../rate-limits';
-import { cancelWithPolicy } from '../services/booking-changes';
+import { announce } from '../services/announce';
+import { currentInstant } from '../services/clock-instant';
+import { findOwnBooking } from '../services/find-own-booking';
 import { resolveScopeWithinBudget } from '../services/limit-visitor';
-import { loadOwnBooking } from '../services/own-booking';
+import { recordLostRace, saveChange } from '../services/persist-change';
+import { retryOnStale } from '../services/retry-on-stale';
 
+import type { BookingWriteError } from '../../domain/ports/booking.repository';
 import type { BookingFlowDependencies } from '../booking-dependencies';
-import type { BookingAccessInput } from '../contracts/booking-inputs';
-import type { BookingView } from '../contracts/booking-views';
-import type { BookingChangeError } from '../services/booking-changes';
+import type { PublicBookingKey } from '../contracts/booking-inputs';
+import type { PublicBookingView } from '../contracts/booking-views';
+import type { FindOwnBookingError } from '../services/find-own-booking';
 import type { VisitorLimitError } from '../services/limit-visitor';
-import type { OwnBookingError } from '../services/own-booking';
 import type { PublicScopeError } from '../services/public-scope';
 
+export type CancelOwnBookingError =
+  | PublicScopeError
+  | VisitorLimitError
+  | FindOwnBookingError
+  | ConflictAppError
+  | BookingWriteError
+  | InfrastructureAppError;
+
 /**
- * A visitor cancels their own booking, if the service's policy allows it
- * and the deadline has not passed. They prove it is theirs with the
- * reference AND the e-mail address; a wrong pair looks like an unknown
- * booking.
+ * A visitor cancels their own booking, found by its reference and address. The service's policy
+ * decides whether and until when a customer may (the domain's `cancelBooking`, deadline included).
+ * Safe to repeat: a booking that is already cancelled answers as it is, without a second mail.
  *
- * @authorization public The caller proves ownership with the booking reference and the e-mail address used to book.
+ * @authorization public A visitor has no account; the reference together with the booking's address is what proves the booking is theirs.
  */
 export class CancelOwnBooking {
   constructor(private readonly deps: BookingFlowDependencies) {}
 
-  execute(
-    input: BookingAccessInput,
-  ): AppResultAsync<
-    BookingView,
-    PublicScopeError | VisitorLimitError | OwnBookingError | BookingChangeError
-  > {
-    const { audit, clock } = this.deps;
+  execute(input: PublicBookingKey): AppResultAsync<PublicBookingView, CancelOwnBookingError> {
+    const now = currentInstant(this.deps.clock);
 
     return resolveScopeWithinBudget(
       this.deps,
       BOOKING_RATE_LIMITS.changeClient,
       input.websiteId,
     ).andThen((scope) =>
-      loadOwnBooking(this.deps, scope, input).andThen((parts) =>
-        cancelWithPolicy(this.deps, parts, 'customer').map((cancelled) => {
-          audit.record({
-            type: 'booking.cancelled',
-            tenantId: scope.tenantId,
-            websiteId: scope.websiteId,
-            bookingId: cancelled.id,
-            by: 'customer',
-          });
-          return toBookingView({ ...parts, booking: cancelled }, clock.now());
+      retryOnStale(() =>
+        findOwnBooking(this.deps, scope, input).andThen(({ stored, service, location }) => {
+          if (stored.booking.status === 'cancelled') {
+            return okAsync(
+              toPublicBookingView(stored, { service, location, now }, scope.websiteId),
+            );
+          }
+          return cancelBooking({ booking: stored.booking, service, actor: 'customer', now })
+            .asyncAndThen((cancelled) =>
+              saveChange(this.deps, { scope, before: stored, next: cancelled, now }),
+            )
+            .mapErr(recordLostRace(this.deps, { scope, serviceId: service.id, stage: 'cancel' }))
+            .map((saved) => {
+              this.deps.audit.record({
+                type: 'booking.cancelled',
+                tenantId: scope.tenantId,
+                websiteId: scope.websiteId,
+                bookingId: saved.booking.id,
+                serviceId: service.id,
+                by: 'customer',
+              });
+              announce(this.deps, {
+                kind: 'cancelled',
+                stored: saved,
+                location,
+                websiteId: scope.websiteId,
+              });
+              return toPublicBookingView(saved, { service, location, now }, scope.websiteId);
+            });
         }),
       ),
     );

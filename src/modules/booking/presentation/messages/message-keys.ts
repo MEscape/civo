@@ -6,262 +6,272 @@ import type { NestedKeyOf } from '@lib/errors';
 import {
   BOOKING_ERROR_CODES as ERRORS,
   BOOKING_VALIDATION_CODES as VALIDATION,
-  CUSTOMER_LIMITS,
-  HOLD_MINUTES,
   LOCATION_LIMITS,
-  MAX_CUSTOMER_RESCHEDULES,
-  RESOURCE_LIMITS,
   SERVICE_LIMITS,
 } from '../../application/contracts/booking-constraints';
 
 import type {
-  BookingCode,
-  BookingStatus,
   ChangeActor,
+  ExceptionKind,
   GermanRegion,
   HolidayKey,
-  InformationField,
   ResourceKind,
-  Weekday,
-  EXCEPTION_KINDS,
 } from '../../application/contracts/booking-constraints';
+import type { AssignmentCandidatesDto, BookingDto } from '../dto/booking-dto';
+import type { AffectedBookingDto } from '../dto/location-dto';
+import type { WeekTemplateKey } from '../forms/week/templates';
 
 type ValidKeys = NestedKeyOf<MessageCatalog['booking']>;
 
+type BookingCode =
+  (typeof ERRORS)[keyof typeof ERRORS] | (typeof VALIDATION)[keyof typeof VALIDATION];
+
 /**
- * Codes -> translation keys. `satisfies Record<BookingCode, ...>` makes a new
- * code fail to compile until it has a message.
+ * Codes -> translation keys, relative to the `booking` namespace. `satisfies Record<BookingCode, …>`
+ * makes a new code fail to compile until it has a message. Several storage and infrastructure codes
+ * share one message on purpose: what a person can do about them is the same.
  */
 export const MESSAGE_KEY_BY_CODE = {
-  [ERRORS.serviceNotFound]: fieldPath('errors', 'serviceNotFound'),
-  [ERRORS.serviceInactive]: fieldPath('errors', 'serviceInactive'),
-  [ERRORS.locationNotFound]: fieldPath('errors', 'locationNotFound'),
-  [ERRORS.locationUnavailable]: fieldPath('errors', 'locationUnavailable'),
-  [ERRORS.resourceNotFound]: fieldPath('errors', 'resourceNotFound'),
-  [ERRORS.bookingNotFound]: fieldPath('errors', 'bookingNotFound'),
-  [ERRORS.websiteNotFound]: fieldPath('errors', 'websiteNotFound'),
-  [ERRORS.slotUnavailable]: fieldPath('errors', 'slotUnavailable'),
-  [ERRORS.resourceUnavailable]: fieldPath('errors', 'resourceUnavailable'),
-  [ERRORS.capacityExceeded]: fieldPath('errors', 'capacityExceeded'),
-  [ERRORS.bookingConflict]: fieldPath('errors', 'bookingConflict'),
-  [ERRORS.bookingExpired]: fieldPath('errors', 'bookingExpired'),
-  [ERRORS.bookingStale]: fieldPath('errors', 'bookingStale'),
+  [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
   [ERRORS.invalidStateTransition]: fieldPath('errors', 'invalidStateTransition'),
+  [ERRORS.bookingExpired]: fieldPath('errors', 'bookingExpired'),
+  [ERRORS.holdNotExpired]: fieldPath('errors', 'holdNotExpired'),
   [ERRORS.bookingNotStarted]: fieldPath('errors', 'bookingNotStarted'),
-  [ERRORS.outsideBookingWindow]: fieldPath('errors', 'outsideBookingWindow'),
+  [ERRORS.serviceInactive]: fieldPath('errors', 'serviceInactive'),
+  [ERRORS.locationNotOffered]: fieldPath('errors', 'locationNotOffered'),
+  [ERRORS.slotUnavailable]: fieldPath('errors', 'slotUnavailable'),
+  [ERRORS.assignmentIncomplete]: fieldPath('errors', 'assignmentIncomplete'),
+  [ERRORS.alreadyAssigned]: fieldPath('errors', 'alreadyAssigned'),
+  [ERRORS.notAssigned]: fieldPath('errors', 'notAssigned'),
+  [ERRORS.notEligible]: fieldPath('errors', 'notEligible'),
+  [ERRORS.unassignNotAllowed]: fieldPath('errors', 'unassignNotAllowed'),
+  [ERRORS.bookingStarted]: fieldPath('errors', 'bookingStarted'),
   [ERRORS.cancellationNotAllowed]: fieldPath('errors', 'cancellationNotAllowed'),
   [ERRORS.cancellationDeadlinePassed]: fieldPath('errors', 'cancellationDeadlinePassed'),
   [ERRORS.reschedulingNotAllowed]: fieldPath('errors', 'reschedulingNotAllowed'),
   [ERRORS.reschedulingDeadlinePassed]: fieldPath('errors', 'reschedulingDeadlinePassed'),
-  [ERRORS.tooManyActiveBookings]: fieldPath('errors', 'tooManyActiveBookings'),
-  [ERRORS.tooManyActiveHolds]: fieldPath('errors', 'tooManyActiveHolds'),
+  [ERRORS.reschedulingLimitReached]: fieldPath('errors', 'reschedulingLimitReached'),
+  [ERRORS.resourceTaken]: fieldPath('errors', 'resourceTaken'),
+  [ERRORS.capacityExceeded]: fieldPath('errors', 'capacityExceeded'),
+  [ERRORS.bookingStale]: fieldPath('errors', 'bookingStale'),
+  [ERRORS.referenceTaken]: fieldPath('errors', 'referenceTaken'),
+  [ERRORS.bookingNotFound]: fieldPath('errors', 'bookingNotFound'),
+  [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
+  [ERRORS.websiteNotFound]: fieldPath('errors', 'websiteNotFound'),
+  [ERRORS.scheduleTooLarge]: fieldPath('errors', 'scheduleTooLarge'),
+  [ERRORS.serviceNotFound]: fieldPath('errors', 'serviceNotFound'),
+  [ERRORS.locationNotFound]: fieldPath('errors', 'locationNotFound'),
+  [ERRORS.resourceNotFound]: fieldPath('errors', 'resourceNotFound'),
+  [ERRORS.tooManyHolds]: fieldPath('errors', 'tooManyHolds'),
+  [ERRORS.tooManyBookings]: fieldPath('errors', 'tooManyBookings'),
   [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
   [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
-  [ERRORS.configurationInvalid]: fieldPath('errors', 'configurationInvalid'),
-  [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
-  [ERRORS.hasBookings]: fieldPath('errors', 'hasBookings'),
-  [ERRORS.hasUpcomingBookings]: fieldPath('errors', 'hasUpcomingBookings'),
-  [ERRORS.locationNotEmpty]: fieldPath('errors', 'locationNotEmpty'),
-  [ERRORS.serviceOnlyHere]: fieldPath('errors', 'serviceOnlyHere'),
-  [ERRORS.resourceInUse]: fieldPath('errors', 'resourceInUse'),
-  [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
-  [VALIDATION.idInvalid]: fieldPath('validation', 'idInvalid'),
-  [VALIDATION.referenceInvalid]: fieldPath('validation', 'referenceInvalid'),
-  [VALIDATION.nameRequired]: fieldPath('validation', 'nameRequired'),
-  [VALIDATION.textTooLong]: fieldPath('validation', 'textTooLong'),
-  [VALIDATION.categoryInvalid]: fieldPath('validation', 'categoryInvalid'),
-  [VALIDATION.timeZoneInvalid]: fieldPath('validation', 'timeZoneInvalid'),
-  [VALIDATION.dateInvalid]: fieldPath('validation', 'dateInvalid'),
-  [VALIDATION.hoursOutsideLocation]: fieldPath('validation', 'hoursOutsideLocation'),
-  [VALIDATION.hoursOutsideStaffHours]: fieldPath('validation', 'hoursOutsideStaffHours'),
-  [VALIDATION.hoursUsedByOthers]: fieldPath('validation', 'hoursUsedByOthers'),
-  [VALIDATION.holidayInvalid]: fieldPath('validation', 'holidayInvalid'),
+  [ERRORS.notYourBooking]: fieldPath('errors', 'notYourBooking'),
+  [ERRORS.notClaimable]: fieldPath('errors', 'notClaimable'),
+  [ERRORS.timeZoneLocked]: fieldPath('errors', 'timeZoneLocked'),
+  [ERRORS.locationImpactUnacknowledged]: fieldPath('errors', 'locationImpactUnacknowledged'),
+  [ERRORS.locationStale]: fieldPath('errors', 'locationStale'),
+  [ERRORS.serviceStale]: fieldPath('errors', 'serviceStale'),
+  [ERRORS.serviceSharedUnacknowledged]: fieldPath('errors', 'serviceSharedUnacknowledged'),
+  [ERRORS.serviceImpactUnresolved]: fieldPath('errors', 'serviceImpactUnresolved'),
+  [ERRORS.serviceAlreadyOffered]: fieldPath('errors', 'serviceAlreadyOffered'),
+  [ERRORS.resourceStale]: fieldPath('errors', 'resourceStale'),
+  [ERRORS.resourceImpactUnacknowledged]: fieldPath('errors', 'resourceImpactUnacknowledged'),
+  [ERRORS.employeeAlreadySetUp]: fieldPath('team', 'errors', 'alreadySetUp'),
   [VALIDATION.dateRangeInvalid]: fieldPath('validation', 'dateRangeInvalid'),
   [VALIDATION.dateRangeTooLong]: fieldPath('validation', 'dateRangeTooLong'),
-  [VALIDATION.timeRangeInvalid]: fieldPath('validation', 'timeRangeInvalid'),
-  [VALIDATION.timeRangesOverlap]: fieldPath('validation', 'timeRangesOverlap'),
-  [VALIDATION.tooMany]: fieldPath('validation', 'tooMany'),
-  [VALIDATION.exceptionKindUnknown]: fieldPath('validation', 'exceptionKindUnknown'),
   [VALIDATION.durationInvalid]: fieldPath('validation', 'durationInvalid'),
   [VALIDATION.bufferInvalid]: fieldPath('validation', 'bufferInvalid'),
   [VALIDATION.slotIntervalInvalid]: fieldPath('validation', 'slotIntervalInvalid'),
   [VALIDATION.noticeInvalid]: fieldPath('validation', 'noticeInvalid'),
   [VALIDATION.horizonInvalid]: fieldPath('validation', 'horizonInvalid'),
-  [VALIDATION.capacityInvalid]: fieldPath('validation', 'capacityInvalid'),
-  [VALIDATION.participantsInvalid]: fieldPath('validation', 'participantsInvalid'),
-  [VALIDATION.skillInvalid]: fieldPath('validation', 'skillInvalid'),
-  [VALIDATION.resourceTypeUnknown]: fieldPath('validation', 'resourceTypeUnknown'),
-  [VALIDATION.assignmentInvalid]: fieldPath('validation', 'assignmentInvalid'),
-  [VALIDATION.employeeSelfManaged]: fieldPath('validation', 'employeeSelfManaged'),
-  [VALIDATION.requirementsRequired]: fieldPath('validation', 'requirementsRequired'),
   [VALIDATION.requirementCountInvalid]: fieldPath('validation', 'requirementCountInvalid'),
-  [VALIDATION.locationsRequired]: fieldPath('validation', 'locationsRequired'),
-  [VALIDATION.informationFieldUnknown]: fieldPath('validation', 'informationFieldUnknown'),
-  [VALIDATION.emailRequired]: fieldPath('validation', 'emailRequired'),
-  [VALIDATION.emailInvalid]: fieldPath('validation', 'emailInvalid'),
+  [VALIDATION.tooMany]: fieldPath('validation', 'tooMany'),
   [VALIDATION.fieldRequired]: fieldPath('validation', 'fieldRequired'),
-  [VALIDATION.changePolicyInvalid]: fieldPath('validation', 'changePolicyInvalid'),
-  [VALIDATION.actorUnknown]: fieldPath('validation', 'actorUnknown'),
-  [VALIDATION.statusUnknown]: fieldPath('validation', 'statusUnknown'),
-  [VALIDATION.serviceNotBookable]: fieldPath('validation', 'serviceNotBookable'),
+  [VALIDATION.idInvalid]: fieldPath('validation', 'idInvalid'),
+  [VALIDATION.referenceInvalid]: fieldPath('validation', 'referenceInvalid'),
+  [VALIDATION.startInvalid]: fieldPath('validation', 'startInvalid'),
+  [VALIDATION.emailInvalid]: fieldPath('validation', 'emailInvalid'),
+  [VALIDATION.limitInvalid]: fieldPath('validation', 'limitInvalid'),
+  [VALIDATION.nameInvalid]: fieldPath('validation', 'nameInvalid'),
+  [VALIDATION.addressInvalid]: fieldPath('validation', 'addressInvalid'),
+  [VALIDATION.timeZoneInvalid]: fieldPath('validation', 'timeZoneInvalid'),
+  [VALIDATION.weekInvalid]: fieldPath('validation', 'weekInvalid'),
+  [VALIDATION.timeRangeInvalid]: fieldPath('validation', 'timeRangeInvalid'),
+  [VALIDATION.timeRangesOverlap]: fieldPath('validation', 'timeRangesOverlap'),
+  [VALIDATION.breakOutsideHours]: fieldPath('validation', 'breakOutsideHours'),
+  [VALIDATION.exceptionInvalid]: fieldPath('validation', 'exceptionInvalid'),
+  [VALIDATION.exceptionsOverlap]: fieldPath('validation', 'exceptionsOverlap'),
+  [VALIDATION.coverageOverlap]: fieldPath('validation', 'coverageOverlap'),
+  [VALIDATION.categoryInvalid]: fieldPath('validation', 'categoryInvalid'),
+  [VALIDATION.descriptionInvalid]: fieldPath('validation', 'descriptionInvalid'),
+  [VALIDATION.documentsInvalid]: fieldPath('validation', 'documentsInvalid'),
+  [VALIDATION.instructionsInvalid]: fieldPath('validation', 'instructionsInvalid'),
+  [VALIDATION.noteInvalid]: fieldPath('validation', 'noteInvalid'),
+  [VALIDATION.actorsRequired]: fieldPath('validation', 'actorsRequired'),
+  [VALIDATION.noticeNotBeforeHorizon]: fieldPath('validation', 'noticeNotBeforeHorizon'),
+  [VALIDATION.deadlineInvalid]: fieldPath('validation', 'deadlineInvalid'),
+  [VALIDATION.resourceInvalid]: fieldPath('validation', 'resourceInvalid'),
+  [VALIDATION.qualificationInvalid]: fieldPath('validation', 'qualificationInvalid'),
+  [VALIDATION.adoptModeInvalid]: fieldPath('validation', 'adoptModeInvalid'),
+  [VALIDATION.resourceTypeInvalid]: fieldPath('validation', 'resourceTypeInvalid'),
+  [VALIDATION.capacityInvalid]: fieldPath('validation', 'capacityInvalid'),
+  [VALIDATION.locationInvalid]: fieldPath('validation', 'locationInvalid'),
+  [VALIDATION.serviceInvalid]: fieldPath('validation', 'serviceInvalid'),
+  [VALIDATION.hoursOutsideLocation]: fieldPath('team', 'validation', 'hoursOutsideLocation'),
 } as const satisfies Record<BookingCode, ValidKeys>;
 
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 
-/**
- * Codes that belong to the authorization module. They are listed here as
- * plain text because this module may not import another module's internals;
- * an unknown code still falls back to the generic message.
- */
-const FOREIGN_MESSAGE_KEY_BY_CODE = {
-  'auth.unauthenticated': fieldPath('errors', 'signInRequired'),
-  'auth.session_expired': fieldPath('errors', 'signInRequired'),
-  'auth.permission_denied': fieldPath('errors', 'permissionDenied'),
-} as const satisfies Readonly<Record<string, ValidKeys>>;
-
-/** Every message a code can resolve to: a leaf of the catalog, never a group of messages. */
 export type MessageKey =
-  | (typeof MESSAGE_KEY_BY_CODE)[BookingCode]
-  | (typeof FOREIGN_MESSAGE_KEY_BY_CODE)[keyof typeof FOREIGN_MESSAGE_KEY_BY_CODE]
-  | typeof GENERIC_ERROR_MESSAGE_KEY;
+  (typeof MESSAGE_KEY_BY_CODE)[BookingCode] | typeof GENERIC_ERROR_MESSAGE_KEY;
 
 function isBookingCode(code: string): code is BookingCode {
   return Object.hasOwn(MESSAGE_KEY_BY_CODE, code);
 }
 
-function isForeignCode(code: string): code is keyof typeof FOREIGN_MESSAGE_KEY_BY_CODE {
-  return Object.hasOwn(FOREIGN_MESSAGE_KEY_BY_CODE, code);
-}
-
+/**
+ * Codes from other modules (authorization, for instance) or from Zod's own structural messages are
+ * unknown here and get the generic message.
+ */
 export function messageKeyForCode(code: string): MessageKey {
-  if (isBookingCode(code)) {
-    return MESSAGE_KEY_BY_CODE[code];
-  }
-  return isForeignCode(code) ? FOREIGN_MESSAGE_KEY_BY_CODE[code] : GENERIC_ERROR_MESSAGE_KEY;
+  return isBookingCode(code) ? MESSAGE_KEY_BY_CODE[code] : GENERIC_ERROR_MESSAGE_KEY;
 }
 
-/** Interpolation values for messages that mention a limit. */
-export const MESSAGE_PARAMS = {
-  nameMax: SERVICE_LIMITS.nameMax,
-  locationNameMax: LOCATION_LIMITS.nameMax,
-  addressMax: LOCATION_LIMITS.addressMax,
-  resourceNameMax: RESOURCE_LIMITS.nameMax,
-  notesMax: CUSTOMER_LIMITS.notesMax,
-  textMax: SERVICE_LIMITS.descriptionMax,
-  durationMin: SERVICE_LIMITS.durationMin,
-  durationMax: SERVICE_LIMITS.durationMax,
-  bufferMax: SERVICE_LIMITS.bufferMax,
-  slotIntervalMin: SERVICE_LIMITS.slotIntervalMin,
-  slotIntervalMax: SERVICE_LIMITS.slotIntervalMax,
-  horizonMax: SERVICE_LIMITS.horizonDaysMax,
-  participantsMax: SERVICE_LIMITS.participantsMax,
-  capacityMax: RESOURCE_LIMITS.capacityMax,
-  requirementCountMax: SERVICE_LIMITS.requirementCountMax,
-  holdMinutes: HOLD_MINUTES,
-  maxReschedules: MAX_CUSTOMER_RESCHEDULES,
-} as const;
+/**
+ * What a booking is called on a screen: its status, except that a confirmed booking is told apart by
+ * whether an employee still has to take it. "Open" and "assigned" are not statuses of their own
+ * (BD-04); the view's `assignment` says which.
+ */
+export type BookingDisplayState =
+  Exclude<BookingDto['status'], 'confirmed'> | BookingDto['assignment'];
 
 export const STATUS_MESSAGE_KEYS = {
   held: fieldPath('status', 'held'),
-  confirmed: fieldPath('status', 'confirmed'),
-  cancelled: fieldPath('status', 'cancelled'),
+  open: fieldPath('status', 'open'),
+  assigned: fieldPath('status', 'assigned'),
   completed: fieldPath('status', 'completed'),
-  no_show: fieldPath('status', 'no_show'),
+  cancelled: fieldPath('status', 'cancelled'),
+  no_show: fieldPath('status', 'noShow'),
   expired: fieldPath('status', 'expired'),
-} as const satisfies Record<BookingStatus, ValidKeys>;
+} as const satisfies Record<BookingDisplayState, ValidKeys>;
+
+/** Interpolation values for messages that mention a limit. */
+export const MESSAGE_PARAMS = {
+  nameMax: LOCATION_LIMITS.nameMax,
+  addressMax: LOCATION_LIMITS.addressMax,
+  descriptionMax: SERVICE_LIMITS.descriptionMax,
+  categoryMax: SERVICE_LIMITS.categoryMax,
+  documentMax: SERVICE_LIMITS.documentMax,
+  documentsMax: SERVICE_LIMITS.documentsMax,
+  instructionsMax: SERVICE_LIMITS.instructionsMax,
+  noteMax: SERVICE_LIMITS.noteMax,
+  resourcesMax: SERVICE_LIMITS.resourcesMax,
+} as const;
 
 export const HOLIDAY_MESSAGE_KEYS = {
-  newYear: fieldPath('holidays', 'names', 'newYear'),
-  epiphany: fieldPath('holidays', 'names', 'epiphany'),
-  womensDay: fieldPath('holidays', 'names', 'womensDay'),
-  goodFriday: fieldPath('holidays', 'names', 'goodFriday'),
-  easterSunday: fieldPath('holidays', 'names', 'easterSunday'),
-  easterMonday: fieldPath('holidays', 'names', 'easterMonday'),
-  labourDay: fieldPath('holidays', 'names', 'labourDay'),
-  ascension: fieldPath('holidays', 'names', 'ascension'),
-  whitSunday: fieldPath('holidays', 'names', 'whitSunday'),
-  whitMonday: fieldPath('holidays', 'names', 'whitMonday'),
-  corpusChristi: fieldPath('holidays', 'names', 'corpusChristi'),
-  assumption: fieldPath('holidays', 'names', 'assumption'),
-  germanUnity: fieldPath('holidays', 'names', 'germanUnity'),
-  childrensDay: fieldPath('holidays', 'names', 'childrensDay'),
-  reformationDay: fieldPath('holidays', 'names', 'reformationDay'),
-  allSaints: fieldPath('holidays', 'names', 'allSaints'),
-  repentanceDay: fieldPath('holidays', 'names', 'repentanceDay'),
-  christmasDay: fieldPath('holidays', 'names', 'christmasDay'),
-  boxingDay: fieldPath('holidays', 'names', 'boxingDay'),
+  newYear: fieldPath('holidays', 'newYear'),
+  epiphany: fieldPath('holidays', 'epiphany'),
+  womensDay: fieldPath('holidays', 'womensDay'),
+  goodFriday: fieldPath('holidays', 'goodFriday'),
+  easterSunday: fieldPath('holidays', 'easterSunday'),
+  easterMonday: fieldPath('holidays', 'easterMonday'),
+  labourDay: fieldPath('holidays', 'labourDay'),
+  ascension: fieldPath('holidays', 'ascension'),
+  whitSunday: fieldPath('holidays', 'whitSunday'),
+  whitMonday: fieldPath('holidays', 'whitMonday'),
+  corpusChristi: fieldPath('holidays', 'corpusChristi'),
+  assumption: fieldPath('holidays', 'assumption'),
+  germanUnity: fieldPath('holidays', 'germanUnity'),
+  childrensDay: fieldPath('holidays', 'childrensDay'),
+  reformationDay: fieldPath('holidays', 'reformationDay'),
+  allSaints: fieldPath('holidays', 'allSaints'),
+  repentanceDay: fieldPath('holidays', 'repentanceDay'),
+  christmasDay: fieldPath('holidays', 'christmasDay'),
+  boxingDay: fieldPath('holidays', 'boxingDay'),
 } as const satisfies Record<HolidayKey, ValidKeys>;
 
-export const GERMAN_REGION_MESSAGE_KEYS = {
-  DE: fieldPath('holidays', 'regions', 'DE'),
-  BW: fieldPath('holidays', 'regions', 'BW'),
-  BY: fieldPath('holidays', 'regions', 'BY'),
-  BE: fieldPath('holidays', 'regions', 'BE'),
-  BB: fieldPath('holidays', 'regions', 'BB'),
-  HB: fieldPath('holidays', 'regions', 'HB'),
-  HH: fieldPath('holidays', 'regions', 'HH'),
-  HE: fieldPath('holidays', 'regions', 'HE'),
-  MV: fieldPath('holidays', 'regions', 'MV'),
-  NI: fieldPath('holidays', 'regions', 'NI'),
-  NW: fieldPath('holidays', 'regions', 'NW'),
-  RP: fieldPath('holidays', 'regions', 'RP'),
-  SL: fieldPath('holidays', 'regions', 'SL'),
-  SN: fieldPath('holidays', 'regions', 'SN'),
-  ST: fieldPath('holidays', 'regions', 'ST'),
-  SH: fieldPath('holidays', 'regions', 'SH'),
-  TH: fieldPath('holidays', 'regions', 'TH'),
+export const REGION_MESSAGE_KEYS = {
+  DE: fieldPath('regions', 'DE'),
+  BW: fieldPath('regions', 'BW'),
+  BY: fieldPath('regions', 'BY'),
+  BE: fieldPath('regions', 'BE'),
+  BB: fieldPath('regions', 'BB'),
+  HB: fieldPath('regions', 'HB'),
+  HH: fieldPath('regions', 'HH'),
+  HE: fieldPath('regions', 'HE'),
+  MV: fieldPath('regions', 'MV'),
+  NI: fieldPath('regions', 'NI'),
+  NW: fieldPath('regions', 'NW'),
+  RP: fieldPath('regions', 'RP'),
+  SL: fieldPath('regions', 'SL'),
+  SN: fieldPath('regions', 'SN'),
+  ST: fieldPath('regions', 'ST'),
+  SH: fieldPath('regions', 'SH'),
+  TH: fieldPath('regions', 'TH'),
 } as const satisfies Record<GermanRegion, ValidKeys>;
 
+export const EXCEPTION_KIND_MESSAGE_KEYS = {
+  closed: fieldPath('exceptions', 'kind', 'closed'),
+  override: fieldPath('exceptions', 'kind', 'override'),
+  additional: fieldPath('exceptions', 'kind', 'additional'),
+} as const satisfies Record<ExceptionKind, ValidKeys>;
+
+export const WEEK_TEMPLATE_MESSAGE_KEYS = {
+  standardOffice: fieldPath('hours', 'templates', 'standardOffice'),
+  mornings: fieldPath('hours', 'templates', 'mornings'),
+  extended: fieldPath('hours', 'templates', 'extended'),
+  closed: fieldPath('hours', 'templates', 'closed'),
+} as const satisfies Record<WeekTemplateKey, ValidKeys>;
+
+export const IMPACT_REASON_MESSAGE_KEYS = {
+  'outside-opening-hours': fieldPath('impact', 'reason', 'outsideOpeningHours'),
+  'resource-unavailable': fieldPath('impact', 'reason', 'resourceUnavailable'),
+  'over-capacity': fieldPath('impact', 'reason', 'overCapacity'),
+} as const satisfies Record<AffectedBookingDto['reason'], ValidKeys>;
+
+/** Who may cancel and change a booking, as the messages name them. */
+export const ACTOR_MESSAGE_KEYS = {
+  customer: fieldPath('services', 'rules', 'actors', 'customer'),
+  employee: fieldPath('services', 'rules', 'actors', 'employee'),
+  manager: fieldPath('services', 'rules', 'actors', 'manager'),
+} as const satisfies Record<ChangeActor, ValidKeys>;
+
+/** What a resource is, as the messages name each kind. */
 export const RESOURCE_TYPE_MESSAGE_KEYS = {
-  employee: fieldPath('resourceTypes', 'employee'),
-  room: fieldPath('resourceTypes', 'room'),
-  office: fieldPath('resourceTypes', 'office'),
-  'service-desk': fieldPath('resourceTypes', 'serviceDesk'),
-  'sports-field': fieldPath('resourceTypes', 'sportsField'),
-  'meeting-room': fieldPath('resourceTypes', 'meetingRoom'),
-  vehicle: fieldPath('resourceTypes', 'vehicle'),
-  equipment: fieldPath('resourceTypes', 'equipment'),
-  facility: fieldPath('resourceTypes', 'facility'),
-  workstation: fieldPath('resourceTypes', 'workstation'),
-  other: fieldPath('resourceTypes', 'other'),
+  employee: fieldPath('services', 'resourceTypes', 'employee'),
+  room: fieldPath('services', 'resourceTypes', 'room'),
+  office: fieldPath('services', 'resourceTypes', 'office'),
+  'service-desk': fieldPath('services', 'resourceTypes', 'serviceDesk'),
+  'sports-field': fieldPath('services', 'resourceTypes', 'sportsField'),
+  'meeting-room': fieldPath('services', 'resourceTypes', 'meetingRoom'),
+  vehicle: fieldPath('services', 'resourceTypes', 'vehicle'),
+  equipment: fieldPath('services', 'resourceTypes', 'equipment'),
+  facility: fieldPath('services', 'resourceTypes', 'facility'),
+  workstation: fieldPath('services', 'resourceTypes', 'workstation'),
+  other: fieldPath('services', 'resourceTypes', 'other'),
 } as const satisfies Record<ResourceKind, ValidKeys>;
 
-export const INFORMATION_FIELD_MESSAGE_KEYS = {
-  firstName: fieldPath('fields', 'firstName'),
-  lastName: fieldPath('fields', 'lastName'),
-  email: fieldPath('fields', 'email'),
-  phone: fieldPath('fields', 'phone'),
-  referenceNumber: fieldPath('fields', 'referenceNumber'),
-  notes: fieldPath('fields', 'notes'),
-} as const satisfies Record<InformationField, ValidKeys>;
+type Fit = AssignmentCandidatesDto['eligible'][number]['fit']['level'];
+type Reason = AssignmentCandidatesDto['unavailable'][number]['reasons'][number]['code'];
 
-export const WEEKDAY_MESSAGE_KEYS = {
-  1: fieldPath('weekdays', 'monday'),
-  2: fieldPath('weekdays', 'tuesday'),
-  3: fieldPath('weekdays', 'wednesday'),
-  4: fieldPath('weekdays', 'thursday'),
-  5: fieldPath('weekdays', 'friday'),
-  6: fieldPath('weekdays', 'saturday'),
-  7: fieldPath('weekdays', 'sunday'),
-} as const satisfies Record<Weekday, ValidKeys>;
+/** How well a candidate fits, as the assignment dialog says it. */
+export const FIT_MESSAGE_KEYS = {
+  'very-good': fieldPath('bookings', 'assign', 'fit', 'veryGood'),
+  good: fieldPath('bookings', 'assign', 'fit', 'good'),
+  possible: fieldPath('bookings', 'assign', 'fit', 'possible'),
+} as const satisfies Record<Fit, ValidKeys>;
 
-export const EXCEPTION_KIND_MESSAGE_KEYS = {
-  closed: fieldPath('exceptionKinds', 'closed'),
-  override: fieldPath('exceptionKinds', 'override'),
-  additional: fieldPath('exceptionKinds', 'additional'),
-} as const satisfies Record<(typeof EXCEPTION_KINDS)[number], ValidKeys>;
-
-/** The parts of an exception a problem can be at, as the names the form shows for them. */
-export const EXCEPTION_FIELD_MESSAGE_KEYS = {
-  kind: fieldPath('form', 'paths', 'exceptionFields', 'kind'),
-  from: fieldPath('form', 'paths', 'exceptionFields', 'from'),
-  to: fieldPath('form', 'paths', 'exceptionFields', 'to'),
-  label: fieldPath('form', 'paths', 'exceptionFields', 'label'),
-  day: fieldPath('form', 'paths', 'exceptionFields', 'day'),
-  holiday: fieldPath('form', 'paths', 'exceptionFields', 'holiday'),
-} as const satisfies Record<string, ValidKeys>;
-
-export const CHANGE_ACTOR_MESSAGE_KEYS = {
-  customer: fieldPath('actors', 'customer'),
-  staff: fieldPath('actors', 'staff'),
-} as const satisfies Record<ChangeActor, ValidKeys>;
+/** Why somebody cannot take a booking, one sentence per reason code of the domain. */
+export const REASON_MESSAGE_KEYS = {
+  'booking-not-assignable': fieldPath('bookings', 'assign', 'reasons', 'bookingNotAssignable'),
+  'booking-over': fieldPath('bookings', 'assign', 'reasons', 'bookingOver'),
+  'resource-inactive': fieldPath('bookings', 'assign', 'reasons', 'resourceInactive'),
+  'wrong-resource-type': fieldPath('bookings', 'assign', 'reasons', 'wrongResourceType'),
+  'missing-qualification': fieldPath('bookings', 'assign', 'reasons', 'missingQualification'),
+  'wrong-location': fieldPath('bookings', 'assign', 'reasons', 'wrongLocation'),
+  'not-in-pinned-pool': fieldPath('bookings', 'assign', 'reasons', 'notInPinnedPool'),
+  'already-on-booking': fieldPath('bookings', 'assign', 'reasons', 'alreadyOnBooking'),
+  'outside-working-hours': fieldPath('bookings', 'assign', 'reasons', 'outsideWorkingHours'),
+  'time-conflict': fieldPath('bookings', 'assign', 'reasons', 'timeConflict'),
+} as const satisfies Record<Reason, ValidKeys>;

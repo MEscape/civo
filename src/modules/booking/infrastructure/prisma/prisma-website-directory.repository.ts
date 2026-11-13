@@ -19,18 +19,21 @@ const failures = createPersistenceFailures({
 });
 
 /**
- * Reads the owner of a website from its stored record. Used by the public
- * flow, which has no signed-in actor: the tenant that scopes every later
- * query comes from here, never from the request.
+ * Reads the owner of a website from its stored record. The public flow has no signed-in actor: the
+ * tenant that scopes every later query comes from here, never from the request.
  */
 export class PrismaWebsiteDirectoryRepository implements WebsiteDirectoryRepository {
   findTenantOf(websiteId: WebsiteId): AppResultAsync<TenantId | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
         db.orm.public.Website.where({ id: websiteId })
+          .where((website) => website.publishedReleaseId.isNotNull())
           .select(...WEBSITE_OWNER_SELECT)
           .first(),
       failures.infraOnly('findTenantOf'),
     ).map(toWebsiteOwner);
   }
 }
+
+/** The one instance the composition root wires (the adapter holds no state). */
+export const prismaWebsiteDirectoryRepository = new PrismaWebsiteDirectoryRepository();

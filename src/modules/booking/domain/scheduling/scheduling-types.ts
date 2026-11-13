@@ -1,69 +1,95 @@
-import type { BookableResource } from '../models/bookable-resource';
-import type { BookableService } from '../models/bookable-service';
-import type { Booking } from '../models/booking';
-import type { BookingLocation } from '../models/booking-location';
-import type { BookableResourceId, BookingId } from '../models/ids';
-import type { LocalDate } from '../time/local-date';
+import type { Margins } from './occupancy';
+import type { OpenDemand } from './open-demand';
+import type { SlotRules } from './slot-rules';
+import type { StartWindow } from './start-window';
+import type { Instant } from '../time/instant';
+import type { LocalDateRange } from '../time/local-date-range';
 import type { TimeInterval } from '../time/time-interval';
+import type { TimeZone } from '../time/time-zone';
 
 /**
- * Everything the engine needs to answer "is this appointment available":
- * plain data in, a plain answer out. No clock, no storage, no framework.
+ * One resource as the engine sees it: when it works and when it is already taken. The engine knows
+ * nothing of employees, rooms or qualifications; the caller decides which resources may serve a
+ * requirement and hands in only those.
  */
+export interface ResourceSchedule {
+  /** Opaque and unique: the same id in two requirements is the same resource, used at most once. */
+  readonly id: string;
+  /** When the resource may work: opening or working hours minus absences and blocks. */
+  readonly availability: readonly TimeInterval[];
+  /** The occupied spans (appointment plus its buffers) of bookings and holds that already use it. */
+  readonly busy: readonly TimeInterval[];
+  /**
+   * How long it is held before and after an appointment (`marginsOf`). Absent: like staff, for the
+   * service's own preparation and clean-up.
+   */
+  readonly margins?: Margins;
+}
+
+/** `count` resources, all different, out of `resources`, needed for the whole occupied span. */
+export interface ResourceRequirement {
+  readonly count: number;
+  readonly resources: readonly ResourceSchedule[];
+}
+
+/** Everything one scheduling question needs: plain data in, plain answers out. */
 export interface SchedulingInput {
-  readonly service: BookableService;
-  readonly location: BookingLocation;
-  /** The resources that might serve this location; the engine narrows them by requirement. */
-  readonly resources: readonly BookableResource[];
-  /** Existing bookings that may overlap the range. Ones that no longer block are ignored. */
-  readonly bookings: readonly Booking[];
-  /** The moment the question is asked, injected so the answer is repeatable. */
-  readonly now: Date;
-  /** A booking being moved: it must not block its own new time. */
-  readonly ignoreBookingId?: BookingId | undefined;
+  /** The zone of the location. The start grid is on its wall clock. */
+  readonly zone: TimeZone;
+  /** The local days on which starts are listed by `findSlots`. */
+  readonly range: LocalDateRange;
+  readonly rules: SlotRules;
+  /** Notice and horizon (`createStartWindow`). */
+  readonly startWindow: StartWindow;
+  /** When the place is open for appointments; an appointment must lie inside one window. */
+  readonly openWindows: readonly TimeInterval[];
+  /** May be empty: a service that needs no resource is bookable whenever the place is open. */
+  readonly requirements: readonly ResourceRequirement[];
+  /**
+   * The open units of other bookings that will need one of the same employees (`openDemandOf`).
+   * They take no part in the answer except to use up a resource a new booking would count on.
+   */
+  readonly openDemands?: readonly OpenDemand[];
 }
 
-/** A span of local calendar days, both ends included. */
-export interface LocalDateRange {
-  readonly from: LocalDate;
-  readonly to: LocalDate;
+/** The candidates for `count` units of one requirement. Their lists are normalized and sorted by id. */
+export interface ResourcePool {
+  readonly count: number;
+  readonly resources: readonly ResourceSchedule[];
 }
 
-/**
- * A bookable start time as a visitor sees it. It names no resource: who or
- * what serves the appointment is the engine's business, not the visitor's.
- */
-export interface AvailableSlot {
-  /** Start of the appointment, epoch milliseconds. */
-  readonly start: number;
-  /** End of the appointment (not of the clean-up), epoch milliseconds. */
-  readonly end: number;
-  /** Places left in the session before this booking; 1 for a service that holds its resources alone. */
-  readonly remainingParticipants: number;
+/** `SchedulingInput` checked and normalized once (`prepareScheduling`), so each candidate is judged cheaply. */
+export interface Scheduling {
+  readonly zone: TimeZone;
+  readonly range: LocalDateRange;
+  readonly rules: SlotRules;
+  readonly startWindow: StartWindow;
+  readonly openWindows: readonly TimeInterval[];
+  readonly pools: readonly ResourcePool[];
+  readonly openDemands: readonly OpenDemand[];
 }
 
-/** A slot together with the assignment that makes it bookable; only the server ever sees this. */
-export interface PlannedSlot extends AvailableSlot {
-  /** Appointment plus preparation and clean-up: what the resources are held for. */
+/** A start that can be booked, with the resources that make it bookable. */
+export interface PlannedSlot {
+  readonly start: Instant;
+  /** End of the appointment, not of the clean-up. */
+  readonly end: Instant;
+  /** The appointment and what every resource is held for around it: the span the booking covers. */
   readonly occupied: TimeInterval;
-  readonly resourceIds: readonly BookableResourceId[];
-  /** The key bookings of this session share; `null` when the service holds its resources alone. */
-  readonly sharedSessionKey: string | null;
-  /** Participants all bookings of the session may add up to. */
-  readonly sessionCapacity: number;
-  /** Whether it joins a session other bookings already started. */
-  readonly joinsExistingSession: boolean;
+  /** What each resource of `resourceIds` is held for: the appointment plus its own margins. */
+  readonly resourceSpans: Readonly<Record<string, TimeInterval>>;
+  /** One id per unit of every requirement, sorted. */
+  readonly resourceIds: readonly string[];
+  /**
+   * The same ids grouped by requirement, in the order of `SchedulingInput.requirements`, one id per
+   * unit: which resource serves which requirement.
+   */
+  readonly requirementResourceIds: ReadonlyArray<readonly string[]>;
 }
 
-/** Why a start time cannot be booked. */
+/** Why a start cannot be booked. Checked in this order, so the reason is the first that applies. */
 export type SlotRejection =
-  | 'invalid-participants'
-  | 'off-grid'
-  | 'outside-booking-window'
-  | 'location-closed'
-  | 'service-unavailable'
-  | 'resources-unavailable'
-  | 'capacity-exceeded';
+  'off-grid' | 'outside-start-window' | 'outside-open-hours' | 'resources-unavailable';
 
 export type SlotAssessment =
   | { readonly kind: 'planned'; readonly slot: PlannedSlot }

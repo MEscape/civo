@@ -14,6 +14,8 @@
  * countries. Both are added by their own rule when a place needs them.
  */
 
+import { MS_PER_DAY } from '@lib/utils';
+
 export const GERMAN_REGIONS = [
   'DE',
   'BW',
@@ -119,11 +121,11 @@ const DEFINITIONS: readonly Definition[] = [
   { key: 'boxingDay', rule: { kind: 'fixed', month: 12, day: 26 }, regions: 'all' },
 ];
 
-const MS_PER_DAY = 86_400_000;
 const REPENTANCE_ANCHOR_MONTH = 11;
 const REPENTANCE_ANCHOR_DAY = 23;
 const WEDNESDAY = 3;
 const DAYS_PER_WEEK = 7;
+const YEAR_DIGITS = 4;
 
 function utc(year: number, month: number, day: number): number {
   return Date.UTC(year, month - 1, day);
@@ -185,4 +187,15 @@ export function publicHolidaysOf(region: GermanRegion, year: number): readonly P
   return DEFINITIONS.filter((definition) => isKept(definition, region))
     .map((definition) => ({ key: definition.key, date: dateOf(definition.rule, year) }))
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * The holidays that any state keeps on `date` (`YYYY-MM-DD`), so a closure can be named: it says
+ * which holiday the day is, not where it is kept. Empty when the day is no holiday anywhere.
+ */
+export function holidayKeysOn(date: string): readonly HolidayKey[] {
+  const year = Number(date.slice(0, YEAR_DIGITS));
+  return DEFINITIONS.filter((definition) => dateOf(definition.rule, year) === date).map(
+    (definition) => definition.key,
+  );
 }

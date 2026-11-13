@@ -2,151 +2,126 @@ import type { ConflictAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
 
-import {
-  bookingExpired,
-  bookingNotStarted,
-  invalidStateTransition,
-} from '../errors/booking-errors';
-import { bookingSessionKey } from '../models/booking';
+import { BOOKING_ERROR_CODES as CODES, bookingConflict } from '../errors/booking-errors';
+import { hasOpenUnits, updatedBooking } from '../models/booking';
+import { checkCancellation, checkRescheduling } from '../policies/change-policy';
 
-import type { ChangeActor } from '../models/bookable-service';
-import type { Booking, BookingStatus } from '../models/booking';
-import type { BookingCustomer } from '../models/booking-customer';
+import { requireAction } from './booking-actions';
+import { assignmentsForSlot, slotMatchesService } from './slot-assignments';
+
+import type { BookableService, ChangeActor } from '../models/bookable-service';
+import type { Booking } from '../models/booking';
 import type { PlannedSlot } from '../scheduling/scheduling-types';
+import type { Instant } from '../time/instant';
 
 /**
- * The booking state machine, as pure functions: each takes a booking and the
- * time, and returns the changed booking or the reason it cannot change. They
- * touch no storage; the application layer persists the result, and the
- * database refuses a stale write, so two concurrent transitions cannot both
- * succeed.
- *
- *   held ──confirm──▶ confirmed ──complete──▶ completed
- *     │                   │  └────no-show───▶ no_show
- *     ├──expire──▶ expired│
- *     └──cancel──▶ cancelled ◀──cancel──┘     (reschedule keeps `confirmed`)
+ * The rest of a booking's life, after it was reserved: cancelling, moving and carrying out. Pure
+ * functions, like the ones in `booking-hold.ts`; the reference instant is always an argument.
  */
-export const BOOKING_TRANSITIONS: Readonly<Record<BookingStatus, readonly BookingStatus[]>> = {
-  held: ['confirmed', 'cancelled', 'expired'],
-  confirmed: ['cancelled', 'completed', 'no_show'],
-  cancelled: [],
-  completed: [],
-  no_show: [],
-  expired: [],
-};
 
-export function canTransition(from: BookingStatus, to: BookingStatus): boolean {
-  return BOOKING_TRANSITIONS[from].includes(to);
+export interface CancelInput {
+  readonly booking: Booking;
+  readonly service: BookableService;
+  readonly actor: ChangeActor;
+  readonly now: Instant;
 }
 
-interface Transition {
-  readonly to: BookingStatus;
-  /** Names the attempt in the error when the booking cannot make this move. */
-  readonly event: string;
-  readonly now: Date;
-  readonly changes?: Partial<Booking>;
-}
-
-function move(
-  booking: Booking,
-  { to, event, now, changes = {} }: Transition,
-): AppResult<Booking, ConflictAppError> {
-  if (!canTransition(booking.status, to)) {
-    return err(invalidStateTransition(booking.status, event));
+/** Cancels a hold or a booking, if the service's policy lets this actor. */
+export function cancelBooking(input: CancelInput): AppResult<Booking, ConflictAppError> {
+  const { booking, service, actor, now } = input;
+  const allowed = requireAction(booking, 'cancel');
+  if (allowed.isErr()) {
+    return err(allowed.error);
   }
-  return ok({ ...booking, ...changes, status: to, updatedAt: now });
-}
-
-/** Whether a hold has run out. Judged on the clock so it holds even before anything marks it `expired`. */
-export function isHoldExpired(booking: Booking, now: Date): boolean {
-  return (
-    booking.status === 'held' &&
-    (booking.holdExpiresAt === null || booking.holdExpiresAt.getTime() <= now.getTime())
+  const permitted = checkCancellation(service, booking, { actor, now });
+  if (permitted.isErr()) {
+    return err(permitted.error);
+  }
+  return ok(
+    updatedBooking(booking, now, {
+      status: 'cancelled',
+      cancelledAt: now,
+      cancelledBy: actor,
+      holdExpiresAt: null,
+    }),
   );
 }
 
-/** Turns a hold into a booking once the visitor's details are in. */
-export function confirmBooking(
-  booking: Booking,
-  customer: BookingCustomer,
-  now: Date,
-): AppResult<Booking, ConflictAppError> {
-  if (booking.status !== 'held') {
-    return err(invalidStateTransition(booking.status, 'confirm'));
-  }
-  if (isHoldExpired(booking, now)) {
-    return err(bookingExpired());
-  }
-  return move(booking, {
-    to: 'confirmed',
-    event: 'confirm',
-    now,
-    changes: { customer, holdExpiresAt: null },
-  });
-}
-
-/** Marks a hold that ran out; idempotent callers check `isHoldExpired` first. */
-export function expireHold(booking: Booking, now: Date): AppResult<Booking, ConflictAppError> {
-  return move(booking, { to: 'expired', event: 'expire', now });
-}
-
-export function cancelBooking(
-  booking: Booking,
-  actor: ChangeActor,
-  now: Date,
-): AppResult<Booking, ConflictAppError> {
-  return move(booking, {
-    to: 'cancelled',
-    event: 'cancel',
-    now,
-    changes: { cancelledAt: now, cancelledBy: actor, holdExpiresAt: null },
-  });
-}
-
-function afterStart(booking: Booking, now: Date): boolean {
-  return now.getTime() >= booking.start.getTime();
-}
-
-/** Staff record that the appointment took place. Only after it began. */
-export function completeBooking(booking: Booking, now: Date): AppResult<Booking, ConflictAppError> {
-  if (booking.status === 'confirmed' && !afterStart(booking, now)) {
-    return err(bookingNotStarted());
-  }
-  return move(booking, { to: 'completed', event: 'complete', now });
-}
-
-/** Staff record that the customer did not come. Only after the start. */
-export function markNoShow(booking: Booking, now: Date): AppResult<Booking, ConflictAppError> {
-  if (booking.status === 'confirmed' && !afterStart(booking, now)) {
-    return err(bookingNotStarted());
-  }
-  return move(booking, { to: 'no_show', event: 'no-show', now });
+/** Whether the appointment has begun: from then on it is carried out, and who serves it stays. */
+export function hasStarted(booking: Booking, now: Instant): boolean {
+  return now >= booking.start;
 }
 
 /**
- * Moves a confirmed booking onto a slot the engine has already approved. The
- * status stays `confirmed`: the booking never stops existing, so the customer
- * keeps their reference and there is no moment when the old time is released
- * and the new one is not yet held.
+ * Records that the appointment took place. Only after it began, and only when someone served it: a
+ * booking that still waits for an employee cannot have been carried out. (Proposed rule.)
  */
-export function rescheduleBooking(
+export function completeBooking(
   booking: Booking,
-  slot: PlannedSlot,
-  now: Date,
+  now: Instant,
 ): AppResult<Booking, ConflictAppError> {
-  if (booking.status !== 'confirmed') {
-    return err(invalidStateTransition(booking.status, 'reschedule'));
+  const allowed = requireAction(booking, 'complete');
+  if (allowed.isErr()) {
+    return err(allowed.error);
   }
-  return ok({
-    ...booking,
-    start: new Date(slot.start),
-    end: new Date(slot.end),
-    occupiedStart: new Date(slot.occupied.start),
-    occupiedEnd: new Date(slot.occupied.end),
-    resourceIds: slot.resourceIds,
-    sessionKey: bookingSessionKey(slot.sharedSessionKey, booking.reference),
-    sessionCapacity: slot.sessionCapacity,
-    rescheduleCount: booking.rescheduleCount + 1,
-    updatedAt: now,
-  });
+  if (!hasStarted(booking, now)) {
+    return err(bookingConflict(CODES.bookingNotStarted, 'The appointment has not begun.'));
+  }
+  if (hasOpenUnits(booking)) {
+    return err(bookingConflict(CODES.assignmentIncomplete, 'An employee is still to be assigned.'));
+  }
+  return ok(updatedBooking(booking, now, { status: 'completed' }));
+}
+
+/** Records that the customer did not come. Only after the start. */
+export function markNoShow(booking: Booking, now: Instant): AppResult<Booking, ConflictAppError> {
+  const allowed = requireAction(booking, 'mark-no-show');
+  if (allowed.isErr()) {
+    return err(allowed.error);
+  }
+  if (!hasStarted(booking, now)) {
+    return err(bookingConflict(CODES.bookingNotStarted, 'The appointment has not begun.'));
+  }
+  return ok(updatedBooking(booking, now, { status: 'no_show' }));
+}
+
+export interface RescheduleInput {
+  readonly booking: Booking;
+  readonly service: BookableService;
+  /** A slot of the scheduling engine for this service, assessed without this booking blocking it. */
+  readonly slot: PlannedSlot;
+  readonly actor: ChangeActor;
+  readonly now: Instant;
+}
+
+/**
+ * Moves a confirmed booking onto a slot the engine has already approved. Status, service and
+ * location stay: moving to another service or location is a cancellation and a new booking. The
+ * policy is checked here, so a move cannot bypass it. The assignments are those the slot gives:
+ * for a service assigned at booking time the engine's choice, for one assigned later the employee
+ * units become open again, because the old assignee was approved for the old time (proposed rule,
+ * to be confirmed with P11).
+ */
+export function rescheduleBooking(input: RescheduleInput): AppResult<Booking, ConflictAppError> {
+  const { booking, service, slot, actor, now } = input;
+  const allowed = requireAction(booking, 'reschedule');
+  if (allowed.isErr()) {
+    return err(allowed.error);
+  }
+  const permitted = checkRescheduling(service, booking, { actor, now });
+  if (permitted.isErr()) {
+    return err(permitted.error);
+  }
+  if (!slotMatchesService(service, slot)) {
+    return err(bookingConflict(CODES.slotUnavailable, 'The slot does not fit the service.'));
+  }
+  return ok(
+    updatedBooking(booking, now, {
+      start: slot.start,
+      end: slot.end,
+      occupied: slot.occupied,
+      assignments: assignmentsForSlot(service, slot),
+      rescheduleCount: booking.rescheduleCount + (actor === 'customer' ? 1 : 0),
+    }),
+  );
 }

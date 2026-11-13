@@ -1,166 +1,54 @@
-import type { TenantId } from '@modules/auth';
-
-import type { Clock } from '@lib/clock';
-import { createPersistenceFailures, dateToInstant, toJsonValue } from '@lib/db';
-import type { InfrastructureAppError, NotFoundAppError } from '@lib/errors';
-import { combine, fromThrowableAsync, okAsync } from '@lib/result';
+import { createPersistenceFailures } from '@lib/db';
+import type { InfrastructureAppError } from '@lib/errors';
+import { fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import {
-  BOOKING_ERROR_CODES,
-  serviceNotFound,
-  websiteNotFoundForBooking,
-} from '../../domain/errors/booking-errors';
-import { toAvailabilityPlanInput } from '../../domain/models/availability-plan';
-import { toBookableServiceId } from '../../domain/models/ids';
+import { BOOKING_ERROR_CODES as CODES } from '../../domain/errors/booking-errors';
+import { loadResourceTypes } from '../transactions/service-settings-loader';
 
 import { SERVICE_SELECT, toService } from './bookable-service-record-mapper';
-import { servicesOf, createInWebsite } from './tenant-ownership';
+import { SERVICE_LOCATION_SELECT, readSettings } from './service-location-record-mapper';
+import { servicesOf } from './tenant-ownership';
 
-import type { BookableService, BookableServiceDraft } from '../../domain/models/bookable-service';
-import type { BookableServiceId, WebsiteId } from '../../domain/models/ids';
+import type { BookableService } from '../../domain/models/bookable-service';
+import type { BookableServiceId } from '../../domain/models/ids';
 import type { BookableServiceRepository } from '../../domain/ports/bookable-service.repository';
+import type { BookingScope } from '../../domain/ports/booking.repository';
 
 const failures = createPersistenceFailures({
   module: 'booking.persistence',
-  code: BOOKING_ERROR_CODES.persistenceFailed,
+  code: CODES.persistenceFailed,
   subject: 'Bookable service',
 });
 
-function toColumns(draft: BookableServiceDraft) {
-  return {
-    name: draft.name,
-    description: draft.description,
-    category: draft.category,
-    isActive: draft.isActive,
-    durationMinutes: draft.durationMinutes,
-    preparationMinutes: draft.preparationMinutes,
-    cleanupMinutes: draft.cleanupMinutes,
-    slotIntervalMinutes: draft.slotIntervalMinutes,
-    locationIds: toJsonValue(draft.locationIds),
-    requirements: toJsonValue(draft.requirements),
-    participantsPerBooking: draft.capacity.participantsPerBooking,
-    participantsPerSession: draft.capacity.participantsPerSession,
-    noticeMinutes: draft.noticeMinutes,
-    horizonDays: draft.horizonDays,
-    availability:
-      draft.availability === null ? null : toJsonValue(toAvailabilityPlanInput(draft.availability)),
-    cancellation: toJsonValue(draft.cancellation),
-    rescheduling: toJsonValue(draft.rescheduling),
-    information: toJsonValue(draft.information),
-    requiredDocuments: toJsonValue(draft.requiredDocuments),
-    instructions: draft.instructions,
-  };
-}
-
-/** Prisma 8 repository for services; tenant scoping and clocks work as in the location repository. */
+/**
+ * Read-only access to the services of a website as the booking rules read them, with the locations
+ * each one is switched on at. Bound to its tenant and website in every statement.
+ */
 export class PrismaBookableServiceRepository implements BookableServiceRepository {
-  constructor(private readonly clock: Clock) {}
-
   findById(
+    scope: BookingScope,
     id: BookableServiceId,
-    tenantId: TenantId,
   ): AppResultAsync<BookableService | null, InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        servicesOf(tenantId)
-          .select(...SERVICE_SELECT)
-          .where({ id })
-          .first(),
-      failures.infraOnly('findById'),
-    ).andThen((record) => (record === null ? okAsync(null) : toService(record)));
-  }
-
-  findNames(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    ids: readonly BookableServiceId[],
-  ): AppResultAsync<
-    ReadonlyArray<{ readonly id: BookableServiceId; readonly name: string }>,
-    InfrastructureAppError
-  > {
-    if (ids.length === 0) {
-      return okAsync([]);
-    }
-    return fromThrowableAsync(
-      async () =>
-        servicesOf(tenantId)
-          .where({ websiteId })
-          .where((service) => service.id.in([...ids]))
-          .select('id', 'name')
-          .limit(ids.length)
-          .all(),
-      failures.infraOnly('findNames'),
-    ).map((records) =>
-      records.map((record) => ({ id: toBookableServiceId(record.id), name: record.name })),
+    return fromThrowableAsync(async () => {
+      const record = await servicesOf(scope)
+        .where({ id })
+        .select(...SERVICE_SELECT)
+        .include('locations', (rows) => rows.select(...SERVICE_LOCATION_SELECT))
+        .first();
+      if (record === null) {
+        return null;
+      }
+      return { record, types: await loadResourceTypes(scope, record.locations) };
+    }, failures.infraOnly('findById')).andThen((found) =>
+      found === null
+        ? okAsync(null)
+        : readSettings(found.record.locations, found.types).andThen((settings) =>
+            toService(found.record, settings),
+          ),
     );
   }
-
-  listByWebsite(
-    websiteId: WebsiteId,
-    tenantId: TenantId,
-    limit: number,
-  ): AppResultAsync<readonly BookableService[], InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        servicesOf(tenantId)
-          .select(...SERVICE_SELECT)
-          .where({ websiteId })
-          .orderBy([(service) => service.name.asc(), (service) => service.id.asc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('listByWebsite'),
-    ).andThen((records) => combine(records.map((record) => toService(record))));
-  }
-
-  create(input: {
-    readonly tenantId: TenantId;
-    readonly draft: BookableServiceDraft;
-  }): AppResultAsync<BookableService, NotFoundAppError | InfrastructureAppError> {
-    const { tenantId, draft } = input;
-    const now = dateToInstant(this.clock.now());
-
-    return fromThrowableAsync(
-      () =>
-        createInWebsite(tenantId, draft.websiteId, (tx) =>
-          tx.orm.public.BookableService.select(...SERVICE_SELECT).create({
-            tenantId,
-            websiteId: draft.websiteId,
-            ...toColumns(draft),
-            createdAt: now,
-            updatedAt: now,
-          }),
-        ),
-      failures.infraOnly('create'),
-    )
-      .andThen(failures.requireRow(websiteNotFoundForBooking))
-      .andThen(toService);
-  }
-
-  deleteById(
-    id: BookableServiceId,
-    tenantId: TenantId,
-  ): AppResultAsync<void, InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () => servicesOf(tenantId).where({ id }).deleteAndCount(),
-      failures.infraOnly('deleteById'),
-    ).map(() => undefined);
-  }
-
-  update(
-    id: BookableServiceId,
-    tenantId: TenantId,
-    draft: BookableServiceDraft,
-  ): AppResultAsync<BookableService, NotFoundAppError | InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        servicesOf(tenantId)
-          .select(...SERVICE_SELECT)
-          .where({ id })
-          .update({ ...toColumns(draft), updatedAt: dateToInstant(this.clock.now()) }),
-      failures.infraOnly('update'),
-    )
-      .andThen(failures.requireRow(serviceNotFound))
-      .andThen(toService);
-  }
 }
+
+/** The one instance the composition root wires (the adapter holds no state). */
+export const prismaBookableServiceRepository = new PrismaBookableServiceRepository();

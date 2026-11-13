@@ -1,139 +1,88 @@
-import type { AuthorizationError, TenantId } from '@modules/auth';
-
-import type {
-  ConflictAppError,
-  InfrastructureAppError,
-  NotFoundAppError,
-  ValidationAppError,
-} from '@lib/errors';
-import { errAsync, okAsync } from '@lib/result';
+import { errAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import {
-  BOOKING_VALIDATION_CODES,
-  fieldValidationFailed,
-  hasUpcomingBookings,
-} from '../../domain/errors/booking-errors';
-import { createBookableResourceDraft } from '../../domain/models/bookable-resource';
-import { parseWebsiteId } from '../../domain/models/ids';
-import { withOfferedServices } from '../../domain/models/service-skill';
-import { MAX_SERVICES_PER_WEBSITE } from '../booking-limits';
-import { toResourceView } from '../booking-view-mappers';
-import { checkResourceFitsLocation } from '../services/hours-fit-checks';
-import { checkLocationReference } from '../services/reference-checks';
+import { resourceNotFound } from '../../domain/errors/booking-errors';
+import { BOOKING_RATE_LIMITS } from '../rate-limits';
+import { currentInstant } from '../services/clock-instant';
+import { changeCalendar } from '../services/employee-calendar-change';
+import { withinActorLimit } from '../services/limit-actor';
+import { parseEmployeeCalendar } from '../services/parse-employee-calendar';
+import { parseVersion } from '../services/parse-version';
+import { loadOwnEmployee } from '../services/team-access';
+import { toTeamMemberView } from '../services/team-views';
 
-import type { BookableResource } from '../../domain/models/bookable-resource';
-import type { BookingDependencies } from '../booking-dependencies';
-import type { SaveOwnProfileInput } from '../contracts/booking-inputs';
-import type { ResourceView } from '../contracts/setup-views';
+import type { BookingAccessError } from '../../domain/ports/booking-access.port';
+import type { TeamDependencies } from '../booking-dependencies';
+import type { SaveOwnProfileInput } from '../contracts/team-inputs';
+import type { TeamMemberView } from '../contracts/team-views';
+import type { CalendarChangeError } from '../services/employee-calendar-change';
+import type { ActorLimitError } from '../services/limit-actor';
 
-type SaveOwnProfileError =
-  | AuthorizationError
-  | ConflictAppError
-  | ValidationAppError
-  | NotFoundAppError
-  | InfrastructureAppError;
+export type SaveOwnProfileError = BookingAccessError | ActorLimitError | CalendarChangeError;
 
 /**
- * An employee sets up their own place in the booking system: the calendar
- * that is theirs (made the first time, changed after), its working hours, the
- * one location they work at, and which of the services offered there they
- * offer. It needs `booking.profile.own` and touches nothing else: the calendar
- * is found by the person, never by an id from the request, so nobody can
- * change a colleague's. Everything an administrator sets up (the services,
- * the locations) is only chosen from, never changed.
- *
- * Moving to another location is refused while upcoming bookings still hold
- * the calendar: those visitors were promised a person at the place they
- * booked, so the bookings are moved or cancelled first.
+ * An employee changes their own week and absences: never their location or their qualifications,
+ * which managers look after. The calendar is found by the person signed in, never by an id, so
+ * nobody changes a colleague's; one that nobody has set up yet is "not found". The same rules as a
+ * manager's change apply (inside the location's hours, bookings left without them only once seen).
+ * Saving also clears the notice of a manager's change: they have looked at their calendar. Needs
+ * `booking.profile.own`.
  */
 export class SaveOwnProfile {
-  constructor(private readonly deps: BookingDependencies) {}
+  constructor(private readonly deps: TeamDependencies) {}
 
-  execute(input: SaveOwnProfileInput): AppResultAsync<ResourceView, SaveOwnProfileError> {
-    const { authorization, resources, audit } = this.deps;
+  execute(input: SaveOwnProfileInput): AppResultAsync<TeamMemberView, SaveOwnProfileError> {
+    const { access, audit } = this.deps;
+    const now = currentInstant(this.deps.clock);
 
-    return authorization.requireInTenant('booking.profile.own').andThen((actor) => {
-      const parsed = parseWebsiteId(input.websiteId);
-      if (parsed.isErr()) {
-        return errAsync(parsed.error);
-      }
-      const scope = { websiteId: parsed.value, tenantId: actor.tenantId };
-
-      return this.requireOfferable(scope, input)
-        .andThen(() => resources.listAssignedTo(scope, actor.id, 1))
-        .andThen(([existing]) =>
-          this.requireNoUpcomingMove(existing, input.locationId, actor.tenantId).andThen(() =>
-            createBookableResourceDraft({
-              websiteId: scope.websiteId,
-              locationId: input.locationId,
-              name: input.name,
-              type: 'employee',
-              skills: withOfferedServices(existing?.skills ?? [], input.offeredServiceIds),
-              capacity: null,
-              availability: input.availability,
-              isActive: true,
-              assignedActorId: actor.id,
-            })
-              .asyncAndThen((draft) => checkLocationReference(this.deps, scope, draft))
-              .andThen((draft) => checkResourceFitsLocation(this.deps, scope, draft))
-              .andThen((draft) =>
-                existing === undefined
-                  ? resources.create({ tenantId: actor.tenantId, draft })
-                  : resources.update(existing.id, actor.tenantId, draft),
-              )
-              .map((saved) => {
-                const event = {
-                  actorId: actor.id,
-                  tenantId: actor.tenantId,
-                  websiteId: saved.websiteId,
-                  resourceId: saved.id,
-                };
-                if (existing === undefined) {
-                  audit.record({ type: 'booking.resource_created', ...event });
-                } else {
-                  audit.record({ type: 'booking.resource_updated', ...event });
-                }
-                return toResourceView(saved);
+    return access
+      .authorizeWebsite('booking.profile.own', input.websiteId)
+      .andThen(({ actor }) => withinActorLimit(this.deps, BOOKING_RATE_LIMITS.staffActor, actor))
+      .andThen((actor) =>
+        loadOwnEmployee(this.deps, actor).andThen((context) => {
+          if (context === null) {
+            return errAsync(resourceNotFound());
+          }
+          return parseEmployeeCalendar(input)
+            .andThen((next) =>
+              parseVersion('expectedVersion', input.expectedVersion).map((expected) => ({
+                next,
+                expected,
+              })),
+            )
+            .asyncAndThen(({ next, expected }) =>
+              changeCalendar(this.deps, {
+                scope: context.scope,
+                employee: context.employee,
+                next,
+                expected,
+                now,
+                acknowledgeImpact: input.acknowledgeImpact,
+                byManager: false,
+                actorId: actor.id,
               }),
-          ),
-        );
-    });
-  }
-
-  /** Only services that exist and are offered where the employee works can be offered by them. */
-  private requireOfferable(
-    scope: { readonly websiteId: BookableResource['websiteId']; readonly tenantId: TenantId },
-    input: SaveOwnProfileInput,
-  ): AppResultAsync<undefined, ValidationAppError | InfrastructureAppError> {
-    return this.deps.services
-      .listByWebsite(scope.websiteId, scope.tenantId, MAX_SERVICES_PER_WEBSITE)
-      .andThen((stored) => {
-        const offerable = new Set(
-          stored
-            .filter((service) => service.locationIds.some((id) => id === input.locationId))
-            .map((service) => service.id as string),
-        );
-        return input.offeredServiceIds.every((id) => offerable.has(id))
-          ? okAsync(undefined)
-          : errAsync(
-              fieldValidationFailed('offeredServiceIds', BOOKING_VALIDATION_CODES.idInvalid),
-            );
-      });
-  }
-
-  private requireNoUpcomingMove(
-    existing: BookableResource | undefined,
-    locationId: string,
-    tenantId: TenantId,
-  ): AppResultAsync<undefined, ConflictAppError | InfrastructureAppError> {
-    if (existing === undefined || existing.locationId === locationId) {
-      return okAsync(undefined);
-    }
-    return this.deps.bookings
-      .hasUpcoming({ kind: 'resource', id: existing.id }, tenantId, this.deps.clock.now())
-      .andThen((hasUpcoming) =>
-        hasUpcoming ? errAsync(hasUpcomingBookings()) : okAsync(undefined),
+            )
+            .map(({ saved, parts, leftOpen }) => {
+              audit.record({
+                type: 'booking.team_member_updated',
+                actorId: actor.id,
+                tenantId: context.scope.tenantId,
+                websiteId: context.scope.websiteId,
+                resourceId: saved.id,
+                locationId: saved.locationId,
+                memberId: actor.id,
+                parts,
+                leftOpen,
+              });
+              return toTeamMemberView(saved, {
+                websiteId: context.scope.websiteId,
+                location: context.location,
+                name: undefined,
+                knownQualifications: [],
+                places: context.places,
+              });
+            });
+        }),
       );
   }
 }

@@ -1,52 +1,58 @@
-import type { BookableResourceId } from '../models/ids';
-
-/** One unit of one requirement, with the resources that could fill it, best first. */
-export interface ResourceDemand {
-  readonly candidates: readonly BookableResourceId[];
-}
-
 /**
- * Fills every demand with a different resource, or reports that it cannot.
+ * Gives every demand its own resource, or says it cannot be done. A demand is one unit that needs
+ * one resource, named by the ids of the resources that could serve it; a service needing "two
+ * staff and a room" is three demands. Two demands may never get the same resource, so a resource
+ * that could serve two of them is used where it is needed and the other demand looks elsewhere.
  *
- * Two requirements can be satisfied by the same person (an employee with both
- * skills), so choosing greedily per requirement can fail where an assignment
- * exists. This is bipartite matching, solved exactly with augmenting paths:
- * if any assignment exists, this finds one, and the order of `candidates`
- * decides which of several is preferred.
+ * This is maximum bipartite matching by augmenting paths: when a demand finds all its candidates
+ * taken, it asks the holder of one whether the holder can move to another. A greedy pass would
+ * refuse a perfectly good assignment whenever an early demand took the only candidate of a later
+ * one, and trying every combination would grow without bound.
+ *
+ * Deterministic: demands are served in order and candidates tried in the order given, so equal input
+ * gives the same assignment. Callers sort candidates by id.
+ *
+ * @returns the chosen resource id for each demand, in demand order; `null` if some demand cannot
+ * be served.
  */
 export function matchResources(
-  demands: readonly ResourceDemand[],
-): readonly BookableResourceId[] | null {
-  // Most constrained first: it fails fast and leaves the flexible demands for last.
-  const order = demands
-    .map((demand, index) => ({ demand, index }))
-    .sort((a, b) => a.demand.candidates.length - b.demand.candidates.length);
+  demands: ReadonlyArray<readonly string[]>,
+): readonly string[] | null {
+  const holderOf = new Map<string, number>();
+  const chosen: string[] = [];
 
-  const demandOf = new Map<BookableResourceId, number>();
+  function take(demand: number, resourceId: string): true {
+    holderOf.set(resourceId, demand);
+    chosen[demand] = resourceId;
+    return true;
+  }
 
-  function assign(demandIndex: number, visited: Set<BookableResourceId>): boolean {
-    const demand = demands[demandIndex];
-    if (demand === undefined) {
-      return false;
+  function claim(demand: number, visited: Set<string>): boolean {
+    const candidates = demands[demand] ?? [];
+    // A free resource first, so a demand never displaces an earlier one that has no need to move.
+    const free = candidates.find((candidate) => !holderOf.has(candidate));
+    if (free !== undefined) {
+      return take(demand, free);
     }
-    for (const resourceId of demand.candidates) {
-      if (visited.has(resourceId)) {
+    for (const candidate of candidates) {
+      const holder = holderOf.get(candidate);
+      if (visited.has(candidate) || holder === undefined) {
         continue;
       }
-      visited.add(resourceId);
-      const holder = demandOf.get(resourceId);
-      if (holder === undefined || assign(holder, visited)) {
-        demandOf.set(resourceId, demandIndex);
-        return true;
+      visited.add(candidate);
+      if (claim(holder, visited)) {
+        return take(demand, candidate);
       }
     }
     return false;
   }
 
-  for (const { index } of order) {
-    if (!assign(index, new Set())) {
+  for (let demand = 0; demand < demands.length; demand += 1) {
+    if (!claim(demand, new Set())) {
       return null;
     }
   }
-  return [...demandOf.keys()];
+  // A demand served earlier may have moved to another resource while later ones were placed, so
+  // the answer is only complete, and dense, once every demand is placed.
+  return chosen;
 }

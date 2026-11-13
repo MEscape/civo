@@ -1,14 +1,13 @@
 /**
- * A wall-clock time as whole minutes after local midnight (`08:30` is 510).
- * `24:00` (1440) is allowed as the END of a range so a day can run to
- * midnight, and never as a start.
+ * A wall-clock time is whole minutes after local midnight (`08:30` is 510). `24:00` (1440) is
+ * allowed as the END of a range, so a day can run to midnight, and never as a start.
  */
 export const MINUTES_PER_HOUR = 60;
 export const MINUTES_PER_DAY = 1440;
 
 const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
 
-/** Parses `HH:mm`; `null` when it is not a time between 00:00 and 24:00. */
+/** Parses `HH:mm`; `null` unless it is a time from 00:00 to 24:00. */
 export function parseTimeOfDay(text: string): number | null {
   const match = TIME_PATTERN.exec(text);
   if (match === null) {

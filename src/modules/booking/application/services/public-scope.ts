@@ -1,38 +1,29 @@
-import type { TenantId } from '@modules/auth';
-
 import type { InfrastructureAppError, NotFoundAppError, ValidationAppError } from '@lib/errors';
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { websiteNotFoundForBooking } from '../../domain/errors/booking-errors';
+import { websiteNotFound } from '../../domain/errors/booking-errors';
 import { parseWebsiteId } from '../../domain/models/ids';
 
-import type { WebsiteId } from '../../domain/models/ids';
-import type { PublicBookingDependencies } from '../booking-dependencies';
-
-export interface PublicScope {
-  readonly tenantId: TenantId;
-  readonly websiteId: WebsiteId;
-}
+import type { BookingScope } from '../../domain/ports/booking.repository';
+import type { BookingFlowDependencies } from '../booking-dependencies';
 
 export type PublicScopeError = ValidationAppError | NotFoundAppError | InfrastructureAppError;
 
 /**
- * The first step of every public booking use case: the website named in the
- * request, and the tenant that owns it according to the stored record. The
- * tenant is never taken from the request.
+ * The first step of every public booking use case: the website named in the request, and the tenant
+ * that owns it according to the stored record. The tenant is never taken from the request, so a
+ * guessed website id reaches only that website's own, public, data.
  */
 export function resolvePublicScope(
-  deps: Pick<PublicBookingDependencies, 'websites'>,
+  deps: Pick<BookingFlowDependencies, 'websites'>,
   rawWebsiteId: string,
-): AppResultAsync<PublicScope, PublicScopeError> {
+): AppResultAsync<BookingScope, PublicScopeError> {
   return parseWebsiteId(rawWebsiteId).asyncAndThen((websiteId) =>
     deps.websites
       .findTenantOf(websiteId)
-      .andThen((tenantId): AppResultAsync<PublicScope, NotFoundAppError> =>
-        tenantId === null
-          ? errAsync(websiteNotFoundForBooking())
-          : okAsync({ tenantId, websiteId }),
+      .andThen((tenantId): AppResultAsync<BookingScope, NotFoundAppError> =>
+        tenantId === null ? errAsync(websiteNotFound()) : okAsync({ tenantId, websiteId }),
       ),
   );
 }

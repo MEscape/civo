@@ -1,525 +1,481 @@
 import { describe, expect, it } from 'vitest';
 
-import { assessSlot, evaluateSlot } from '@modules/booking/domain/scheduling/slot-assessment';
-import { findAvailableSlots } from '@modules/booking/domain/scheduling/slot-finder';
+import { BOOKING_VALIDATION_CODES as CODES } from '@modules/booking/domain/errors/booking-errors';
+import {
+  SCHEDULING_LIMITS,
+  prepareScheduling,
+} from '@modules/booking/domain/scheduling/prepare-scheduling';
+import { assessSlot, findSlots } from '@modules/booking/domain/scheduling/slot-engine';
+import { asInstant } from '@modules/booking/domain/time/instant';
 
 import {
-  BERLIN,
-  at,
-  indexFor,
-  NOW,
-  makeBooking,
-  makeLocation,
-  makeResource,
-  makeService,
-  plan,
-  hours,
-  range,
+  MONDAY,
+  build,
+  inputOf,
+  need,
+  slotsOf,
   times,
-  weekdays,
-} from '../support/fixtures';
+  worker,
+} from '../support/scheduling-fixtures';
+import { at, between, clock } from '../support/time-fixtures';
 
-const MONDAY = '2027-01-11';
+import type { Setup } from '../support/scheduling-fixtures';
 
-function slotsOf(options: Parameters<typeof indexFor>[0], participants = 1) {
-  return times(findAvailableSlots(indexFor(options), participants));
-}
+const WORKDAY = between(MONDAY, '09:00', '12:00');
 
-describe('an employee serves what they offer', () => {
-  const location = makeLocation({ openingHours: weekdays('09:00', '10:00') });
-
-  it('is bookable for a service they offer', () => {
-    expect(slotsOf({ location, resources: [makeResource('anna')] })).toEqual(['09:00', '09:30']);
-  });
-
-  it('is not bookable for a service they do not offer', () => {
-    const other = makeResource('ben', { skills: [] });
-    const withoutTag = { ...other, skills: [] };
-
-    expect(slotsOf({ location, resources: [withoutTag] })).toEqual([]);
-  });
-
-  it('leaves a room to anyone: only an employee has to offer the service', () => {
-    const service = makeService({
-      requirements: [{ resourceType: 'room', skills: [], count: 1, resourceIds: null }],
-    });
-
-    expect(
-      slotsOf({ location, service, resources: [makeResource('hall', { type: 'room' })] }),
-    ).toEqual(['09:00', '09:30']);
-  });
-});
-
-describe('opening hours and slot grid', () => {
-  it('offers every grid point whose appointment fits inside the opening hours', () => {
-    const slots = slotsOf({ location: makeLocation({ openingHours: weekdays('09:00', '11:00') }) });
-    expect(slots).toEqual(['09:00', '09:30', '10:00', '10:30']);
-  });
-
-  it('offers nothing on a day the location is closed', () => {
-    const index = indexFor({}, range('2027-01-16', '2027-01-17'));
-    expect(findAvailableSlots(index)).toEqual([]);
-  });
-
-  it('never offers a slot that would run past closing time', () => {
+describe('listing slots without resources', () => {
+  it('offers a candidate that fits the opening hours exactly, and none that sticks out', () => {
     const slots = slotsOf({
-      service: makeService({ durationMinutes: 45, slotIntervalMinutes: 15 }),
-      location: makeLocation({ openingHours: weekdays('09:00', '10:00') }),
+      open: [WORKDAY],
+      rules: { durationMinutes: 60, stepMinutes: 30 },
     });
-    expect(slots).toEqual(['09:00', '09:15']);
+
+    expect(times(slots)).toEqual(['09:00', '09:30', '10:00', '10:30', '11:00']);
+    expect(clock(slots[4]?.end ?? at(MONDAY, '00:00'))).toBe('2027-01-11 12:00');
   });
 
-  it('removes breaks from the opening hours', () => {
+  it('refuses a candidate that exceeds the opening hours by a single minute', () => {
     const slots = slotsOf({
-      location: makeLocation({
-        openingHours: weekdays('09:00', '13:00', [{ start: '11:00', end: '12:00' }]),
-      }),
+      open: [between(MONDAY, '09:00', '10:59')],
+      rules: { durationMinutes: 65, stepMinutes: 5 },
     });
-    expect(slots).toEqual(['09:00', '09:30', '10:00', '10:30', '12:00', '12:30']);
+
+    expect(times(slots).at(-1)).toBe('09:50');
+    expect(slots.at(-1)?.end).toBe(at(MONDAY, '10:55'));
   });
 
-  it('applies the service availability on top of the location hours', () => {
+  it('accepts the candidate that ends on the closing minute', () => {
     const slots = slotsOf({
-      service: makeService({ availability: weekdays('10:00', '11:00') }),
+      open: [between(MONDAY, '09:00', '11:00')],
+      rules: { durationMinutes: 65, stepMinutes: 5 },
     });
-    expect(slots).toEqual(['10:00', '10:30']);
+
+    expect(times(slots).at(-1)).toBe('09:55');
   });
 
-  it('rejects an off-grid start', () => {
-    const index = indexFor();
-    expect(assessSlot(index, at(MONDAY, '09:10'), 1)).toEqual({
-      kind: 'rejected',
-      reason: 'off-grid',
-    });
-  });
+  it('spaces starts by the step, whatever the duration', () => {
+    const slots = slotsOf({ open: [WORKDAY], rules: { durationMinutes: 30, stepMinutes: 15 } });
 
-  it('tells a closed location from an unavailable service', () => {
-    const closed = indexFor({}, range('2027-01-16', '2027-01-16'));
-    expect(assessSlot(closed, at('2027-01-16', '10:00'), 1)).toMatchObject({
-      reason: 'location-closed',
-    });
-    const restricted = indexFor({
-      service: makeService({ availability: weekdays('10:00', '11:00') }),
-    });
-    expect(assessSlot(restricted, at(MONDAY, '14:00'), 1)).toMatchObject({
-      reason: 'service-unavailable',
-    });
-  });
-});
-
-describe('holidays, absences and exceptions', () => {
-  it('closes a location on a holiday', () => {
-    const openingHours = plan({ 1: hours('08:00', '12:00') }, [
-      { kind: 'closed', from: MONDAY, to: MONDAY, label: 'Holiday' },
-    ]);
-    const index = indexFor({ location: makeLocation({ openingHours }) });
-    expect(findAvailableSlots(index)).toEqual([]);
-  });
-
-  it('lets an override replace the weekly hours for a date', () => {
-    const openingHours = plan({ 1: hours('08:00', '18:00') }, [
-      { kind: 'override', from: MONDAY, to: MONDAY, day: hours('10:00', '11:00') },
-    ]);
-    expect(slotsOf({ location: makeLocation({ openingHours }) })).toEqual(['10:00', '10:30']);
-  });
-
-  it('lets an additional interval open a normally closed day', () => {
-    const openingHours = plan({}, [
-      { kind: 'additional', from: MONDAY, to: MONDAY, day: hours('09:00', '10:00') },
-    ]);
-    expect(slotsOf({ location: makeLocation({ openingHours }) })).toEqual(['09:00', '09:30']);
-  });
-
-  it('removes a resource that is absent for the day while others still serve', () => {
-    const absent = makeResource('emp-1', {
-      availability: plan({ 1: hours('08:00', '18:00') }, [
-        { kind: 'closed', from: MONDAY, to: MONDAY, label: 'Sick' },
-      ]),
-    });
-    const present = makeResource('emp-2', { availability: weekdays('09:00', '10:00') });
-    expect(slotsOf({ resources: [absent, present] })).toEqual(['09:00', '09:30']);
-    expect(slotsOf({ resources: [absent] })).toEqual([]);
-  });
-
-  it('honours a resource whose own hours are narrower than the location', () => {
-    const resource = makeResource('emp-1', { availability: weekdays('13:00', '14:00') });
-    expect(slotsOf({ resources: [resource] })).toEqual(['13:00', '13:30']);
-  });
-
-  it('never offers time while the location is closed even if the resource has hours', () => {
-    const resource = makeResource('emp-1', { availability: weekdays('06:00', '20:00') });
-    const slots = slotsOf({ resources: [resource] });
-    expect(slots[0]).toBe('08:00');
-    expect(slots.at(-1)).toBe('17:30');
-  });
-});
-
-describe('buffers', () => {
-  const service = makeService({ preparationMinutes: 15, cleanupMinutes: 15 });
-
-  it('needs the resource for preparation and clean-up, not only the appointment', () => {
-    const slots = slotsOf({
-      service,
-      location: makeLocation({ openingHours: weekdays('09:00', '10:00') }),
-    });
-    // 09:00 would need preparation from 08:45; 09:30 would need clean-up until 10:15.
-    expect(slots).toEqual([]);
-  });
-
-  it('allows the first start once the opening time leaves room for preparation', () => {
-    const slots = slotsOf({
-      service,
-      resources: [makeResource('emp-1', { availability: weekdays('08:45', '10:15') })],
-      location: makeLocation({ openingHours: weekdays('08:00', '18:00') }),
-    });
-    expect(slots).toEqual(['09:00', '09:30']);
-  });
-
-  it('keeps a following appointment away from the clean-up of the previous one', () => {
-    const first = makeBooking({ service, start: at(MONDAY, '10:00'), resources: ['emp-1'] });
-    const slots = slotsOf({
-      service: makeService({ ...service, slotIntervalMinutes: 15 }),
-      bookings: [first],
-      location: makeLocation({ openingHours: weekdays('09:00', '12:00') }),
-    });
-    // Previous occupies 09:45-10:45; next occupied span must start at or after 10:45.
-    expect(slots).not.toContain('10:15');
-    expect(slots).not.toContain('10:30');
-    expect(slots).toContain('11:15');
-    expect(slots).not.toContain('09:15');
-  });
-});
-
-describe('existing bookings', () => {
-  it('blocks the booked time for the only resource', () => {
-    const booking = makeBooking({ start: at(MONDAY, '09:00'), resources: ['emp-1'] });
-    const slots = slotsOf({
-      bookings: [booking],
-      location: makeLocation({ openingHours: weekdays('09:00', '11:00') }),
-    });
-    expect(slots).toEqual(['09:30', '10:00', '10:30']);
-  });
-
-  it('does not block when another resource of the pool is free', () => {
-    const booking = makeBooking({ start: at(MONDAY, '09:00'), resources: ['emp-1'] });
-    const slots = slotsOf({
-      bookings: [booking],
-      resources: [makeResource('emp-1'), makeResource('emp-2')],
-      location: makeLocation({ openingHours: weekdays('09:00', '10:00') }),
-    });
-    expect(slots).toEqual(['09:00', '09:30']);
-  });
-
-  it('ignores cancelled, expired and finished bookings', () => {
-    const bookings = (['cancelled', 'expired', 'completed', 'no_show'] as const).map((status) =>
-      makeBooking({ start: at(MONDAY, '09:00'), resources: ['emp-1'], status }),
-    );
-    const slots = slotsOf({
-      bookings,
-      location: makeLocation({ openingHours: weekdays('09:00', '09:30') }),
-    });
-    // Completed and no-show bookings are history, but do still not block: they are in the past.
-    expect(slots).toEqual(['09:00']);
-  });
-
-  it('blocks while a hold is live and releases once it has expired', () => {
-    const live = makeBooking({ start: at(MONDAY, '09:00'), resources: ['emp-1'], status: 'held' });
-    const options = { location: makeLocation({ openingHours: weekdays('09:00', '09:30') }) };
-    expect(slotsOf({ ...options, bookings: [live] })).toEqual([]);
-
-    const expired = makeBooking({
-      start: at(MONDAY, '09:00'),
-      resources: ['emp-1'],
-      status: 'held',
-      holdExpiresAt: new Date(NOW.getTime() - 1000),
-    });
-    expect(slotsOf({ ...options, bookings: [expired] })).toEqual(['09:00']);
-  });
-
-  it('lets a booking being moved not block its own new time', () => {
-    const booking = makeBooking({ id: 'moving', start: at(MONDAY, '09:00'), resources: ['emp-1'] });
-    const input = {
-      bookings: [booking],
-      location: makeLocation({ openingHours: weekdays('09:00', '09:30') }),
-    };
-    expect(findAvailableSlots(indexFor(input))).toEqual([]);
-    expect(times(findAvailableSlots(indexFor({ ...input, ignoreBookingId: booking.id })))).toEqual([
+    expect(times(slots)).toEqual([
       '09:00',
+      '09:15',
+      '09:30',
+      '09:45',
+      '10:00',
+      '10:15',
+      '10:30',
+      '10:45',
+      '11:00',
+      '11:15',
+      '11:30',
+    ]);
+  });
+
+  it('counts the grid from local midnight, not from the opening time', () => {
+    const slots = slotsOf({
+      open: [between(MONDAY, '09:10', '10:00')],
+      rules: { durationMinutes: 15, stepMinutes: 15 },
+    });
+
+    expect(times(slots)).toEqual(['09:15', '09:30', '09:45']);
+  });
+
+  it('is bookable whenever the place is open for a service that needs no resource', () => {
+    const slots = slotsOf({
+      open: [between(MONDAY, '09:00', '10:00'), between(MONDAY, '13:00', '14:00')],
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(times(slots)).toEqual(['09:00', '09:30', '13:00', '13:30']);
+  });
+
+  it('has no slot when nothing is open, or the service is longer than any opening window', () => {
+    expect(slotsOf({ open: [] })).toEqual([]);
+    expect(
+      slotsOf({ open: [between(MONDAY, '09:00', '09:45')], rules: { durationMinutes: 60 } }),
+    ).toEqual([]);
+  });
+
+  it('does not use a window that is split by a minute of closure', () => {
+    const open = [between(MONDAY, '09:00', '09:59'), between(MONDAY, '10:00', '11:00')];
+    const slots = slotsOf({ open, rules: { durationMinutes: 60, stepMinutes: 30 } });
+
+    expect(times(slots)).toEqual(['10:00']);
+  });
+
+  it('uses a window that is made of touching parts as one', () => {
+    const open = [between(MONDAY, '09:00', '10:00'), between(MONDAY, '10:00', '11:00')];
+    const slots = slotsOf({ open, rules: { durationMinutes: 60, stepMinutes: 30 } });
+
+    expect(times(slots)).toEqual(['09:00', '09:30', '10:00']);
+  });
+});
+
+describe('listing slots with resources', () => {
+  it('needs the resource to work through the whole appointment', () => {
+    const slots = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(1, worker('anna', [between(MONDAY, '09:00', '10:30')]))],
+      rules: { durationMinutes: 60, stepMinutes: 30 },
+    });
+
+    expect(times(slots)).toEqual(['09:00', '09:30']);
+  });
+
+  it('needs the resource to work through the preparation and the clean-up too', () => {
+    const slots = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(1, worker('anna', [WORKDAY]))],
+      rules: { durationMinutes: 30, preparationMinutes: 10, cleanupMinutes: 10, stepMinutes: 30 },
+    });
+
+    // 09:00 would need the preparation from 08:50; 11:30 would need clean-up until 12:10.
+    expect(times(slots)).toEqual(['09:30', '10:00', '10:30', '11:00']);
+  });
+
+  it('does not need the buffers to lie inside the opening hours, only the appointment', () => {
+    const slots = slotsOf({
+      open: [between(MONDAY, '09:00', '10:00')],
+      requirements: [need(1, worker('anna', [between(MONDAY, '08:00', '11:00')]))],
+      rules: { durationMinutes: 30, preparationMinutes: 30, cleanupMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(times(slots)).toEqual(['09:00', '09:30']);
+  });
+
+  it('is blocked by an existing booking, but not by one that merely touches', () => {
+    const slots = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(1, worker('anna', [WORKDAY], [between(MONDAY, '10:00', '11:00')]))],
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(times(slots)).toEqual(['09:00', '09:30', '11:00', '11:30']);
+  });
+
+  it('is blocked by the clean-up it would need next to an existing booking', () => {
+    const slots = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(1, worker('anna', [WORKDAY], [between(MONDAY, '10:00', '11:00')]))],
+      rules: { durationMinutes: 30, cleanupMinutes: 15, stepMinutes: 30 },
+    });
+
+    // 09:30 + 30 + 15 reaches 10:15, into the booking; 11:30 + 30 + 15 leaves the working hours.
+    expect(times(slots)).toEqual(['09:00', '11:00']);
+  });
+
+  it('treats unsorted, overlapping and touching bookings as the one block they form', () => {
+    const slots = slotsOf({
+      open: [WORKDAY],
+      requirements: [
+        need(
+          1,
+          worker(
+            'anna',
+            [WORKDAY],
+            [
+              between(MONDAY, '10:30', '11:00'),
+              between(MONDAY, '09:30', '10:30'),
+              between(MONDAY, '10:00', '10:45'),
+            ],
+          ),
+        ),
+      ],
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(times(slots)).toEqual(['09:00', '11:00', '11:30']);
+  });
+
+  it('is empty when the resource has no availability at all', () => {
+    expect(slotsOf({ open: [WORKDAY], requirements: [need(1, worker('anna', []))] })).toEqual([]);
+    expect(slotsOf({ open: [WORKDAY], requirements: [need(1)] })).toEqual([]);
+  });
+
+  it('needs every requirement to be met at once', () => {
+    const slots = slotsOf({
+      open: [WORKDAY],
+      requirements: [
+        need(1, worker('anna', [WORKDAY])),
+        need(1, worker('raum', [WORKDAY], [between(MONDAY, '10:00', '10:30')])),
+      ],
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(times(slots)).toEqual(['09:00', '09:30', '10:30', '11:00', '11:30']);
+  });
+
+  it('needs `count` different resources for one requirement', () => {
+    const anna = worker('anna', [WORKDAY]);
+    const ben = worker('ben', [WORKDAY], [between(MONDAY, '10:00', '10:30')]);
+    const carl = worker('carl', [WORKDAY]);
+
+    const two = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(2, anna, ben)],
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+    const withSpare = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(2, anna, ben, carl)],
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(times(two)).toEqual(['09:00', '09:30', '10:30', '11:00', '11:30']);
+    expect(times(withSpare)).toHaveLength(6);
+    expect(withSpare.find((slot) => clock(slot.start).endsWith('10:00'))?.resourceIds).toEqual([
+      'anna',
+      'carl',
+    ]);
+  });
+
+  it('uses a resource that two requirements could share only once', () => {
+    const anna = worker('anna', [WORKDAY]);
+    const ben = worker('ben', [WORKDAY]);
+
+    expect(slotsOf({ open: [WORKDAY], requirements: [need(1, anna), need(1, anna)] })).toEqual([]);
+
+    const [first] = slotsOf({ open: [WORKDAY], requirements: [need(1, anna), need(1, anna, ben)] });
+    expect(first?.resourceIds).toEqual(['anna', 'ben']);
+  });
+
+  it('counts a resource listed twice in one requirement once', () => {
+    const anna = worker('anna', [WORKDAY]);
+
+    expect(slotsOf({ open: [WORKDAY], requirements: [need(2, anna, anna)] })).toEqual([]);
+    expect(times(slotsOf({ open: [WORKDAY], requirements: [need(1, anna, anna)] }))).toHaveLength(
+      6,
+    );
+  });
+
+  it('finds the assignment even when the first choice of one requirement is needed by another', () => {
+    const anna = worker('anna', [WORKDAY]);
+    const ben = worker('ben', [WORKDAY]);
+    const [first] = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(1, anna, ben), need(1, anna)],
+    });
+
+    expect(first?.resourceIds).toEqual(['anna', 'ben']);
+  });
+
+  it('reports the occupied span, which is wider than the appointment', () => {
+    const [first] = slotsOf({
+      open: [WORKDAY],
+      requirements: [need(1, worker('anna', [WORKDAY]))],
+      rules: { durationMinutes: 30, preparationMinutes: 10, cleanupMinutes: 15, stepMinutes: 30 },
+    });
+
+    expect(first).toBeDefined();
+    expect([
+      clock(first?.start ?? at(MONDAY, '00:00')),
+      clock(first?.end ?? at(MONDAY, '00:00')),
+    ]).toEqual(['2027-01-11 09:30', '2027-01-11 10:00']);
+    expect(clock(first?.occupied.start ?? at(MONDAY, '00:00'))).toBe('2027-01-11 09:20');
+    expect(clock(first?.occupied.end ?? at(MONDAY, '00:00'))).toBe('2027-01-11 10:15');
+  });
+});
+
+describe('determinism and order', () => {
+  const anna = worker('anna', [WORKDAY], [between(MONDAY, '09:00', '09:30')]);
+  const ben = worker('ben', [WORKDAY], [between(MONDAY, '10:00', '10:30')]);
+  const carl = worker('carl', [WORKDAY]);
+
+  it('prefers the resource that sorts first by id, whatever order the caller listed them in', () => {
+    const forward = slotsOf({ open: [WORKDAY], requirements: [need(1, anna, ben, carl)] });
+    const reversed = slotsOf({ open: [WORKDAY], requirements: [need(1, carl, ben, anna)] });
+
+    expect(forward).toEqual(reversed);
+    expect(forward.find((slot) => clock(slot.start).endsWith('10:00'))?.resourceIds).toEqual([
+      'anna',
+    ]);
+    expect(forward[0]?.resourceIds).toEqual(['ben']);
+  });
+
+  it('gives the same list for the same input, however the windows and bookings are ordered', () => {
+    const open = [between(MONDAY, '13:00', '14:00'), WORKDAY];
+    const busy = [between(MONDAY, '13:30', '14:00'), between(MONDAY, '10:00', '10:30')];
+    const a = slotsOf({
+      open,
+      requirements: [need(1, worker('x', open, busy), worker('y', open))],
+    });
+    const b = slotsOf({
+      open: [...open].reverse(),
+      requirements: [
+        need(
+          1,
+          worker('y', [...open].reverse()),
+          worker('x', [...open].reverse(), [...busy].reverse()),
+        ),
+      ],
+    });
+
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+    expect(a.length).toBeGreaterThan(0);
+  });
+
+  it('returns starts earliest first, each once, across several days', () => {
+    const open = ['2027-01-11', '2027-01-12', '2027-01-13'].map((date) =>
+      between(date, '09:00', '10:00'),
+    );
+    const slots = slotsOf({
+      range: ['2027-01-11', '2027-01-13'],
+      open,
+      rules: { durationMinutes: 30, stepMinutes: 30 },
+    });
+
+    expect(slots.map((slot) => clock(slot.start))).toEqual([
+      '2027-01-11 09:00',
+      '2027-01-11 09:30',
+      '2027-01-12 09:00',
+      '2027-01-12 09:30',
+      '2027-01-13 09:00',
+      '2027-01-13 09:30',
+    ]);
+    const starts = slots.map((slot) => slot.start);
+    expect(starts).toEqual([...starts].sort((a, b) => a - b));
+    expect(new Set(starts).size).toBe(starts.length);
+  });
+
+  it('only lists the days of the range, even where the place is open on other days', () => {
+    const open = ['2027-01-11', '2027-01-12'].map((date) => between(date, '09:00', '10:00'));
+    const slots = slotsOf({ range: ['2027-01-12', '2027-01-12'], open });
+
+    expect(slots.map((slot) => clock(slot.start).slice(0, 10))).toEqual([
+      '2027-01-12',
+      '2027-01-12',
     ]);
   });
 });
 
-describe('notice period and booking horizon', () => {
-  it('hides starts earlier than now plus the notice', () => {
+describe('notice and horizon', () => {
+  it('lists nothing before now plus the notice', () => {
     const slots = slotsOf({
-      now: new Date(at(MONDAY, '08:00')),
-      service: makeService({ noticeMinutes: 120 }),
-      location: makeLocation({ openingHours: weekdays('08:00', '12:00') }),
+      open: [WORKDAY],
+      now: { date: MONDAY, time: '08:30' },
+      noticeMinutes: 60,
     });
-    expect(slots).toEqual(['10:00', '10:30', '11:00', '11:30']);
+
+    expect(times(slots)).toEqual(['09:30', '10:00', '10:30', '11:00', '11:30']);
   });
 
-  it('hides days beyond the horizon', () => {
-    const index = indexFor(
-      { service: makeService({ horizonDays: 7 }) },
-      range('2027-01-04', '2027-01-20'),
+  it('lists nothing beyond the last local day of the horizon', () => {
+    const open = ['2027-01-11', '2027-01-12', '2027-01-13'].map((date) =>
+      between(date, '09:00', '09:30'),
     );
-    const days = new Set(
-      findAvailableSlots(index).map((slot) => new Date(slot.start).toISOString().slice(0, 10)),
-    );
-    expect(days.has('2027-01-11')).toBe(true);
-    expect(days.has('2027-01-12')).toBe(false);
-  });
+    const slots = slotsOf({
+      range: ['2027-01-11', '2027-01-13'],
+      open,
+      now: { date: '2027-01-11', time: '12:00' },
+      horizonDays: 1,
+    });
 
-  it('reports the reason for a start outside the window', () => {
-    const index = indexFor({
-      service: makeService({ noticeMinutes: 24 * 60 }),
-      now: new Date(at(MONDAY, '08:00')),
-    });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 1)).toMatchObject({
-      reason: 'outside-booking-window',
-    });
+    expect(slots.map((slot) => clock(slot.start))).toEqual(['2027-01-12 09:00']);
   });
 });
 
-describe('resource pools, skills and requirements', () => {
-  it('requires every skill of a requirement', () => {
-    const service = makeService({
-      requirements: [
-        {
-          resourceType: 'employee',
-          skills: ['passport', 'biometrics'],
-          count: 1,
-          resourceIds: null,
-        },
-      ],
-    });
-    const partly = makeResource('emp-1', { skills: ['passport'] });
-    const fully = makeResource('emp-2', {
-      skills: ['passport', 'biometrics'],
-      availability: weekdays('10:00', '11:00'),
-    });
-    expect(slotsOf({ service, resources: [partly] })).toEqual([]);
-    expect(slotsOf({ service, resources: [partly, fully] })).toEqual(['10:00', '10:30']);
+describe('assessing one start', () => {
+  const scheduling = build({
+    open: [WORKDAY],
+    requirements: [need(1, worker('anna', [WORKDAY], [between(MONDAY, '10:00', '10:30')]))],
+    now: { date: MONDAY, time: '08:30' },
+    noticeMinutes: 45,
+    rules: { durationMinutes: 30, stepMinutes: 30 },
   });
 
-  it('restricts a requirement to the listed resources', () => {
-    const service = makeService({
-      requirements: [
-        {
-          resourceType: 'employee',
-          skills: [],
-          count: 1,
-          resourceIds: [makeResource('emp-2').id],
-        },
-      ],
-    });
-    const options = {
-      service,
-      resources: [
-        makeResource('emp-1'),
-        makeResource('emp-2', { availability: weekdays('12:00', '13:00') }),
-      ],
-    };
-    expect(slotsOf(options)).toEqual(['12:00', '12:30']);
+  function reasonAt(time: string): string {
+    const assessment = assessSlot(scheduling, at(MONDAY, time));
+    return assessment.kind === 'planned' ? 'planned' : assessment.reason;
+  }
+
+  it('names the first rule a start breaks, cheapest and most explicable first', () => {
+    expect(reasonAt('09:10')).toBe('off-grid');
+    expect(reasonAt('09:00')).toBe('outside-start-window');
+    expect(reasonAt('12:30')).toBe('outside-open-hours');
+    expect(reasonAt('10:00')).toBe('resources-unavailable');
+    expect(reasonAt('09:30')).toBe('planned');
   });
 
-  it('needs two different resources for two requirements and finds the assignment greedy choice would miss', () => {
-    const service = makeService({
-      requirements: [
-        { resourceType: 'employee', skills: ['a'], count: 1, resourceIds: null },
-        { resourceType: 'employee', skills: [], count: 1, resourceIds: null },
-      ],
-    });
-    // emp-1 has skill a and could fill either demand; emp-2 can only fill the unskilled one.
-    const resources = [makeResource('emp-1', { skills: ['a'] }), makeResource('emp-2')];
-    const index = indexFor({ service, resources });
-    const result = assessSlot(index, at(MONDAY, '09:00'), 1);
-    expect(result.kind).toBe('planned');
-    if (result.kind === 'planned') {
-      expect(result.slot.resourceIds).toEqual(['emp-1', 'emp-2']);
+  it('refuses an instant that is not on a whole minute of the grid', () => {
+    const slightlyLate = asInstant(at(MONDAY, '09:30') + 1_000);
+    expect(assessSlot(scheduling, slightlyLate)).toEqual({ kind: 'rejected', reason: 'off-grid' });
+  });
+
+  it('agrees with the list for every minute of the day', () => {
+    const listed = new Map(findSlots(scheduling).map((slot) => [slot.start, slot]));
+    const day0 = at(MONDAY, '00:00');
+
+    for (let minute = 0; minute < 24 * 60; minute += 1) {
+      const start = asInstant(day0 + minute * 60_000);
+      const assessment = assessSlot(scheduling, start);
+      expect(assessment.kind === 'planned').toBe(listed.has(start));
+      if (assessment.kind === 'planned') {
+        expect(assessment.slot).toEqual(listed.get(start));
+      }
     }
   });
+});
 
-  it('is unavailable when one required resource is missing', () => {
-    const service = makeService({
-      requirements: [
-        { resourceType: 'employee', skills: [], count: 1, resourceIds: null },
-        { resourceType: 'room', skills: [], count: 1, resourceIds: null },
-      ],
+describe('bounds and invalid input', () => {
+  function errorsOf(setup: Setup) {
+    const result = prepareScheduling(inputOf(setup));
+    return result.isErr() ? result.error.fieldErrors : {};
+  }
+
+  it('refuses a range longer than a scheduling question may cover', () => {
+    expect(errorsOf({ open: [], range: ['2027-01-01', '2027-03-04'] })).toEqual({
+      range: [CODES.dateRangeTooLong],
     });
-    expect(slotsOf({ service, resources: [makeResource('emp-1')] })).toEqual([]);
     expect(
-      slotsOf({
-        service,
-        resources: [makeResource('emp-1'), makeResource('room-1', { type: 'room' })],
-      }).length,
-    ).toBeGreaterThan(0);
+      prepareScheduling(inputOf({ open: [], range: ['2027-01-01', '2027-03-03'] })).isOk(),
+    ).toBe(true);
   });
 
-  it('needs a count of several units from one pool', () => {
-    const service = makeService({
-      requirements: [{ resourceType: 'employee', skills: [], count: 2, resourceIds: null }],
-    });
-    expect(slotsOf({ service, resources: [makeResource('emp-1')] })).toEqual([]);
+  it('refuses too many requirements, a count out of bounds and too many resources', () => {
+    const anna = worker('anna', [WORKDAY]);
     expect(
-      slotsOf({ service, resources: [makeResource('emp-1'), makeResource('emp-2')] }).length,
-    ).toBeGreaterThan(0);
-  });
-
-  it('ignores inactive resources and resources of another location', () => {
-    const resources = [
-      makeResource('emp-1', { isActive: false }),
-      makeResource('emp-2', { locationId: makeLocation({}).id }),
-    ];
-    expect(slotsOf({ resources: [resources[0] as never] })).toEqual([]);
-    expect(slotsOf({ resources: [resources[1] as never] }).length).toBeGreaterThan(0);
-  });
-
-  it('spreads bookings over the pool: the less busy resource is chosen', () => {
-    const busyOne = makeBooking({ start: at(MONDAY, '08:00'), resources: ['emp-1'] });
-    const index = indexFor({
-      bookings: [busyOne],
-      resources: [makeResource('emp-1'), makeResource('emp-2')],
+      errorsOf({
+        open: [],
+        requirements: Array.from({ length: SCHEDULING_LIMITS.maxRequirements + 1 }, () =>
+          need(1, anna),
+        ),
+      }),
+    ).toEqual({ requirements: [CODES.tooMany] });
+    expect(errorsOf({ open: [], requirements: [need(0, anna)] })).toEqual({
+      'requirements.0.count': [CODES.requirementCountInvalid],
     });
-    const result = assessSlot(index, at(MONDAY, '10:00'), 1);
-    expect(result.kind === 'planned' && result.slot.resourceIds).toEqual(['emp-2']);
-  });
-
-  it('chooses deterministically between equally loaded resources', () => {
-    const resources = [makeResource('b'), makeResource('a'), makeResource('c')];
-    const first = assessSlot(indexFor({ resources }), at(MONDAY, '10:00'), 1);
-    const second = assessSlot(
-      indexFor({ resources: [...resources].reverse() }),
-      at(MONDAY, '10:00'),
-      1,
+    expect(errorsOf({ open: [], requirements: [need(1, anna), need(21, anna)] })).toEqual({
+      'requirements.1.count': [CODES.requirementCountInvalid],
+    });
+    expect(errorsOf({ open: [], requirements: [need(1.5, anna)] })).toEqual({
+      'requirements.0.count': [CODES.requirementCountInvalid],
+    });
+    const crowd = Array.from({ length: SCHEDULING_LIMITS.maxResourcesPerRequirement + 1 }, (_, i) =>
+      worker(`r${i}`, [WORKDAY]),
     );
-    expect(first).toEqual(second);
-    expect(first.kind === 'planned' && first.slot.resourceIds).toEqual(['a']);
-  });
-});
-
-describe('capacity', () => {
-  const service = makeService({
-    capacity: { participantsPerBooking: 4, participantsPerSession: 10 },
-    requirements: [{ resourceType: 'room', skills: [], count: 1, resourceIds: null }],
-  });
-  const room = (capacity: number | null) => makeResource('room-1', { type: 'room', capacity });
-
-  it('rejects a group larger than the service allows per booking', () => {
-    const index = indexFor({ service, resources: [room(null)] });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 5)).toMatchObject({
-      reason: 'invalid-participants',
-    });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 0)).toMatchObject({
-      reason: 'invalid-participants',
-    });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 1.5)).toMatchObject({
-      reason: 'invalid-participants',
+    expect(errorsOf({ open: [], requirements: [need(1, ...crowd)] })).toEqual({
+      'requirements.0.resources': [CODES.tooMany],
     });
   });
 
-  it('rejects a group the room cannot hold', () => {
-    const index = indexFor({ service, resources: [room(3)] });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 4)).toMatchObject({
-      reason: 'capacity-exceeded',
-    });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 3).kind).toBe('planned');
-  });
-
-  it('limits a session by the smallest resource capacity', () => {
-    const index = indexFor({ service, resources: [room(6)] });
-    const result = assessSlot(index, at(MONDAY, '10:00'), 2);
-    expect(result.kind === 'planned' && result.slot.sessionCapacity).toBe(6);
-  });
-
-  it('lets several bookings share one session until it is full', () => {
-    const first = makeBooking({
-      service,
-      start: at(MONDAY, '10:00'),
-      resources: ['room-1'],
-      participants: 4,
-    });
-    const second = makeBooking({
-      service,
-      start: at(MONDAY, '10:00'),
-      resources: ['room-1'],
-      participants: 4,
-    });
-    const options = { service, resources: [room(null)] };
-    const open = assessSlot(indexFor({ ...options, bookings: [first] }), at(MONDAY, '10:00'), 4);
-    expect(open.kind === 'planned' && open.slot.joinsExistingSession).toBe(true);
-    expect(open.kind === 'planned' && open.slot.remainingParticipants).toBe(6);
-
-    const full = assessSlot(
-      indexFor({ ...options, bookings: [first, second] }),
-      at(MONDAY, '10:00'),
-      3,
+  it('copes with a month of five-minute slots and a real pool within a second or two', () => {
+    const month = Array.from({ length: 31 }, (_, index) =>
+      between(`2027-01-${String(index + 1).padStart(2, '0')}`, '08:00', '18:00'),
     );
-    expect(full).toMatchObject({ reason: 'capacity-exceeded' });
-    expect(
-      assessSlot(indexFor({ ...options, bookings: [first, second] }), at(MONDAY, '10:00'), 2).kind,
-    ).toBe('planned');
-  });
+    const pool = (prefix: string) =>
+      Array.from({ length: 10 }, (_, index) =>
+        worker(`${prefix}${index}`, month, [between('2027-01-11', '10:00', '10:30')]),
+      );
+    const startedAt = performance.now();
 
-  it('does not let a different start overlap a session that holds the room', () => {
-    const long = makeService({ ...service, durationMinutes: 60 });
-    const first = makeBooking({
-      service: long,
-      start: at(MONDAY, '10:00'),
-      resources: ['room-1'],
-      participants: 2,
+    const slots = slotsOf({
+      range: ['2027-01-01', '2027-01-31'],
+      open: month,
+      requirements: [need(1, ...pool('staff')), need(1, ...pool('room'))],
+      rules: { durationMinutes: 30, preparationMinutes: 5, cleanupMinutes: 5, stepMinutes: 5 },
     });
-    const index = indexFor({ service: long, resources: [room(null)], bookings: [first] });
-    expect(assessSlot(index, at(MONDAY, '10:30'), 1)).toMatchObject({
-      reason: 'resources-unavailable',
-    });
-  });
 
-  it('a service that holds its resources alone never shares a session', () => {
-    const solo = makeService();
-    const booking = makeBooking({ start: at(MONDAY, '10:00'), resources: ['emp-1'] });
-    const index = indexFor({ service: solo, bookings: [booking] });
-    expect(assessSlot(index, at(MONDAY, '10:00'), 1)).toMatchObject({
-      reason: 'resources-unavailable',
-    });
-  });
-});
-
-describe('evaluateSlot', () => {
-  it('maps rejections to stable error codes', () => {
-    const index = indexFor();
-    const code = (start: number, participants = 1) => {
-      const result = evaluateSlot(index, start, participants);
-      return result.isErr() ? result.error.code : 'ok';
-    };
-    expect(code(at(MONDAY, '09:10'))).toBe('booking.slot_unavailable');
-    expect(code(at(MONDAY, '23:00'))).toBe('booking.slot_unavailable');
-    expect(code(at(MONDAY, '09:00'), 0)).toBe('booking.validation_failed');
-    expect(code(at(MONDAY, '09:00'))).toBe('ok');
-  });
-
-  it('reports a taken time as a resource conflict', () => {
-    const booking = makeBooking({ start: at(MONDAY, '09:00'), resources: ['emp-1'] });
-    const result = evaluateSlot(indexFor({ bookings: [booking] }), at(MONDAY, '09:00'), 1);
-    expect(result.isErr() && result.error.code).toBe('booking.resource_unavailable');
-  });
-});
-
-describe('purity', () => {
-  it('returns the same slots for the same input', () => {
-    const options = { resources: [makeResource('a'), makeResource('b')] };
-    expect(findAvailableSlots(indexFor(options))).toEqual(findAvailableSlots(indexFor(options)));
-  });
-
-  it('does not mutate its input', () => {
-    const bookings = [makeBooking({ start: at(MONDAY, '09:00'), resources: ['emp-1'] })];
-    const snapshot = JSON.stringify(bookings);
-    findAvailableSlots(indexFor({ bookings }));
-    expect(JSON.stringify(bookings)).toBe(snapshot);
-  });
-
-  it('reports the zone it formats in', () => {
-    expect(BERLIN).toBe('Europe/Berlin');
+    expect(slots.length).toBeGreaterThan(31 * 100);
+    expect(performance.now() - startedAt).toBeLessThan(5000);
   });
 });

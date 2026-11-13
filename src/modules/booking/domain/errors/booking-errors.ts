@@ -1,10 +1,10 @@
 import {
+  FieldErrorBag,
   conflictError,
   infrastructureError,
   notFoundError,
   rateLimitedError,
   validationError,
-  FieldErrorBag,
 } from '@lib/errors';
 import type {
   ConflictAppError,
@@ -16,269 +16,117 @@ import type {
 import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
- * Stable codes. Presentation maps them to translation keys (i18n.md);
- * nothing here is user-facing prose.
- *
- * "Not found" deliberately covers both a missing record and another
- * tenant's record, and a booking reference with the wrong e-mail address, so
- * a visitor cannot probe which references exist.
+ * Stable codes. Presentation maps them to translation keys (i18n.md); nothing here is
+ * user-facing prose, and callers decide on the code, never on the message.
  */
 export const BOOKING_ERROR_CODES = {
-  serviceNotFound: 'booking.service_not_found',
-  serviceInactive: 'booking.service_inactive',
-  locationNotFound: 'booking.location_not_found',
-  locationUnavailable: 'booking.location_unavailable',
-  resourceNotFound: 'booking.resource_not_found',
-  bookingNotFound: 'booking.not_found',
-  websiteNotFound: 'booking.website_not_found',
-  /** The requested time cannot be booked (closed, taken, off the slot grid). */
-  slotUnavailable: 'booking.slot_unavailable',
-  /** No combination of qualified resources is free for the whole occupied time. */
-  resourceUnavailable: 'booking.resource_unavailable',
-  capacityExceeded: 'booking.capacity_exceeded',
-  /** The slot was free when the visitor looked and was taken before they committed. */
-  bookingConflict: 'booking.conflict',
-  bookingExpired: 'booking.expired',
-  /** The booking changed after the change was prepared: reload and try again. */
-  bookingStale: 'booking.stale',
+  validationFailed: 'booking.validation_failed',
   invalidStateTransition: 'booking.invalid_state_transition',
+  bookingExpired: 'booking.expired',
+  holdNotExpired: 'booking.hold_not_expired',
   bookingNotStarted: 'booking.not_started',
-  outsideBookingWindow: 'booking.outside_booking_window',
+  serviceInactive: 'booking.service_inactive',
+  locationNotOffered: 'booking.location_not_offered',
+  slotUnavailable: 'booking.slot_unavailable',
+  assignmentIncomplete: 'booking.assignment_incomplete',
+  alreadyAssigned: 'booking.already_assigned',
+  notAssigned: 'booking.not_assigned',
+  notEligible: 'booking.not_eligible',
+  unassignNotAllowed: 'booking.unassign_not_allowed',
+  bookingStarted: 'booking.started',
   cancellationNotAllowed: 'booking.cancellation_not_allowed',
   cancellationDeadlinePassed: 'booking.cancellation_deadline_passed',
   reschedulingNotAllowed: 'booking.rescheduling_not_allowed',
   reschedulingDeadlinePassed: 'booking.rescheduling_deadline_passed',
-  tooManyActiveBookings: 'booking.too_many_active_bookings',
-  tooManyActiveHolds: 'booking.too_many_active_holds',
-  /** The same visitor sent too many requests in a short time. */
+  reschedulingLimitReached: 'booking.rescheduling_limit_reached',
+  // Storage: another write got there first, or the stored data is not what the rules expect.
+  resourceTaken: 'booking.resource_taken',
+  capacityExceeded: 'booking.capacity_exceeded',
+  bookingStale: 'booking.stale',
+  referenceTaken: 'booking.reference_taken',
+  bookingNotFound: 'booking.not_found',
+  persistenceFailed: 'booking.persistence_failed',
+  // The setup a booking refers to.
+  websiteNotFound: 'booking.website_not_found',
+  scheduleTooLarge: 'booking.schedule_too_large',
+  serviceNotFound: 'booking.service_not_found',
+  locationNotFound: 'booking.location_not_found',
+  resourceNotFound: 'booking.resource_not_found',
+  // Abuse bounds of the public flow.
+  tooManyHolds: 'booking.too_many_holds',
+  tooManyBookings: 'booking.too_many_bookings',
   rateLimited: 'booking.rate_limited',
   rateLimiterFailed: 'booking.rate_limiter_failed',
-  configurationInvalid: 'booking.configuration_invalid',
-  validationFailed: 'booking.validation_failed',
-  /** Bookings, past or future, still refer to it: it can be switched off but not removed. */
-  hasBookings: 'booking.has_bookings',
-  /** A live booking still holds this person's calendar: it cannot be moved or have its services taken away. */
-  hasUpcomingBookings: 'booking.has_upcoming_bookings',
-  locationNotEmpty: 'booking.location_not_empty',
-  serviceOnlyHere: 'booking.service_only_here',
-  resourceInUse: 'booking.resource_in_use',
-  persistenceFailed: 'booking.persistence_failed',
+  // The caller may not act on this booking in this way.
+  notYourBooking: 'booking.not_your_booking',
+  notClaimable: 'booking.not_claimable',
+  // Changing a location.
+  timeZoneLocked: 'booking.time_zone_locked',
+  locationImpactUnacknowledged: 'booking.location_impact_unacknowledged',
+  locationStale: 'booking.location_stale',
+  // Changing a service.
+  serviceStale: 'booking.service_stale',
+  serviceSharedUnacknowledged: 'booking.service_shared_unacknowledged',
+  serviceImpactUnresolved: 'booking.service_impact_unresolved',
+  serviceAlreadyOffered: 'booking.service_already_offered',
+  // Changing a resource.
+  resourceStale: 'booking.resource_stale',
+  resourceImpactUnacknowledged: 'booking.resource_impact_unacknowledged',
+  // The team (employees' calendars).
+  employeeAlreadySetUp: 'booking.employee_already_set_up',
 } as const;
 
 /** Field-level codes, carried in `fieldErrors`. Also stable, also never prose. */
 export const BOOKING_VALIDATION_CODES = {
-  idInvalid: 'booking.validation.id_invalid',
-  referenceInvalid: 'booking.validation.reference_invalid',
-  nameRequired: 'booking.validation.name_required',
-  textTooLong: 'booking.validation.text_too_long',
-  categoryInvalid: 'booking.validation.category_invalid',
-  timeZoneInvalid: 'booking.validation.time_zone_invalid',
-  dateInvalid: 'booking.validation.date_invalid',
-  holidayInvalid: 'booking.validation.holiday_invalid',
   dateRangeInvalid: 'booking.validation.date_range_invalid',
   dateRangeTooLong: 'booking.validation.date_range_too_long',
-  timeRangeInvalid: 'booking.validation.time_range_invalid',
-  timeRangesOverlap: 'booking.validation.time_ranges_overlap',
-  tooMany: 'booking.validation.too_many',
-  exceptionKindUnknown: 'booking.validation.exception_kind_unknown',
   durationInvalid: 'booking.validation.duration_invalid',
   bufferInvalid: 'booking.validation.buffer_invalid',
   slotIntervalInvalid: 'booking.validation.slot_interval_invalid',
   noticeInvalid: 'booking.validation.notice_invalid',
   horizonInvalid: 'booking.validation.horizon_invalid',
-  capacityInvalid: 'booking.validation.capacity_invalid',
-  participantsInvalid: 'booking.validation.participants_invalid',
-  skillInvalid: 'booking.validation.skill_invalid',
-  resourceTypeUnknown: 'booking.validation.resource_type_unknown',
-  assignmentInvalid: 'booking.validation.assignment_invalid',
-  employeeSelfManaged: 'booking.validation.employee_self_managed',
-  requirementsRequired: 'booking.validation.requirements_required',
   requirementCountInvalid: 'booking.validation.requirement_count_invalid',
-  locationsRequired: 'booking.validation.locations_required',
-  informationFieldUnknown: 'booking.validation.information_field_unknown',
-  emailRequired: 'booking.validation.email_required',
-  emailInvalid: 'booking.validation.email_invalid',
+  tooMany: 'booking.validation.too_many',
   fieldRequired: 'booking.validation.field_required',
-  changePolicyInvalid: 'booking.validation.change_policy_invalid',
-  actorUnknown: 'booking.validation.actor_unknown',
-  statusUnknown: 'booking.validation.status_unknown',
-  serviceNotBookable: 'booking.validation.service_not_bookable',
-  /** A service's, resource's or employee's hours reach beyond the opening hours of its location. */
+  idInvalid: 'booking.validation.id_invalid',
+  referenceInvalid: 'booking.validation.reference_invalid',
+  startInvalid: 'booking.validation.start_invalid',
+  emailInvalid: 'booking.validation.email_invalid',
+  limitInvalid: 'booking.validation.limit_invalid',
+  nameInvalid: 'booking.validation.name_invalid',
+  addressInvalid: 'booking.validation.address_invalid',
+  timeZoneInvalid: 'booking.validation.time_zone_invalid',
+  weekInvalid: 'booking.validation.week_invalid',
+  timeRangeInvalid: 'booking.validation.time_range_invalid',
+  timeRangesOverlap: 'booking.validation.time_ranges_overlap',
+  breakOutsideHours: 'booking.validation.break_outside_hours',
+  exceptionInvalid: 'booking.validation.exception_invalid',
+  exceptionsOverlap: 'booking.validation.exceptions_overlap',
+  coverageOverlap: 'booking.validation.coverage_overlap',
+  categoryInvalid: 'booking.validation.category_invalid',
+  descriptionInvalid: 'booking.validation.description_invalid',
+  documentsInvalid: 'booking.validation.documents_invalid',
+  instructionsInvalid: 'booking.validation.instructions_invalid',
+  noteInvalid: 'booking.validation.note_invalid',
+  actorsRequired: 'booking.validation.actors_required',
+  noticeNotBeforeHorizon: 'booking.validation.notice_not_before_horizon',
+  deadlineInvalid: 'booking.validation.deadline_invalid',
+  resourceInvalid: 'booking.validation.resource_invalid',
+  qualificationInvalid: 'booking.validation.qualification_invalid',
+  adoptModeInvalid: 'booking.validation.adopt_mode_invalid',
+  resourceTypeInvalid: 'booking.validation.resource_type_invalid',
+  capacityInvalid: 'booking.validation.capacity_invalid',
+  locationInvalid: 'booking.validation.location_invalid',
+  serviceInvalid: 'booking.validation.service_invalid',
   hoursOutsideLocation: 'booking.validation.hours_outside_location',
-  /** New opening hours would leave something at the location open when the location is closed. */
-  hoursUsedByOthers: 'booking.validation.hours_used_by_others',
-  /** An employee's hours reach beyond the hours employees may work at their location. */
-  hoursOutsideStaffHours: 'booking.validation.hours_outside_staff_hours',
 } as const;
 
-export type BookingErrorCode = (typeof BOOKING_ERROR_CODES)[keyof typeof BOOKING_ERROR_CODES];
-export type BookingValidationCode =
-  (typeof BOOKING_VALIDATION_CODES)[keyof typeof BOOKING_VALIDATION_CODES];
-export type BookingCode = BookingErrorCode | BookingValidationCode;
-
-const CODES = BOOKING_ERROR_CODES;
-
-export function serviceNotFound(): NotFoundAppError {
-  return notFoundError(CODES.serviceNotFound, 'The service was not found.');
-}
-
-export function locationNotFound(): NotFoundAppError {
-  return notFoundError(CODES.locationNotFound, 'The location was not found.');
-}
-
-export function resourceNotFound(): NotFoundAppError {
-  return notFoundError(CODES.resourceNotFound, 'The resource was not found.');
-}
-
-/** Covers another tenant's booking and a reference given with the wrong e-mail address alike. */
-export function bookingNotFound(): NotFoundAppError {
-  return notFoundError(CODES.bookingNotFound, 'The booking was not found.');
-}
-
-export function websiteNotFoundForBooking(): NotFoundAppError {
-  return notFoundError(CODES.websiteNotFound, 'The website was not found.');
-}
-
-export function hasBookings(): ConflictAppError {
-  return conflictError(CODES.hasBookings, 'Bookings still refer to it.');
-}
-
-export function hasUpcomingBookings(): ConflictAppError {
-  return conflictError(CODES.hasUpcomingBookings, 'Upcoming bookings still hold this calendar.');
-}
-
-export function locationNotEmpty(): ConflictAppError {
-  return conflictError(
-    CODES.locationNotEmpty,
-    'Rooms, equipment or employees are still placed here.',
+function bookingValidationFailed(fieldErrors: Record<string, string[]>): ValidationAppError {
+  return validationError(
+    BOOKING_ERROR_CODES.validationFailed,
+    'The booking input is invalid.',
+    fieldErrors,
   );
-}
-
-export function serviceOnlyHere(): ConflictAppError {
-  return conflictError(CODES.serviceOnlyHere, 'A service is offered nowhere else.');
-}
-
-export function resourceInUse(): ConflictAppError {
-  return conflictError(CODES.resourceInUse, 'A service names this resource.');
-}
-
-export function serviceInactive(): ConflictAppError {
-  return conflictError(CODES.serviceInactive, 'The service cannot be booked at the moment.');
-}
-
-export function locationUnavailable(): ConflictAppError {
-  return conflictError(CODES.locationUnavailable, 'The service is not offered at this location.');
-}
-
-export function slotUnavailable(): ConflictAppError {
-  return conflictError(CODES.slotUnavailable, 'The selected time is not available.');
-}
-
-export function resourceUnavailable(): ConflictAppError {
-  return conflictError(
-    CODES.resourceUnavailable,
-    'No qualified resource is free for the whole appointment.',
-  );
-}
-
-export function capacityExceeded(): ConflictAppError {
-  return conflictError(CODES.capacityExceeded, 'Not enough places are left for this time.');
-}
-
-export function bookingConflict(): ConflictAppError {
-  return conflictError(CODES.bookingConflict, 'The selected time was taken in the meantime.');
-}
-
-export function bookingExpired(): ConflictAppError {
-  return conflictError(CODES.bookingExpired, 'The reservation has expired.');
-}
-
-export function bookingStale(): ConflictAppError {
-  return conflictError(CODES.bookingStale, 'The booking was changed in the meantime.');
-}
-
-export function invalidStateTransition(from: string, event: string): ConflictAppError {
-  return conflictError(
-    CODES.invalidStateTransition,
-    `A ${from} booking cannot be changed by "${event}".`,
-  );
-}
-
-export function bookingNotStarted(): ConflictAppError {
-  return conflictError(CODES.bookingNotStarted, 'The appointment has not started yet.');
-}
-
-export function outsideBookingWindow(): ConflictAppError {
-  return conflictError(
-    CODES.outsideBookingWindow,
-    'The selected time is outside the period in which this service can be booked.',
-  );
-}
-
-export function cancellationNotAllowed(): ConflictAppError {
-  return conflictError(CODES.cancellationNotAllowed, 'This booking cannot be cancelled.');
-}
-
-export function cancellationDeadlinePassed(): ConflictAppError {
-  return conflictError(
-    CODES.cancellationDeadlinePassed,
-    'The deadline for cancelling this booking has passed.',
-  );
-}
-
-export function reschedulingNotAllowed(): ConflictAppError {
-  return conflictError(CODES.reschedulingNotAllowed, 'This booking cannot be rescheduled.');
-}
-
-export function reschedulingDeadlinePassed(): ConflictAppError {
-  return conflictError(
-    CODES.reschedulingDeadlinePassed,
-    'The deadline for rescheduling this booking has passed.',
-  );
-}
-
-export function tooManyActiveBookings(): ConflictAppError {
-  return conflictError(
-    CODES.tooManyActiveBookings,
-    'There are too many open bookings for this contact.',
-  );
-}
-
-export function tooManyActiveHolds(): ConflictAppError {
-  return conflictError(
-    CODES.tooManyActiveHolds,
-    'Too many reservations are in progress. Please try again shortly.',
-  );
-}
-
-export function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
-  return rateLimitedError(
-    CODES.rateLimited,
-    'Too many requests. Please wait a moment and try again.',
-    retryAfterSeconds,
-  );
-}
-
-/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
-export function fromRateLimitFailure(
-  failure: RateLimitFailure,
-): RateLimitedAppError | InfrastructureAppError {
-  return failure.kind === 'rate_limited'
-    ? rateLimited(failure.retryAfterSeconds)
-    : infrastructureError(
-        CODES.rateLimiterFailed,
-        'The request limit could not be checked.',
-        failure.cause,
-      );
-}
-
-/** Stored configuration that cannot be scheduled (for example a service whose resource pool is empty by construction). */
-export function configurationInvalid(): ConflictAppError {
-  return conflictError(CODES.configurationInvalid, 'The booking configuration is incomplete.');
-}
-
-export function bookingValidationFailed(fieldErrors: Record<string, string[]>): ValidationAppError {
-  return validationError(CODES.validationFailed, 'The booking input is invalid.', fieldErrors);
 }
 
 /** One place wires the bag to this module's error factory. */
@@ -289,20 +137,163 @@ export function createBookingErrorBag(): FieldErrorBag {
 /** A validation failure on a single field. */
 export function fieldValidationFailed(
   field: string,
-  code: BookingValidationCode,
+  code: (typeof BOOKING_VALIDATION_CODES)[keyof typeof BOOKING_VALIDATION_CODES],
 ): ValidationAppError {
   return bookingValidationFailed({ [field]: [code] });
 }
 
-/** Copies the field errors of a nested validation (a schedule inside a location) into the caller's bag. */
-export function addFieldErrors(bag: FieldErrorBag, error: ValidationAppError): void {
-  for (const [field, codes] of Object.entries(error.fieldErrors)) {
-    for (const code of codes) {
-      bag.add(field, code);
-    }
-  }
+/** A rule of the booking domain refused the attempt: the code says which. */
+export function bookingConflict(
+  code: (typeof BOOKING_ERROR_CODES)[Exclude<keyof typeof BOOKING_ERROR_CODES, 'validationFailed'>],
+  message: string,
+): ConflictAppError {
+  return conflictError(code, message);
 }
 
-export function persistenceFailed(cause: unknown): InfrastructureAppError {
-  return infrastructureError(CODES.persistenceFailed, 'Booking persistence failed.', cause);
+/** The booking asked for does not exist in this website (another website's booking looks the same). */
+export function bookingNotFound(): NotFoundAppError {
+  return notFoundError(BOOKING_ERROR_CODES.bookingNotFound, 'The booking does not exist.');
+}
+
+/**
+ * Data on its way to or from storage is not in the shape the rules expect: a corrupt row, a JSON
+ * column of an unknown shape, a booking that breaks its own invariants. A bug or damaged data,
+ * never a user's mistake, so it is an infrastructure failure; `what` names the part, never a value.
+ */
+export function bookingDataInvalid(what: string): InfrastructureAppError {
+  return infrastructureError(
+    BOOKING_ERROR_CODES.persistenceFailed,
+    'Booking data is not in the shape the rules expect.',
+    new Error(what),
+  );
+}
+
+/** The setup a booking refers to is not in this website (another website's looks the same). */
+export function serviceNotFound(): NotFoundAppError {
+  return notFoundError(BOOKING_ERROR_CODES.serviceNotFound, 'The service does not exist.');
+}
+
+export function locationNotFound(): NotFoundAppError {
+  return notFoundError(BOOKING_ERROR_CODES.locationNotFound, 'The location does not exist.');
+}
+
+export function resourceNotFound(): NotFoundAppError {
+  return notFoundError(BOOKING_ERROR_CODES.resourceNotFound, 'The resource does not exist.');
+}
+
+/** Too many reservations are waiting for their visitor; try again when some have run out. */
+export function tooManyHolds(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.tooManyHolds,
+    'Too many reservations are open right now.',
+  );
+}
+
+/** This e-mail address already has as many bookings as one address may have. */
+export function tooManyBookings(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.tooManyBookings,
+    'There are too many bookings for this address.',
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimitedError(
+        BOOKING_ERROR_CODES.rateLimited,
+        'Too many requests. Please wait a moment and try again.',
+        failure.retryAfterSeconds,
+      )
+    : infrastructureError(
+        BOOKING_ERROR_CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
+}
+
+/** The website named by a public request does not exist. */
+export function websiteNotFound(): NotFoundAppError {
+  return notFoundError(BOOKING_ERROR_CODES.websiteNotFound, 'The website does not exist.');
+}
+
+/** Too many bookings block the span asked about for one answer: ask for a shorter span. */
+export function scheduleTooLarge(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.scheduleTooLarge,
+    'There are too many bookings in this period to answer; ask for a shorter one.',
+  );
+}
+
+/** The time zone of a location with future bookings cannot change: every booking is a moment on that clock. */
+export function timeZoneLocked(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.timeZoneLocked,
+    'The time zone of a location with upcoming bookings cannot be changed.',
+  );
+}
+
+/** The change would leave bookings outside the opening hours and the manager has not said they stay. */
+export function locationImpactUnacknowledged(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.locationImpactUnacknowledged,
+    'The change affects existing bookings; review them before saving.',
+  );
+}
+
+/** The location was changed by somebody else since it was read. */
+export function locationStale(): ConflictAppError {
+  return conflictError(BOOKING_ERROR_CODES.locationStale, 'The location has changed.');
+}
+
+/** The resource was changed by somebody else since it was read. */
+export function resourceStale(): ConflictAppError {
+  return conflictError(BOOKING_ERROR_CODES.resourceStale, 'The resource has changed.');
+}
+
+/** A change of when a resource can be used, or of its places, leaves bookings without it; nobody has looked at them. */
+export function resourceImpactUnacknowledged(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.resourceImpactUnacknowledged,
+    'The change affects existing bookings; review them before saving.',
+  );
+}
+
+/** The member already has a calendar: one per member (EX-19). */
+export function employeeAlreadySetUp(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.employeeAlreadySetUp,
+    'The member already has a calendar.',
+  );
+}
+
+/** The service was changed by somebody else since it was read. */
+export function serviceStale(): ConflictAppError {
+  return conflictError(BOOKING_ERROR_CODES.serviceStale, 'The service has changed.');
+}
+
+/** The change reaches the same service at other locations and the manager has not said that is meant. */
+export function serviceSharedUnacknowledged(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.serviceSharedUnacknowledged,
+    'The change applies to every location that offers the service.',
+  );
+}
+
+/** Closing the service was to settle its bookings and some have no decision yet. */
+export function serviceImpactUnresolved(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.serviceImpactUnresolved,
+    'Every booking of the service needs a decision before it is closed.',
+  );
+}
+
+/** The service is already switched on at that location. */
+export function serviceAlreadyOffered(): ConflictAppError {
+  return conflictError(
+    BOOKING_ERROR_CODES.serviceAlreadyOffered,
+    'The service is already offered at this location.',
+  );
 }
