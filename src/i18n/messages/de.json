@@ -16,6 +16,7 @@
     "label": "Hauptnavigation"
   },
   "loading": "Wird geladen…",
+  "javascriptRequired": "JavaScript ist deaktiviert. Aktivieren Sie JavaScript, um diese Ansicht zu öffnen.",
   "brand": {
     "byline": "von {company}",
     "poweredBy": "Bereitgestellt mit"
@@ -26,8 +27,23 @@
     "summary": "{first}–{last} von {total}",
     "page": "Seite {page}"
   },
-  "password": {
-    "toggle": "Passwort anzeigen",
-    "capsLock": "Die Feststelltaste ist aktiv."
+  "wizard": {
+    "stepsLabel": "Schritte",
+    "stepProgress": "Schritt {current} von {total}",
+    "stepDone": "abgeschlossen",
+    "cancel": "Abbrechen",
+    "back": "Zurück"
+  },
+  "map": {
+    "loading": "Karte wird geladen …",
+    "unavailable": "Die Karte ist gerade nicht verfügbar.",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "scrollZoom": "Mit Strg + Scrollen zoomen",
+    "scrollZoomMac": "Mit ⌘ + Scrollen zoomen",
+    "touchPan": "Mit zwei Fingern die Karte bewegen"
+  },
+  "autocomplete": {
+    "searching": "Suche läuft …"
   }
 }

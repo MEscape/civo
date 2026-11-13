@@ -3,8 +3,9 @@ import { deAuth as auth } from '@modules/auth';
 import { deBooking as booking } from '@modules/booking';
 import { deBuilder as builder } from '@modules/builder';
 import { deComponentPlatform as componentPlatform } from '@modules/component-platform';
-import { deDataSource as dataSource } from '@modules/data-sources';
+import { deDataSource as dataSources } from '@modules/data-sources';
 import { deMap as map } from '@modules/map';
+import { deMedia as media } from '@modules/media';
 import { deRelease as release } from '@modules/release';
 import { deWebsite as website } from '@modules/website';
 
@@ -25,7 +26,8 @@ const messages = {
   booking: booking.booking,
   builder: builder.builder,
   componentPlatform: componentPlatform.componentPlatform,
-  dataSources: dataSource.dataSources,
+  dataSources: dataSources.dataSources,
+  media: media.media,
   map: map.map,
   release: release.release,
   website: website.website,

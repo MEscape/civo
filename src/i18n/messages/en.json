@@ -16,6 +16,7 @@
     "label": "Main navigation"
   },
   "loading": "Loading…",
+  "javascriptRequired": "JavaScript is disabled. Enable JavaScript to open this view.",
   "brand": {
     "byline": "by {company}",
     "poweredBy": "Provided with"
@@ -26,8 +27,23 @@
     "summary": "{first}–{last} of {total}",
     "page": "Page {page}"
   },
-  "password": {
-    "toggle": "Show password",
-    "capsLock": "Caps Lock is on."
+  "wizard": {
+    "stepsLabel": "Steps",
+    "stepProgress": "Step {current} of {total}",
+    "stepDone": "completed",
+    "cancel": "Cancel",
+    "back": "Back"
+  },
+  "map": {
+    "loading": "Loading the map …",
+    "unavailable": "The map is not available right now.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "scrollZoom": "Use Ctrl + scroll to zoom the map",
+    "scrollZoomMac": "Use ⌘ + scroll to zoom the map",
+    "touchPan": "Use two fingers to move the map"
+  },
+  "autocomplete": {
+    "searching": "Searching …"
   }
 }

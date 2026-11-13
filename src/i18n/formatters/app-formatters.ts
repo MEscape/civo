@@ -1,9 +1,16 @@
-import { formatDate, formatDateTime, formatRelativeTime, type DateInput } from '@lib/utils/date';
+import {
+  formatCalendarDate,
+  formatDate,
+  formatDateTime,
+  formatRelativeTime,
+  type DateInput,
+} from '@lib/utils/date';
 import { formatNumber, formatPercent, formatMoney, formatBytes } from '@lib/utils/number';
 
 import { I18N_CONFIG, type Locale } from '../config';
 
 export interface AppFormatters {
+  readonly calendarDate: (input: string, options?: Intl.DateTimeFormatOptions) => string;
   readonly date: (input: DateInput, options?: Intl.DateTimeFormatOptions) => string;
   readonly dateTime: (input: DateInput) => string;
   readonly relativeTime: (input: DateInput, now: DateInput) => string;
@@ -24,6 +31,7 @@ export function createAppFormatters(
   timeZone: string = I18N_CONFIG.defaultTimeZone,
 ): AppFormatters {
   return {
+    calendarDate: (input, options) => formatCalendarDate(input, locale, options),
     date: (input: DateInput, options?: Intl.DateTimeFormatOptions) =>
       formatDate(input, locale, timeZone, options),
     dateTime: (input: DateInput) => formatDateTime(input, locale, timeZone),

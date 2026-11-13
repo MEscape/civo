@@ -4,12 +4,20 @@ import { renderHook } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
-import { createAppFormatters } from '../../../src/i18n/formatters';
-import { useAppFormatters } from '../../../src/i18n/formatters/client';
+import { createAppFormatters } from '../../../../src/i18n/formatters';
+import { useAppFormatters } from '../../../../src/i18n/formatters/client';
 
 const SAMPLE_DATE = new Date('2026-03-05T12:00:00Z');
 
 describe('createAppFormatters', () => {
+  it('preserves a source calendar date across time zones and rejects invalid dates', () => {
+    const west = createAppFormatters('en', 'America/Los_Angeles');
+    const east = createAppFormatters('en', 'Pacific/Auckland');
+    expect(west.calendarDate('2026-11-04')).toBe(east.calendarDate('2026-11-04'));
+    expect(west.calendarDate('2024-02-29')).toContain('29');
+    expect(() => west.calendarDate('2026-02-30')).toThrow(RangeError);
+    expect(() => west.calendarDate('2026-11-04T00:00:00Z')).toThrow(RangeError);
+  });
   it('formats numbers and dates in the locale it is bound to', () => {
     const en = createAppFormatters('en');
     const de = createAppFormatters('de');

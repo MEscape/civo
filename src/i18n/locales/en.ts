@@ -3,8 +3,9 @@ import { enAuth as auth } from '@modules/auth';
 import { enBooking as booking } from '@modules/booking';
 import { enBuilder as builder } from '@modules/builder';
 import { enComponentPlatform as componentPlatform } from '@modules/component-platform';
-import { enDataSource as dataSource } from '@modules/data-sources';
+import { enDataSource as dataSources } from '@modules/data-sources';
 import { enMap as map } from '@modules/map';
+import { enMedia as media } from '@modules/media';
 import { enRelease as release } from '@modules/release';
 import { enWebsite as website } from '@modules/website';
 
@@ -23,7 +24,8 @@ const messages = {
   booking: booking.booking,
   builder: builder.builder,
   componentPlatform: componentPlatform.componentPlatform,
-  dataSources: dataSource.dataSources,
+  dataSources: dataSources.dataSources,
+  media: media.media,
   map: map.map,
   release: release.release,
   website: website.website,
