@@ -30,7 +30,7 @@ export const auditAdapter = defineRule({
     const isAdapter =
       file.area === 'module' &&
       file.layer === 'infrastructure' &&
-      (file.dir === 'audit' || file.dir === 'logging') &&
+      file.dir === 'audit' &&
       file.rest.length === 2;
     if (!isAdapter) return {};
     let levelMapName = null;

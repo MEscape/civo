@@ -18,15 +18,15 @@ export default function Page() { return null; }`,
     ),
     // internal pages are intentionally not indexed, and say so
     valid(
-      'src/app/[locale]/(app)/websites/page.tsx',
-      `export const metadata = { title: 'Websites', robots: { index: false, follow: false } };
+      'src/app/[locale]/(protected)/dashboard/page.tsx',
+      `export const metadata = { title: 'Dashboard', robots: { index: false, follow: false } };
 export default function Page() { return null; }`,
     ),
     // the other @lib/seo builders decide indexability too
     valid(
-      'src/app/[locale]/(app)/websites/page.tsx',
+      'src/app/[locale]/(protected)/dashboard/page.tsx',
       `import { buildPrivateMetadata } from '@lib/seo';
-export async function generateMetadata() { return buildPrivateMetadata('Websites'); }
+export async function generateMetadata() { return buildPrivateMetadata('Dashboard'); }
 export default function Page() { return null; }`,
     ),
     valid(
@@ -101,6 +101,76 @@ ruleTester.run('architecture/heading-hierarchy', rules['heading-hierarchy']!, {
       'src/x.tsx',
       'export const A = () => <><h1>a</h1><h1>b</h1></>;',
       /A page has one <h1>/,
+    ),
+  ],
+});
+
+ruleTester.run('architecture/no-page-query-orchestration', rules['no-page-query-orchestration']!, {
+  valid: [
+    valid(
+      'src/app/[locale]/websites/audit/page.tsx',
+      'export default function Page() { return <AuditAdministration />; }',
+    ),
+    valid(
+      'src/app/[locale]/websites/page.tsx',
+      'export default async function Page() { const res = await queries.list.execute(); return <div>{res}</div>; }',
+    ),
+    valid(
+      'src/modules/audit/presentation/loaders/load-audit.ts',
+      'export async function load(q) { await q.a.execute(); await q.b.execute(); }',
+    ),
+  ],
+  invalid: [
+    invalid(
+      'src/app/[locale]/audit/page.tsx',
+      'export default async function Page(q) { const a = await q.a.execute(); const b = await q.b.execute(); return <div />; }',
+      /Route page 'src\/app\/\[locale\]\/audit\/page\.tsx' must not orchestrate multi-step queries \(2 calls to \.execute\)/,
+      /Route page 'src\/app\/\[locale\]\/audit\/page\.tsx' must not orchestrate multi-step queries \(2 calls to \.execute\)/,
+    ),
+  ],
+});
+
+const PROTECTED = 'src/app/[locale]/(protected)/websites/[websiteId]/media/page.tsx';
+
+ruleTester.run('architecture/page-structure', rules['page-structure']!, {
+  valid: [
+    valid(
+      PROTECTED,
+      `import { Suspense } from 'react';
+async function MediaContent({ params }) { const { websiteId } = await params; return <MediaAdministration websiteId={websiteId} />; }
+export default function MediaPage(props) { return (<Suspense fallback={<MediaPageSkeleton />}><MediaContent {...props} /></Suspense>); }`,
+    ),
+    // public pages and layouts are not held to it
+    valid(
+      'src/app/[locale]/(public)/s/[siteSlug]/page.tsx',
+      'export default function Page() { return <main />; }',
+    ),
+  ],
+  invalid: [
+    invalid(
+      PROTECTED,
+      'export default function Page() { return <MediaAdministration />; }',
+      /returns <Suspense fallback/,
+    ),
+    invalid(
+      PROTECTED,
+      `import { Suspense } from 'react';
+export default function Page(props) { return <Suspense><MediaContent {...props} /></Suspense>; }
+async function MediaContent() { return null; }`,
+      /needs a `fallback`/,
+    ),
+    invalid(
+      PROTECTED,
+      `import { Suspense } from 'react';
+export default function Page(props) { return <Suspense fallback={<S />}><Media {...props} /></Suspense>; }`,
+      /local `async function …Content/,
+    ),
+    invalid(
+      PROTECTED,
+      `import { Suspense } from 'react';
+async function MediaContent() { const a = 1; const b = 2; const c = 3; const d = 4; const e = 5; const f = 6; const g = 7; const h = 8; const i = 9; return null; }
+export default function Page(props) { return <Suspense fallback={<S />}><MediaContent {...props} /></Suspense>; }`,
+      /has 10 statements/,
     ),
   ],
 });

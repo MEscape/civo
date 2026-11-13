@@ -14,6 +14,9 @@ export const base = [
     '**/coverage/**',
     '**/.turbo/**',
     '**/.vercel/**',
+    // Tool folders of coding assistants: their skills ship their own scripts, not this project's code.
+    '.agents/**',
+    '.claude/**',
     '**/next-env.d.ts',
     '**/*.min.js',
     '**/generated/**',

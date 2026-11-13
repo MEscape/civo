@@ -30,7 +30,7 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
     ),
     valid(INFRA_REPO, "import { toTenantId } from '@modules/auth';"),
     // presentation: another module's browser-safe API, or its types
-    valid(COMPONENT, "import { builderRoutes } from '@modules/builder/client';"),
+    valid(COMPONENT, "import { lessonRoutes } from '@modules/lessons/client';"),
     valid(COMPONENT, "import type { MapSectionProps } from '@modules/map';"),
     // the shared Clock port, as a type
     valid(APP, "import type { Clock } from '@lib/clock';"),
@@ -38,7 +38,7 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
     // the shared rate-limiter port and its policy type, as types
     valid(APP, "import type { RateLimiter, RateLimitPolicy } from '@lib/rate-limit';"),
     valid(DOMAIN, "import type { RateLimitFailure } from '@lib/rate-limit';"),
-    valid(INFRA_ADAPTER, "import { createSystemPage } from '@modules/builder';"),
+    valid(INFRA_ADAPTER, "import { createLesson } from '@modules/lessons';"),
     // presentation: contracts, composition from actions, shared UI, wrappers
     valid(
       ACTION,
@@ -57,10 +57,6 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
       'src/modules/shop/index.ts',
       "export { shopQueries } from './composition';\nexport { OrderForm } from './presentation/components/order-form';\nexport type { OrderView } from './application/contracts/order-views';",
     ),
-    valid(
-      'src/modules/auth/index.ts',
-      "export { getAuthCommands } from './composition';\nexport { toTenantId } from './domain/models/ids';\nexport { actorHasPermission } from './domain/models/permission';",
-    ),
     // Server Components read through composition; a Client Component cannot (see the invalid cases)
     valid(COMPONENT, "import { shopQueries } from '../../composition';"),
     valid(
@@ -72,7 +68,7 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
       'src/app/page.tsx',
       "import { shopQueries } from '@modules/shop';\nimport { Button } from '@components/ui/button';",
     ),
-    valid('src/i18n/locales/en.ts', "import { enBuilder } from '@modules/builder';"),
+    valid('src/i18n/locales/en.ts', "import { enLessons } from '@modules/lessons';"),
     valid('src/components/ui/button.tsx', "import { cn } from '@lib/utils';"),
     // a client component importing only client-safe things
     valid(
@@ -236,12 +232,12 @@ ruleTester.run('architecture/layer-imports', rules['layer-imports']!, {
     ),
     invalid(
       'src/lib/seo/x.ts',
-      "import { websiteRoutes } from '@modules/website';",
+      "import { mediaRoutes } from '@modules/media';",
       /Shared code \(lib\/\) must not depend on business modules/,
     ),
     invalid(
       'src/components/ui/x.tsx',
-      "import { websiteRoutes } from '@modules/website';",
+      "import { mediaRoutes } from '@modules/media';",
       /Shared code \(components\/\)/,
     ),
     invalid(
@@ -311,8 +307,8 @@ ruleTester.run(
       ),
       invalid(
         'src/i18n/locales/en.ts',
-        "import x from '@modules/builder/presentation/i18n/en.json';",
-        /Deep import into module 'builder'/,
+        "import x from '@modules/lessons/presentation/i18n/en.json';",
+        /Deep import into module 'lessons'/,
       ),
     ],
   },
@@ -470,6 +466,35 @@ ruleTester.run('architecture/directive-placement', rules['directive-placement']!
       'src/modules/shops/application/commands/create-shop.ts',
       "'use client';\nexport class CreateShop {}",
       /never runs in the browser/,
+    ),
+  ],
+});
+
+ruleTester.run('architecture/no-app-lib-composition', rules['no-app-lib-composition']!, {
+  valid: [
+    valid(
+      'src/app/_lib/seo.ts',
+      'export function buildPrivateMetadata() { return { robots: { index: false } }; }',
+    ),
+    valid(
+      'src/app/_lib/or-fail.ts',
+      'export async function orFail<T>(promise: Promise<T>): Promise<T> { return promise; }',
+    ),
+    valid(
+      'src/modules/audit/composition.ts',
+      "import { getAuthQueries } from '@modules/auth';\nexport const auditQueries = {};",
+    ),
+  ],
+  invalid: [
+    invalid(
+      'src/app/_lib/audit-queries.ts',
+      "import { auditQueries } from '@/modules/audit/composition';",
+      /src\/app\/_lib must not import module composition roots/,
+    ),
+    invalid(
+      'src/app/_lib/user-queries.ts',
+      'export const userQueries = { listUsers: {} };',
+      /src\/app\/_lib must not act as a composition root exporting query\/command suites/,
     ),
   ],
 });

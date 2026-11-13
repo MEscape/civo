@@ -3,8 +3,12 @@
  * Capabilities are inferred from what a module actually contains, so a
  * module is never asked to create files for a capability it does not have.
  */
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { MANIFEST_FILE, MANIFEST_KEYS, MIN_REASON_LENGTH } from './manifest.mjs';
 import { kebabToPascal } from './paths.mjs';
-import { policyFor } from './policy.mjs';
+import { ROLES, policyFor } from './policy.mjs';
 import { exportedNames, topLevelClasses, violation } from './project.mjs';
 
 const hasFile = (files, local) => files.some((f) => f.local === local);
@@ -15,8 +19,7 @@ export function checkModuleStructure(project) {
   const out = [];
   for (const name of project.modules) {
     const files = project.moduleFiles(name);
-    const policy = policyFor(name);
-    if (policy.legacy !== null) continue;
+    const policy = policyFor(name, project.root);
     const at = `src/modules/${name}`;
 
     if (!hasFile(files, 'index.ts'))
@@ -96,9 +99,9 @@ export function checkModuleStructure(project) {
     );
     for (const port of auditPorts) {
       const base = port.local.replace(/^domain\/ports\//, '').replace(/-audit-log\.port\.ts$/, '');
-      const adapter = ['audit', 'logging']
-        .map((d) => `infrastructure/${d}/logger-${base}-audit-log.ts`)
-        .find((p) => hasFile(files, p));
+      const adapter = [`infrastructure/audit/logger-${base}-audit-log.ts`].find((p) =>
+        hasFile(files, p),
+      );
       if (!adapter)
         out.push(
           violation(
@@ -119,10 +122,7 @@ export function checkModuleStructure(project) {
         );
       }
     }
-    for (const adapter of [
-      ...under(files, 'infrastructure/audit/'),
-      ...under(files, 'infrastructure/logging/'),
-    ]) {
+    for (const adapter of [...under(files, 'infrastructure/audit/')]) {
       const base = adapter.local
         .split('/')
         .pop()
@@ -283,4 +283,121 @@ export function portImplementations(project, name) {
     }
   }
   return found;
+}
+
+/**
+ * Validates module manifests (src/modules/<name>/module.json) against policy and the actual files.
+ */
+export function checkModuleManifests(project) {
+  const out = [];
+  const modulesDir = join(project.root, 'src', 'modules');
+  const allModules = existsSync(modulesDir)
+    ? [
+        ...new Set([
+          ...readdirSync(modulesDir, { withFileTypes: true })
+            .filter((d) => d.isDirectory())
+            .map((d) => d.name),
+          ...project.modules,
+        ]),
+      ].sort()
+    : project.modules;
+
+  for (const name of allModules) {
+    const relPath = `src/modules/${name}/${MANIFEST_FILE}`;
+    const absPath = join(project.root, relPath);
+    if (!existsSync(absPath)) continue;
+
+    let manifest;
+    try {
+      manifest = JSON.parse(readFileSync(absPath, 'utf8'));
+    } catch {
+      out.push(violation('module-manifest', relPath, 'Manifest is not valid JSON.'));
+      continue;
+    }
+
+    if (typeof manifest !== 'object' || manifest === null || Array.isArray(manifest)) {
+      out.push(violation('module-manifest', relPath, 'Manifest must be an object.'));
+      continue;
+    }
+
+    for (const key of Object.keys(manifest)) {
+      if (!MANIFEST_KEYS.includes(key)) {
+        out.push(
+          violation(
+            'module-manifest',
+            relPath,
+            `Unknown manifest key '${key}'. Allowed: ${MANIFEST_KEYS.join(', ')}.`,
+          ),
+        );
+      }
+    }
+
+    if (typeof manifest.reason !== 'string' || manifest.reason.trim().length < MIN_REASON_LENGTH) {
+      out.push(
+        violation(
+          'module-manifest',
+          relPath,
+          `Manifest must declare a 'reason' of at least ${MIN_REASON_LENGTH} characters explaining why '${name}' differs from a standard module.`,
+        ),
+      );
+    }
+
+    if (manifest.role !== undefined && !(manifest.role in ROLES)) {
+      out.push(
+        violation(
+          'module-manifest',
+          relPath,
+          `Unknown module role '${manifest.role}'. Allowed roles: ${Object.keys(ROLES).join(', ')}.`,
+        ),
+      );
+    }
+
+    if (manifest.runtimeExports !== undefined) {
+      if (!Array.isArray(manifest.runtimeExports)) {
+        out.push(violation('module-manifest', relPath, `'runtimeExports' must be an array.`));
+      } else {
+        const indexFile = project.files.get(`src/modules/${name}/index.ts`);
+        const names = indexFile ? new Set(exportedNames(indexFile)) : new Set();
+        for (const exp of manifest.runtimeExports) {
+          if (!names.has(exp)) {
+            out.push(
+              violation(
+                'module-manifest',
+                relPath,
+                `Runtime export '${exp}' declared in manifest is not exported by '${name}/index.ts'.`,
+              ),
+            );
+          }
+        }
+      }
+    }
+
+    if (manifest.extraRootFiles !== undefined) {
+      if (
+        typeof manifest.extraRootFiles !== 'object' ||
+        manifest.extraRootFiles === null ||
+        Array.isArray(manifest.extraRootFiles)
+      ) {
+        out.push(violation('module-manifest', relPath, `'extraRootFiles' must be an object.`));
+      } else {
+        for (const [layer, files] of Object.entries(manifest.extraRootFiles)) {
+          if (Array.isArray(files)) {
+            for (const file of files) {
+              const expectedPath = `src/modules/${name}/${layer}/${file}`;
+              if (!project.files.has(expectedPath)) {
+                out.push(
+                  violation(
+                    'module-manifest',
+                    relPath,
+                    `Extra root file '${file}' in layer '${layer}' declared in manifest does not exist at '${expectedPath}'.`,
+                  ),
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return out;
 }

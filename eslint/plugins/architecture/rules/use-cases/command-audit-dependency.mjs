@@ -64,7 +64,7 @@ export const commandAuditDependency = defineRule({
             report(
               context,
               node,
-              "Record a typed audit event: pass an object literal with a literal `type` (e.g. `audit.record({ type: 'website.created', ... })`) so the event union stays exhaustive.",
+              "Record a typed audit event: pass an object literal with a literal `type` (e.g. `audit.record({ type: 'session.started', ... })`) so the event union stays exhaustive.",
             );
           }
         },

@@ -33,7 +33,6 @@ ruleTester.run('architecture/module-structure', rules['module-structure']!, {
       'infrastructure/prisma/shop-record-mapper.ts',
       'infrastructure/prisma/tenant-ownership.ts',
       'infrastructure/audit/logger-shop-audit-log.ts',
-      'infrastructure/logging/logger-shop-audit-log.ts',
       'infrastructure/provisioner/stock-provisioner.ts',
       'presentation/routes.ts',
       'presentation/actions/create-shop-action.ts',
@@ -53,8 +52,6 @@ ruleTester.run('architecture/module-structure', rules['module-structure']!, {
       'presentation/hooks/use-shop-selection.ts',
       'presentation/theme/theme-to-css.ts',
     ].map((p) => ok(`src/modules/shop/${p}`)),
-    // documented exceptions live in eslint/policy/policy.mjs and are scoped to the module that earned them
-    ok('src/modules/auth/application/authorization-service.ts'),
     // not module code
     ok('src/lib/utils/x.ts'),
   ],
@@ -90,7 +87,7 @@ ruleTester.run('architecture/module-structure', rules['module-structure']!, {
       'src/modules/shop/application/enforce-rate-limit.ts',
       /cannot sit directly in application\/\. Allowed here:/,
     ),
-    // the auth exception is exactly one file in one module, not a pattern any module can use
+    // a module without a manifest exception gets no extra root files
     bad(
       'src/modules/shop/application/authorization-service.ts',
       /cannot sit directly in application\//,

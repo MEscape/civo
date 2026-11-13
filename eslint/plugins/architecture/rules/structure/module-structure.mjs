@@ -34,8 +34,7 @@ export const moduleStructure = defineRule({
   create(context) {
     const { file } = classifyContext(context);
     if (file.area !== 'module') return {};
-    const policy = policyFor(file.module);
-    if (policy.legacy !== null) return {};
+    const policy = policyFor(file.module, context.cwd);
     const below = file.path.split('/').slice(3);
 
     return {

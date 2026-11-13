@@ -1,7 +1,5 @@
-import { LEGACY_MODULES } from '../policy/policy.mjs';
-
 import { CONFIG_FILES, FRAMEWORK_FILES, TEST_FILES } from './globs.mjs';
-import { EVERYWHERE, FOCUSED_TESTS, LOCALE_FORMATTING, UI_PRIMITIVES } from './selectors.mjs';
+import { FOCUSED_TESTS } from './selectors.mjs';
 
 /** Narrow, documented relaxations for tests, framework entry points and config/tooling files. */
 export const overrides = [
@@ -77,32 +75,4 @@ export const overrides = [
       },
     },
   },
-
-  // Editor chrome: the builder's canvas handles, palette entries, breadcrumbs and toolbar controls are gesture surfaces
-  // (pointer and keyboard drag-and-drop) with their own focus rings and hit areas. `Button` would change how the editor
-  // looks and behaves, so a raw <button> is allowed HERE and nowhere else. `<select>` and `<a>` stay restricted.
-  {
-    name: 'editor-chrome/raw-button',
-    files: [
-      'src/modules/builder/presentation/components/{canvas,palette,properties,toolbar}/**/*.tsx',
-    ],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        ...EVERYWHERE,
-        ...UI_PRIMITIVES.filter((entry) => !entry.selector.includes("'button'")),
-        ...LOCALE_FORMATTING,
-      ],
-    },
-  },
-
-  // Modules listed in LEGACY_MODULES (policy/policy.mjs) switch off the rules they name, with the reason
-  // kept next to the list. This is the only place a module-specific relaxation exists.
-  ...Object.entries(LEGACY_MODULES)
-    .filter(([, legacy]) => (legacy.relax ?? []).length > 0)
-    .map(([name, legacy]) => ({
-      name: `legacy-module/${name}`,
-      files: [`src/modules/${name}/**/*.{ts,tsx}`],
-      rules: Object.fromEntries((legacy.relax ?? []).map((rule) => [rule, 'off'])),
-    })),
 ];

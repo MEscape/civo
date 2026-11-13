@@ -17,6 +17,7 @@ export const architectureRules = [
     rules: {
       // boundaries
       'architecture/layer-imports': 'error',
+      'architecture/no-app-lib-composition': 'error',
       'architecture/no-cross-module-deep-imports': 'error',
       'architecture/no-i18n-in-core': 'error',
       'architecture/field-error-bag-owner': 'error',
@@ -26,18 +27,24 @@ export const architectureRules = [
       'architecture/module-public-api': 'error',
       // core layers
       'architecture/no-throw-in-core-layers': 'error',
+      'architecture/application-flow': 'error',
+      'architecture/use-case-helpers': 'error',
       'architecture/command-query-shape': 'error',
       'architecture/command-audit-dependency': 'error',
       'architecture/authorization-flow': 'error',
       'architecture/limits-usage': 'error',
       'architecture/rate-limit-usage': 'error',
+      'architecture/truncation-signal': 'error',
       'architecture/branded-id-usage': 'error',
       // adapters
       'architecture/persistence-failures': 'error',
-      'architecture/tenant-scope': 'error',
+      'architecture/owner-scope': 'error',
       'architecture/audit-adapter': 'error',
       // presentation
       'architecture/action-contract': 'error',
+      'architecture/component-logic': 'error',
+      'architecture/ui-composition': 'error',
+
       'architecture/dto-serialization': 'error',
       'architecture/form-conventions': 'error',
       'architecture/message-key-coverage': 'error',
@@ -46,6 +53,8 @@ export const architectureRules = [
       // pages
       'architecture/metadata-conventions': 'error',
       'architecture/heading-hierarchy': 'error',
+      'architecture/no-page-query-orchestration': 'error',
+      'architecture/page-structure': 'error',
     },
   },
 ];

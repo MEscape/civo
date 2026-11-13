@@ -6,11 +6,13 @@
  * the architecture tests (`__tests__/architecture`) read it, so a rule can
  * never drift from the test that double-checks it.
  *
- * A standard business module needs NO entry here: it is governed by the
- * defaults. An entry exists only for a module that legitimately differs, and
- * every entry carries a `reason`, so exceptions stay few, explicit and
- * reviewable (nothing is exempted by file or by rule).
+ * Nothing in `eslint/` names a module, a table or a policy of the product. A standard business module needs no
+ * declaration at all: it is governed by the defaults. A module that legitimately differs declares it itself in
+ * `src/modules/<name>/module.json` (see `eslint/policy/manifest.mjs`), with a `reason`, so an exception sits next
+ * to the code it excuses and is reviewed with it. Other exceptions are tags in the code (`@authorization`,
+ * `@rate-limit none`, `@fail-open`, `@owner-scope`), each with a reason.
  */
+import { readManifest } from './manifest.mjs';
 
 export const LAYERS = /** @type {const} */ ([
   'domain',
@@ -30,11 +32,11 @@ export const SHARED_LIB_ALLOW = {
 };
 
 /**
- * Shared libraries that define a PORT shared by every module (`Clock`, `RateLimiter`). Any layer
- * may `import type` the port; the implementation (`systemClock`, `getRateLimiter`) is runtime state
+ * Shared libraries that define a PORT shared by every module (`Clock`, `RateLimiter`, `ObjectStore`). Any layer
+ * may `import type` the port; the implementation (`systemClock`, `getRateLimiter`, `getObjectStore`) is runtime state
  * and is wired by composition.ts only, so a runtime import from a layer is still reported.
  */
-export const SHARED_PORT_LIBS = ['clock', 'rate-limit'];
+export const SHARED_PORT_LIBS = ['clock', 'rate-limit', 'storage'];
 
 /** Packages that may never appear in a layer, regardless of how they are imported. */
 export const FORBIDDEN_PACKAGES = {
@@ -62,20 +64,18 @@ export const SERVER_ONLY_SPECIFIERS = [
   /^next\/headers$/,
   /^@prisma\//,
   /^@lib\/db($|\/)/,
-  /^@lib\/(config|mail)\/server$/,
+  /^@lib\/(config|mail|storage)\/server$/,
 ];
 
 /**
  * Directories a layer may contain (first level below the layer folder).
- * `audit` is the canonical home of audit adapters; `logging` is the
- * established name used by the existing modules and is accepted as an alias
- * so no module has to be renamed (and no unseen import/test broken).
+ * `audit` is the home of audit adapters.
  */
 export const LAYER_DIRS = {
   domain: ['errors', 'models', 'ports'],
-  // `services` holds logic shared by several use cases (gate helpers, pure decisions); never I/O, never business rules.
+  // `services` holds what a use case needs besides itself (parsing, loading context, deciding, mapping to views); data only through ports. Commands and queries call it, it never calls them (architecture/application-flow).
   application: ['commands', 'queries', 'contracts', 'services'],
-  infrastructure: ['audit', 'logging', 'prisma', 'provisioner'],
+  infrastructure: ['audit', 'prisma', 'provisioner'],
   presentation: ['actions', 'cache', 'components', 'dto', 'guards', 'i18n', 'messages', 'schemas'],
 };
 
@@ -140,11 +140,10 @@ export const DIR_FILE_PATTERNS = {
   'infrastructure/prisma': [
     new RegExp(`^${KEBAB}\\.repository\\.ts$`),
     new RegExp(`^${KEBAB}-record-mapper\\.ts$`),
-    // Tenant-scoped starting points shared by repositories (a relation filter, not a repository).
+    // Owner-scoped starting points shared by repositories (a relation filter, not a repository).
     new RegExp(`^${KEBAB}-ownership\\.ts$`),
   ],
   'infrastructure/audit': [new RegExp(`^${KEBAB}-audit-log\\.ts$`)],
-  'infrastructure/logging': [new RegExp(`^${KEBAB}-audit-log\\.ts$`)],
   'infrastructure/provisioner': [new RegExp(`^${KEBAB}-provisioner\\.ts$`)],
   'presentation/actions': [new RegExp(`^${KEBAB}-action\\.ts$`)],
   'presentation/dto': [new RegExp(`^${KEBAB}-dto\\.ts$`)],
@@ -168,13 +167,15 @@ export const MODULE_ROOT_FILES = ['index.ts', 'client.ts', 'composition.ts'];
 /**
  * Module roles. A role switches whole convention groups on or off; it never
  * names a file. Only two roles exist; a module that needs a third one is a
- * signal to discuss the architecture, not to add an exception.
+ * signal to discuss the architecture, not to add an exception. A module picks its role in its own
+ * `module.json`; without one it is `business`.
  *
  *  - `business`: the standard module. Commands/queries, a composition.ts,
  *    audited commands, record-mapped repositories.
  *  - `platform`: infrastructure-heavy cross-cutting module (authentication).
  *    Its composition root lives in infrastructure and its public API may
- *    expose the factory of that root.
+ *    expose the factory of that root. What it protects (sign-in, identity) never lets a request through
+ *    uncounted when the rate limiter's store is down.
  */
 export const ROLES = {
   business: {
@@ -182,6 +183,8 @@ export const ROLES = {
     requireComposition: true,
     commandsRequireAudit: true,
     repositoriesRequireRecordMapper: true,
+    /** A rate-limit policy of this module may fail open when it carries `@fail-open <reason>`. */
+    rateLimitsMayFailOpen: true,
     /** `type XId = Brand<..>` requires both `toXId` (stored) and `parseXId` (request). */
     brandParsersRequired: true,
     /**
@@ -215,6 +218,7 @@ export const ROLES = {
     requireComposition: true,
     commandsRequireAudit: true,
     repositoriesRequireRecordMapper: false,
+    rateLimitsMayFailOpen: false,
     // Identity ids are minted by the identity provider / membership lookup; no request ever supplies one.
     brandParsersRequired: false,
     publicApiSources: [
@@ -241,50 +245,6 @@ export const ROLES = {
 };
 
 /**
- * Modules that differ from the defaults. Standard modules are NOT listed.
- *
- * @type {Record<string, {
- *   role: keyof typeof ROLES,
- *   reason: string,
- *   extraDirs?: Partial<Record<(typeof LAYERS)[number], string[]>>,
- *   extraRootFiles?: Partial<Record<(typeof LAYERS)[number], string[]>>,
- *   compositionFile?: string,
- *   publicApiSources?: string[],
- * }>}
- */
-export const MODULE_OVERRIDES = {
-  auth: {
-    role: 'platform',
-    reason:
-      'Identity module. Its ids come from the identity provider (no request-side parser) and its repository reads ' +
-      'through a row source (no record mapper). The one authorization service lives directly in application/ ' +
-      '(nothing else may), and its domain models (Actor, Permission, authorize) are part of the public API.',
-    extraRootFiles: { application: ['authorization-service.ts'] },
-    publicApiSources: [
-      'composition',
-      'domain/models/',
-      'domain/errors/',
-      'application/authorization-service',
-      'application/contracts/',
-      'application/commands/',
-      'application/queries/',
-      'presentation/',
-    ],
-  },
-};
-
-/**
- * Modules that are mid-refactor and do not follow the module layout yet. Empty today. Listing one SUSPENDS only the structure family
- * for it (folder/file-name shape, the public-API source check, "index.ts only re-exports") and switches off the listed
- * `relax` rules for its folder; every dependency rule (layers, deep imports, forbidden packages, Prisma and
- * client/server containment) still applies. Each entry needs a reason, and a test fails when an entry is no longer needed,
- * so this list can only shrink. A new module never goes here; it follows the module layout from its first file.
- *
- * @type {Record<string, { reason: string, relax?: string[] }>}
- */
-export const LEGACY_MODULES = {};
-
-/**
  * Module cycles that exist today, identified by the SET of modules on the cycle. A cycle not listed here fails the
  * architecture checks; a listed cycle that no longer exists fails them too ("remove it"), so the list only shrinks.
  *
@@ -296,20 +256,10 @@ export const KNOWN_MODULE_CYCLES = [];
 
 /**
  * Cross-module imports in infrastructure that are allowed in repository /
- * record-mapper files: trusted brand constructors (`toTenantId`, ...) are the
+ * record-mapper files: trusted brand constructors (`toXId`) are the
  * documented way to brand a stored value; they are not an integration call.
  */
 export const TRUSTED_BRAND_CONSTRUCTOR = /^to[A-Z][A-Za-z0-9]*Id$/;
-
-/**
- * Pure, side-effect-free exports of another module that application code may call at runtime.
- * Anything else a use case needs from a module goes through an infrastructure adapter behind a domain port.
- * Keyed by module name; values are export names.
- */
-export const CROSS_MODULE_RUNTIME_ALLOW = {
-  // A predicate over an `Actor` value and the permission vocabulary; no I/O, no state.
-  auth: ['actorHasPermission'],
-};
 
 /**
  * The locale *identifier* is shared vocabulary, not translation: layers other than
@@ -326,36 +276,41 @@ export const BRAND_TYPE_NAME = /^[A-Z][A-Za-z0-9]*Id$/;
 export const LIMIT_NAME_PATTERN =
   /(?:^|_)(?:LIMIT|PAGE_SIZE|TAKE|BATCH_SIZE|MAX_(?:ITEMS|ROWS|RESULTS|PER_PAGE)|MIN_LIST|MAX_LIST|DEFAULT_LIST)(?:$|_)/;
 
-/** Returns the effective, merged policy for one module (defaults for unlisted modules). */
-export function policyFor(moduleName) {
-  const override = MODULE_OVERRIDES[moduleName];
-  const roleName = override?.role ?? 'business';
-  const role = ROLES[roleName];
+/**
+ * Returns the effective, merged policy for one module: its role's defaults, plus whatever its own `module.json`
+ * declares. `root` is the repository root (a fixture tree in tests).
+ */
+export function policyFor(moduleName, root = process.cwd()) {
+  const manifest = readManifest(moduleName, root);
+  const roleName = manifest?.role ?? 'business';
+  const role = ROLES[roleName] ?? ROLES.business;
   return {
     module: moduleName,
     roleName,
     role,
-    reason: override?.reason ?? null,
-    legacy: LEGACY_MODULES[moduleName] ?? null,
-    compositionFile: override?.compositionFile ?? role.compositionFile,
-    publicApiSources: override?.publicApiSources ?? role.publicApiSources,
-    clientApiSources: override?.clientApiSources ?? role.clientApiSources,
-    extraDirs: override?.extraDirs ?? {},
-    extraRootFiles: override?.extraRootFiles ?? {},
+    reason: manifest?.reason ?? null,
+    compositionFile: manifest?.compositionFile ?? role.compositionFile,
+    publicApiSources: role.publicApiSources,
+    clientApiSources: role.clientApiSources,
+    extraDirs: manifest?.extraDirs ?? {},
+    extraRootFiles: manifest?.extraRootFiles ?? {},
+    /**
+     * Pure, side-effect-free exports of THIS module that another module's domain/application code may call at
+     * runtime (a predicate over a value, no I/O, no state). Anything else a use case needs from a module goes
+     * through an infrastructure adapter behind a domain port.
+     */
+    runtimeExports: manifest?.runtimeExports ?? [],
   };
 }
 
 /**
- * Hooks and components that protect unsaved work (`src/hooks`, `src/components/shared/unsaved-changes-guard.tsx`,
- * the booking module's `useDraftGuard`). A react-hook-form form in module presentation uses one of them or says
- * why not with `@unsaved-work none <reason>` (`architecture/unsaved-work-guard`).
+ * What protects unsaved work is found by name, not listed: a hook whose name says it guards against losing
+ * unsaved changes or leaving the page (`useReportUnsavedChanges`, `useBeforeUnloadGuard`, …). A react-hook-form
+ * form in module presentation calls one or says why not with `@unsaved-work none <reason>`
+ * (`architecture/unsaved-work-guard`). `__tests__/architecture/policy-consistency.test.ts` checks that at least
+ * one such hook exists when a form needs it; explicit credential-form opt-outs need no guard.
  */
-export const UNSAVED_WORK_GUARDS = [
-  'useReportUnsavedChanges',
-  'useUnsavedNavigationGuard',
-  'useBeforeUnloadGuard',
-  'useDraftGuard',
-];
+export const UNSAVED_WORK_GUARD = /^use\w*(?:Unsaved|BeforeUnload)\w*$/;
 
 /**
  * Route files that are Server Components by definition: they compose, they are not the interactive leaf
@@ -365,10 +320,15 @@ export const SERVER_ONLY_ROUTE_FILES =
   /^(?:page|layout|template|default|not-found|loading|route)\.tsx?$/;
 
 /**
- * Rate limiting (docs/architecture/rate-limiting.md). A module declares its budgets as plain data in
+ * Rate limiting. A module declares its budgets as plain data in
  * `application/rate-limits.ts`; use cases spend them. `architecture/rate-limit-usage` checks the shape of
  * that file and who may call the limiter; `__tests__/architecture/rate-limit-policies.test.ts` checks the
  * policies themselves across modules.
+ *
+ * A policy fails closed (`onBackendFailure: 'deny'`) unless it says otherwise. Letting a request through,
+ * uncounted, when the limiter's store is down (`'allow'`) is a reviewed decision: the policy carries a
+ * `// @fail-open <reason>` comment (what makes a short gap in protection cheaper than refusing the people the
+ * operation serves), and the module's role must allow it (`ROLES.<role>.rateLimitsMayFailOpen`).
  */
 export const RATE_LIMIT_POLICIES = {
   /** The file of policy data inside a module's application layer. */
@@ -379,77 +339,166 @@ export const RATE_LIMIT_POLICIES = {
   type: 'Record<string, RateLimitPolicy>',
   /** The only things that file may import: time constants and (as a type) the policy type. */
   allowedImports: ['@lib/utils', '@lib/rate-limit'],
-  /**
-   * Policies that let a request through, uncounted, when the limiter's store is down
-   * (`onBackendFailure: 'allow'`). Every one is a reviewed decision: a short gap in protection
-   * costs less than refusing the people the operation serves. Everything else fails closed.
-   */
-  failOpen: [
-    'booking.hold-client',
-    'booking.search-client',
-    'builder.render-draft',
-    'builder.save-page',
-    'component-platform.read-trend-window-client',
-  ],
-  /** What may never fail open, whatever is added to `failOpen`: mail, calls to external systems, changes to what is live, sign-in. */
-  failClosed: [
-    /^auth\./,
-    /^data-sources\./,
-    /^release\./,
-    /^booking\.(?:confirm|lookup|change|search-address)/,
-  ],
+  /** The comment on a fail-open policy, with its reason. */
+  failOpenTag: /@fail-open\s+\S/,
 };
 
 /**
- * Tenancy of the stored data (docs/architecture/route-protection.md, "Tenants"). A tenant IS its
- * website, so every row below a website belongs to exactly one tenant. These are the tables that do,
- * and the columns that tie a row to its owner:
+ * Ownership of stored data: which rows belong to whom. A product that isolates data between owners (tenants,
+ * accounts, child profiles) names the columns that tie a row to its owner; a product that does not leaves the
+ * list empty and `architecture/owner-scope` stays dormant.
  *
- * - `pins`: a query that constrains one of these columns by equality is bound to ONE tenant. `Website`
- *   is its own tenant, so its `id` pins it too (the table refuses any other pairing).
- * - `via`: no such column of its own; the table is owned through that parent and reached with ids
- *   from the parent's own pinned read, or through a relation filter (`datasets.dataSource.some(…)`).
+ * Nothing else is listed. The tables that are owned, the columns that pin each one and the parent a child table
+ * is owned through are DERIVED from the Prisma contract (`eslint/policy/ownership.mjs`), so a new table is
+ * covered the moment it has an owner column or a foreign key to an owned table.
  *
- * `__tests__/architecture/tenant-tables.test.ts` derives the same facts from the Prisma contract and
- * fails when this list drifts from it, so a new table cannot go unlisted.
- * `architecture/tenant-scope` checks every query on these tables.
+ * - `columns`: a query that constrains one of these columns by equality is bound to ONE owner. A table that
+ *   refuses any row whose column differs from its own `id` (`CHECK ("id" = "<column>")`) is its own owner, and
+ *   its `id` pins it too.
+ * - `tag`: why a query may not be pinned, stated on the statement, the method or the helper as
+ *   `@<tag> <kind> <reason>` (kinds in `OWNER_SCOPE_KINDS`).
+ * - `contractFile`: the Prisma contract the tables are read from.
  */
-export const TENANT_TABLES = {
-  Website: { pins: ['tenantId', 'id'] },
-  WebsiteTheme: { pins: ['websiteId'] },
-  Page: { pins: ['tenantId', 'websiteId'] },
-  PageConfig: { pins: [], via: 'Page' },
-  WebsiteRelease: { pins: ['websiteId'] },
-  WebsiteMigration: { pins: ['websiteId'] },
-  DataSource: { pins: ['websiteId'] },
-  Dataset: { pins: [], via: 'DataSource' },
-  Membership: { pins: ['tenantId'] },
-  Invitation: { pins: ['tenantId'] },
-  BookingLocation: { pins: ['tenantId', 'websiteId'] },
-  BookableResource: { pins: ['tenantId', 'websiteId'] },
-  BookableService: { pins: ['tenantId', 'websiteId'] },
-  Booking: { pins: ['tenantId', 'websiteId'] },
-  BookingResource: { pins: ['websiteId'] },
-  AuditEntry: { pins: ['websiteId'] },
+export const OWNERSHIP = {
+  columns: /** @type {string[]} */ (['tenantId', 'websiteId']),
+  tag: 'owner-scope',
+  contractFile: 'src/lib/db/contract.json',
 };
 
 /**
- * Why a query on a tenant-owned table may not be pinned to its tenant. A repository states it as
- * `@tenant-scope <kind> <reason>` on the statement, the method or the helper (the reason says what
- * binds the query instead). Each kind is a different argument for why nothing leaks; a query that
- * fits none is pinned, not tagged.
+ * Why a query on an owned table may not be pinned to its owner. Each kind is a different argument for why
+ * nothing leaks; a query that fits none is pinned, not tagged.
  */
-export const TENANT_SCOPE_KINDS = {
-  /** The ids come from a read or write in the same method that was pinned; the rows are that tenant's. */
+export const OWNER_SCOPE_KINDS = {
+  /** The ids come from a read or write in the same method that was pinned; the rows are that owner's. */
   derived: 'ids from an earlier pinned read or write',
   /** A row of a parent that is itself pinned, reached through the parent's key. */
   child: 'rows of a parent that is pinned',
-  /** Bound to the signed-in person's own id, not to a tenant: "my memberships". */
+  /** Bound to the signed-in person's own id, not to an owner: "my memberships". */
   actor: "bound to the person's own id",
-  /** Deliberately across tenants, for the platform administrator; the use case authorizes that permission. */
-  platform: 'across tenants, for the platform administrator',
-  /** Reached by an unguessable single-use secret or a public identifier of a published site. */
+  /** Deliberately across owners, for a platform-wide job or administrator; the use case authorizes that. */
+  platform: 'across every owner, for a platform-wide job or administrator',
+  /** Reached by an unguessable single-use secret or a public identifier. */
   capability: 'reached by a secret or a public identifier',
   /** A starting point that callers extend; the callers pin it or tag themselves. */
   builder: 'a query builder the callers pin',
 };
+
+/**
+ * The vocabulary of the authorization service every protected use case starts from
+ * (`architecture/authorization-flow`). These are the names of ITS methods and of the actor property a load is
+ * keyed by; when the service is renamed, this is the one place to follow it.
+ * `__tests__/architecture/policy-consistency.test.ts` checks the service really declares them.
+ */
+export const AUTHORIZATION = {
+  /** Authorizes the signed-in actor for a permission and returns the actor. */
+  actorCall: 'requireInTenant',
+  /** Authorizes the actor for a permission on one loaded resource's scope. */
+  resourceCall: 'requireOnResource',
+  /** The property of the actor a load is keyed by (`repository.find(id, actor.<ownerKey>)`). */
+  ownerKey: 'tenantId',
+};
+
+/**
+ * docs/rules/react.md: a component draws what it is given. `maxStatements` is how many things it may do before
+ * its `return` besides calling hooks of its own; `countedHooks` are React's state and effect hooks, which are
+ * things it does (a call to a hook of ours is composition and is free).
+ */
+export const COMPONENT_LOGIC = {
+  maxStatements: 5,
+  countedHooks: [
+    'useState',
+    'useReducer',
+    'useEffect',
+    'useLayoutEffect',
+    'useMemo',
+    'useCallback',
+  ],
+};
+
+/** Where components live: module presentation, and the shared kit except the primitives in `ui`. */
+export function componentLogicScope(file) {
+  if (file.area === 'module') return file.layer === 'presentation' && file.dir === 'components';
+  return file.area === 'components' && !file.path.startsWith('src/components/ui/');
+}
+
+/**
+ * docs/rules/code-style.md: files stay small enough to read in one go. `default` is the most code lines (no
+ * blanks, no comments) any file may have; `focused` is the lower limit for application and component
+ * code, where small files are the convention; `library` is the limit of the shared component library, whose
+ * families of components live in one file each (`field.tsx`, `dialog.tsx`, `data-panel.tsx`), so a family is read
+ * in one place and its parts cannot drift apart. A file that is long because it is a flat table says so with
+ * an `eslint-disable max-lines -- <why>` and `eslint-enable max-lines` block comment pair around it.
+ */
+export const FILE_SIZE = {
+  default: 300,
+  focused: 200,
+  library: 600,
+};
+
+/**
+ * docs/rules/modules.md: a command or query keeps its own file short. Past `max` local helpers (functions
+ * beside the class, and methods besides `execute`) the helpers are a service in `application/services`.
+ */
+export const USE_CASE_HELPERS = {
+  max: 3,
+};
+
+/** The shared component library: `FILE_SIZE.library` applies, after `FILE_SIZE.focused`. */
+export const LIBRARY_SIZE_GLOBS = ['src/components/shared/**/*.{ts,tsx}'];
+
+/** The files `FILE_SIZE.focused` applies to. */
+export const FOCUSED_SIZE_GLOBS = [
+  'src/modules/*/application/**/*.{ts,tsx}',
+  'src/modules/*/presentation/components/**/*.{ts,tsx}',
+  'src/components/**/*.{ts,tsx}',
+];
+
+/**
+ * docs/rules/styling.md: the design system is used where it fits. `plain` maps a raw element to what to use
+ * instead; `pairs` names a primitive that is framed by a composite (importing `source` calls for importing
+ * `needs`). A file that has a reason for plain markup says so with `// @ui-plain <name> <reason>`, where `name`
+ * is the element or the pair's `name`. Components in `src/components` are the design system and are not checked.
+ */
+export const UI_COMPOSITION = {
+  plain: {
+    button: {
+      use: "`Button` from '@components/ui/button'",
+      why: 'consistent focus, disabled and loading behavior',
+    },
+    select: {
+      use: "`Select` from '@components/ui/select', or `SelectField` / `FilterSelect` from '@components/shared'",
+    },
+    a: {
+      use: "the locale-aware `Link` from '@i18n' for app navigation, or `ContentLink` from '@components/ui/content-link' for a target that comes from content",
+    },
+    table: {
+      use: "the `Table` parts from '@components/ui/table'",
+      why: 'one look for every table',
+    },
+    input: {
+      use: "`Input` from '@components/ui/input', or `TextField` from '@components/shared/text-field' when it needs a label, hint and error",
+    },
+    textarea: { use: "`Textarea` from '@components/ui/input'" },
+    label: { use: "`Label` from '@components/ui/input', or a field from '@components/shared'" },
+  },
+  pairs: [
+    {
+      name: 'table',
+      source: '@components/ui/table',
+      needs: '@components/shared/data-panel',
+      hint: 'A table that is the subject of a screen sits in a DataPanel (title, actions, footer), so every list is framed the same.',
+    },
+    {
+      name: 'pagination',
+      source: '@components/shared/pagination',
+      needs: '@components/shared/data-panel',
+      hint: 'Pagination goes in the footer of a DataPanel.',
+    },
+  ],
+};
+
+/** Module presentation and the app's routes are checked; `src/components` is the design system itself. */
+export function uiCompositionScope(file) {
+  return (file.area === 'module' && file.layer === 'presentation') || file.area === 'app';
+}

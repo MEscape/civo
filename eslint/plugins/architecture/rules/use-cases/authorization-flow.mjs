@@ -1,4 +1,7 @@
+import { AUTHORIZATION, OWNERSHIP } from '../../../../policy/policy.mjs';
 import { classifyContext, defineRule, memberPath, report } from '../../util.mjs';
+
+const { actorCall, resourceCall, ownerKey } = AUTHORIZATION;
 
 const isCall = (node) => node?.type === 'CallExpression';
 
@@ -26,18 +29,29 @@ export function isAuthorizationRoot(call) {
   if (call.callee.type === 'Identifier') return /^loadAuthorized[A-Z]/.test(call.callee.name);
   if (call.callee.type === 'MemberExpression') {
     const path = memberPath(call.callee);
-    return path !== null && /(?:^|\.)authorization\.requireInTenant$/.test(path);
+    // An explicit access port authenticates, validates and authorizes a named website in auth.
+    // Requiring its capability name and a fixed permission keeps actor-only lookups insufficient.
+    if (path !== null && /(?:^|\.)access\.authorizeWebsite$/.test(path)) {
+      const permission = call.arguments[0];
+      return (
+        call.arguments.length === 2 &&
+        permission?.type === 'Literal' &&
+        typeof permission.value === 'string' &&
+        /^[a-z]+(?:\.[a-z]+)+$/.test(permission.value)
+      );
+    }
+    return path !== null && new RegExp(`(?:^|\\.)${actorCall}$`).test(path);
   }
   return false;
 }
 
-/** Collects `return` statements of a function body without descending into nested functions. */
 /**
- * A helper whose tenant isolation is enforced by ANOTHER module (it resolves the record through that module's public
- * API) declares it: `@tenant-scope delegated <reason>`. It keeps the permission check, id parsing and not-found
- * handling, but has no tenant-keyed load of its own and no resource scope to check.
+ * A helper whose owner isolation is enforced by ANOTHER module (it resolves the record through that module's public
+ * API) declares it: `@owner-scope delegated <reason>`. It keeps the permission check, id parsing and not-found
+ * handling, but has no owner-keyed load of its own and no resource scope to check.
  */
-export const TENANT_DELEGATED_TAG = /@tenant-scope\s+delegated\s+\S+/;
+export const OWNER_DELEGATED_TAG = new RegExp(`@${OWNERSHIP.tag}\\s+delegated\\s+\\S+`);
+export const TENANT_DELEGATED_TAG = OWNER_DELEGATED_TAG;
 
 export function returnsOf(fnBody) {
   const found = [];
@@ -57,15 +71,15 @@ export function returnsOf(fnBody) {
 }
 
 /**
- * Keeps the protected-resource sequence in ONE place
- * (application/load-authorized-*.ts) and makes every protected use case start
+ * Keeps protected-resource checks behind one authorization boundary
+ * (a load-authorized helper or auth-backed website access port) and makes every protected use case start
  * from authorization:
  *   requireInTenant -> parse id -> load by (id, trusted tenant) -> not found
  *   -> requireOnResource(permission, scopeOf(storedRecord)).
  */
 export const authorizationFlow = defineRule({
   description:
-    'Protected use cases start with authorization; resource authorization lives only in load-authorized-* helpers.',
+    'Protected use cases start with authorization through the authorization service, a shared loader or an auth-backed website access port.',
   create(context) {
     const { file } = classifyContext(context);
     if (file.area !== 'module' || file.layer !== 'application') return {};
@@ -99,7 +113,7 @@ export const authorizationFlow = defineRule({
         CallExpression(node) {
           const name =
             node.callee.type === 'MemberExpression' ? node.callee.property.name : node.callee.name;
-          if (name === 'requireOnResource') {
+          if (name === resourceCall) {
             report(
               context,
               node,
@@ -128,7 +142,7 @@ export const authorizationFlow = defineRule({
               report(
                 context,
                 statement,
-                'A protected use case must authorize before anything else: `return authorization.requireInTenant(<permission>)…` or `return loadAuthorized<Resource>(…)`. Validate and load only after the permission check, so callers learn nothing about what exists.',
+                `A protected use case must authorize before anything else: \`return authorization.${actorCall}(<permission>)…\`, \`return access.authorizeWebsite(<permission>, id)…\` or \`return loadAuthorized<Resource>(…)\`. Validate and load only after the permission check, so callers learn nothing about what exists.`,
               );
             }
           }
@@ -159,10 +173,10 @@ export const authorizationFlow = defineRule({
           const owner = node.parent?.type === 'ExportNamedDeclaration' ? node.parent : node;
           const delegated = context.sourceCode
             .getCommentsBefore(owner)
-            .some((c) => TENANT_DELEGATED_TAG.test(c.value));
+            .some((c) => OWNER_DELEGATED_TAG.test(c.value));
           const named = (predicate) => calls.find((c) => predicate(c.name ?? ''));
           const hasAuthorizationStep = calls.some(
-            (c) => c.name === 'requireInTenant' || c.name === 'requireOnResource',
+            (c) => c.name === actorCall || c.name === resourceCall,
           );
           // A thin exported wrapper (`loadAuthorizedPage` -> private `loadAuthorized`) delegates the sequence.
           if (
@@ -175,14 +189,14 @@ export const authorizationFlow = defineRule({
             )
           )
             return;
-          // The load is whichever call is keyed by the trusted tenant: `<repo>.find…(id, actor.tenantId)`.
+          // The load is whichever call is keyed by the trusted owner: `<repo>.find…(id, actor.<ownerKey>)`.
           const load = calls.find((c) => {
             const last = c.node.arguments[c.node.arguments.length - 1];
-            return last?.type === 'MemberExpression' && last.property.name === 'tenantId';
+            return last?.type === 'MemberExpression' && last.property.name === ownerKey;
           });
           if (delegated) {
             const required = [
-              ['requireInTenant', named((n) => n === 'requireInTenant')],
+              [actorCall, named((n) => n === actorCall)],
               ['parse<Resource>Id', named((n) => /^parse[A-Z]\w*Id$/.test(n))],
               ['<resource>NotFound', named((n) => /NotFound$/.test(n))],
             ];
@@ -193,41 +207,41 @@ export const authorizationFlow = defineRule({
               report(
                 context,
                 node.id,
-                `\`${node.id.name}\` is declared \`@tenant-scope delegated\` but still needs: ${absent.join(', ')}.`,
+                `\`${node.id.name}\` is declared \`@${OWNERSHIP.tag} delegated\` but still needs: ${absent.join(', ')}.`,
               );
             } else if (!(required[0][1].node.range[0] < required[1][1].node.range[0])) {
               report(
                 context,
                 node.id,
-                `\`${node.id.name}\` calls steps out of order. Required: requireInTenant → parse id → load → not found.`,
+                `\`${node.id.name}\` calls steps out of order. Required: ${actorCall} → parse id → load → not found.`,
               );
             }
             return;
           }
           const steps = [
-            ['requireInTenant', named((n) => n === 'requireInTenant')],
+            [actorCall, named((n) => n === actorCall)],
             ['parse<Resource>Id', named((n) => /^parse[A-Z]\w*Id$/.test(n))],
-            ['load by (id, actor.tenantId)', load],
+            [`load by (id, actor.${ownerKey})`, load],
             ['<resource>NotFound', named((n) => /NotFound$/.test(n))],
-            ['requireOnResource', named((n) => n === 'requireOnResource')],
+            [resourceCall, named((n) => n === resourceCall)],
           ];
           const missing = steps.filter(([, call]) => call === undefined).map(([label]) => label);
           if (missing.length > 0) {
             report(
               context,
               node.id,
-              `\`${node.id.name}\` must follow the standard sequence requireInTenant → parse id → load by (id, actor.tenantId) → not found → requireOnResource. Missing: ${missing.join(', ')}. (Never load with a tenant taken from the request.)`,
+              `\`${node.id.name}\` must follow the standard sequence ${actorCall} → parse id → load by (id, actor.${ownerKey}) → not found → ${resourceCall}. Missing: ${missing.join(', ')}. (Never load with an owner key taken from the request.)`,
             );
             return;
           }
-          const [inTenant, parse, loaded, , onResource] = steps.map(
+          const [inActor, parse, loaded, , onResource] = steps.map(
             ([, call]) => call.node.range[0],
           );
-          if (!(inTenant < parse && parse < loaded && loaded < onResource)) {
+          if (!(inActor < parse && parse < loaded && loaded < onResource)) {
             report(
               context,
               node.id,
-              `\`${node.id.name}\` calls steps out of order. Required: requireInTenant → parse id → load → requireOnResource.`,
+              `\`${node.id.name}\` calls steps out of order. Required: ${actorCall} → parse id → load → ${resourceCall}.`,
             );
           }
           const scopeArg = steps[4][1].node.arguments[1];

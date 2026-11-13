@@ -1,4 +1,3 @@
-import { policyFor } from '../../../../policy/policy.mjs';
 import { classifyContext, defineRule, report } from '../../util.mjs';
 
 const INTERNAL_NAME =
@@ -11,7 +10,6 @@ export const modulePublicApi = defineRule({
   create(context) {
     const { file } = classifyContext(context);
     if (!(file.area === 'module' && file.layer === 'root' && file.file === 'index.ts')) return {};
-    if (policyFor(file.module).legacy !== null) return {};
     return {
       ExportAllDeclaration(node) {
         report(

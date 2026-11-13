@@ -1,6 +1,5 @@
 import { isPublicApiOf, sharedLibName, stripFileExtension } from '../../../../policy/paths.mjs';
 import {
-  CROSS_MODULE_RUNTIME_ALLOW,
   FORBIDDEN_PACKAGES,
   I18N_INFRASTRUCTURE_ALLOW,
   I18N_VOCABULARY_ALLOW,
@@ -29,12 +28,20 @@ const LAYER_LABEL = {
 
 /**
  * Returns a message when `file` (in `repoPath`) must not import `target`, else null.
- * Pure function: also used by the architecture tests.
+ * Pure function: also used by the architecture tests. `root` is the repository root, where module manifests live.
  */
-export function checkLayerImport({ repoPath, file, target, specifier, isTypeOnly, names }) {
+export function checkLayerImport({
+  repoPath,
+  file,
+  target,
+  specifier,
+  isTypeOnly,
+  names,
+  root = process.cwd(),
+}) {
   if (target.kind === 'package') return checkPackage(file, target);
   if (file.area === 'module')
-    return checkModuleFile({ repoPath, file, target, specifier, isTypeOnly, names });
+    return checkModuleFile({ repoPath, file, target, specifier, isTypeOnly, names, root });
   if (
     file.area === 'lib' ||
     file.area === 'components' ||
@@ -66,17 +73,17 @@ function checkPackage(file, target) {
   return null;
 }
 
-function checkModuleFile({ file, target, isTypeOnly, names }) {
+function checkModuleFile({ file, target, isTypeOnly, names, root }) {
   const layer = file.layer;
   const label = LAYER_LABEL[layer] ?? layer;
-  const policy = policyFor(file.module);
+  const policy = policyFor(file.module, root);
 
   if (target.area === 'app')
     return `${label} must not import from src/app (framework entry points).`;
 
   if (target.area === 'module') {
     if (target.module !== file.module)
-      return checkCrossModule({ file, layer, label, target, isTypeOnly, names });
+      return checkCrossModule({ file, layer, label, target, isTypeOnly, names, root });
     return checkSameModule({ file, layer, label, target, policy });
   }
 
@@ -113,10 +120,10 @@ function checkModuleFile({ file, target, isTypeOnly, names }) {
   return null;
 }
 
-function checkCrossModule({ file, layer, label, target, isTypeOnly, names }) {
+function checkCrossModule({ file, layer, label, target, isTypeOnly, names, root }) {
   if (!isPublicApiOf(target)) return null; // deep imports are reported by `no-cross-module-deep-imports`
   if (layer === 'domain' || layer === 'application') {
-    const approved = CROSS_MODULE_RUNTIME_ALLOW[target.module] ?? [];
+    const approved = policyFor(target.module, root).runtimeExports;
     if (
       !isTypeOnly &&
       names !== null &&
@@ -172,7 +179,6 @@ function checkSameModule({ file, layer, label, target, policy }) {
   if (layer === 'root') {
     const self = stripFileExtension(file.file);
     if (self === 'composition') return null;
-    if (policy.legacy !== null) return null;
     if (self === 'index')
       return checkPublicApiSource(file, target, policy.publicApiSources, 'public API (index.ts)');
     if (self === 'client')
@@ -239,7 +245,15 @@ export const layerImports = defineRule({
       },
       ...moduleSpecifierVisitors(({ node, specifier, isTypeOnly, names }) => {
         const target = resolveFrom(repoPath, specifier);
-        let message = checkLayerImport({ repoPath, file, target, specifier, isTypeOnly, names });
+        let message = checkLayerImport({
+          repoPath,
+          file,
+          target,
+          specifier,
+          isTypeOnly,
+          names,
+          root: context.cwd,
+        });
         if (
           message === null &&
           isClient &&

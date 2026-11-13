@@ -5,16 +5,35 @@
  * checks need the whole tree. Whether a policy's numbers are valid is checked with the real limiter
  * in `__tests__/architecture/rate-limit-policies.test.ts`.
  */
-import { RATE_LIMIT_POLICIES } from './policy.mjs';
+import { RATE_LIMIT_POLICIES, policyFor } from './policy.mjs';
 import { topLevelClasses, violation, leadingComment } from './project.mjs';
 
 const CLIENT_SUFFIX = '-client';
-const NO_LIMIT_TAG = /@rate-limit\s+none\s+\S/;
 
 const literalOf = (properties, name) => {
   const property = properties.find((p) => p.type === 'Property' && p.key.name === name);
   return property?.value.type === 'Literal' ? property.value.value : undefined;
 };
+
+function findFailOpenComment(file, entry) {
+  const tagRegex = /@fail-open(?:\s+([^\r\n*]+))?/;
+  for (const c of file.comments) {
+    const isInside = c.range[0] >= entry.range[0] && c.range[1] <= entry.range[1];
+    const isDirectlyBefore =
+      c.range[1] <= entry.range[0] && file.code.slice(c.range[1], entry.range[0]).trim() === '';
+    if (isInside || isDirectlyBefore) {
+      const match = c.value.match(tagRegex);
+      if (match) {
+        const reason = (match[1] ?? '').trim();
+        return {
+          raw: c.value,
+          reason: reason.length > 0 ? reason : null,
+        };
+      }
+    }
+  }
+  return null;
+}
 
 /** `export const X_RATE_LIMITS = { key: { … } } as const satisfies …`, read from the syntax tree. */
 function declaredPolicies(file) {
@@ -29,12 +48,15 @@ function declaredPolicies(file) {
       for (const entry of object.properties) {
         if (entry.type !== 'Property' || entry.value.type !== 'ObjectExpression') continue;
         const { properties } = entry.value;
+        const failOpen = findFailOpenComment(file, entry);
         found.push({
           exportName: name,
           key: entry.key.name,
           id: literalOf(properties, 'id'),
           onBackendFailure: literalOf(properties, 'onBackendFailure'),
           onUnresolvedClient: literalOf(properties, 'onUnresolvedClient'),
+          failOpenReason: failOpen?.reason ?? null,
+          hasFailOpenTag: failOpen !== null,
         });
       }
     }
@@ -61,7 +83,7 @@ function referencedIn(project, moduleName, policiesPath, exportName, key) {
   );
 }
 
-/** Every policy the modules declare, read from the syntax tree: the module, its export, key and id. */
+/** Every policy the modules declare, read from the syntax tree: the module, its export, key, id and fail-open reason. */
 export function describeRateLimitPolicies(project) {
   return policyFiles(project).flatMap(({ module: moduleName, file }) =>
     declaredPolicies(file).map((policy) => ({ module: moduleName, ...policy })),
@@ -71,9 +93,9 @@ export function describeRateLimitPolicies(project) {
 export function checkRateLimitPolicies(project) {
   const out = [];
   const idOwners = new Map();
-  const failOpen = new Set(RATE_LIMIT_POLICIES.failOpen);
 
   for (const { module: moduleName, file } of policyFiles(project)) {
+    const modulePolicy = policyFor(moduleName, project.root);
     for (const policy of declaredPolicies(file)) {
       const where = `\`${policy.exportName}.${policy.key}\``;
       const { id } = policy;
@@ -109,21 +131,31 @@ export function checkRateLimitPolicies(project) {
         );
       }
       if (policy.onBackendFailure === 'allow') {
-        if (!failOpen.has(id)) {
+        if (!modulePolicy.role.rateLimitsMayFailOpen) {
           out.push(
             violation(
               'rate-limits',
               file.path,
-              `${where} fails open, which is a reviewed decision. Add '${id}' to RATE_LIMIT_POLICIES.failOpen in eslint/policy/policy.mjs, or let it fail closed.`,
+              `${where} fails open, but module '${moduleName}' (role '${modulePolicy.roleName}') does not allow rate limits to fail open.`,
             ),
           );
         }
-        if (RATE_LIMIT_POLICIES.failClosed.some((pattern) => pattern.test(id))) {
+        if (!policy.hasFailOpenTag || !policy.failOpenReason) {
           out.push(
             violation(
               'rate-limits',
               file.path,
-              `${where} fails open, but what it protects (mail, an external system, what is live, sign-in) must fail closed.`,
+              `${where} fails open, which is a reviewed decision. Add a \`// @fail-open <reason>\` comment explaining why a short gap in protection is acceptable.`,
+            ),
+          );
+        }
+      } else if (policy.onBackendFailure === 'deny') {
+        if (policy.hasFailOpenTag) {
+          out.push(
+            violation(
+              'rate-limits',
+              file.path,
+              `${where} fails closed ('deny') but carries a '@fail-open' tag. Remove the tag or let the policy fail open.`,
             ),
           );
         }
@@ -164,22 +196,45 @@ export function checkRateLimitPolicies(project) {
   return out;
 }
 
+function findOptOutReason(file, statement) {
+  const block = leadingComment(file, statement);
+  const blockMatch = block.match(/@rate-limit\s+none\s+([^\r\n*]+)/);
+  if (blockMatch) return blockMatch[1].trim();
+
+  const before = file.comments.filter(
+    (c) =>
+      c.type === 'Line' &&
+      c.range[1] <= statement.range[0] &&
+      file.code.slice(c.range[1], statement.range[0]).trim() === '',
+  );
+  for (const c of before) {
+    const lineMatch = c.value.match(/@rate-limit\s+none\s+([^\r\n*]+)/);
+    if (lineMatch) return lineMatch[1].trim();
+  }
+  return null;
+}
+
 /**
  * The use cases that run for anyone and spend no budget, each with the reason they gave
- * (`@rate-limit none <reason>`). The architecture test lists them, so adding one is a visible change
- * in review.
+ * (`@rate-limit none <reason>`). Returns `[{ module, name, reason }]`.
  */
 export function describeRateLimitOptOuts(project) {
-  const names = [];
+  const optOuts = [];
   for (const name of project.modules) {
     for (const file of project
       .moduleFiles(name)
       .filter((f) => /^application\/(?:commands|queries)\//.test(f.local))) {
       for (const cls of topLevelClasses(file)) {
-        if (NO_LIMIT_TAG.test(leadingComment(file, cls.statement)))
-          names.push(`${name}:${cls.name}`);
+        const reason = findOptOutReason(file, cls.statement);
+        if (reason !== null) {
+          optOuts.push({
+            module: name,
+            name: cls.name,
+            reason,
+          });
+        }
       }
     }
   }
-  return names.sort();
+  return optOuts.sort((a, b) => `${a.module}:${a.name}`.localeCompare(`${b.module}:${b.name}`));
 }

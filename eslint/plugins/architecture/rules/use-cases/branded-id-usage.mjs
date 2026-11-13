@@ -16,7 +16,7 @@ export const brandedIdUsage = defineRule({
       file.layer === 'infrastructure' &&
       ((file.dir === 'prisma' && /\.repository\.ts$/.test(file.file)) ||
         file.dir === 'provisioner');
-    const policy = policyFor(file.module);
+    const policy = policyFor(file.module, context.cwd);
 
     const visitors = {};
     if (!isIdsFile) {
@@ -85,7 +85,7 @@ export const brandedIdUsage = defineRule({
           report(
             context,
             node,
-            `\`${name}\` is an identifier and crosses a ${inPort ? 'port' : 'repository/adapter'} boundary as plain \`string\`. Use the branded id type (e.g. \`WebsiteId\`, \`TenantId\`) so validated ids cannot be confused with free text.`,
+            `\`${name}\` is an identifier and crosses a ${inPort ? 'port' : 'repository/adapter'} boundary as plain \`string\`. Use the branded id type (e.g. \`ChildId\`, \`LessonId\`) so validated ids cannot be confused with free text.`,
           );
         }
       };

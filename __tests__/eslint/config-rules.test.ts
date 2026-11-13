@@ -3,44 +3,9 @@
  * architecture plugin), exercised through the repository's real config
  * modules so a rename, an upgrade or a block-ordering mistake is caught.
  */
-import { ESLint } from 'eslint';
-import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
 
-import { overrides } from '../../eslint/config/overrides.mjs';
-import { react } from '../../eslint/config/react.mjs';
-import { restrictions } from '../../eslint/config/restrictions.mjs';
-import { afterPrettier, style } from '../../eslint/config/style.mjs';
-import { makeTree, relativeToRoot } from '../architecture/fixture-tree';
-
-async function lintFiles(files: Record<string, string>): Promise<Record<string, string[]>> {
-  const root = makeTree(files);
-  const eslint = new ESLint({
-    cwd: root,
-    overrideConfigFile: true,
-    overrideConfig: [
-      {
-        files: ['**/*.{ts,tsx}'],
-        languageOptions: {
-          parser: tseslint.parser,
-          parserOptions: { ecmaFeatures: { jsx: true } },
-        },
-      },
-      ...restrictions,
-      ...style,
-      ...react,
-      ...overrides,
-      ...afterPrettier,
-    ],
-  });
-  const results = await eslint.lintFiles(['src/**/*.{ts,tsx}']);
-  return Object.fromEntries(
-    results.map((r) => [
-      relativeToRoot(r.filePath, root),
-      r.messages.map((m) => `[${m.ruleId}] ${m.message}`),
-    ]),
-  );
-}
+import { lintFiles } from './lint-tree';
 
 const COMPONENT = 'src/modules/shop/presentation/components/card.tsx';
 
@@ -176,29 +141,6 @@ export const B = () => { const t = useTranslations('shop'); return <p>{t('title'
 });
 
 describe('React, accessibility and Next.js rules', () => {
-  it('rejects raw primitives where an approved component exists', async () => {
-    const out = await lintFiles({
-      [COMPONENT]:
-        'export const A = () => (<div><button type="button">x</button><select /><a href="/x">y</a></div>);\n',
-    });
-    const text = out[COMPONENT]!.join('\n');
-    expect(text).toMatch(/Use `Button` from '@components\/ui\/button'/);
-    expect(text).toMatch(/Use `Select` from '@components\/ui\/select'/);
-    expect(text).toMatch(/locale-aware `Link` from '@i18n'/);
-  });
-
-  it('allows a raw <button> in the builder editor chrome only, and still rejects <select> and <a> there', async () => {
-    const chrome = 'src/modules/builder/presentation/components/canvas/handle.tsx';
-    const elsewhere = 'src/modules/builder/presentation/components/builder-shell.tsx';
-    const out = await lintFiles({
-      [chrome]: 'export const A = () => (<div><button type="button">x</button><select /></div>);\n',
-      [elsewhere]: 'export const B = () => (<button type="button">x</button>);\n',
-    });
-    expect(out[chrome]!.join('\n')).not.toMatch(/Use `Button`/);
-    expect(out[chrome]!.join('\n')).toMatch(/Use `Select`/);
-    expect(out[elsewhere]!.join('\n')).toMatch(/Use `Button`/);
-  });
-
   it('lets the primitives themselves use raw elements', async () => {
     const out = await lintFiles({
       'src/components/ui/button.tsx':

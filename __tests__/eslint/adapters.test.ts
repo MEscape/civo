@@ -107,7 +107,6 @@ export const loggerShopAuditLog: ShopAuditLog = createAuditLog('shop.audit', LEV
 ruleTester.run('architecture/audit-adapter', rules['audit-adapter']!, {
   valid: [
     valid(AUDIT, GOOD_AUDIT),
-    valid('src/modules/shop/infrastructure/logging/logger-shop-audit-log.ts', GOOD_AUDIT), // established alias of audit/
     valid(
       'src/modules/shop/infrastructure/prisma/prisma-shop.repository.ts',
       'export class NotAnAdapter {}',

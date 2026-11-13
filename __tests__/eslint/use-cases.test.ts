@@ -192,6 +192,12 @@ ruleTester.run('architecture/authorization-flow', rules['authorization-flow']!, 
     valid(
       QUERY,
       PROTECTED_QUERY(
+        "return this.deps.access.authorizeWebsite('website.read', id).andThen((scope) => findWebsite(this.deps.shops, scope));",
+      ),
+    ),
+    valid(
+      QUERY,
+      PROTECTED_QUERY(
         "return loadAuthorizedShop(this.deps, id, 'shop.read').map(({ shop }) => toView(shop));",
       ),
     ),
@@ -222,10 +228,10 @@ ruleTester.run('architecture/authorization-flow', rules['authorization-flow']!, 
   );
 }`,
     ),
-    // another module enforces the tenant: declared, with a reason, it needs no tenant-keyed load and no resource scope
+    // another module enforces the owner: declared, with a reason, it needs no owner-keyed load and no resource scope
     valid(
       HELPER,
-      `/** Resolves the website through its module. @tenant-scope delegated the website module resolves it inside the actor's tenant */
+      `/** Resolves the resource through its module. @owner-scope delegated the parent module resolves it inside the actor's scope */
 export function loadAuthorizedShop(deps: ShopDependencies, rawId: string, permission: Permission) {
   return deps.authorization.requireInTenant(permission).andThen((actor) =>
     parseShopId(rawId)
@@ -237,17 +243,41 @@ export function loadAuthorizedShop(deps: ShopDependencies, rawId: string, permis
   ],
   invalid: [
     invalid(
+      QUERY,
+      PROTECTED_QUERY(
+        'return this.deps.authorization.requireActor().andThen(() => this.deps.shops.findById(id));',
+      ),
+      /must authorize before anything else/,
+    ),
+    invalid(
+      QUERY,
+      PROTECTED_QUERY(
+        "return this.deps.shops.findById(id).andThen(() => this.deps.access.authorizeWebsite('website.read', id));",
+      ),
+      /must authorize before anything else/,
+    ),
+    invalid(
+      QUERY,
+      PROTECTED_QUERY('return this.deps.access.authorizeWebsite(id);'),
+      /must authorize before anything else/,
+    ),
+    invalid(
+      QUERY,
+      PROTECTED_QUERY("return this.deps.shops.authorizeWebsite('website.read', id);"),
+      /must authorize before anything else/,
+    ),
+    invalid(
       HELPER,
-      `/** @tenant-scope delegated the website module enforces it */
+      `/** @owner-scope delegated the parent module enforces it */
 export function loadAuthorizedShop(deps: D, rawId: string, permission: P) {
   return parseShopId(rawId).asyncAndThen((id) => deps.shops.findById(id));
 }`,
-      /declared `@tenant-scope delegated` but still needs: requireInTenant, <resource>NotFound/,
+      /declared `@owner-scope delegated` but still needs: requireInTenant, <resource>NotFound/,
     ),
     // the tag needs a reason; without one the standard sequence applies
     invalid(
       HELPER,
-      `/** @tenant-scope delegated */
+      `/** @owner-scope delegated */
 export function loadAuthorizedShop(deps: D, rawId: string, permission: P) {
   return deps.authorization.requireInTenant(permission).andThen(() => parseShopId(rawId).asyncAndThen((id) => deps.shops.findById(id)));
 }`,
@@ -375,12 +405,6 @@ ruleTester.run('architecture/branded-id-usage', rules['branded-id-usage']!, {
 export function toShopId(raw: string): ShopId { return raw as ShopId; }
 export function parseShopId(raw: string) { return ok(toShopId(raw)); }`,
     ),
-    // platform ids are minted by the identity provider: no request ever carries one
-    valid(
-      'src/modules/auth/domain/models/ids.ts',
-      `export type ActorId = Brand<string, 'ActorId'>;
-export function toActorId(raw: string): ActorId { return raw as ActorId; }`,
-    ),
     valid(
       'src/modules/shop/domain/ports/shop.repository.ts',
       'export interface ShopRepository { findById(id: ShopId, tenantId: TenantId): R; findBySlug(slug: string): R; }',
@@ -445,8 +469,8 @@ export function toActorId(raw: string): ActorId { return raw as ActorId; }`,
     ),
     invalid(
       'src/modules/shop/infrastructure/provisioner/stock-provisioner.ts',
-      'export class P { provision(websiteId: string) {} }',
-      /`websiteId` .* boundary as plain `string`/,
+      'export class P { provision(childId: string) {} }',
+      /`childId` .* boundary as plain `string`/,
     ),
   ],
 });
@@ -485,7 +509,7 @@ ruleTester.run('architecture/rate-limit-usage', rules['rate-limit-usage']!, {
     valid(
       PUBLIC_QUERY,
       publicUseCase(
-        ' * @authorization public Anyone may read the catalog.\n * @rate-limit none Cached per website; a budget would make every page dynamic.',
+        ' * @authorization public Anyone may read the catalog.\n * @rate-limit none Cached content; a budget would make every page dynamic.',
         'return read();',
       ),
     ),
@@ -518,7 +542,7 @@ ruleTester.run('architecture/rate-limit-usage', rules['rate-limit-usage']!, {
     invalid(
       PUBLIC_QUERY,
       publicUseCase(
-        ' * @authorization public Anyone may look a shop up.\n * @rate-limit none Cached per website.',
+        ' * @authorization public Anyone may look a shop up.\n * @rate-limit none Cached content and statically evaluated.',
         'return limit(this.deps, SHOP_RATE_LIMITS.lookup);',
       ),
       /tagged `@rate-limit none` but spends a budget/,
@@ -572,6 +596,35 @@ ruleTester.run('architecture/rate-limit-usage', rules['rate-limit-usage']!, {
       POLICIES,
       `${POLICIES_FILE}\nexport function lookupPolicy() {}`,
       /exports policy data only/,
+    ),
+  ],
+});
+
+ruleTester.run('architecture/truncation-signal', rules['truncation-signal']!, {
+  valid: [
+    valid(
+      'src/modules/shop/domain/ports/shop.repository.ts',
+      'export interface R { find(limit: number): Promise<{ items: string[]; isTruncated: boolean }>; }',
+    ),
+    valid(
+      'src/modules/shop/domain/ports/shop.repository.ts',
+      'export interface R {\n  // @truncation none intentional\n  find(limit: number): Promise<string[]>;\n}',
+    ),
+    valid(
+      'src/modules/shop/presentation/components/shop-list.tsx',
+      'export function List({ isTruncated }: { isTruncated: boolean }) { return <div>{isTruncated && <p>truncated</p>}</div>; }',
+    ),
+  ],
+  invalid: [
+    invalid(
+      'src/modules/shop/domain/ports/shop.repository.ts',
+      'export interface R { find(limit: number): Promise<string[]>; }',
+      /Bounded port method 'find' accepting a limit must return an 'isTruncated: boolean' signal/,
+    ),
+    invalid(
+      'src/modules/shop/presentation/components/shop-list.tsx',
+      'export function List({ isTruncated }: { isTruncated: boolean }) { return <div><span>list</span></div>; }',
+      /Truncation signal 'isTruncated' is accessed but not rendered in a status alert or conditional warning/,
     ),
   ],
 });

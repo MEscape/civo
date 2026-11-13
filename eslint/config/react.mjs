@@ -127,6 +127,12 @@ export const react = [
       ],
     },
   },
+  // Hooks live in plain `.ts` files (`use-*.ts`): the rules of hooks apply to them as to components.
+  {
+    files: ['**/use-*.ts'],
+    plugins: { 'react-hooks': reactHooks },
+    rules: { ...reactHooks.configs.recommended.rules },
+  },
   {
     files: ['**/*.{ts,tsx}'],
     plugins: { '@next/next': /** @type {any} */ (nextPlugin) },

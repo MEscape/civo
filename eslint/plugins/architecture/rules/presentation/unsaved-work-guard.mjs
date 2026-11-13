@@ -1,4 +1,4 @@
-import { UNSAVED_WORK_GUARDS } from '../../../../policy/policy.mjs';
+import { UNSAVED_WORK_GUARD } from '../../../../policy/policy.mjs';
 import { classifyContext, defineRule, report } from '../../util.mjs';
 
 const OPT_OUT = /@unsaved-work\s+none\s+\S/;
@@ -22,10 +22,13 @@ export const unsavedWorkGuard = defineRule({
       CallExpression(node) {
         if (node.callee.type !== 'Identifier') return;
         if (node.callee.name === 'useForm') firstUseForm ??= node;
-        if (UNSAVED_WORK_GUARDS.includes(node.callee.name)) isGuarded = true;
+        if (UNSAVED_WORK_GUARD.test(node.callee.name)) isGuarded = true;
       },
       JSXOpeningElement(node) {
-        if (node.name.type === 'JSXIdentifier' && node.name.name === 'UnsavedChangesGuard')
+        if (
+          node.name.type === 'JSXIdentifier' &&
+          (node.name.name === 'UnsavedChangesGuard' || /Unsaved\w*Guard$/.test(node.name.name))
+        )
           isGuarded = true;
       },
       'Program:exit'() {
@@ -35,7 +38,7 @@ export const unsavedWorkGuard = defineRule({
           report(
             context,
             firstUseForm,
-            'This form can lose unsaved work. Call useReportUnsavedChanges (inside an UnsavedChangesGuard) or useUnsavedNavigationGuard + useBeforeUnloadGuard, or add a comment `@unsaved-work none <reason>` when there is nothing worth keeping (sign-in, one field).',
+            'This form can lose unsaved work. Call an unsaved-work guard hook (such as useReportUnsavedChanges, useUnsavedNavigationGuard, or useBeforeUnloadGuard) or add a comment `@unsaved-work none <reason>` when there is nothing worth keeping (sign-in, one field).',
           );
         }
       },

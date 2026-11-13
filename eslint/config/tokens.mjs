@@ -1,26 +1,23 @@
-import civoTokens from '../plugins/civo-tokens.mjs';
+import designTokens from '../plugins/design-tokens.mjs';
 
 import { TEST_FILES } from './globs.mjs';
 
 /**
- * Design-token conformance (AI_RULES.md §19). Mirrors
- * __tests__/src/lib/design-tokens.test.ts so violations surface in the editor.
- * Allowed paths mirror ALLOWED_PATHS in that test.
+ * Design-token conformance. Enforces color, size and token usage across UI components.
  */
 export const tokens = [
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/app/globals.css', 'src/modules/website/domain/**', 'src/data/**', ...TEST_FILES],
-    plugins: { 'civo-tokens': civoTokens },
+    ignores: ['src/app/globals.css', 'src/data/**', ...TEST_FILES],
+    plugins: { 'design-tokens': designTokens },
     rules: {
-      'civo-tokens/no-raw-palette-color': 'error',
-      'civo-tokens/no-literal-white-black': 'error',
-      'civo-tokens/no-arbitrary-civo-token': 'error',
-      'civo-tokens/no-brand-text-color': 'error',
-      'civo-tokens/no-raw-hex': 'error',
-      'civo-tokens/no-raw-color-fn': 'error',
-      'civo-tokens/no-arbitrary-size': 'error',
-      'civo-tokens/no-screen-height': 'error',
+      'design-tokens/no-raw-palette-color': 'error',
+      'design-tokens/no-literal-white-black': 'error',
+      'design-tokens/no-arbitrary-token': 'error',
+      'design-tokens/no-raw-hex': 'error',
+      'design-tokens/no-raw-color-fn': 'error',
+      'design-tokens/no-arbitrary-size': 'error',
+      'design-tokens/no-screen-height': 'error',
     },
   },
 ];

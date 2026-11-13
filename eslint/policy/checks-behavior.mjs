@@ -10,6 +10,7 @@ import {
 } from '../plugins/architecture/rules/use-cases/authorization-flow.mjs';
 
 import { kebabToCamel, stripFileExtension } from './paths.mjs';
+import { AUTHORIZATION } from './policy.mjs';
 import { exportedNames, leadingComment, topLevelClasses, violation, visit } from './project.mjs';
 
 function ctorDependencyName(classNode) {
@@ -250,6 +251,7 @@ export function describeEntryPoints(project) {
           name: cls.name,
           file: f.path,
           category: info.category,
+          reason: info.tag?.reason ?? null,
           ok: info.category === 'protected' ? info.authorizedFirst : true,
           info,
         });
@@ -374,6 +376,7 @@ export function describeEntryPoints(project) {
         name: `${method} ${file.path}`,
         file: file.path,
         category,
+        reason: tag ? (tag[2]?.trim() ?? null) : null,
         ok: tag !== null && (category !== 'protected' || usesUseCase),
       });
     }
@@ -390,7 +393,7 @@ export function checkAuthorizationCategories(project) {
         violation(
           'authorization',
           e.file,
-          `\`${e.name}\` is protected (it has no \`@authorization\` tag) but \`execute\` does not start with authorization (requireInTenant / loadAuthorized*). Authorize first, or tag the class \`@authorization public <reason>\` / \`@authorization system <reason>\` if it deliberately has no actor.`,
+          `\`${e.name}\` is protected (it has no \`@authorization\` tag) but \`execute\` does not start with authorization (${AUTHORIZATION.actorCall} / access.authorizeWebsite / loadAuthorized*). Authorize first, or tag the class \`@authorization public <reason>\` / \`@authorization system <reason>\` if it deliberately has no actor.`,
         ),
       );
     } else if (e.kind === 'action') {
@@ -556,7 +559,7 @@ export function checkTranslationOwnership(project) {
     }
 
     // Each locale's catalog must be exported by the public API and registered in src/i18n/locales/<locale>.ts.
-    // The export name is the module's choice (`enDataSource`); what matters is that the same name flows from
+    // The export name is the module's choice (`enLessonPlan`); what matters is that the same name flows from
     // the module's index.ts into the registry.
     const index = project.files.get(`src/modules/${name}/index.ts`);
     for (const locale of locales) {

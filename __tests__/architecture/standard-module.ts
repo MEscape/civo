@@ -71,7 +71,7 @@ import type { Item } from '../models/item';
 
 export interface ItemRepository {
   findById(id: ItemId, tenantId: TenantId): AppResultAsync<Item | null, InfrastructureAppError>;
-  listByTenant(tenantId: TenantId, limit: number): AppResultAsync<readonly Item[], InfrastructureAppError>;
+  listByTenant(tenantId: TenantId, limit: number): AppResultAsync<{ readonly items: readonly Item[]; readonly isTruncated: boolean }, InfrastructureAppError>;
 }
 `,
     // ----------------------------------------------------------- application
@@ -194,12 +194,12 @@ import type { ItemView } from '../contracts/inventory-views';
 export class ListItems {
   constructor(private readonly deps: InventoryDependencies) {}
 
-  execute(requested?: number): AppResultAsync<readonly ItemView[], AuthorizationError | InfrastructureAppError> {
+  execute(requested?: number): AppResultAsync<{ readonly items: readonly ItemView[]; readonly isTruncated: boolean }, AuthorizationError | InfrastructureAppError> {
     const limit = clamp(requested ?? ITEM_LIST_LIMITS.default, ITEM_LIST_LIMITS.min, ITEM_LIST_LIMITS.max);
     return this.deps.authorization
       .requireInTenant('inventory.read')
       .andThen((actor) => this.deps.items.listByTenant(actor.tenantId, limit))
-      .map((items) => items.map(toItemView));
+      .map((found) => ({ ...found, items: found.items.map(toItemView) }));
   }
 }
 `,
@@ -269,11 +269,11 @@ export class PrismaItemRepository implements ItemRepository {
     ).map((record) => (record === null ? null : toItem(record)));
   }
 
-  listByTenant(tenantId: TenantId, limit: number): AppResultAsync<readonly Item[], InfrastructureAppError> {
+  listByTenant(tenantId: TenantId, limit: number): ReturnType<ItemRepository['listByTenant']> {
     return fromThrowableAsync(
-      () => db.orm.public.Item.select(...ITEM_SELECT).where({ tenantId }).limit(limit).all().toArray(),
+      async () => db.orm.public.Item.select(...ITEM_SELECT).where({ tenantId }).limit(limit + 1).all(),
       failures.infraOnly('listByTenant')
-    ).map((records) => records.map(toItem));
+    ).map((records) => ({ items: records.slice(0, limit).map(toItem), isTruncated: records.length > limit }));
   }
 }
 `,
@@ -403,6 +403,7 @@ export const deInventory = de.inventory;
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { TextField } from '@components/shared/field';
 import { Button } from '@components/ui/button';
 import { useTranslations } from '@i18n/client';
 import { applyActionError } from '@lib/actions';
@@ -424,8 +425,7 @@ export function CreateItemForm() {
 
   return (
     <form onSubmit={(event) => void onSubmit(event)}>
-      <label htmlFor="name">{t('fields.name')}</label>
-      <input id="name" {...form.register('name')} />
+      <TextField id="name" label={t('fields.name')} {...form.register('name')} />
       <Button type="submit">{t('actions.create')}</Button>
     </form>
   );

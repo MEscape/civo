@@ -11,7 +11,6 @@ const ALIASES = [
   ['@components/', 'src/components/'],
   ['@hooks/', 'src/hooks/'],
   ['@lib/', 'src/lib/'],
-  ['@store/', 'src/store/'],
   ['@i18n/', 'src/i18n/'],
   ['@types/', 'src/types/'],
   ['@/', 'src/'],
@@ -47,9 +46,7 @@ export function classifyFile(repoPath) {
   if (parts[1] !== 'modules' || parts.length < 4) {
     const area = parts[1] ?? 'other';
     return {
-      area: ['lib', 'components', 'app', 'i18n', 'hooks', 'store', 'types', 'data'].includes(area)
-        ? area
-        : 'other',
+      area: ['lib', 'components', 'app', 'i18n', 'hooks', 'types'].includes(area) ? area : 'other',
       path: repoPath,
     };
   }
@@ -144,13 +141,13 @@ export function isPublicApiOf(resolved) {
   );
 }
 
-/** `data-sources` -> `dataSources` (the namespace casing used by module translation catalogs). */
+/** `lesson-plans` -> `lessonPlans` (the namespace casing used by module translation catalogs). */
 export function kebabToCamel(kebab) {
   const pascal = kebabToPascal(kebab);
   return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
 
-/** `create-website.ts` -> `CreateWebsite`. */
+/** `create-lesson.ts` -> `CreateLesson`. */
 export function kebabToPascal(kebab) {
   return kebab
     .split('-')

@@ -80,11 +80,11 @@ describe('a new standard module', () => {
  */
 function withPolicy(
   files: Record<string, string>,
-  fields: { id?: string; onBackendFailure?: string; second?: boolean },
+  fields: { id?: string; onBackendFailure?: string; second?: boolean; failOpenComment?: string },
   options: { isSpent?: boolean } = {},
 ): void {
   const policy = (id: string) =>
-    `{ id: ${id}, limit: 10, windowSeconds: 60, onBackendFailure: ${fields.onBackendFailure ?? "'deny'"} }`;
+    `${fields.failOpenComment ? `// @fail-open ${fields.failOpenComment}\n` : ''}{ id: ${id}, limit: 10, windowSeconds: 60, onBackendFailure: ${fields.onBackendFailure ?? "'deny'"} }`;
   const entries = [`create: ${policy(fields.id ?? "'inventory.create'")},`];
   if (fields.second === true) {
     entries.push(`update: ${policy("'inventory.create'")},`);
@@ -449,6 +449,17 @@ const mutations: Mutation[] = [
     },
     tree: /\[rate-limit policies\].*reuses id 'inventory\.create'/,
   },
+  {
+    name: 'a module manifest with an invalid role',
+    mutate: (f) => {
+      f[`${M}/module.json`] = JSON.stringify({
+        role: 'invalid-role',
+        reason:
+          'This is a long reason that explains why this manifest exists for testing purposes.',
+      });
+    },
+    tree: /\[module manifests\].*Unknown module role 'invalid-role'/,
+  },
 ];
 
 describe('a new module that breaks a convention is rejected with an actionable diagnostic', () => {
@@ -481,5 +492,18 @@ describe('a new module that breaks a convention is rejected with an actionable d
     expect(violations.join('\n')).toMatch(
       /Cyclic module dependency: (?:inventory → billing → inventory|billing → inventory → billing)/,
     );
+  });
+
+  it('allows a fail-open rate-limit policy when accompanied by a valid @fail-open comment', () => {
+    const root = tree((f) => {
+      withPolicy(f, {
+        onBackendFailure: "'allow'",
+        failOpenComment: 'Brief outage is acceptable to avoid refusing service.',
+      });
+    });
+    const violations = runAllChecks(root).filter(
+      (v: { group: string }) => v.group === 'rate-limit policies',
+    );
+    expect(violations).toEqual([]);
   });
 });

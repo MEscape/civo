@@ -4,9 +4,9 @@ import {
   ERROR_DETAILS,
   FORM_DATA,
   LOCALE_FORMATTING,
+  BASE,
   EVERYWHERE,
   RANDOMNESS,
-  UI_PRIMITIVES,
 } from './selectors.mjs';
 
 /**
@@ -133,6 +133,11 @@ export const restrictions = [
     ignores: ['src/lib/config/public-env.ts', 'src/lib/config/server.ts'],
     rules: { 'no-restricted-syntax': ['error', ...EVERYWHERE] },
   },
+  // The helpers themselves are where they are defined.
+  {
+    files: ['src/lib/utils/**/*.{ts,tsx}', 'src/lib/pagination/page-request.ts'],
+    rules: { 'no-restricted-syntax': ['error', ...BASE] },
+  },
   // --- domain: no clock reads, no randomness, no process ---------------------
   // Parsing a date (`new Date(iso)`) is deterministic and allowed; READING the clock is not.
   {
@@ -178,7 +183,7 @@ export const restrictions = [
   {
     files: ['src/modules/*/presentation/**/*.tsx', 'src/app/**/*.tsx'],
     rules: {
-      'no-restricted-syntax': ['error', ...EVERYWHERE, ...UI_PRIMITIVES, ...LOCALE_FORMATTING],
+      'no-restricted-syntax': ['error', ...EVERYWHERE, ...LOCALE_FORMATTING],
     },
   },
   // Hooks and helpers of a module's presentation layer format through the request locale too.
@@ -194,13 +199,7 @@ export const restrictions = [
       'src/components/shared/route-error-panel.tsx',
     ],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        ...EVERYWHERE,
-        ...UI_PRIMITIVES,
-        ...LOCALE_FORMATTING,
-        ERROR_DETAILS,
-      ],
+      'no-restricted-syntax': ['error', ...EVERYWHERE, ...LOCALE_FORMATTING, ERROR_DETAILS],
     },
   },
   // --- UI formats through the request locale ---------------------------------

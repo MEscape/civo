@@ -3,14 +3,14 @@ import { invalid, ruleTester, rules, valid } from './rule-tester';
 const REPO = 'src/modules/booking/infrastructure/prisma/prisma-booking.repository.ts';
 const OUTSIDE = 'src/modules/booking/application/commands/x.ts';
 
-const UNBOUND = /is not bound to one/;
+const UNBOUND = /is not bound to its owner/;
 const KIND_AND_REASON = /needs a kind .* and a one-line reason/;
 
 /** A class around the statement, as a repository has. */
 const method = (body: string, comment = '') =>
   `export class Repo {\n  ${comment}\n  find(id, tenantId) {\n    return ${body};\n  }\n}`;
 
-ruleTester.run('architecture/tenant-scope', rules['tenant-scope']!, {
+ruleTester.run('architecture/owner-scope', rules['owner-scope']!, {
   valid: [
     // Pinned by a column of the table.
     valid(REPO, method('db.orm.public.Booking.where({ id, tenantId }).first()')),
@@ -37,7 +37,7 @@ ruleTester.run('architecture/tenant-scope', rules['tenant-scope']!, {
     valid(
       REPO,
       method(
-        'db.orm.public.BookingResource.createAll([{ bookingId, websiteId }, { bookingId, websiteId }])',
+        'db.orm.public.BookingAssignment.createAll([{ bookingId, websiteId }, { bookingId, websiteId }])',
       ),
     ),
     valid(
@@ -51,16 +51,16 @@ ruleTester.run('architecture/tenant-scope', rules['tenant-scope']!, {
       REPO,
       method(
         'db.orm.public.Membership.where({ actorId }).all()',
-        '/** @tenant-scope actor Bound to the person, not a tenant. */',
+        '/** @owner-scope actor Bound to the person, not a tenant. */',
       ),
     ),
     valid(
       REPO,
-      `export class Repo {\n  find(id) {\n    // @tenant-scope derived The id was read by a pinned query just above.\n    const row = db.orm.public.BookingResource.where({ bookingId: id }).first();\n    return row;\n  }\n}`,
+      `export class Repo {\n  find(id) {\n    // @owner-scope derived The id was read by a pinned query just above.\n    const row = db.orm.public.BookingAssignment.where({ bookingId: id }).first();\n    return row;\n  }\n}`,
     ),
     valid(
       REPO,
-      `// @tenant-scope builder Every caller pins it.\nconst bookings = () => db.orm.public.Booking.select('id');\nexport class Repo {\n  find(id, tenantId) {\n    return bookings().where({ id, tenantId }).first();\n  }\n}`,
+      `// @owner-scope builder Every caller pins it.\nconst bookings = () => db.orm.public.Booking.select('id');\nexport class Repo {\n  find(id, tenantId) {\n    return bookings().where({ id, tenantId }).first();\n  }\n}`,
     ),
     // A table that is not tenant-owned, and code that is not a repository.
     valid(REPO, method('db.orm.public.Elsewhere.where({ id }).first()')),
@@ -92,39 +92,39 @@ ruleTester.run('architecture/tenant-scope', rules['tenant-scope']!, {
     invalid(REPO, method('db.orm.public.Dataset.where({ id }).first()'), UNBOUND),
     // Writes whose owner cannot be seen.
     invalid(REPO, method('db.orm.public.Booking.create(row)'), UNBOUND),
-    invalid(REPO, method('db.orm.public.BookingResource.createAll(rows)'), UNBOUND),
-    invalid(REPO, method('db.orm.public.BookingResource.createAll([{ bookingId }])'), UNBOUND),
+    invalid(REPO, method('db.orm.public.BookingAssignment.createAll(rows)'), UNBOUND),
+    invalid(REPO, method('db.orm.public.BookingAssignment.createAll([{ bookingId }])'), UNBOUND),
     // A tag that gives no reason or no kind is not a reason.
     invalid(
       REPO,
-      method('db.orm.public.Booking.where({ id }).first()', '/** @tenant-scope derived */'),
+      method('db.orm.public.Booking.where({ id }).first()', '/** @owner-scope derived */'),
       KIND_AND_REASON,
     ),
     invalid(
       REPO,
       method(
         'db.orm.public.Booking.where({ id }).first()',
-        '/** @tenant-scope whatever Because. */',
+        '/** @owner-scope whatever Because. */',
       ),
       KIND_AND_REASON,
     ),
     // A tagged builder only moves the question to its callers.
     invalid(
       REPO,
-      `// @tenant-scope builder Every caller pins it.\nconst bookings = () => db.orm.public.Booking.select('id');\nexport class Repo {\n  find(id) {\n    return bookings().where({ id }).first();\n  }\n}`,
+      `// @owner-scope builder Every caller pins it.\nconst bookings = () => db.orm.public.Booking.select('id');\nexport class Repo {\n  find(id) {\n    return bookings().where({ id }).first();\n  }\n}`,
       UNBOUND,
     ),
     // A comment on another method covers nothing here.
     invalid(
       REPO,
-      `export class Repo {\n  /** @tenant-scope actor Bound to the person. */\n  mine(actorId) {\n    return db.orm.public.Membership.where({ actorId }).all();\n  }\n  find(id) {\n    return db.orm.public.Booking.where({ id }).first();\n  }\n}`,
+      `export class Repo {\n  /** @owner-scope actor Bound to the person. */\n  mine(actorId) {\n    return db.orm.public.Membership.where({ actorId }).all();\n  }\n  find(id) {\n    return db.orm.public.Booking.where({ id }).first();\n  }\n}`,
       UNBOUND,
     ),
     // Raw SQL on an owned table without its owner.
     invalid(
       REPO,
       method('db.raw.sql`SELECT * FROM "Booking" WHERE "id" = ${id}`.build()'),
-      /raw statement on a tenant-owned table/,
+      /raw statement on an owned table/,
     ),
   ],
 });

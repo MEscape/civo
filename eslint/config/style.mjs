@@ -1,6 +1,11 @@
 import eslintComments from 'eslint-plugin-eslint-comments';
 import sonarjs from 'eslint-plugin-sonarjs';
 
+import { FILE_SIZE, FOCUSED_SIZE_GLOBS, LIBRARY_SIZE_GLOBS } from '../policy/policy.mjs';
+
+/** Code lines only: blank lines and comments do not count, so documenting a file never costs room. */
+const codeLines = (max) => ['error', { max, skipBlankLines: true, skipComments: true }];
+
 /** Built-in ESLint correctness and code-style rules, comment hygiene and smell detection. */
 export const style = [
   {
@@ -38,6 +43,11 @@ export const style = [
       'max-params': ['warn', 3],
     },
   },
+  // docs/rules/code-style.md: small files. Application and component code is held to the lower limit.
+  { files: ['src/**/*.{ts,tsx}'], rules: { 'max-lines': codeLines(FILE_SIZE.default) } },
+  { files: FOCUSED_SIZE_GLOBS, rules: { 'max-lines': codeLines(FILE_SIZE.focused) } },
+  // The shared library keeps a family of components in one file, so its limit is higher (after the line above).
+  { files: LIBRARY_SIZE_GLOBS, rules: { 'max-lines': codeLines(FILE_SIZE.library) } },
   // Redux Toolkit slices mutate state through Immer.
   {
     files: [

@@ -23,6 +23,7 @@ export function checkLayerDependencies(project) {
         specifier: imp.specifier,
         isTypeOnly: imp.isTypeOnly,
         names: imp.names,
+        root: project.root,
       });
       if (message) out.push(violation('layer-dependencies', `${file.path}:${imp.line}`, message));
     }
@@ -193,7 +194,7 @@ export function checkClientServerBoundary(project) {
 export function checkCompositionWiring(project) {
   const out = [];
   for (const name of project.modules) {
-    const policy = policyFor(name);
+    const policy = policyFor(name, project.root);
     const files = project.moduleFiles(name);
     const compositionPath = policy.compositionFile
       ? `src/modules/${name}/${policy.compositionFile}`
@@ -311,8 +312,7 @@ export function checkCompositionWiring(project) {
 export function checkPublicApi(project) {
   const out = [];
   for (const name of project.modules) {
-    const policy = policyFor(name);
-    if (policy.legacy !== null) continue;
+    const policy = policyFor(name, project.root);
     for (const [entry, sources] of [
       ['index.ts', policy.publicApiSources],
       ['client.ts', policy.clientApiSources],

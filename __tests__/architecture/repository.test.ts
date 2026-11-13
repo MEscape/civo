@@ -1,38 +1,33 @@
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import plugin from '../../eslint/plugins/architecture/index.mjs';
 import { describeEntryPoints } from '../../eslint/policy/checks-behavior.mjs';
-import { checkPublicApi } from '../../eslint/policy/checks-dependencies.mjs';
 import { describeRateLimitOptOuts } from '../../eslint/policy/checks-rate-limits.mjs';
-import { checkModuleStructure } from '../../eslint/policy/checks-structure.mjs';
 import { CHECKS, loadProject } from '../../eslint/policy/index.mjs';
-import {
-  KNOWN_MODULE_CYCLES,
-  LEGACY_MODULES,
-  MODULE_OVERRIDES,
-} from '../../eslint/policy/policy.mjs';
+import { KNOWN_MODULE_CYCLES } from '../../eslint/policy/policy.mjs';
 
 import { describeViolations } from './fixture-tree';
 
 import type { Violation } from './fixture-tree';
 
-/** The policy shapes this test reads; the policy is untyped ESM (see eslint/shims.d.ts). */
-interface ModuleOverride {
-  readonly reason: string;
-  readonly extraRootFiles?: Readonly<Record<string, readonly string[]>>;
-}
-interface LegacyModule {
-  readonly reason: string;
-  readonly relax?: readonly string[];
-}
-
 const ROOT = process.cwd();
 const project = loadProject(ROOT);
+const hasModules = project.modules.length > 0;
+const modulesDir = join(ROOT, 'src/modules');
 
 describe('architecture of this repository', () => {
   it('finds the modules it is meant to police', () => {
-    expect(project.modules).toEqual(expect.arrayContaining(['auth', 'website']));
-    expect(project.files.size).toBeGreaterThan(50);
+    // `src/modules` is created with the first module, so its absence is an empty list.
+    const fsModules = existsSync(modulesDir)
+      ? readdirSync(modulesDir, { withFileTypes: true })
+          .filter((d) => d.isDirectory())
+          .map((d) => d.name)
+          .sort()
+      : [];
+    expect(project.modules).toEqual(fsModules);
+    expect(project.files.size).toBeGreaterThan(0);
   });
 
   for (const [name, check] of Object.entries<(p: unknown) => Violation[]>(CHECKS)) {
@@ -42,145 +37,42 @@ describe('architecture of this repository', () => {
     });
   }
 
-  it('gives every externally reachable entry point an explicit authorization category', () => {
-    const entries = describeEntryPoints(project) as Array<{
-      kind: string;
-      name: string;
-      category: string;
-      ok: boolean;
-    }>;
-    expect(entries.length).toBeGreaterThan(0);
-    expect(entries.filter((e) => !e.ok).map((e) => `${e.kind}:${e.name}=${e.category}`)).toEqual(
-      [],
-    );
-    // `protected` is the default and needs no review; every way AROUND authorization is listed here on purpose, so adding
-    // a public or system entry point is a visible change in review (it also needs an `@authorization` tag with a reason).
-    const exceptions = entries
-      .filter((e) => e.category !== 'protected')
-      .map((e) => `${e.kind}:${e.name}=${e.category}`)
-      .sort();
-    expect(exceptions).toEqual([
-      'action:acceptInvitationAction=public',
-      'action:cancelOwnBookingAction=public',
-      'action:confirmBookingAction=public',
-      'action:findBookingAction=public',
-      'action:getAvailableSlotsAction=public',
-      'action:holdSlotAction=public',
-      'action:readTrendWindowAction=public',
-      'action:releaseHoldAction=public',
-      'action:requestPasswordResetAction=public',
-      'action:rescheduleOwnBookingAction=public',
-      'action:resetPasswordAction=public',
-      'action:signInAction=public',
-      'action:signOutAction=public',
-      'action:suggestAlternativeSlotsAction=public',
-      'route-handler:GET src/app/api/health/route.ts=none',
-      'use-case:AcceptInvitation=public',
-      'use-case:BuildMapModel=public',
-      'use-case:CanNestComponent=public',
-      'use-case:CancelOwnBooking=public',
-      'use-case:ConfirmBooking=public',
-      'use-case:CreateSystemPage=system',
-      'use-case:GetAllWebsitesAuditTrail=system',
-      'use-case:GetAuditDigest=system',
-      'use-case:GetAuditTrail=system',
-      'use-case:GetAvailableSlots=public',
-      'use-case:GetBookingCatalog=public',
-      'use-case:GetComponentDefaultProps=public',
-      'use-case:GetComponentReleaseInfo=public',
-      'use-case:GetCurrentActor=public',
-      'use-case:GetMappedDatasetRecords=public',
-      'use-case:GetPublicBooking=public',
-      'use-case:GetPublicWebsiteBySlug=public',
-      'use-case:GetPublishedSnapshot=public',
-      'use-case:HoldSlot=public',
-      'use-case:InviteBootstrapAdmins=system',
-      'use-case:ListComponentCatalog=public',
-      'use-case:ListContent=public',
-      'use-case:ListContentCategories=public',
-      'use-case:ListPagesForRelease=system',
-      'use-case:ListWebsiteNames=public',
-      'use-case:PreviewInvitation=public',
-      'use-case:PruneAuditTrail=system',
-      'use-case:ReadTrendWindow=public',
-      'use-case:ReleaseHold=public',
-      'use-case:RequestPasswordReset=public',
-      'use-case:RescheduleOwnBooking=public',
-      'use-case:ResetPassword=public',
-      'use-case:SignIn=public',
-      'use-case:SignOut=public',
-      'use-case:SuggestAlternativeSlots=public',
-    ]);
-  });
-
-  it('lists every public use case that spends no rate-limit budget, so adding one is a visible change in review', () => {
-    // Each carries `@rate-limit none <reason>`; `architecture/rate-limit-usage` refuses a public use case that has neither a budget nor that tag.
-    expect(describeRateLimitOptOuts(project)).toEqual([
-      'auth:GetCurrentActor',
-      'auth:PreviewInvitation',
-      'auth:SignOut',
-      'booking:GetBookingCatalog',
-      'component-platform:CanNestComponent',
-      'component-platform:GetComponentDefaultProps',
-      'component-platform:GetComponentReleaseInfo',
-      'component-platform:ListComponentCatalog',
-      'component-platform:ListContent',
-      'component-platform:ListContentCategories',
-      'data-sources:GetMappedDatasetRecords',
-      'map:BuildMapModel',
-      'release:GetPublishedSnapshot',
-      'website:GetPublicWebsiteBySlug',
-      'website:ListWebsiteNames',
-    ]);
-  });
-
-  it('keeps the policy exceptions small, explicit and justified', () => {
-    // the one exception to the module layout: auth's single authorization service file in application/
-    const extraRootFiles = Object.entries<ModuleOverride>(MODULE_OVERRIDES).flatMap(
-      ([module, override]) =>
-        Object.entries(override.extraRootFiles ?? {}).map(
-          ([layer, files]) => `${module}/${layer}/${files.join(',')}`,
-        ),
-    );
-    expect(extraRootFiles).toEqual(['auth/application/authorization-service.ts']);
-    expect(Object.keys(MODULE_OVERRIDES)).toEqual(['auth']);
-    for (const [name, override] of Object.entries<ModuleOverride>(MODULE_OVERRIDES)) {
-      expect(override.reason.length, `${name} needs a reason`).toBeGreaterThan(40);
-    }
-    const authFiles = project
-      .moduleFiles('auth')
-      .filter((f: { local: string }) => f.local === 'application/authorization-service.ts');
-    expect(authFiles).toHaveLength(1);
-  });
-
-  it('lists a legacy module only while it still needs the exemption (the list can only shrink)', () => {
-    expect(Object.keys(LEGACY_MODULES).sort()).toEqual([]);
-    for (const [name, legacy] of Object.entries<LegacyModule>(LEGACY_MODULES)) {
-      expect(legacy.reason.length, `${name} needs a reason`).toBeGreaterThan(40);
-      expect(project.modules, `${name} no longer exists: remove it from LEGACY_MODULES`).toContain(
-        name,
+  it.skipIf(!hasModules)(
+    'gives every externally reachable entry point an explicit authorization category',
+    () => {
+      const entries = describeEntryPoints(project) as Array<{
+        kind: string;
+        name: string;
+        category: string;
+        ok: boolean;
+        reason?: string | null;
+      }>;
+      expect(entries.length).toBeGreaterThan(0);
+      expect(entries.filter((e) => !e.ok).map((e) => `${e.kind}:${e.name}=${e.category}`)).toEqual(
+        [],
       );
-      for (const rule of legacy.relax ?? []) {
-        if (rule.startsWith('architecture/')) {
-          expect(Object.keys(plugin.rules), `${rule} is not an architecture rule`).toContain(
-            rule.slice('architecture/'.length),
-          );
-        }
-      }
-      // lift the exemption: the structure family must find something to report, otherwise the entry is stale
-      const saved = LEGACY_MODULES[name];
-      delete (LEGACY_MODULES as Record<string, unknown>)[name];
-      try {
-        const own = [...checkModuleStructure(project), ...checkPublicApi(project)].filter(
-          (v: Violation) => v.file?.startsWith(`src/modules/${name}/`) === true,
-        );
-        expect(
-          own.length,
-          `${name} follows the module layout now: remove it from LEGACY_MODULES`,
-        ).toBeGreaterThan(0);
-      } finally {
-        (LEGACY_MODULES as Record<string, unknown>)[name] = saved;
-      }
+
+      // Every non-protected entry point must have a stated reason >= 20 characters
+      const nonProtectedWithoutReason = entries.filter(
+        (e) =>
+          e.category !== 'protected' &&
+          (e.kind === 'use-case' || e.kind === 'route-handler') &&
+          (!e.reason || e.reason.trim().length < 20),
+      );
+      expect(
+        nonProtectedWithoutReason.map((e) => `${e.kind}:${e.name} reason="${e.reason ?? ''}"`),
+        'Every public/system use-case and non-protected route-handler must carry a reason >= 20 chars',
+      ).toEqual([]);
+    },
+  );
+
+  it('ensures every rate-limit opt-out has a stated reason', () => {
+    const optOuts = describeRateLimitOptOuts(project);
+    for (const optOut of optOuts) {
+      expect(
+        optOut.reason.length,
+        `${optOut.module}:${optOut.name} needs a reason of >= 20 chars`,
+      ).toBeGreaterThanOrEqual(20);
     }
   });
 

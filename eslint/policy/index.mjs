@@ -12,11 +12,12 @@ import {
   checkPublicApi,
 } from './checks-dependencies.mjs';
 import { checkRateLimitPolicies } from './checks-rate-limits.mjs';
-import { checkModuleStructure } from './checks-structure.mjs';
+import { checkModuleManifests, checkModuleStructure } from './checks-structure.mjs';
 import { loadProject } from './project.mjs';
 
 /** Every whole-tree check, by name. Each takes a loaded project and returns violations. */
 export const CHECKS = {
+  'module manifests': checkModuleManifests,
   'module structure and capabilities': checkModuleStructure,
   'layer dependencies': checkLayerDependencies,
   'module graph (deep imports, cycles)': checkModuleGraph,
