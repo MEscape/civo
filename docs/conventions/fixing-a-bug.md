@@ -2,18 +2,22 @@
 
 Owning rules: [`testing.md`](../rules/testing.md), [`errors.md`](../rules/errors.md), [`observability.md`](../rules/observability.md).
 
+Generator: none ([`scripts/README.md`](../../scripts/README.md)).
+
 ## Checklist
 
-1. Reproduce it. Write a failing test at the lowest layer where the bug lives (domain, use case, adapter, or UI).
-2. Find the layer that owns the fault. Fix it there, not in a layer above that hides it.
-3. Do not patch over an architectural violation. If the cause is a boundary breach, fix the boundary. See [`boundaries.md`](../rules/boundaries.md).
-4. Make the test pass with the smallest change that addresses the cause.
-5. Check whether the failure was silent. If so, add a typed error or a structured log at the boundary. See [`observability.md`](../rules/observability.md).
-6. Search for the same pattern elsewhere and fix or list it.
-7. If the bug exposed a missing or unclear rule, update the owning rule file in the same change.
+1. Reproduce the bug. Write a failing test at the lowest layer where the fault occurs: domain, use case, adapter, or UI.
+2. Identify the layer that owns the fault. Fix it there rather than adding a workaround in a higher layer.
+3. Do not patch over an architectural violation. If the cause is a boundary breach, fix the boundary itself. See [`boundaries.md`](../rules/boundaries.md).
+4. Make the test pass with the smallest change that addresses the underlying cause, not merely the observed symptom.
+5. Check whether the failure was silent or difficult to diagnose. If so, add an appropriate typed error or structured log at the relevant boundary. See [`observability.md`](../rules/observability.md).
+6. Search for the same faulty pattern elsewhere. Fix other affected instances or explicitly document the remaining scope.
+7. If the bug exposes a missing or unclear rule, update the owning rule file in the same change.
 
 ## Done when
 
-- [ ] A test fails without the fix and passes with it
-- [ ] The fix sits in the layer that owns the fault
-- [ ] No new boundary violation was introduced
+- [ ] A test reproduces the bug before the fix and passes afterward.
+- [ ] The fix is in the layer that owns the fault.
+- [ ] The underlying cause is addressed rather than hidden by a workaround.
+- [ ] No new architectural boundary violation is introduced.
+- [ ] Relevant observability and documentation are updated where needed.

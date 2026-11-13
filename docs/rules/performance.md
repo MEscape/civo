@@ -1,12 +1,13 @@
 # Performance Rules
 
-- Do not optimize without a measured problem, except for the defaults listed here.
-- Keep the client bundle small: prefer Server Components and avoid heavy client-only libraries. See [`react.md`](react.md).
-- Use dynamic imports for large, rarely used client code.
-- Use the framework image and font primitives.
-- Set explicit dimensions on media to prevent layout shift.
-- Stream independent slow UI with Suspense. See [`nextjs.md`](nextjs.md).
-- Fetch independent data in parallel, not sequentially.
-- Paginate or bound every list-returning query. See [`persistence.md`](persistence.md).
+- Measure before optimizing, except for the defaults below.
+- Keep client bundles small: prefer Server Components and avoid heavy client-only libraries. See [react.md](react.md).
+- Dynamically import large, rarely used client code.
+- Use framework image and font primitives.
+- Set explicit media dimensions to prevent layout shift.
+- Stream independent slow UI with Suspense. See [nextjs.md](nextjs.md).
+- Fetch independent data in parallel.
+- Paginate or bound every list-returning query. See [persistence.md](persistence.md).
+- Bounded queries and port methods taking limits must return an `isTruncated: boolean` signal in their contract, and presentation components consuming bounded data must render a status alert when truncated (unless opted out with `// @truncation none <reason>`).
 - Avoid unbounded in-memory processing of large datasets.
-- Do not add a dependency to save a few lines when it costs bundle size. See [`dependencies.md`](dependencies.md).
+- Do not add dependencies merely to save a few lines when they increase bundle size. See [dependencies.md](dependencies.md).

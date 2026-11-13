@@ -1,526 +1,413 @@
-# Engineering Agent System
+# Engineering Agent System — Review Charter and Orchestration Contract
 
-A specialized multi-agent system for validating software features throughout the development lifecycle.
+## 1. Purpose
 
-The system uses dedicated agents for requirements validation, design, architecture, security, testing, adversarial analysis, and production readiness. Each agent has a clearly defined responsibility and operates within a specific scope.
+The Engineering Agent System is a specialized multi-agent framework for evaluating software changes throughout the development lifecycle.
 
-The objective is to provide a consistent and repeatable process for determining whether a feature is:
+It uses seven review agents with distinct responsibilities:
 
-- Complete
-- Correct
-- Tested
-- Secure
-- Architecturally sound
-- Usable
-- Maintainable
-- Ready for production
+1. Goal Checker
+2. Designer
+3. Architecture
+4. Security
+5. Bug Bounty
+6. Test / Regression
+7. Production Blocker
 
----
+Each agent performs a focused review, produces evidence-based findings, and reports uncertainty and verification limitations. The Production Blocker consolidates relevant findings and operational evidence into a release decision.
 
-## Table of Contents
+The system evaluates whether a feature is:
 
-- [Overview](#overview)
-- [Agents](#agents)
+- Complete against its requirements.
+- Correct in its observable behavior.
+- Adequately tested and protected against regressions.
+- Secure against technical vulnerabilities and relevant abuse cases.
+- Usable, accessible, and consistent with the intended product.
+- Architecturally sound and maintainable.
+- Safe to deploy and operate in production.
 
-  - [Goal Checker Agent](#goal-checker-agent)
-  - [Designer Agent](#designer-agent)
-  - [Architecture Agent](#architecture-agent)
-  - [Security Agent](#security-agent)
-  - [Bug Bounty Agent](#bug-bounty-agent)
-  - [Test Agent](#test-agent)
-  - [Production Blocker Agent](#production-blocker-agent)
+**Primary objective:** Establish credible engineering confidence with the smallest effective set of reviews and verifications. Do not optimize for the number of agents, findings, tests, or checklist items.
 
-- [Agent Responsibility Matrix](#agent-responsibility-matrix)
-- [Agent Lifecycle](#agent-lifecycle)
-- [Execution Matrix](#execution-matrix)
-- [Finding Classification](#finding-classification)
-- [Agent Output Contract](#agent-output-contract)
-- [Repository Structure](#repository-structure)
-- [Development Principles](#development-principles)
+## 2. Shared Product Context and Source of Truth
 
----
+Every review agent MUST read `../product/vision.md` before determining product acceptance criteria.
 
-# Overview
+For changes involving learning, companion, or channel behavior, agents MUST also read `../product/flows.md`.
 
-A single general-purpose review agent tends to mix unrelated concerns. This system separates those concerns into specialized agents.
+Respect the distinction between requirements, proposals, undecided decisions, and deferred features. Do not convert proposals or undecided items into mandatory requirements.
 
-Each agent answers a specific engineering question.
+### Product-specific invariants
 
-| Agent              | Primary Question                                                        |
-| ------------------ | ----------------------------------------------------------------------- |
-| Goal Checker       | Did we build everything that was requested?                             |
-| Designer           | Is the user experience correct, consistent, and usable?                 |
-| Architecture       | Does the implementation fit the system's architecture?                  |
-| Security           | Can the implementation be exploited through technical vulnerabilities?  |
-| Bug Bounty         | How could an authorized external researcher abuse or break the feature? |
-| Test               | Does the implementation work and preserve existing behavior?            |
-| Production Blocker | Is there anything that should prevent production deployment?            |
+When relevant to the change, verify that:
 
-The agents should complement each other rather than duplicate each other's responsibilities.
+- Help does not reveal a child's solution.
+- AI-generated output cannot directly mutate application state.
+- Text and voice interactions satisfy equivalent safety requirements.
+- Parent and teacher access remains appropriately scoped.
+- Sessions can resume correctly.
+- Learning evidence is deduplicated where required.
+- Praise is supported by evidence.
+- Teacher summaries do not expose raw transcripts or rank children.
 
----
+These checks are conditional on relevance to the changed behavior; they are not a requirement to review unrelated product features during every change.
 
-# Agents
+### Product interpretation rules
 
-## Goal Checker Agent
+- The product vision defines the MVP profile, storage behavior, and deferred scope.
+- Concept documents and example diagrams do not automatically establish implementation requirements.
+- Mockups, component galleries, and review instructions cannot reintroduce prohibited product concepts such as independent exercises, learning paths, or gamification.
+- Distinguish intended product behavior from implemented behavior and behavior that has actually been verified.
+- Never assume event sourcing, a particular AI processing chain, or deferred functionality is required unless authoritative requirements explicitly establish it.
 
-**Specification:** [docs/agents/goal-checker-agent.md](goal-checker-agent.md)
+When sources conflict or requirements are unclear, identify the ambiguity and its consequences. Do not silently reconcile conflicting requirements or invent product decisions.
 
-### Purpose
+## 3. Shared Evidence Standard
 
-Validates that the implementation satisfies the original feature requirements and acceptance criteria.
+All agents must distinguish the following:
 
-### Responsibilities
+| Evidence classification | Meaning                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Verified                | Directly supported by inspected implementation, executed checks, configuration, observed behavior, or authoritative requirements. State the actual evidence. |
+| Inferred                | A reasoned conclusion supported by available evidence but not directly confirmed.                                                                            |
+| Unverified              | The available evidence is insufficient to confirm the behavior or assumption.                                                                                |
+| Finding                 | A substantiated defect, vulnerability, regression risk, or other material concern.                                                                           |
+| Recommendation          | An improvement that is useful but is not necessarily evidence of a defect.                                                                                   |
 
-- Parse feature requirements
-- Identify acceptance criteria
-- Map requirements to implementation
-- Identify missing functionality
-- Detect partially implemented requirements
-- Validate expected workflows
-- Validate edge cases
-- Check required error and empty states
-- Verify that relevant requirements have test coverage
-- Identify scope gaps
-- Distinguish implementation from verification
+A test result proves only what the executed test actually exercised and asserted. Static inspection does not establish runtime behavior. An absence of observed defects does not prove that no defects exist.
 
-### Primary question
+Never invent requirements, files, execution results, test outcomes, reproduced behavior, or evidence references.
 
-> Did we build everything that was requested?
+For every material finding, provide the relevant evidence, explain the impact, and recommend a proportionate next action. State material limitations, including unavailable tools, inaccessible environments, incomplete test execution, and unverified assumptions.
 
-### Typical use
+## 4. Agent Responsibilities and Boundaries
 
-Run for every feature or significant change where completion must be verified against a defined specification.
+### 4.1 Goal Checker
 
----
+**Specification:** `docs/agents/goal-checker-agent.md`
 
-## Designer Agent
+**Primary question:** Did the implementation satisfy the requested requirements?
 
-**Specification:** [docs/agents/designer-agent.md](designer-agent.md)
+Owns:
 
-### Purpose
-
-Evaluates the user-facing experience and determines whether the implementation satisfies the product and design requirements.
+- Requirement and acceptance-criteria extraction.
+- Requirement-to-implementation mapping.
+- Missing or partially implemented functionality.
+- Expected workflows and required application states.
+- Scope completeness and unmet requirements.
+- Distinguishing implementation evidence from verification evidence.
 
-### Responsibilities
+Does not replace detailed test-quality, security, architecture, or production-readiness reviews.
 
-- Layout and visual hierarchy
-- Spacing and typography
-- Design-system compliance
-- Component consistency
-- Responsive behavior
-- Accessibility
-- Loading states
-- Empty states
-- Error states
-- Success states
-- Hover, focus, active, and disabled states
-- Form and validation UX
-- Navigation and interaction flows
-- Copy and microcopy
-- Mobile, tablet, and desktop behavior
-- Unnecessary interaction or visual complexity
-- Compliance with supplied design specifications
+### 4.2 Designer
 
-### Primary question
+**Specification:** `docs/agents/designer-agent.md`
 
-> Is the feature clear, consistent, accessible, and usable from the user's perspective?
+**Primary question:** Is the experience usable, accessible, and consistent with the intended product and design system?
 
-### Typical use
+Owns:
 
-Run for user-facing changes, frontend features, workflows, and changes that affect the product's visual or interaction design.
+- Visual hierarchy, layout, spacing, and typography.
+- Design-system and component consistency.
+- Responsive behavior.
+- Accessibility and keyboard interaction.
+- Interaction states, feedback, navigation, and copy.
+- Loading, empty, error, and success states.
+- Unnecessary complexity and deviations from supplied design requirements.
 
----
+Does not redefine product requirements or infer new functionality from mockups.
 
-## Architecture Agent
+### 4.3 Architecture
 
-**Specification:** [docs/agents/architecture-agent.md](architecture-agent.md)
+**Specification:** `docs/agents/architecture-agent.md`
 
-### Purpose
+**Primary question:** Does the implementation fit the system's architecture and maintainability requirements?
 
-Evaluates whether the implementation follows the project's architectural principles and maintains long-term codebase quality.
+Owns:
 
-### Responsibilities
+- Module boundaries and dependency direction.
+- Coupling, cohesion, and responsibility ownership.
+- Abstraction quality and unnecessary complexity.
+- Duplication of business logic.
+- Layer violations and established architectural conventions.
+- Material maintainability and scalability risks.
 
-- Layer violations
-- Dependency direction
-- Circular dependencies
-- Module boundaries
-- Coupling
-- Cohesion
-- Abstraction quality
-- Responsibility boundaries
-- Excessive complexity
-- God classes and functions
-- Duplicate business logic
-- Incorrect ownership
-- Business logic in inappropriate layers
-- Architectural convention violations
-- Scalability concerns
-- Maintainability
-- Technical debt
+Does not require a particular architectural pattern unless repository rules or product requirements establish it.
 
-### Primary question
+### 4.4 Security
 
-> Does this implementation fit the architecture of the system?
+**Specification:** `docs/agents/security-agent.md`
 
-### Typical use
+**Primary question:** Does the implementation contain exploitable technical vulnerabilities?
 
-Run for major features, backend changes, new modules, shared components, architectural changes, and refactors.
+Owns:
 
----
+- Authentication, authorization, and tenant isolation.
+- Input validation and injection.
+- Browser and server-side attack surfaces.
+- Sessions, tokens, secrets, and sensitive data.
+- File handling, resource protection, and security configuration.
+- Dependency and integration risks.
+- Trust boundaries and security regressions.
 
-## Security Agent
+Focuses on identifying and validating concrete technical vulnerability paths.
 
-**Specification:** [docs/agents/security-agent.md](security-agent.md)
+### 4.5 Bug Bounty
 
-### Purpose
+**Specification:** `docs/agents/bug-bounty-agent.md`
 
-Performs a security-focused analysis of the implementation, configuration, data flows, and access-control model.
+**Primary question:** How could an authorized researcher abuse the feature or chain behaviors into a meaningful exploit?
 
-### Responsibilities
+Owns:
 
-- Authentication
-- Authorization
-- Access control
-- IDOR/BOLA
-- Input validation
-- Injection vulnerabilities
-- XSS
-- CSRF
-- SSRF
-- Session management
-- Token handling
-- Secrets exposure
-- Sensitive data exposure
-- Rate limiting
-- File handling
-- Tenant isolation
-- Security configuration
-- Dependency vulnerabilities
-- Trust-boundary violations
+- Business-logic abuse.
+- Workflow bypasses and unexpected parameter combinations.
+- Quota, state, and resource manipulation.
+- Enumeration and privilege escalation paths.
+- Race conditions and duplicate operations.
+- Cross-feature attack chains and abuse of legitimate functionality.
 
-### Primary question
+May identify technical vulnerabilities but should focus on attacker-driven hypotheses, realistic exploitability, attack chaining, and demonstrated impact rather than duplicating the Security Agent's entire review.
 
-> Can the implementation be exploited through a security vulnerability?
+All testing must remain within explicitly authorized systems and environments. Do not perform destructive or unauthorized production testing.
 
-### Typical use
+### 4.6 Test / Regression
 
-Run for security-sensitive features, externally accessible functionality, authentication and authorization changes, data handling, APIs, and before production deployment.
+**Specification:** `docs/agents/test-agent.md`
 
----
+**Primary question:** Would meaningful tests detect consequential correctness failures and regressions?
 
-## Bug Bounty Agent
+Owns:
 
-**Specification:** [docs/agents/bug-bounty-agent.md](bug-bounty-agent.md)
+- Mapping important behaviors to test evidence.
+- Unit, integration, and end-to-end test adequacy.
+- Assertion quality and false confidence.
+- Relevant negative cases, boundaries, and failure paths.
+- Regression protection for affected consumers and contracts.
+- Mocks, integration boundaries, isolation, and determinism.
+- Test execution evidence and consequential coverage gaps.
 
-### Purpose
+Does not independently determine production readiness merely because a test is missing or a test suite passes.
 
-Performs adversarial analysis from the perspective of an authorized external security researcher.
+### 4.7 Production Blocker
 
-The Bug Bounty Agent focuses particularly on unexpected attack paths, abuse cases, and business-logic vulnerabilities that may not be identified through conventional security review.
+**Specification:** `docs/agents/production-blocker-agent.md`
 
-### Responsibilities
+**Primary question:** Is there an unresolved issue or uncertainty that makes this release unsafe?
 
-- Business-logic abuse
-- Workflow bypasses
-- Privilege escalation
-- Account takeover paths
-- Enumeration
-- Race conditions
-- Unexpected API parameters
-- Resource exhaustion
-- Quota and limit abuse
-- State manipulation
-- Trust-boundary violations
-- Chained vulnerabilities
-- Feature interaction vulnerabilities
-- Abuse of legitimate functionality
+Owns:
 
-### Primary question
+- Consolidating material findings from relevant agents.
+- Evaluating production impact and unresolved risk.
+- Build, deployment, configuration, and compatibility readiness.
+- Migration, data integrity, rollback, and recovery risks.
+- Operational reliability, monitoring, and failure handling.
+- Evaluating mitigations and verification gaps.
+- Issuing the final release decision within the defined release scope.
 
-> How could an authorized external researcher break or abuse this feature?
+Must independently assess the evidence and consequences of inherited findings. It must neither automatically block on every warning nor dismiss serious risks because another agent reported a passing status.
 
-### Typical use
+## 5. Agent Selection and Execution
 
-Run before production for security-sensitive, externally exposed, financially relevant, or high-impact functionality.
+Select agents according to the change's scope, risk, and required decision.
 
-Testing must only be performed against systems and environments where the operator has authorization.
+| Change type                                                          | Required or recommended reviews                                                    |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Every meaningful code change                                         | Test / Regression                                                                  |
+| New feature or significant behavior change                           | Goal Checker, Test / Regression                                                    |
+| User-facing or visual change                                         | Designer, plus relevant functional and regression reviews                          |
+| Shared utility, module, interface, or architectural refactor         | Architecture, Test / Regression                                                    |
+| Refactor of existing code (Refactor Agent, then its reviews)         | Architecture, Test / Regression; others by the behavior the refactor touched       |
+| Authentication, authorization, sensitive data, or exposed API change | Security, Test / Regression; Bug Bounty when relevant                              |
+| High-impact business workflow or abuse-sensitive feature             | Bug Bounty, Security where relevant, Test / Regression                             |
+| Database migration, persistence, or critical state change            | Architecture and Test / Regression; Security and Production Blocker where relevant |
+| Production release                                                   | Production Blocker, informed by all relevant reviews                               |
+| Fix to a previously reported issue                                   | Rerun affected reviewers and verify the fix                                        |
 
----
+Goal Checker should run early enough to establish requirements before implementation or completion review.
 
-## Test Agent
+Designer, Architecture, and Test / Regression may run in parallel when their inputs are available. Security and Bug Bounty may also run in parallel, with cross-references to shared findings where useful.
 
-**Specification:** [docs/agents/test-agent.md](test-agent.md)
+Production Blocker runs after the evidence needed for the release decision is available. It need not wait for irrelevant reviews, but must identify material missing inputs.
 
-### Purpose
+Do not execute every agent for every change by default. A conditional review becomes necessary when the changed code, dependencies, or risk profile makes that agent's expertise relevant.
 
-Evaluates functional correctness, test coverage, and regression risk.
+### Selective re-review
 
-The Test Agent should not only determine whether existing tests pass. It should evaluate whether the tests adequately validate the behavior introduced by the change.
+After a fix, rerun reviews affected by the changed behavior, shared contracts, or risk.
 
-### Responsibilities
+Examples:
 
-- Unit tests
-- Integration tests
-- End-to-end tests
-- Regression tests
-- Edge cases
-- Error paths
-- Boundary conditions
-- Negative cases
-- Existing behavior
-- Missing coverage
-- Test quality
-- Flaky tests
-- Incorrect assertions
-- Integration coverage
+- A spacing correction: Designer and relevant regression verification.
+- A business-rule correction: Goal Checker and Test / Regression.
+- An authorization correction: Security, Test / Regression, and Bug Bounty when attack paths are affected.
+- A shared API change: Architecture and Test / Regression, plus other reviewers according to the exposed behavior.
+- A migration correction: affected Architecture, Test / Regression, Security, and Production Blocker reviews.
 
-### Primary question
+A previous passing review does not automatically remain valid after a consequential change.
 
-> Does the implementation work correctly, and did it break existing behavior?
+## 6. Shared Status and Severity Contract
 
-### Typical use
+Agent-specific verdicts may differ because their responsibilities differ. All agents must map their outcomes into a common status contract.
 
-Run for every feature and significant code change.
+### Status
 
----
+| Status | Meaning                                                                                                                    |
+| ------ | -------------------------------------------------------------------------------------------------------------------------- |
+| PASS   | No material issue was identified within the assessed scope, and available evidence supports the agent's approval criteria. |
+| WARN   | A material limitation, unresolved uncertainty, or non-blocking issue remains.                                              |
+| FAIL   | A substantive issue violates the agent's acceptance criteria or requires resolution before the relevant stage can proceed. |
 
-## Production Blocker Agent
+`PASS` does not mean that all possible failures have been ruled out. It must be scoped to the evidence and behavior assessed.
 
-**Specification:** [docs/agents/production-blocker-agent.md](production-blocker-agent.md)
+When the agent cannot inspect enough evidence to make a reliable decision, use `WARN` or `FAIL` according to the consequence and the agent's defined criteria. Disclose the limitation rather than fabricating certainty.
 
-### Purpose
+### Severity
 
-Acts as the final production-readiness gate.
+| Severity | Meaning                                                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| BLOCKER  | An issue that must be resolved before the relevant workflow or deployment may proceed under the applicable blocking policy. |
+| CRITICAL | Potentially severe security, functional, data-integrity, or operational consequences.                                       |
+| HIGH     | Significant risk affecting important behavior, users, or contracts.                                                         |
+| MEDIUM   | Meaningful but more localized risk or defect.                                                                               |
+| LOW      | Limited-impact issue or improvement.                                                                                        |
+| INFO     | Observation or recommendation without an established material defect.                                                       |
 
-The Production Blocker Agent consumes findings from the other agents together with build, deployment, configuration, migration, and operational information.
+Severity describes impact, not status. A finding's severity alone does not automatically determine whether a release is blocked.
 
-It determines whether any known issue is sufficiently severe to prevent production deployment.
+### Confidence
 
-### Responsibilities
+| Confidence | Meaning                                                             |
+| ---------- | ------------------------------------------------------------------- |
+| HIGH       | Strong, direct evidence supports the finding or conclusion.         |
+| MEDIUM     | Evidence supports the conclusion, but relevant uncertainty remains. |
+| LOW        | The conclusion is tentative or rests on limited evidence.           |
 
-- Critical security findings
-- Failed tests
-- Build failures
-- Deployment failures
-- Database migration risks
-- Data-loss risks
-- Breaking changes
-- Missing production configuration
-- Rollback capability
-- Backward compatibility
-- Severe performance issues
-- Observability
-- Monitoring
-- Logging
-- Operational failure modes
-- Production environment risks
+Keep confidence separate from severity. A potentially severe hypothesis with low confidence is not equivalent to a confirmed critical vulnerability.
 
-### Primary question
+### Blocking authority
 
-> Is there anything that should prevent us from safely deploying this feature?
+- Goal Checker determines whether requirement completeness criteria are met.
+- Designer and Architecture identify issues within their respective acceptance criteria.
+- Security and Bug Bounty identify and classify security risks and relevant blocking recommendations.
+- Test / Regression determines whether behavioral verification is sufficient under its criteria.
+- Production Blocker makes the final production release decision.
 
-### Typical use
+Other agents may flag a blocker for their review stage when their specification permits it. They must not silently redefine the final production release policy.
 
-Run as the final gate before production deployment.
+## 7. Finding and Blocking Model
 
----
+A finding does not automatically constitute a production blocker.
 
-# Agent Responsibility Matrix
+Every material finding should establish:
 
-The agents should have clearly separated responsibilities.
+1. The affected requirement, behavior, component, or trust boundary.
+2. The evidence and its verification status.
+3. A realistic impact or failure scenario.
+4. Severity and confidence.
+5. A recommended remediation or verification.
+6. Whether the issue blocks the current review stage, the release, or neither.
 
-| Concern                   |    Goal    | Design  | Architecture |  Security  | Bug Bounty |    Test    | Production |
-| ------------------------- | :--------: | :-----: | :----------: | :--------: | :--------: | :--------: | :--------: |
-| Requirements completeness |  Primary   |         |              |            |            | Supporting |            |
-| Acceptance criteria       |  Primary   |         |              |            |            | Supporting |            |
-| UI/UX                     |            | Primary |              |            |            | Supporting |            |
-| Accessibility             |            | Primary |              |            |            | Supporting |            |
-| Code structure            |            |         |   Primary    |            |            | Supporting |            |
-| Complexity                |            |         |   Primary    |            |            |            |            |
-| Authentication            |            |         |              |  Primary   | Supporting | Supporting |    Gate    |
-| Authorization             |            |         |              |  Primary   |  Primary   | Supporting |    Gate    |
-| Technical vulnerabilities |            |         |              |  Primary   | Supporting |            |    Gate    |
-| Business-logic abuse      |            |         |              | Supporting |  Primary   |            |    Gate    |
-| Functional correctness    | Supporting |         |              |            |            |  Primary   |    Gate    |
-| Regression detection      |            |         |              |            |            |  Primary   |    Gate    |
-| Deployment readiness      |            |         |              | Supporting |            | Supporting |  Primary   |
-| Release blocking          |            |         |              |            |            |            |  Primary   |
+The Production Blocker evaluates:
 
-The **Production Blocker Agent is the final decision layer**, not a duplicate implementation reviewer.
+- Actual and potential consequences.
+- Likelihood, exposure, and affected users.
+- The intended release scope.
+- Available mitigations and their operational effectiveness.
+- Evidence that the mitigation works.
+- Remaining uncertainty and recovery options.
 
----
+A confirmed authorization bypass will normally prevent release if it exposes protected resources. A low-risk missing unit test or minor visual inconsistency ordinarily will not.
 
-# Agent Lifecycle
+A missing test for a critical business invariant may justify blocking when the consequence is severe and available evidence is inadequate. The decision must explain why the confidence gap is consequential.
 
-A typical feature should pass through the following lifecycle:
+Do not treat all warnings as blockers. Do not ignore a severe issue simply because no other agent explicitly marked it as blocking.
 
-```text
-Feature Specification
-        |
-        v
-Goal Checker
-        |
-        v
-Implementation
-        |
-        +-------------------+-------------------+
-        |                   |                   |
-        v                   v                   v
-     Designer         Architecture           Test
-        |                   |                   |
-        +-------------------+-------------------+
-                            |
-                            v
-                        Security
-                            |
-                            v
-                       Bug Bounty
-                            |
-                            v
-                  Production Blocker
-                            |
-                  +---------+---------+
-                  |                   |
-                BLOCK                PASS
-                  |                   |
-              Fix Issues           Deploy
-                  |
-                  v
-             Re-run Agents
-```
+## 8. Shared Output Contract
 
-Agents may be re-run selectively after changes.
+Each agent produces a concise human-readable report and, when orchestration requires it, a machine-readable result.
 
-For example, a change that only addresses a UI issue may require the Designer and Test Agents to run again, while a change to authorization logic should also trigger Security and Bug Bounty analysis.
+### Human-readable report
 
----
+- **Agent:** Agent name.
+- **Status:** PASS, WARN, or FAIL.
+- **Scope:** Files, behaviors, requirements, or risks assessed.
+- **Findings:** Material issues, if any.
+- **Severity and confidence:** Where applicable.
+- **Evidence:** Relevant files, code, requirements, tests, configurations, or observed behavior.
+- **Impact:** Why the finding matters.
+- **Recommendation:** Remediation or verification required.
+- **Verification limitations:** What could not be inspected, executed, or confirmed.
 
-# Execution Matrix
+State explicitly when no material findings were identified within the assessed scope.
 
-| Agent              | Pull Request | Feature Completion | Pre-Release | Major Refactor | Security-Sensitive Change |
-| ------------------ | :----------: | :----------------: | :---------: | :------------: | :-----------------------: |
-| Goal Checker       | Recommended  |      Required      |  Optional   |  Recommended   |         Required          |
-| Designer           | Conditional  |  Required for UI   | Conditional |  Conditional   |        Conditional        |
-| Architecture       | Conditional  |    Recommended     | Conditional |    Required    |        Recommended        |
-| Security           | Conditional  |    Recommended     |  Required   |  Conditional   |         Required          |
-| Bug Bounty         | Not normally |    Conditional     |  Required   |  Conditional   |         Required          |
-| Test               |   Required   |      Required      |  Required   |    Required    |         Required          |
-| Production Blocker | Not normally |    Not normally    |  Required   |  Not normally  |         Required          |
+### Machine-readable result
 
-The execution strategy should be configurable based on the type and risk of the change.
-
----
-
-# Finding Classification
-
-Every agent should classify findings consistently.
-
-| Severity | Meaning                                                                                      |
-| -------- | -------------------------------------------------------------------------------------------- |
-| BLOCKER  | Must be resolved before the relevant workflow can proceed or production deployment can occur |
-| CRITICAL | Severe issue with significant functional, security, architectural, or operational impact     |
-| HIGH     | Significant issue that should normally be resolved before release                            |
-| MEDIUM   | Meaningful issue that should be addressed but does not necessarily block release             |
-| LOW      | Minor issue or improvement                                                                   |
-| INFO     | Observation or recommendation without a direct defect                                        |
-
-Severity describes the **impact of a finding**.
-
-It should not automatically determine whether a production deployment is blocked.
-
-The Production Blocker Agent makes that determination using the complete context.
-
----
-
-# Agent Output Contract
-
-All agents should produce a consistent output format.
-
-```text
-Status:
-PASS | WARN | FAIL
-
-Severity:
-BLOCKER | CRITICAL | HIGH | MEDIUM | LOW | INFO
-
-Finding:
-<description>
-
-Evidence:
-<relevant files, code, tests, behavior, or other evidence>
-
-Impact:
-<why the finding matters>
-
-Recommendation:
-<recommended remediation>
-
-Confidence:
-HIGH | MEDIUM | LOW
-```
-
-For automated orchestration, agents should additionally support a machine-readable representation.
-
-Example:
+Use this shared schema for orchestration:
 
 ```json
 {
   "agent": "security",
   "status": "fail",
-  "severity": "critical",
-  "blocking": true,
-  "finding": "Authorization bypass",
-  "evidence": "...",
-  "impact": "...",
-  "recommendation": "Add an ownership check before accessing the resource.",
-  "confidence": "high"
+  "scope": ["resource authorization"],
+  "findings": [
+    {
+      "id": "SEC-001",
+      "title": "Resource authorization bypass",
+      "severity": "critical",
+      "confidence": "high",
+      "blocking_recommendation": true,
+      "evidence": [
+        {
+          "type": "code",
+          "reference": "path/to/file",
+          "verification": "inspected"
+        }
+      ],
+      "impact": "A user may access another user's protected resource.",
+      "recommendation": "Enforce resource ownership authorization before returning data.",
+      "limitations": []
+    }
+  ],
+  "verification": {
+    "inspected": [],
+    "executed": [],
+    "unverified": []
+  },
+  "limitations": []
 }
 ```
 
----
+This is an illustrative instance of the contract, not a report of an actual finding.
 
-# Blocking Model
+### Machine-readable rules
 
-A finding and a production blocker are not necessarily the same thing.
+- Use lowercase status, severity, and confidence values.
+- Use stable finding identifiers within the review or workflow.
+- Keep findings structured so they can be deduplicated and tracked across reruns.
+- Represent evidence and verification limitations explicitly.
+- Do not mark inferred or unverified claims as confirmed.
+- Do not set a final release decision in a specialist agent's output.
+- Use `blocking_recommendation` to communicate a specialist's recommendation; the Production Blocker owns the final release decision.
+- Preserve agent-specific verdicts as supplementary metadata if they do not map cleanly to the shared status contract.
 
-For example:
+For example, `NEEDS TESTS` from Test / Regression should map to `WARN` when a consequential gap remains unresolved but is not established as an immediate stage blocker, or `FAIL` when its defined review criteria require the gap to be resolved. It must not automatically become a production blocker.
 
-```text
-Designer
-  Medium
-  Inconsistent spacing
-  -> Not a production blocker
+## 9. Release Decision Contract
 
-Architecture
-  Medium
-  Excessive coupling
-  -> Technical debt; may be shippable
+The Production Blocker must return exactly one final release decision:
 
-Security
-  Critical
-  Authorization bypass
-  -> Production blocker
+- **BLOCK RELEASE:** A material, unresolved issue or confidence gap makes the intended production deployment unacceptable.
+- **SAFE TO RELEASE:** The available evidence and effective mitigations provide sufficient confidence for the specified release scope.
 
-Goal Checker
-  High
-  Required functionality missing
-  -> Production blocker
+A `SAFE TO RELEASE` decision must include the assessed scope and material limitations. It does not guarantee the absence of defects.
 
-Test
-  High
-  Existing critical workflow broken
-  -> Production blocker
-```
+A `BLOCK RELEASE` decision must identify the specific blocker, the consequence, and the condition required to reconsider release.
 
-This distinction prevents the system from becoming overly conservative while still protecting against serious release risks.
+If critical evidence is missing, the Production Blocker must explicitly assess whether that uncertainty itself creates unacceptable risk. It must not treat missing information as proof of a defect, or treat lack of evidence as proof of safety.
 
----
+## 10. Repository Structure
 
-# Repository Structure
-
-Agent specifications are maintained independently under `docs/agents`.
+Maintain each agent's detailed specification independently:
 
 ```text
 docs/
@@ -532,149 +419,93 @@ docs/
     ├── bug-bounty-agent.md
     ├── test-agent.md
     ├── production-blocker-agent.md
-    └── commit-agent.md
+    ├── commit-agent.md
+    ├── documentation-agent.md
+    └── refactor-agent.md
 ```
 
-`commit-agent.md` is not a review agent: it is the procedure for grouping changes into commits.
+`commit-agent.md` defines the commit-creation workflow, `documentation-agent.md` the writing of module documents under `docs/architecture/`, and `refactor-agent.md` behavior-preserving simplification of existing code. They are operational agents, not additional feature-review agents: they change files, and the review agents judge the result.
 
-Each agent specification should define:
+This charter defines the shared responsibilities, evidence standards, orchestration, status mapping, and release contract. Individual agent specifications define their detailed procedures, specialized verdicts, domain-specific checks, and stage-level blocking criteria.
 
-1. Purpose
-2. Scope
-3. Responsibilities
-4. Non-responsibilities
-5. Inputs
-6. Execution conditions
-7. Analysis methodology
-8. Severity model
-9. Output contract
-10. Blocking criteria
-11. Examples
-12. Failure handling
+Avoid copying the full specialized instructions into this document. Keep shared policies here and link to them from agent specifications where needed.
 
-This file provides the system-level overview. Individual agent specifications contain the detailed instructions required to execute each agent.
+## 11. Development Principles
 
----
+### Single responsibility
 
-# Development Principles
+Each agent owns a distinct primary review question. Supporting findings are allowed, but duplicate investigations should be minimized.
 
-## Single Responsibility
+### Evidence over checklists
 
-Each agent should have one primary responsibility.
+Use checklists as prompts for risk discovery, not as proof that a review is complete. Every material conclusion must be grounded in the assessed implementation and authoritative requirements.
 
-Agents should not become generic reviewers that duplicate the work of other agents.
+### Risk-proportionate verification
 
-## Evidence-Based Findings
+Scale review depth to impact, exposure, complexity, and dependency surface. Do not impose identical review burdens on isolated changes and changes to critical shared infrastructure.
 
-Agents should provide concrete evidence for findings whenever possible.
+### No false confidence
 
-A finding should reference relevant:
+Distinguish intended behavior, implemented behavior, verified behavior, and unresolved assumptions.
 
-- Files
-- Functions
-- Components
-- Tests
-- Requirements
-- Configuration
-- Runtime behavior
-- Architecture rules
+### Actionable findings
 
-## Deterministic Output
+Each finding should tell the engineer what is wrong, why it matters, and what evidence or remediation is needed next.
 
-Agent output should follow a predictable structure so that findings can be consumed by humans, automation, CI/CD systems, or another orchestration agent.
+### Minimal duplication
 
-## No False Confidence
+Share evidence references and stable finding IDs when multiple agents identify the same underlying issue. Preserve distinct consequences or perspectives without generating redundant findings.
 
-Agents should explicitly distinguish between:
+### No automatic scope expansion
 
-- Verified behavior
-- Inferred behavior
-- Missing information
-- Unverified assumptions
+Do not introduce deferred product functionality, unapproved architecture, additional product requirements, or unnecessary tests merely because a review checklist mentions them.
 
-An agent should not report an issue as confirmed when it could not establish the evidence.
+### Consistent orchestration
 
-## Separation of Concerns
+Use the shared output contract to combine results while preserving each agent's specialist verdict and authority.
 
-The agents should complement one another:
+## 12. Target Outcome
 
-```text
-Goal Checker
-    -> Completeness
+A completed review should produce a concise, evidence-based assessment of all relevant engineering dimensions.
 
-Designer
-    -> User Experience
-
-Architecture
-    -> System Structure
-
-Security
-    -> Technical Security
-
-Bug Bounty
-    -> Adversarial Abuse
-
-Test
-    -> Functional Correctness
-
-Production Blocker
-    -> Release Readiness
-```
-
-## Final Release Decision
-
-The Production Blocker Agent should consume the findings from the other agents rather than attempting to reproduce every analysis itself.
-
-Its purpose is to determine whether the known state of the feature is acceptable for production deployment.
-
----
-
-# Target Outcome
-
-A completed feature review should provide a concise, evidence-based status across all relevant engineering dimensions.
-
-Example:
+Illustrative example:
 
 ```text
 FEATURE REVIEW
 ==============
 
 Goal Checker
-  PASS
-  14/14 requirements implemented
+  PASS — Required behavior verified against acceptance criteria.
 
 Designer
-  PASS
-  No blocking UX issues
+  PASS — No material usability or accessibility issues identified
+         within the assessed scope.
 
 Architecture
-  WARN
-  1 medium complexity issue
+  WARN — One non-blocking maintainability concern.
 
 Security
-  PASS
-  No blocking security findings
+  PASS — No material technical vulnerability identified
+         within the assessed scope.
 
 Bug Bounty
-  WARN
-  2 low-risk abuse cases identified
+  WARN — One low-risk abuse scenario requires follow-up.
 
-Test
-  PASS
-  Required tests passing
-  Regression coverage complete
+Test / Regression
+  PASS — Relevant tests inspected and executed;
+         consequential regression risks have adequate coverage.
 
 Production Blocker
-  PASS
-  No production blockers
+  SAFE TO RELEASE — No unresolved production blockers identified
+                    for the assessed release scope.
 
---------------------------------
 FINAL STATUS: READY FOR RELEASE
---------------------------------
 ```
 
-The objective of the agent system is not to maximize the number of findings.
+This example is illustrative. Actual statuses must reflect real evidence, relevant limitations, and unresolved risks.
 
-The objective is to provide a reliable engineering process for answering:
+The system's objective is not to maximize review volume or claim certainty that cannot be established.
 
-> **Is this feature complete, correct, usable, secure, maintainable, tested, and safe to release?**
+It is to answer, with credible evidence:
+
+**Is this feature complete, correct, usable, secure, maintainable, adequately tested, and safe to release within its intended scope?**

@@ -1,19 +1,17 @@
 # Dependency Boundary Rules
 
-- Domain must not import Next.js, React, Prisma, infrastructure, or presentation.
-- Application must not import React, Next.js, infrastructure implementations, or presentation.
-- Application depends on domain ports, not infrastructure implementations.
+- Domain imports only domain code.
+- Application may import domain, but not React, Next.js, infrastructure implementations, or presentation.
 - Infrastructure may depend on domain and application contracts.
-- Presentation may depend on application contracts and presentation types.
-- Presentation must not import infrastructure.
+- Presentation may depend on application contracts and presentation types, never infrastructure.
 - Shared UI must not import business modules.
-- Modules must not import another module's infrastructure.
-- Framework entry points may depend on application and presentation APIs.
-- Cross-module access must use the target module's public API (`index.ts`, or `client.ts` from browser code); deep imports are forbidden. See [`modules.md`](modules.md).
-- Runtime calls into another module happen only in the module's `composition.ts` and in infrastructure adapters that implement the module's own domain ports.
-- Domain and application may `import type` from another module's public API; at runtime they may call only the pure functions the architecture policy lists (`CROSS_MODULE_RUNTIME_ALLOW`).
-- Presentation may import another module's browser-safe API (`client.ts`: routes, vocabulary, Server Actions) or its types. Another module's server-side parts (queries, Server Components) are handed in by `composition.ts`.
-- Repositories and record mappers may import only trusted brand constructors (`to<Name>Id`) from another module.
-- A port defined in shared code (`Clock`) may be imported as a type by every layer; its implementation is wired only by composition roots.
-- Framework entry points (`src/app`) are the application's composition boundary and may import any module's public API.
-- Dependency direction must be enforced by linting.
+- Modules must not import another module's infrastructure or internal implementation.
+- Framework entry points may import application and presentation APIs.
+- Access other modules only through their public API: index.ts on the server, client.ts in browser code. Deep imports are forbidden. See [modules.md](modules.md).
+- Runtime calls into another module are allowed only through composition.ts or infrastructure adapters implementing the current module's domain ports.
+- Domain and application may import types from another module's public API. Cross-module runtime calls are otherwise limited to pure functions listed in CROSS_MODULE_RUNTIME_ALLOW.
+- Presentation may import another module's browser-safe client.ts API (routes, vocabulary, Server Actions) and types. composition.ts supplies server-side parts such as queries and Server Components.
+- Repositories and record mappers may import only trusted cross-module brand constructors (to<Name>Id).
+- Any layer may import shared ports (Clock, RateLimiter, ObjectStore) as types. Composition roots wire their implementations.
+- src/app is the application composition boundary and may import any module's public API.
+- Enforce dependency direction with lint.

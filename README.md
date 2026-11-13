@@ -25,18 +25,14 @@ You need **Node.js 24** (see `.nvmrc`), npm, and Docker for PostgreSQL and a loc
 
 ```bash
 npm ci
-cp .env.example .env                 # then edit DATABASE_URL (below)
-cp .env.docker.example .env.docker   # database credentials for Docker Compose
-docker compose up -d postgres mailhog
+cp .env.example .env                 # then replace every REPLACE marker and the change-me values
+cp .env.docker.example .env.docker   # credentials of the Compose services; the [docker] values in .env must equal them
+docker compose up -d postgres redis-rest seaweedfs-init mailpit
 npm run db:migrate                   # app schema (Prisma) + auth tables (SQL)
 npm run dev
 ```
 
-With the Compose defaults, set in `.env`:
-
-```text
-DATABASE_URL=postgresql://civo:change-me@localhost:5432/civo
-```
+`.env.example` already points at the Compose services. The values it marks `[docker]` (the database password, `UPSTASH_REDIS_REST_TOKEN`, the `STORAGE_S3_*` credentials) must equal `POSTGRES_PASSWORD`, `SRH_TOKEN` and `STORAGE_S3_*` in `.env.docker`. A Mapbox _public_ token (`pk.…`) goes into `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`; Mapbox cannot be run locally.
 
 Open <http://localhost:3000/en/websites>. `.env.example` ships with `AUTH_ENABLED=false`, so there is no sign-in: you act as a platform administrator (`AUTH_DEV_ACTOR_ROLE`). Create a website, open its builder, add components, publish a release, then view the site at `/en/s/<slug>`. This mode is refused in production.
 
@@ -44,26 +40,27 @@ Every environment variable is validated at startup; a missing or malformed one s
 
 ### With sign-in enabled
 
-In `.env` set `AUTH_ENABLED=true`, `AUTH_SECRET` (32+ random characters), `AUTH_DATABASE_URL` (the `civo_auth` database Compose creates), `AUTH_PLATFORM_ADMIN_EMAILS=you@example.org`, `MAIL_PROVIDER=smtp`, `MAIL_SMTP_HOST=localhost`, `MAIL_SMTP_PORT=1025` and `MAIL_FROM`. On start the app mails each listed address a single-use link to create its account; read it in MailHog at <http://localhost:8025>.
+In `.env` set `AUTH_ENABLED=true`, `AUTH_SECRET` (32+ random characters), `AUTH_DATABASE_URL` (the `civo_auth` database Compose creates), `AUTH_PLATFORM_ADMIN_EMAILS=you@example.org`, `MAIL_PROVIDER=smtp`, `MAIL_SMTP_HOST=localhost`, `MAIL_SMTP_PORT=1025` and `MAIL_FROM`. On start the app mails each listed address a single-use link to create its account; read it in Mailpit at <http://localhost:8025>.
 
 ### Optional
 
 - **Map:** set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to a Mapbox _public_ token. Without it the map degrades to a list.
-- **Rate limits against Redis:** in development the limits count in process memory. To try the production path, run `docker compose up -d redis redis-rest` and set `RATE_LIMIT_BACKEND=upstash`, `UPSTASH_REDIS_REST_URL=http://localhost:8079` and `UPSTASH_REDIS_REST_TOKEN` (the token is in `docker-compose.yml`). Production uses an Upstash database; see [`docs/architecture/rate-limiting.md`](./docs/architecture/rate-limiting.md).
+- **Rate limits against Redis:** limits count in Redis, never in process memory. `docker compose up -d redis-rest` starts it, and section 5 of `.env.example` is already set up for it (`RATE_LIMIT_CLIENT_ADDRESS_SOURCE=proxies`, `AUTH_TRUSTED_PROXIES`, the REST URL and token). To work without Redis, set `RATE_LIMIT_ENABLED=false`; every attempt is then allowed, and production refuses this. Production uses an Upstash database; see [`docs/architecture/rate-limiting.md`](./docs/architecture/rate-limiting.md).
 - **Database tools:** `npm run db:studio` (Prisma Studio), `npm run db:migrate:status`.
 
 ## Commands
 
-| Command                       | Does                                                                                                             |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                 | Development server                                                                                               |
-| `npm run check`               | Everything CI checks: typecheck, lint, format, i18n catalogs, unit tests, `src/lib` coverage, architecture tests |
-| `npm test`                    | Unit tests (`__tests__/src`)                                                                                     |
-| `npm run test:architecture`   | Architecture and lint-rule policy tests                                                                          |
-| `npm run test:integration`    | Integration tests against a real database                                                                        |
-| `npm run lint:fix` / `format` | Fix what the tools own                                                                                           |
-| `npm run db:migrate`          | Apply Prisma and auth migrations                                                                                 |
-| `npm run build` / `start`     | Production build and server                                                                                      |
+| Command                       | Does                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`                 | Development server                                                                                                 |
+| `npm run check`               | Everything CI checks: typecheck, lint, dead code, format, i18n catalogs, unit tests + coverage, architecture tests |
+| `npm test`                    | Unit tests (`__tests__/src`)                                                                                       |
+| `npm run test:architecture`   | Architecture and lint-rule policy tests                                                                            |
+| `npm run dead-code`           | Exports nothing uses (`--all`: also those only tests or their own file use)                                        |
+| `npm run test:integration`    | Integration tests against a real database                                                                          |
+| `npm run lint:fix` / `format` | Fix what the tools own                                                                                             |
+| `npm run db:migrate`          | Apply Prisma and auth migrations                                                                                   |
+| `npm run build` / `start`     | Production build and server                                                                                        |
 
 ## How the code is organized
 
@@ -92,6 +89,7 @@ A website _is_ a tenant: every row below a website carries the pair `(websiteId,
 | [`docs/rules/`](./docs/rules/README.md)                                                                            | What is allowed. Mandatory.                                                                                                |
 | [`docs/conventions/`](./docs/conventions/README.md)                                                                | Step-by-step checklists: add a module, use case, migration, translation, component…                                        |
 | [`docs/architecture/`](./docs/architecture/)                                                                       | How a subsystem works: audit, booking, component platform, i18n, map, pagination, rate limiting, release, route protection |
+| [`docs/ux/UX_AUDIT.md`](./docs/ux/UX_AUDIT.md)                                                                     | Product UX findings, canonical navigation/UI decisions, implementation progress and verification limits                    |
 | [`src/lib/README.md`](./src/lib/README.md), [`src/components/README.md`](./src/components/README.md)               | Index of shared code. Check before writing a utility or component.                                                         |
 | [`docs/agents/`](./docs/agents/README.md)                                                                          | Specifications for review agents                                                                                           |
 | [`BACKLOG.md`](./BACKLOG.md), [`TODO.md`](./TODO.md)                                                               | Planned features; small fixes and findings                                                                                 |
@@ -99,7 +97,7 @@ A website _is_ a tenant: every row below a website carries the pair `(websiteId,
 
 ## Deployment
 
-Production runs on Vercel, deployed by GitHub Actions (`.github/workflows/production.yml`): CI on the exact commit, then database migrations, then deploy. Pull requests get a preview deployment. The `Dockerfile` is used to validate the build in CI and for non-Vercel targets; the `app` service in `docker-compose.yml` (`--profile production`) is a local demo with throwaway secrets, not a production configuration. `GET /api/health` is the liveness probe.
+Production runs as a container on an Oracle Cloud Always Free Ampere host behind Cloudflare, deployed by GitHub Actions (`.github/workflows/production.yml`): CI on the exact commit, an arm64 image tagged with the commit and deployed by digest, database migrations, then a health-checked swap on the host with automatic rollback. Every pull request gets its own preview at `pr-<number>.<domain>` with its own Neon database branch, removed when the pull request closes. Setup and operation: [`docs/deployment/`](./docs/deployment/README.md); design and limits: [`docs/architecture/deployment.md`](./docs/architecture/deployment.md). The `app` service in `docker-compose.yml` (`--profile production`) is a local demo with throwaway secrets, not a production configuration. `GET /api/health` is the liveness probe.
 
 ## Contributing
 

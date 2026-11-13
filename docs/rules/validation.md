@@ -1,19 +1,16 @@
 # Validation Rules
 
-- Validate all external input at the system boundary.
-- Never trust client-side validation.
-- Use Zod as the canonical runtime validation library, in the presentation layer: schemas for requests, forms, Server Action input and search parameters. Domain, application and infrastructure do not import Zod (lint enforces it).
-- Below the presentation boundary, data of unknown shape (stored JSON, a driver row, a library's error body) is checked with the guards in `@lib/utils` (`objectOf`, `arrayOf`, …), which check shape only; the domain constructors that run next check the rules.
+- Validate all external input at the system boundary; never trust client-side validation.
+- Use Zod in presentation for external input. Domain, application, and infrastructure must not import Zod.
+- Use @lib/utils type guards to check unknown-shaped data below presentation.
 - Define schemas close to the boundary they validate.
-- Parse unknown external data before using it.
-- Prefer `safeParse` when validation failure is expected application flow.
-- Prefer `parse` when invalid input represents a programmer or invariant violation.
+- Parse unknown external data before use.
+- Prefer safeParse when validation failure is expected application flow; use parse when invalid input signals a programmer or invariant violation.
 - Do not duplicate identical schemas across layers.
-- Do not use TypeScript types as runtime validation.
-- Do not pass raw `FormData` beyond the presentation boundary.
-- Do not pass raw request JSON into application use cases.
+- TypeScript types do not replace runtime validation.
+- Do not pass raw FormData or request JSON beyond presentation.
 - Validate route parameters and search parameters.
-- Validate environment variables at application startup. See [`configuration.md`](configuration.md).
+- Validate environment variables at startup. See [configuration.md](configuration.md).
 - Validate external API responses before mapping them into application types.
-- Keep domain invariants in the domain even when Zod validates input.
-- Schema naming follows [`naming.md`](naming.md).
+- Keep domain invariants in domain code even when Zod validates input.
+- Follow [naming.md](naming.md) for schema names.

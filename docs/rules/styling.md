@@ -1,15 +1,16 @@
 # Styling Rules
 
 - Use the project's design system as the source of visual truth.
-- Prefer shared design tokens over hard-coded visual values.
-- Use shared UI primitives before creating new primitives.
-- Module components compose shared UI; they do not redefine it.
-- Avoid global styles except for application-wide foundations.
-- Keep styling colocated with the component it styles.
+- Prefer shared design tokens and UI primitives over hard-coded values or new primitives.
+- Compose shared UI in module components; do not redefine shared primitives.
+- Use the design system where it fits: Button, Select, Link, Table, Input, Textarea, and Label instead of raw elements; use required composites such as DataPanel around Table or Pagination.
+- Build admin screens from the shared frame, list, wizard and dialog composites so every screen works the same way. See [adding-an-admin-screen.md](../conventions/adding-an-admin-screen.md).
+- Use plain markup only when justified in the file with // @ui-plain <name> <reason>. Use the element name, or table/pagination for a missing frame. Lint enforces architecture/ui-composition; src/components is exempt.
+- Avoid global styles except application-wide foundations.
+- Keep styles colocated with their components.
 - Do not use inline styles for static styling.
-- Avoid arbitrary values when an existing design token applies.
-- Keep responsive behavior within the component's styling contract.
-- Keep dark-mode/theme behavior within the design-system conventions.
-- Component variants must be explicit and typed.
+- Prefer existing design tokens over arbitrary values.
+- Keep responsive and theme behavior within design-system conventions.
+- Type component variants explicitly.
 - Do not duplicate CSS for visually identical components.
-- Styling must meet contrast and motion requirements. See [`accessibility.md`](accessibility.md).
+- Meet contrast and motion requirements. See [accessibility.md](accessibility.md).

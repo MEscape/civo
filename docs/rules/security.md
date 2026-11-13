@@ -1,23 +1,18 @@
 # Security Rules
 
-- Treat all client input as untrusted. See [`validation.md`](validation.md).
-- Authenticate every protected operation.
-- Authorize every protected use case.
-- Never rely on UI visibility for authorization.
-- Server Actions must enforce authorization independently.
+- Treat all client input as untrusted. See [validation.md](validation.md).
+- Authenticate every protected operation and authorize every protected use case.
+- Never rely on UI visibility for authorization. Server Actions enforce authorization independently.
 - Never expose secrets to Client Components.
-- Never log credentials, tokens, session secrets, or sensitive personal data. See [`observability.md`](observability.md).
-- Do not trust client-provided user or tenant identifiers for authorization.
-- Derive authenticated identity from the server-side authentication context.
+- Never log credentials, tokens, session secrets, or sensitive personal data. See [observability.md](observability.md).
+- Derive identity from server-side authentication context; never trust client-provided user or tenant IDs for authorization.
 - Enforce tenant isolation at the application/data-access boundary.
-- Rate-limit and bound the size of externally reachable inputs, including webhooks and public API routes.
-- A rate limit is a policy, declared as plain data in the module's `application/rate-limits.ts` and spent by a use case through the shared `RateLimiter` port; actions, route handlers and adapters never call it. A public use case spends a budget or states why it need not (`@rate-limit none <reason>`). See [`rate-limiting.md`](../architecture/rate-limiting.md).
-- A budget counts the authorized actor, the caller's address from trusted request metadata, or a normalised account identifier, never a raw request value; counters hold only keyed hashes.
-- A policy states how it fails when the limiter's store is down: operations that send mail, call external systems, change what is live or sign people in deny; allowing is a reviewed exception.
-- Counters live in a shared store (Redis over HTTP) in production; the in-memory store is for development and tests only. Lint and the architecture tests enforce all of this.
-- Validate webhook authenticity (signature and replay protection) before processing.
-- Protect state-changing requests against CSRF; use secure, `HttpOnly`, `SameSite` cookies for sessions.
-- Set standard security headers (CSP, `X-Content-Type-Options`, `Referrer-Policy`, frame protections).
-- Never render untrusted content as raw HTML; sanitize it first if unavoidable.
+- Rate-limit and bound externally reachable inputs using declared policies. See [../architecture/rate-limiting.md](../architecture/rate-limiting.md).
+- Store keyed hashes in counters, never raw identifiers or addresses.
+- Store files through the shared ObjectStore port. Derive object keys from trusted IDs (tenant, asset), never user filenames. Create the database row before authorizing upload. Treat signed URLs as bearer credentials: never log or store them. Deliver private files only through short-lived signed URLs.
+- Verify webhook authenticity before processing payloads.
+- Protect state-changing requests against CSRF. Use secure, HttpOnly, SameSite session cookies.
+- Set standard security headers: CSP, X-Content-Type-Options, Referrer-Policy, and frame protections.
+- Never render untrusted content as raw HTML. Sanitize it first if unavoidable.
 - Prefer allowlists over blocklists for security-sensitive decisions.
-- `dangerouslySetInnerHTML` is rejected by lint; if sanitized HTML is unavoidable, disable the rule on that line and say how it is sanitized.
+- Forbid dangerouslySetInnerHTML unless content is explicitly sanitized and the use is justified inline.

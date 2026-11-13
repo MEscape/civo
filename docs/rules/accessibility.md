@@ -1,17 +1,14 @@
 # Accessibility Rules
 
-- Accessibility is part of definition of done.
-- Use semantic HTML before ARIA.
-- Every page must declare the correct `lang` attribute and a descriptive title.
-- Every form control must have an accessible label.
-- Interactive elements must be keyboard accessible.
-- Focus must remain predictable after navigation and mutations.
-- Error messages must be programmatically associated with their fields.
-- After a failed submission, move focus to the first invalid field or an error summary.
-- Loading and pending states must communicate meaningful state changes.
-- Do not use color as the only way to communicate information.
-- Maintain sufficient color contrast.
-- Icon-only controls require accessible names.
-- Dialogs must manage focus correctly.
+- Accessibility is part of the definition of done.
+- Prefer semantic HTML over ARIA.
+- Set the correct document language and a descriptive page title.
+- Give every form control an accessible label.
+- Make all interactions keyboard-accessible; keep focus predictable after navigation and mutations.
+- Associate errors programmatically with their fields. After failed submission, focus the first invalid field or error summary.
+- Communicate loading, pending, and error states to assistive technology.
+- Never use color alone to convey information; maintain sufficient contrast.
+- Give icon-only controls accessible names.
+- Manage focus correctly in dialogs.
 - Respect reduced-motion preferences.
 - Test critical interactions without a mouse.

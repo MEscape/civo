@@ -225,3 +225,15 @@ After the next large features, review: duplicated logic or validation, inconsist
 ## Working rule
 
 Prefer focused items over another large phase: one feature, then implementation, tests, review, and an architecture audit when needed. That keeps the codebase understandable while the platform grows.
+
+chatbot
+report issues (broken street)
+support
+widget builder (that things like new-events-split is widget -> combining components, there should be defaults)
+script editor with mcp access?
+map editor?
+data source manual write alternative (always more important and disables data-sources where linked)
+translation for data-sources and manual typed text middleware? google translate?
+ai data source discovery
+monitor data-source changes of third party apis
+upload brand Image for each Website and create a lib layer object storage for it and Settings Checkbox thats for if Gefördert durch den bund and if yes Show this Image on the public page

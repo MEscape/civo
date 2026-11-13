@@ -1,13 +1,12 @@
 # Caching Rules
 
-- Every cache must have an explicit ownership and invalidation strategy.
-- Cache only data whose consistency requirements permit caching.
+- Define cache ownership, lifetime, and invalidation for every cache.
+- Cache only data whose consistency requirements permit it.
 - Never cache secrets.
-- Cache keys must include every value that affects the result, including user or tenant identity when the result varies by them.
-- Prefer precise cache invalidation over broad invalidation.
-- Mutations must invalidate all affected cache entries.
-- Do not introduce caching as a workaround for inefficient application logic.
-- Do not cache authorization decisions without an explicit identity boundary. See [`security.md`](security.md).
-- Document non-obvious cache lifetimes. See [`comments.md`](comments.md).
+- Include every result-affecting value in cache keys, including user or tenant identity when relevant.
+- Prefer precise invalidation. Mutations must invalidate every affected entry.
+- Do not use caching to hide inefficient application logic.
+- Do not cache authorization decisions without an explicit identity boundary. See [security.md](security.md).
+- Document non-obvious cache lifetimes. See [comments.md](comments.md).
 - Prefer framework cache primitives at the delivery boundary.
-- Keep business logic independent of the caching implementation.
+- Keep business logic independent of caching implementations.

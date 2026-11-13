@@ -1,32 +1,29 @@
 # Next.js Rules
 
 - Use the App Router exclusively.
-- Use Server Components by default. See [`react.md`](react.md).
-- Add `use client` only when client-side capabilities are required.
-- Keep Client Component boundaries as small and deep as practical.
-- Pages and layouts compose application capabilities; they contain no business logic.
-- Server Components call application queries directly.
-- Do not create internal API endpoints for Server Component data fetching.
-- Server Actions are framework adapters for mutations.
-- Server Actions must call application use cases.
-- Server Actions must enforce authentication and authorization independently. See [`security.md`](security.md).
-- Validate Server Action input before calling the use case. See [`validation.md`](validation.md).
-- Server Actions return a typed result: success data, or field-level errors plus an optional form-level error code, never localized messages. See [`i18n.md`](i18n.md).
-- Forms submit through Server Actions unless a real HTTP consumer requires a Route Handler.
-- Show pending state during submission, prevent double submission, and preserve user input when validation fails.
-- Route Handlers exist only for actual HTTP consumers; see [`api.md`](api.md) for what they may do once created.
-- Use `proxy.ts` only for request-level concerns.
-- Do not put business authorization rules in `proxy.ts`. See [`security.md`](security.md).
-- Use `loading.tsx` for meaningful route loading states.
-- A page that streams per-request data puts its `loading.tsx` in its OWN segment (or wraps the data in `<Suspense>` inside the page). A client navigation re-renders only the segments below the one that changed, so a boundary in a parent route group cannot catch the page's load and Cache Components reports "uncached data during prerendering or a navigation".
-- Use `error.tsx` for unexpected route-level failures. It shows translated generic text, never `error.message`; the shared `RouteErrorPanel` and `NotFoundPanel` render the bodies. `global-error.tsx` covers failures of the locale layout.
-- Use `not-found.tsx` or `notFound()` for missing resources.
-- Use Suspense boundaries for independently streamable UI. See [`performance.md`](performance.md).
-- Use async request APIs such as `params`, `searchParams`, `cookies`, and `headers`.
-- Use Next.js navigation primitives instead of raw equivalents where applicable.
-- Use route metadata APIs for page metadata, through the builders in `@lib/seo`: localized pages declare canonical and language alternates, untranslated content one canonical URL, and private or single-use-link pages `noindex`.
-- `robots.ts`, `sitemap.ts` and `manifest.ts` are the only sources of those files; private areas are excluded in `robots.ts` and marked `noindex`.
-- With `cacheComponents`, route segment options such as `dynamic` are rejected; make a handler per-request with `connection()`.
+- Prefer Server Components. See [react.md](react.md).
+- Add 'use client' only when client-side capabilities are required; keep Client Component boundaries small and deep.
+- Pages and layouts compose application capabilities; they contain no business logic. Route pages must not orchestrate multi-step data loading pipelines (multiple `.execute` calls); complex screens mount a module Server Component backed by a loader. A protected route page is a small wrapper (lint `architecture/page-structure`): a default export that returns `<Suspense fallback={<…Skeleton />}>` around one local `async` content component, which awaits the route's params and mounts the module's `<Thing>Administration`; it has at most a handful of statements.
+- Server Components call application queries directly. Do not create internal API endpoints for their data fetching.
+- Use Server Actions as mutation adapters that call application use cases.
+- Server Actions must independently authenticate and authorize requests. See [security.md](security.md).
+- Validate Server Action inputs before calling use cases. See [validation.md](validation.md).
+- Return typed results from Server Actions: success data, or field-level errors plus an optional form-level error code. Never return localized messages. See [i18n.md](i18n.md).
+- Submit forms through Server Actions unless a real HTTP consumer requires a Route Handler.
+- During submission, show pending state, prevent duplicate submissions, and preserve input after validation failures.
+- Create Route Handlers only for real HTTP consumers. See [api.md](api.md).
+- Use proxy.ts only for request-level concerns, never business authorization. See [security.md](security.md).
+- Use loading.tsx for meaningful route loading states.
+- For pages streaming per-request data, place loading.tsx in their own segment or use an inline Suspense boundary.
+- Published citizen pages do not stream: the route sets `instant = false`, has no loading.tsx in its own or a parent segment, and renders blocks without Suspense. A streamed segment stays hidden without JavaScript. See [accessibility.md](accessibility.md).
+- Use error.tsx for unexpected route failures with generic translated text; use global-error.tsx for root-layout failures.
+- Use not-found.tsx or notFound() for missing resources.
+- Use Suspense for independently streamable UI. See [performance.md](performance.md).
+- Use async request APIs for params, searchParams, cookies, and headers.
+- Prefer Next.js navigation primitives over raw browser equivalents.
+- Use @lib/seo for route metadata. Mark private pages noindex.
+- Use robots.ts, sitemap.ts, and manifest.ts for public metadata; exclude private areas.
+- With cacheComponents, use connection() to make a route per-request instead of dynamic segment options.
 - Keep Node-only dependencies out of Edge-compatible code.
-- Declare runtime requirements explicitly when they matter, except where the framework forbids it: with `cacheComponents` the `runtime` segment option is rejected and every route runs on Node.js.
-- `'use server'` appears only in a module's `presentation/actions`, because every such function is a public endpoint. Pages, layouts and route files stay Server Components; the interactive part is a small `'use client'` component they render. Lint enforces both.
+- All routes run on Node.js; do not set the runtime segment option when using cacheComponents.
+- Use 'use server' only in presentation/actions; pages and layouts remain Server Components.
