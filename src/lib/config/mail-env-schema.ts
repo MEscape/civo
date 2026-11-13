@@ -11,7 +11,7 @@ const MAX_TCP_PORT = 65_535;
 const DEFAULT_RESEND_API_URL = 'https://api.resend.com/emails';
 
 const mailEnvObjectSchema = z.object({
-  /** `none` sends nothing: sign-in mail fails loudly, booking mail is skipped with a warning. */
+  /** `none` sends nothing: a mail the application needs fails loudly, an optional one is skipped with a warning. */
   MAIL_PROVIDER: z.enum(['none', 'resend', 'smtp']).default('none'),
   /** Sender of every outgoing mail. Required with any provider but `none`. */
   MAIL_FROM: z.string().min(1).optional(),
@@ -30,14 +30,30 @@ const mailEnvObjectSchema = z.object({
   MAIL_SMTP_PASSWORD: z.string().min(1).optional(),
 });
 
+/** The mail variables, validated and typed. */
 export type MailEnv = z.infer<typeof mailEnvObjectSchema>;
 
+/** Variables that only mean something with one provider; `MAIL_API_URL` is left out, it has a default. */
+const PROVIDER_VARIABLES = {
+  resend: ['MAIL_API_KEY'],
+  smtp: ['MAIL_SMTP_HOST', 'MAIL_SMTP_USER', 'MAIL_SMTP_PASSWORD'],
+} as const satisfies Record<'resend' | 'smtp', ReadonlyArray<keyof MailEnv>>;
+
 /**
- * Outgoing mail, shared by every module that sends some (sign-in, bookings).
+ * Outgoing mail, shared by every module that sends some.
  * What a provider needs is required as soon as that provider is chosen,
- * whether or not authentication is enabled.
+ * whether or not authentication is enabled. Settings for a provider that is not chosen are an
+ * error rather than silently ignored: a forgotten `MAIL_PROVIDER` must not look like a working
+ * deployment that sends nothing.
  */
 export const mailEnvRules: ReadonlyArray<EnvRule<MailEnv>> = [
+  ...(['resend', 'smtp'] as const).flatMap((provider) =>
+    PROVIDER_VARIABLES[provider].map((name): EnvRule<MailEnv> => ({
+      path: name,
+      violated: (env) => env.MAIL_PROVIDER !== provider && env[name] !== undefined,
+      message: `${name} is set but MAIL_PROVIDER is not "${provider}".`,
+    })),
+  ),
   {
     path: 'MAIL_API_KEY',
     violated: (env) => env.MAIL_PROVIDER === 'resend' && !env.MAIL_API_KEY,
@@ -67,4 +83,5 @@ export const mailEnvRules: ReadonlyArray<EnvRule<MailEnv>> = [
   },
 ];
 
+/** The mail variables with their cross-variable rules; composed into the server schema. */
 export const mailEnvSchema = mailEnvObjectSchema.superRefine(refineEnv(mailEnvRules));

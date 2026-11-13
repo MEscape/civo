@@ -1,5 +1,4 @@
 import type {
-  AppError,
   ConflictAppError,
   ForbiddenAppError,
   InfrastructureAppError,
@@ -10,14 +9,16 @@ import type {
   ValidationAppError,
 } from './app-error';
 
-/**
- * One constructor per error kind. Prefer these over hand-building an
- * AppError object at call sites — keeps the shape consistent and gives
- * every error site a stable `code` for logging/telemetry
- * (observability.md: "include request/correlation identifiers", and
- * codes make errors greppable across logs).
+/*
+ * One constructor per error kind. Prefer these over hand-building an AppError at a call site: the
+ * shape stays the same everywhere, and every error site carries a stable `code` that is greppable
+ * across logs (observability.md).
  */
 
+/**
+ * `fieldErrors` maps a dotted field path (`fieldPath(...)`, or `ROOT_FIELD` for a problem that
+ * belongs to no field) to the stable codes of what is wrong with it, never to input values.
+ */
 export function validationError(
   code: string,
   message: string,
@@ -69,32 +70,11 @@ export function infrastructureError(
   return { kind: 'infrastructure', code, message, cause };
 }
 
+/** A caught `throw` no caller can recover from. Keep the thrown value as `cause`; `message` stays generic. */
 export function unexpectedError(
   code: string,
   message: string,
   cause?: unknown,
 ): UnexpectedAppError {
   return { kind: 'unexpected', code, message, cause };
-}
-
-/**
- * Exhaustive mapping helper. Passing a handler for every AppErrorKind is
- * enforced at compile time (typescript.md: "use exhaustive checks so
- * adding a new variant produces compile-time errors") — this is the
- * function api.md's Result-to-HTTP-status mapping is built on.
- */
-export function matchAppError<T>(
-  error: AppError,
-  handlers: {
-    [K in AppError['kind']]: (error: Extract<AppError, { kind: K }>) => T;
-  },
-): T {
-  // TS cannot narrow `handlers[error.kind]` to a single call signature
-  // through an indexed access on a mapped type; the runtime invariant
-  // (every handler key matches its own error's `kind`) is what the
-  // `[K in AppError['kind']]` constraint on `handlers` already enforces
-  // at the call site, so this cast just states that guarantee to the
-  // compiler at the one point it can't see it itself.
-  const handler = handlers[error.kind] as (error: AppError) => T;
-  return handler(error);
 }

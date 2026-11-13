@@ -5,16 +5,12 @@ import { fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { mailDeliveryFailed } from './mail-errors';
+import { MAIL_SEND_TIMEOUT_MS } from './mail-transport';
 
 import type { MailTransport, OutboundMail } from './mail-transport';
 import type { Transporter } from 'nodemailer';
 
-/**
- * Nodemailer's own limits are two minutes to connect and ten to idle, which would hold a sign-in
- * request open that long behind an unreachable relay. Matches the Resend transport's bound.
- */
-const SMTP_TIMEOUT_MS = 10_000;
-
+/** Where and as whom to send through an SMTP relay. */
 export interface SmtpMailTransportOptions {
   /** SMTP server hostname, e.g. `localhost` for Mailpit. */
   readonly host: string;
@@ -44,8 +40,8 @@ function describeFailure(thrown: unknown): Error {
 }
 
 /**
- * Sends email through an SMTP server using Nodemailer. Supports optional
- * SMTP authentication and is suitable for local development with Mailpit.
+ * Sends email through an SMTP server using Nodemailer: a local catcher (Mailpit) without credentials,
+ * or an authenticated relay, which is only ever used over STARTTLS or TLS.
  * Delivery failures are mapped to the shared `mailDeliveryFailed` error, with a cause that names
  * the failure's codes but never the recipient.
  */
@@ -67,9 +63,10 @@ export class SmtpMailTransport implements MailTransport {
       // STARTTLS, or whose offer was stripped on the way, instead of authenticating without it.
       requireTLS: auth !== undefined,
       auth,
-      connectionTimeout: SMTP_TIMEOUT_MS,
-      greetingTimeout: SMTP_TIMEOUT_MS,
-      socketTimeout: SMTP_TIMEOUT_MS,
+      // Nodemailer's own limits are two minutes to connect and ten to idle.
+      connectionTimeout: MAIL_SEND_TIMEOUT_MS,
+      greetingTimeout: MAIL_SEND_TIMEOUT_MS,
+      socketTimeout: MAIL_SEND_TIMEOUT_MS,
     });
   }
 

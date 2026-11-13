@@ -5,6 +5,7 @@
 
 import { isPlainObject } from './object';
 
+/** Thrown by `parseJson`; `cause` is the `SyntaxError`. */
 export class JsonParseError extends Error {
   constructor(public override readonly cause: unknown) {
     super('Failed to parse JSON');
@@ -12,6 +13,7 @@ export class JsonParseError extends Error {
   }
 }
 
+/** Thrown by `stringifyJson` for a value with no JSON form (a cycle, a `bigint`, `undefined`). */
 export class JsonStringifyError extends Error {
   constructor(
     message: string,
@@ -22,7 +24,9 @@ export class JsonStringifyError extends Error {
   }
 }
 
+/** The scalars JSON has. */
 export type JsonPrimitive = string | number | boolean | null;
+/** Any value that survives a round trip through JSON text. */
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
 /**

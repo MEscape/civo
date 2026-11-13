@@ -7,41 +7,16 @@ function headers(values: Record<string, string>): HeaderReader {
   return { get: (name) => values[name.toLowerCase()] ?? null };
 }
 
-const vercel = createClientAddressResolver({
-  source: 'vercel',
-  configured: true,
-  trustedProxies: [],
-});
-const none = createClientAddressResolver({ source: 'none', configured: true, trustedProxies: [] });
+const vercel = createClientAddressResolver({ source: 'vercel', trustedProxies: [] });
+const cloudflare = createClientAddressResolver({ source: 'cloudflare', trustedProxies: [] });
+const azure = createClientAddressResolver({ source: 'azure', trustedProxies: [] });
 
 function behind(...trustedProxies: string[]) {
-  return createClientAddressResolver({ source: 'proxies', configured: true, trustedProxies });
+  return createClientAddressResolver({ source: 'proxies', trustedProxies });
 }
 
 const resolved = (address: string) => ({ status: 'resolved', address });
 const unresolved = (reason: string) => ({ status: 'unresolved', reason });
-
-describe('client address: source "none"', () => {
-  it('resolves nothing, whatever the request claims', () => {
-    expect(
-      none(headers({ 'x-forwarded-for': '203.0.113.7', 'x-vercel-forwarded-for': '203.0.113.7' })),
-    ).toEqual(unresolved('source_disabled'));
-  });
-});
-
-describe('client address: source "none" that nobody configured', () => {
-  it('says so, so the logs can tell an oversight from a decision', () => {
-    const implicit = createClientAddressResolver({
-      source: 'none',
-      configured: false,
-      trustedProxies: [],
-    });
-
-    expect(implicit(headers({ 'x-vercel-forwarded-for': '203.0.113.7' }))).toEqual(
-      unresolved('source_not_configured'),
-    );
-  });
-});
 
 describe('client address: source "vercel"', () => {
   it('uses the platform header', () => {
@@ -75,7 +50,58 @@ describe('client address: source "vercel"', () => {
   });
 });
 
+describe.each([
+  ['cloudflare', cloudflare, 'cf-connecting-ip'],
+  ['azure', azure, 'x-azure-clientip'],
+])('client address: source "%s"', (_name, resolve, header) => {
+  it('uses the platform header', () => {
+    expect(resolve(headers({ [header]: '203.0.113.7' }))).toEqual(resolved('203.0.113.7'));
+  });
+
+  it('reads an IPv6 client and reduces it to its /64', () => {
+    expect(resolve(headers({ [header]: '2001:db8:1:2::1' }))).toEqual(
+      resolved('2001:0db8:0001:0002:0000:0000:0000:0000'),
+    );
+  });
+
+  it('ignores every other header, which a client can send', () => {
+    expect(
+      resolve(
+        headers({
+          'x-forwarded-for': '203.0.113.7',
+          'x-real-ip': '203.0.113.7',
+          'x-vercel-forwarded-for': '203.0.113.7',
+        }),
+      ),
+    ).toEqual(unresolved('header_missing'));
+  });
+
+  it('does not guess from several addresses, text or an address with a port', () => {
+    expect(resolve(headers({ [header]: '203.0.113.7, 198.51.100.9' }))).toEqual(
+      unresolved('ambiguous_header'),
+    );
+    expect(resolve(headers({ [header]: 'unknown' }))).toEqual(unresolved('header_malformed'));
+    expect(resolve(headers({ [header]: '203.0.113.7:4711' }))).toEqual(
+      unresolved('header_malformed'),
+    );
+  });
+});
+
 describe('client address: source "proxies"', () => {
+  it('drops the port some proxies append to a hop (Azure, IPv4 and bracketed IPv6)', () => {
+    const resolve = behind('10.0.0.0/8');
+
+    expect(resolve(headers({ 'x-forwarded-for': '203.0.113.7:4711, 10.0.0.5:80' }))).toEqual(
+      resolved('203.0.113.7'),
+    );
+    expect(resolve(headers({ 'x-forwarded-for': '[2001:db8:1:2::1]:4711, 10.0.0.5' }))).toEqual(
+      resolved('2001:0db8:0001:0002:0000:0000:0000:0000'),
+    );
+    expect(resolve(headers({ 'x-forwarded-for': '[2001:db8:1:2::1]' }))).toEqual(
+      resolved('2001:0db8:0001:0002:0000:0000:0000:0000'),
+    );
+  });
+
   it('takes the first untrusted hop from the right, never the left-most one', () => {
     const resolve = behind('10.0.0.0/8');
 
@@ -128,6 +154,21 @@ describe('client address: source "proxies"', () => {
   it('is unresolved without the header, and ignores the platform header', () => {
     expect(behind('10.0.0.0/8')(headers({ 'x-vercel-forwarded-for': '203.0.113.7' }))).toEqual(
       unresolved('header_missing'),
+    );
+  });
+
+  it('treats an empty or whitespace-only x-forwarded-for header as missing', () => {
+    expect(behind('10.0.0.0/8')(headers({ 'x-forwarded-for': '   ' }))).toEqual(
+      unresolved('header_missing'),
+    );
+    expect(behind('10.0.0.0/8')(headers({ 'x-forwarded-for': ' , , ' }))).toEqual(
+      unresolved('header_missing'),
+    );
+  });
+
+  it('skips empty hops when traversing from the right', () => {
+    expect(behind('10.0.0.0/8')(headers({ 'x-forwarded-for': '203.0.113.7, , 10.0.0.5' }))).toEqual(
+      resolved('203.0.113.7'),
     );
   });
 

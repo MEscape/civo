@@ -1,14 +1,16 @@
 import { APP_IDENTITY, publicEnv } from '@lib/config';
-import { escapeHtml } from '@lib/utils';
+import { escapeHtml, truncate } from '@lib/utils';
 
 import { LOGO_HEIGHT, LOGO_WIDTH } from './email-styles';
 
 import type { EmailBrand } from './email-brand';
-import type { emailStyles } from './email-styles';
+import type { EmailStyles as Styles } from './email-styles';
 
-/** The HTML of the parts of a message. Each takes the styles of the brand it is drawn for. */
-type Styles = ReturnType<typeof emailStyles>;
+/*
+ * The HTML of the parts of a message. Each takes the styles of the brand it is drawn for.
+ */
 
+/** One labelled detail of a message, such as when and where. */
 export interface EmailFact {
   readonly label: string;
   readonly value: string;
@@ -16,6 +18,7 @@ export interface EmailFact {
   readonly style?: 'code';
 }
 
+/** The one button of a message. */
 export interface EmailAction {
   readonly label: string;
   /** An `http:` or `https:` address; the layout refuses anything else. */
@@ -37,8 +40,9 @@ const PREHEADER_LENGTH = 110;
 const PREHEADER_FILL_REPEATS = 40;
 const PREHEADER_FILL = '&zwnj;&nbsp;'.repeat(PREHEADER_FILL_REPEATS);
 
+/** The hidden first line that inboxes show beside the subject, padded so the body does not follow it. */
 export function renderPreheader(text: string, styles: Styles): string {
-  return `<div style="${styles.preheader}">${escapeHtml(text.slice(0, PREHEADER_LENGTH))}${PREHEADER_FILL}</div>`;
+  return `<div style="${styles.preheader}">${escapeHtml(truncate(text, PREHEADER_LENGTH))}${PREHEADER_FILL}</div>`;
 }
 
 /**
@@ -49,6 +53,7 @@ export function renderPreheader(text: string, styles: Styles): string {
  */
 const LOGO_PATH = '/email/artemis-connect.png';
 
+/** The platform's logo, drawn above the card of a message the platform itself sends. */
 export function renderLogo(styles: Styles): string {
   const src = escapeHtml(`${publicEnv.NEXT_PUBLIC_APP_URL}${LOGO_PATH}`);
   return `<img src="${src}" width="${LOGO_WIDTH}" height="${LOGO_HEIGHT}" alt="${escapeHtml(APP_IDENTITY.company)}" style="${styles.logo}">`;
@@ -60,6 +65,7 @@ const PROVIDED_WITH: Localized = {
   en: 'Provided with',
 };
 
+/** "Provided with <company>" in the message's language. */
 export function creditLine(locale: string): string {
   return `${localized(PROVIDED_WITH, locale)} ${APP_IDENTITY.company}`;
 }

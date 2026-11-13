@@ -3,6 +3,7 @@ export const ROOT_FIELD = '_form';
 
 const FIELD_PATH_SEPARATOR = '.';
 
+/** Every dotted path of an object type (`'colors' | 'colors.primary'`), to type a form's field names. */
 export type NestedKeyOf<ObjectType extends object> = {
   [Key in keyof ObjectType & (string | number)]: ObjectType[Key] extends object
     ? `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key]>}`

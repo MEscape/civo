@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TimeoutError, withTimeout } from '@lib/utils/async';
+import { retry, sleep, TimeoutError, withTimeout } from '@lib/utils/async';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -61,5 +61,89 @@ describe('withTimeout', () => {
     process.off('unhandledRejection', unhandled);
 
     expect(unhandled).not.toHaveBeenCalled();
+  });
+});
+
+describe('retry', () => {
+  const always = () => true;
+  const constantDelay = () => 50;
+
+  it('returns the first outcome when it needs no retry', async () => {
+    const attempt = vi.fn().mockResolvedValue('done');
+
+    await expect(
+      retry(attempt, { attempts: 3, shouldRetry: () => false, delayMs: constantDelay }),
+    ).resolves.toBe('done');
+    expect(attempt).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs again, after the pause for the attempts made, until the outcome is good', async () => {
+    const attempt = vi
+      .fn()
+      .mockResolvedValueOnce('bad')
+      .mockResolvedValueOnce('bad')
+      .mockResolvedValue('good');
+    const delayMs = vi.fn((made: number) => made * 10);
+
+    const outcome = retry(attempt, {
+      attempts: 5,
+      shouldRetry: (value) => value === 'bad',
+      delayMs,
+    });
+    await vi.advanceTimersByTimeAsync(10);
+    expect(attempt).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(20);
+
+    await expect(outcome).resolves.toBe('good');
+    expect(attempt).toHaveBeenCalledTimes(3);
+    expect(delayMs.mock.calls).toEqual([[1], [2]]);
+  });
+
+  it('gives up after the allowed attempts and returns the last outcome', async () => {
+    const attempt = vi.fn().mockResolvedValue('bad');
+
+    const outcome = retry(attempt, { attempts: 3, shouldRetry: always, delayMs: constantDelay });
+    await vi.advanceTimersByTimeAsync(100);
+
+    await expect(outcome).resolves.toBe('bad');
+    expect(attempt).toHaveBeenCalledTimes(3);
+  });
+
+  it('runs once when only one attempt is allowed', async () => {
+    const attempt = vi.fn().mockResolvedValue('bad');
+
+    await retry(attempt, { attempts: 1, shouldRetry: always, delayMs: constantDelay });
+
+    expect(attempt).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets a throw end the retries instead of catching it', async () => {
+    const attempt = vi.fn().mockRejectedValue(new Error('boom'));
+
+    await expect(
+      retry(attempt, { attempts: 3, shouldRetry: always, delayMs: constantDelay }),
+    ).rejects.toThrow('boom');
+    expect(attempt).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('sleep', () => {
+  it('stays pending until the time has passed, then resolves', async () => {
+    const settled = vi.fn();
+    void sleep(100).then(settled);
+
+    await vi.advanceTimersByTimeAsync(99);
+    expect(settled).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(settled).toHaveBeenCalledOnce();
+  });
+
+  it('leaves no timer pending once it has resolved', async () => {
+    const done = sleep(10);
+    await vi.advanceTimersByTimeAsync(10);
+    await done;
+
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

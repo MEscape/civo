@@ -106,4 +106,33 @@ describe('buildBucketKey', () => {
     const short = keyOf({ kind: 'identifier', value: 'y' });
     expect(keyOf({ kind: 'identifier', value: atLimit })).toHaveLength(short.length);
   });
+
+  it('refuses an oversized raw value before normalization without touching it', () => {
+    const rawTooLong = 'z'.repeat(320 * 4 + 1);
+    expect(
+      buildBucketKey('test.operation', { kind: 'identifier', value: rawTooLong }, SECRET),
+    ).toEqual({
+      isValid: false,
+      problem: 'identifier subject is too long',
+    });
+  });
+
+  it('refuses a subject part that contains the reserved field separator', () => {
+    expect(
+      buildBucketKey('test.operation', { kind: 'identifier', value: 'user\u0000injected' }, SECRET),
+    ).toEqual({
+      isValid: false,
+      problem: 'identifier subject contains a reserved character',
+    });
+    expect(
+      buildBucketKey(
+        'test.operation',
+        { kind: 'actor', tenantId: 'tenant\u0000a', actorId: 'actor-1' },
+        SECRET,
+      ),
+    ).toEqual({
+      isValid: false,
+      problem: 'actor subject contains a reserved character',
+    });
+  });
 });

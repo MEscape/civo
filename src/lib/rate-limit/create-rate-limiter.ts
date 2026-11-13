@@ -5,21 +5,20 @@ import { err, ok, ResultAsync } from '@lib/result';
 import type { AppResult } from '@lib/result';
 import { TimeoutError, withTimeout } from '@lib/utils';
 
-import { createLogThrottle } from './rate-limit-log';
+import { DEFAULT_LOG_INTERVAL_MS, createLogThrottle } from './rate-limit-log';
 import { MAX_POLICY_ID_LENGTH, policyProblem } from './rate-limit-policy';
+import { isBucketHit } from './rate-limit-store';
 import { buildBucketKey } from './rate-limit-subject';
 
 import type { RateLimitLog, RateLimitLogContext } from './rate-limit-log';
 import type { RateLimitPolicy } from './rate-limit-policy';
-import type { BucketHit, RateLimitStore } from './rate-limit-store';
+import type { RateLimitStore } from './rate-limit-store';
 import type {
   RateLimitAllowance,
   RateLimitFailure,
   RateLimiter,
   RateLimitRequest,
 } from './rate-limiter';
-
-const DEFAULT_LOG_INTERVAL_MS = 10_000;
 
 const EXCEEDED_CODE = 'rate_limit.exceeded';
 const BACKEND_UNAVAILABLE_CODE = 'rate_limit.backend_unavailable';
@@ -29,18 +28,18 @@ const CLIENT_UNRESOLVED_CODE = 'rate_limit.client_unresolved';
 /** Names a composite call in logs; it belongs to no single policy. */
 const COMPOSITE_LOG_ID = 'rate-limit.composite';
 
-function isBucketHit(value: unknown): value is BucketHit {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const { hits, retryAfterSeconds } = value as Partial<Record<keyof BucketHit, unknown>>;
+/** `withTimeout` rejects with our `TimeoutError`; an aborted `fetch` rejects with a `DOMException`. */
+function isTimeout(thrown: unknown): boolean {
   return (
-    typeof hits === 'number' &&
-    Number.isInteger(hits) &&
-    hits >= 1 &&
-    typeof retryAfterSeconds === 'number' &&
-    Number.isFinite(retryAfterSeconds)
+    thrown instanceof TimeoutError || (thrown instanceof Error && thrown.name === 'TimeoutError')
   );
+}
+
+function failureReason(thrown: unknown): 'timeout' | 'store_error' {
+  if (isTimeout(thrown)) {
+    return 'timeout';
+  }
+  return 'store_error';
 }
 
 export interface RateLimiterDeps {
@@ -64,7 +63,8 @@ export interface RateLimiterDeps {
  * - Attempt number 1..limit in a window is allowed; every later one is rejected.
  *   Rejected attempts are counted too, but they do not extend the window, so a
  *   client that keeps hammering is released when the window ends.
- * - `retryAfterSeconds` is the time left in the window, rounded up, at least 1.
+ * - `retryAfterSeconds` is the time left in the window, rounded up, at least 1 (a `Retry-After`
+ *   of 0 would invite an immediate retry, which is the opposite of the point).
  * - Windows are anchored at the first attempt, not on the clock, so up to twice
  *   `limit` attempts can pass across a window boundary. Policies that need a tight
  *   burst bound combine a short window with a longer one.
@@ -102,7 +102,7 @@ export function createRateLimiter(deps: RateLimiterDeps): RateLimiter {
     policy: RateLimitPolicy,
     thrown: unknown,
   ): AppResult<RateLimitAllowance, InfrastructureAppError> {
-    const reason = thrown instanceof TimeoutError ? 'timeout' : 'store_error';
+    const reason = failureReason(thrown);
     const failedOpen = policy.onBackendFailure === 'allow';
     const context = admit(failedOpen ? 'failed_open' : 'backend_failed', policy.id);
 
@@ -185,8 +185,10 @@ export function createRateLimiter(deps: RateLimiterDeps): RateLimiter {
     if (context !== null) {
       deps.log.info('rate_limit.rejected', context);
     }
+    // Whole seconds, at least 1, whatever the store said (it is checked for shape, not for sense).
+    const retryAfterSeconds = Math.max(1, Math.ceil(hit.retryAfterSeconds));
     return err(
-      rateLimitedError(EXCEEDED_CODE, 'Too many attempts. Try again later.', hit.retryAfterSeconds),
+      rateLimitedError(EXCEEDED_CODE, 'Too many attempts. Try again later.', retryAfterSeconds),
     );
   }
 
@@ -225,9 +227,10 @@ export function createRateLimiter(deps: RateLimiterDeps): RateLimiter {
       return invalid(COMPOSITE_LOG_ID, 'a composite cannot use one policy twice');
     }
 
+    // `enforceAll` wraps this whole function in `safely`, so a surprise here still denies.
     const allowances: RateLimitAllowance[] = [];
     for (const request of requests) {
-      const result = await safely(() => check(request));
+      const result = await check(request);
       if (result.isErr()) {
         return err(result.error);
       }

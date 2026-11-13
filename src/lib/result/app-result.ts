@@ -8,6 +8,7 @@ import type { AppError } from '@lib/errors';
  * ResultAsync for asynchronous operations that can fail predictably.
  */
 export type AppResult<T, E extends AppError = AppError> = Result<T, E>;
+/** The asynchronous `AppResult`. */
 export type AppResultAsync<T, E extends AppError = AppError> = ResultAsync<T, E>;
 
 export { err, errAsync, ok, okAsync, Result, ResultAsync };
@@ -53,4 +54,5 @@ export function fromThrowableAsync<T, E extends AppError>(
  * from `@lib/result`, never reach into `neverthrow` directly.
  */
 export const combine = Result.combine.bind(Result);
+/** Async counterpart of `combine`. */
 export const combineAsync = ResultAsync.combine.bind(ResultAsync);

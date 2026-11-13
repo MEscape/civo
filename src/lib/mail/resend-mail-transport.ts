@@ -3,11 +3,11 @@ import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import { mailDeliveryFailed } from './mail-errors';
+import { MAIL_SEND_TIMEOUT_MS } from './mail-transport';
 
 import type { MailTransport, OutboundMail } from './mail-transport';
 
-const REQUEST_TIMEOUT_MS = 10_000;
-
+/** Where and as whom to send through Resend. */
 export interface ResendMailTransportOptions {
   readonly apiKey: string;
   /** Verified sender, e.g. `Civo <no-reply@example.org>`. */
@@ -47,7 +47,7 @@ export class ResendMailTransport implements MailTransport {
               content_type: contentType,
             })),
           }),
-          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+          signal: AbortSignal.timeout(MAIL_SEND_TIMEOUT_MS),
         }),
       mailDeliveryFailed,
     ).andThen((response): AppResultAsync<void, InfrastructureAppError> =>

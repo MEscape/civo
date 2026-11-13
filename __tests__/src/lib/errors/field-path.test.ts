@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import { fieldPath, ROOT_FIELD } from '@lib/errors/validation';
-import type { NestedKeyOf } from '@lib/errors/validation';
+import { fieldPath, ROOT_FIELD } from '@lib/errors/field-path';
+import type { NestedKeyOf } from '@lib/errors/field-path';
 
 describe('fieldPath', () => {
   it('joins segments with dots, the format react-hook-form expects', () => {

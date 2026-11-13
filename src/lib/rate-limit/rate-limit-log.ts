@@ -16,6 +16,9 @@ export interface RateLimitLog {
   error(message: string, error: unknown, context?: RateLimitLogContext): void;
 }
 
+/** The default gap between two identical log lines; limiter and client-address provider share it. */
+export const DEFAULT_LOG_INTERVAL_MS = 10_000;
+
 /** Enough distinct (event, policy) pairs for every policy in the codebase, but bounded. */
 const MAX_TRACKED_EVENTS = 512;
 

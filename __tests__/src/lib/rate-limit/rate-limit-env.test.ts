@@ -3,78 +3,89 @@ import { describe, expect, it } from 'vitest';
 import { envRuleIssues } from '@lib/config/env-rules';
 import { serverEnvSchema } from '@lib/config/env-schema';
 import { rateLimitEnvRules, rateLimitEnvSchema } from '@lib/config/rate-limit-env-schema';
-import type { RateLimitEnvInput } from '@lib/config/rate-limit-env-schema';
+import type { RateLimitEnv } from '@lib/config/rate-limit-env-schema';
 import { resolveRateLimitSettings } from '@lib/config/rate-limit-settings';
 
 const LONG_SECRET = 's'.repeat(40);
 
-const rateLimitConfigIssues = (env: RateLimitEnvInput) => envRuleIssues(env, rateLimitEnvRules);
+const rateLimitConfigIssues = (env: RateLimitEnv) => envRuleIssues(env, rateLimitEnvRules);
 
-function input(overrides: Partial<RateLimitEnvInput> = {}): RateLimitEnvInput {
-  return { ...rateLimitEnvSchema.parse({}), NODE_ENV: 'development', ...overrides };
+/** A complete, enabled configuration; each test overrides what it is about. */
+function input(overrides: Partial<RateLimitEnv> = {}): RateLimitEnv {
+  return {
+    // The defaults of every other variable; the flag is switched off only to get past the rules.
+    ...rateLimitEnvSchema.parse({ RATE_LIMIT_ENABLED: 'false' }),
+    RATE_LIMIT_ENABLED: true,
+    RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'vercel',
+    UPSTASH_REDIS_REST_URL: 'http://localhost:8079',
+    UPSTASH_REDIS_REST_TOKEN: 'token',
+    AUTH_SECRET: LONG_SECRET,
+    ...overrides,
+  };
 }
 
 describe('rate-limit configuration', () => {
-  it('needs nothing in development and uses the memory backend', () => {
-    expect(rateLimitConfigIssues(input())).toEqual([]);
-    expect(resolveRateLimitSettings(input())).toEqual({
-      backend: 'memory',
-      keySecret: undefined,
-      timeoutMs: 1500,
-      clientAddress: { source: 'none', configured: false, trustedProxies: [] },
-    });
+  it('is enabled by default and needs the shared store', () => {
+    expect(input().RATE_LIMIT_ENABLED).toBe(true);
+
+    const issues = rateLimitConfigIssues(
+      input({ UPSTASH_REDIS_REST_URL: undefined, UPSTASH_REDIS_REST_TOKEN: undefined }),
+    );
+
+    expect(issues.map((issue) => issue.path)).toEqual([
+      'UPSTASH_REDIS_REST_URL',
+      'UPSTASH_REDIS_REST_TOKEN',
+    ]);
   });
 
-  it('uses upstash in production and falls back to the auth secret', () => {
+  it('reads the flag as exactly true or false', () => {
+    expect(rateLimitEnvSchema.parse({ RATE_LIMIT_ENABLED: 'false' }).RATE_LIMIT_ENABLED).toBe(
+      false,
+    );
+    expect(rateLimitEnvSchema.safeParse({ RATE_LIMIT_ENABLED: 'no' }).success).toBe(false);
+  });
+
+  it('turns the limiter off without needing the store or any other setting', () => {
+    const env = input({
+      RATE_LIMIT_ENABLED: false,
+      UPSTASH_REDIS_REST_URL: undefined,
+      UPSTASH_REDIS_REST_TOKEN: undefined,
+      AUTH_SECRET: undefined,
+      RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'proxies',
+    });
+
+    expect(rateLimitConfigIssues(env)).toEqual([]);
+    expect(resolveRateLimitSettings(env)).toEqual({ enabled: false });
+  });
+
+  it('resolves the store settings and falls back to the auth secret', () => {
     const settings = resolveRateLimitSettings(
-      input({
-        NODE_ENV: 'production',
-        UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io',
-        UPSTASH_REDIS_REST_TOKEN: 'token',
-        AUTH_SECRET: LONG_SECRET,
-      }),
+      input({ UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io' }),
     );
 
     expect(settings).toEqual({
-      backend: 'upstash',
+      enabled: true,
       restUrl: 'https://eu1-example.upstash.io',
       restToken: 'token',
       keySecret: LONG_SECRET,
       timeoutMs: 1500,
-      clientAddress: { source: 'none', configured: false, trustedProxies: [] },
+      clientAddress: { source: 'vercel', trustedProxies: [] },
     });
   });
 
   it('prefers its own secret over the fallback', () => {
-    const settings = resolveRateLimitSettings(
-      input({
-        NODE_ENV: 'production',
-        UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io',
-        UPSTASH_REDIS_REST_TOKEN: 'token',
-        AUTH_SECRET: LONG_SECRET,
-        RATE_LIMIT_SECRET: 'r'.repeat(32),
-      }),
-    );
+    const settings = resolveRateLimitSettings(input({ RATE_LIMIT_SECRET: 'r'.repeat(32) }));
 
     expect(settings).toMatchObject({ keySecret: 'r'.repeat(32) });
   });
 
-  it('refuses the memory backend in production, however it was chosen', () => {
+  it('requires the Upstash endpoint, its token and a long enough secret', () => {
     const issues = rateLimitConfigIssues(
-      input({ NODE_ENV: 'production', RATE_LIMIT_BACKEND: 'memory' }),
-    );
-
-    expect(issues).toEqual([
-      expect.objectContaining({
-        path: 'RATE_LIMIT_BACKEND',
-        message: expect.stringMatching(/memory backend/),
+      input({
+        UPSTASH_REDIS_REST_URL: undefined,
+        UPSTASH_REDIS_REST_TOKEN: undefined,
+        AUTH_SECRET: 'too short',
       }),
-    ]);
-  });
-
-  it('requires the Upstash endpoint, its token and a long enough secret for the upstash backend', () => {
-    const issues = rateLimitConfigIssues(
-      input({ NODE_ENV: 'production', AUTH_SECRET: 'too short' }),
     );
 
     expect(issues.map((issue) => issue.path)).toEqual([
@@ -86,12 +97,7 @@ describe('rate-limit configuration', () => {
 
   it('refuses an Upstash endpoint that is not an http(s) URL', () => {
     const issues = rateLimitConfigIssues(
-      input({
-        NODE_ENV: 'production',
-        UPSTASH_REDIS_REST_URL: 'redis://localhost:6379',
-        UPSTASH_REDIS_REST_TOKEN: 'token',
-        AUTH_SECRET: LONG_SECRET,
-      }),
+      input({ UPSTASH_REDIS_REST_URL: 'redis://localhost:6379' }),
     );
 
     expect(issues.map((issue) => issue.path)).toEqual(['UPSTASH_REDIS_REST_URL']);
@@ -100,11 +106,9 @@ describe('rate-limit configuration', () => {
   it('treats an empty value as unset', () => {
     const issues = rateLimitConfigIssues(
       input({
-        NODE_ENV: 'production',
         UPSTASH_REDIS_REST_URL: '',
         UPSTASH_REDIS_REST_TOKEN: '',
         RATE_LIMIT_SECRET: '',
-        AUTH_SECRET: LONG_SECRET,
       }),
     );
 
@@ -114,84 +118,56 @@ describe('rate-limit configuration', () => {
     ]);
   });
 
-  it('rejects a weak secret even for the memory backend when one is set', () => {
-    const issues = rateLimitConfigIssues(input({ RATE_LIMIT_SECRET: 'short' }));
-
-    expect(issues.map((issue) => issue.path)).toEqual(['RATE_LIMIT_SECRET']);
-  });
-
   it.each([
     { RATE_LIMIT_TIMEOUT_MS: '50' },
     { RATE_LIMIT_TIMEOUT_MS: '60000' },
-    { RATE_LIMIT_BACKEND: 'postgres' },
+    { RATE_LIMIT_ENABLED: 'maybe' },
   ])('rejects the out-of-range or unknown setting %j', (bad) => {
     expect(rateLimitEnvSchema.safeParse(bad).success).toBe(false);
   });
 
   describe('client address source', () => {
-    it('defaults to none, marked as not configured: nothing is trusted until the operator says what to trust', () => {
-      expect(resolveRateLimitSettings(input()).clientAddress).toEqual({
-        source: 'none',
-        configured: false,
-        trustedProxies: [],
-      });
+    it('has no default: while the limiter is on, the operator names who tells the address', () => {
+      const issues = rateLimitConfigIssues(input({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: undefined }));
+
+      expect(issues).toEqual([
+        expect.objectContaining({
+          path: 'RATE_LIMIT_CLIENT_ADDRESS_SOURCE',
+          message: expect.stringContaining('vercel, cloudflare, azure, proxies'),
+        }),
+      ]);
+      expect(() =>
+        resolveRateLimitSettings(input({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: undefined })),
+      ).toThrow(/client address source missing/);
     });
 
-    it('treats an explicit none as a decision, not an oversight', () => {
+    it.each(['none', 'oracle', ''])('does not know the source %j', (value) => {
       expect(
-        resolveRateLimitSettings(input({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'none' })).clientAddress,
-      ).toEqual({ source: 'none', configured: true, trustedProxies: [] });
+        rateLimitEnvSchema.safeParse({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: value }).success,
+      ).toBe(false);
     });
 
-    it('detects Vercel from its own system variable, so nothing needs to be remembered', () => {
-      expect(resolveRateLimitSettings(input({ VERCEL: '1' })).clientAddress).toEqual({
-        source: 'vercel',
-        configured: true,
-        trustedProxies: [],
-      });
-    });
+    it.each(['vercel', 'cloudflare', 'azure'] as const)(
+      'accepts %s and ignores a proxy list it does not use',
+      (source) => {
+        const settings = resolveRateLimitSettings(
+          input({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: source, AUTH_TRUSTED_PROXIES: ['10.0.0.1'] }),
+        );
 
-    it('lets an explicit setting win over detection, in both directions', () => {
-      expect(
-        resolveRateLimitSettings(input({ VERCEL: '1', RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'none' }))
-          .clientAddress.source,
-      ).toBe('none');
-      expect(
-        resolveRateLimitSettings(
-          input({
-            VERCEL: '1',
-            RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'proxies',
-            AUTH_TRUSTED_PROXIES: ['10.0.0.1'],
-          }),
-        ).clientAddress.source,
-      ).toBe('proxies');
-    });
+        expect(settings).toMatchObject({ clientAddress: { source, trustedProxies: [] } });
+      },
+    );
 
-    it('ignores an empty VERCEL value', () => {
-      expect(resolveRateLimitSettings(input({ VERCEL: '' })).clientAddress.source).toBe('none');
-    });
-
-    it('defaults to proxies when AUTH_TRUSTED_PROXIES is set, and keeps the list', () => {
+    it('keeps the trusted proxy list for the proxies source', () => {
       const settings = resolveRateLimitSettings(
-        input({ AUTH_TRUSTED_PROXIES: ['10.0.0.0/8', '2001:db8::1'] }),
+        input({
+          RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'proxies',
+          AUTH_TRUSTED_PROXIES: ['10.0.0.0/8', '2001:db8::1'],
+        }),
       );
 
-      expect(settings.clientAddress).toEqual({
-        source: 'proxies',
-        configured: true,
-        trustedProxies: ['10.0.0.0/8', '2001:db8::1'],
-      });
-    });
-
-    it('accepts vercel explicitly and ignores a proxy list it does not use', () => {
-      const settings = resolveRateLimitSettings(
-        input({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'vercel', AUTH_TRUSTED_PROXIES: ['10.0.0.1'] }),
-      );
-
-      expect(settings.clientAddress).toEqual({
-        source: 'vercel',
-        configured: true,
-        trustedProxies: [],
+      expect(settings).toMatchObject({
+        clientAddress: { source: 'proxies', trustedProxies: ['10.0.0.0/8', '2001:db8::1'] },
       });
     });
 
@@ -206,7 +182,12 @@ describe('rate-limit configuration', () => {
     it.each(['not-an-ip', '10.0.0.0/33', '10.0.0.0/-1', '10.0.0.0/8/8', '::1/129', '10.0.0.0/'])(
       'refuses the malformed trusted proxy %j instead of letting it match nothing',
       (entry) => {
-        const issues = rateLimitConfigIssues(input({ AUTH_TRUSTED_PROXIES: ['10.0.0.1', entry] }));
+        const issues = rateLimitConfigIssues(
+          input({
+            RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'proxies',
+            AUTH_TRUSTED_PROXIES: ['10.0.0.1', entry],
+          }),
+        );
 
         expect(issues).toHaveLength(1);
         expect(issues[0]?.message).toContain(entry);
@@ -216,28 +197,82 @@ describe('rate-limit configuration', () => {
     it.each(['10.0.0.1', '10.0.0.0/8', '2001:db8::/32', '::1', '::ffff:10.0.0.1'])(
       'accepts the trusted proxy %j',
       (entry) => {
-        expect(rateLimitConfigIssues(input({ AUTH_TRUSTED_PROXIES: [entry] }))).toEqual([]);
+        expect(
+          rateLimitConfigIssues(
+            input({ RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'proxies', AUTH_TRUSTED_PROXIES: [entry] }),
+          ),
+        ).toEqual([]);
       },
     );
   });
 
-  it('is part of the server schema, so a bad value stops the application at startup', () => {
-    const base = { AUTH_ENABLED: 'false', DATABASE_URL: 'postgres://localhost/db' };
+  describe('as part of the server schema', () => {
+    const base = {
+      AUTH_ENABLED: 'false',
+      DATABASE_URL: 'postgres://localhost/db',
+      STORAGE_S3_ENDPOINT: 'https://s3.example.org',
+      STORAGE_S3_ACCESS_KEY_ID: 'id',
+      STORAGE_S3_SECRET_ACCESS_KEY: 'secret',
+      STORAGE_S3_PRIVATE_BUCKET: 'civo-private',
+    };
 
-    expect(serverEnvSchema.safeParse(base).success).toBe(true);
+    it('stops the application at startup when the enabled limiter has no store', () => {
+      const broken = serverEnvSchema.safeParse(base);
 
-    const broken = serverEnvSchema.safeParse({ ...base, RATE_LIMIT_BACKEND: 'upstash' });
-    expect(broken.success).toBe(false);
-    expect(!broken.success && broken.error.issues.map((issue) => issue.path[0])).toContain(
-      'UPSTASH_REDIS_REST_URL',
-    );
+      expect(broken.success).toBe(false);
+      expect(!broken.success && broken.error.issues.map((issue) => issue.path[0])).toContain(
+        'UPSTASH_REDIS_REST_URL',
+      );
+    });
+
+    it('reports the rules of the rate-limit schema on their own, without the server schema', () => {
+      const alone = rateLimitEnvSchema.safeParse({});
+
+      expect(!alone.success && alone.error.issues.map((issue) => issue.path[0])).toContain(
+        'UPSTASH_REDIS_REST_URL',
+      );
+    });
+
+    it('refuses a plain-http Upstash endpoint in production only', () => {
+      const withUrl = {
+        ...base,
+        RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'vercel',
+        UPSTASH_REDIS_REST_URL: 'http://localhost:8079',
+        UPSTASH_REDIS_REST_TOKEN: 'token',
+        RATE_LIMIT_SECRET: LONG_SECRET,
+      };
+
+      expect(serverEnvSchema.safeParse(withUrl).success).toBe(true);
+      const production = serverEnvSchema.safeParse({ ...withUrl, NODE_ENV: 'production' });
+      expect(
+        !production.success && production.error.issues.map((issue) => issue.path[0]),
+      ).toContain('UPSTASH_REDIS_REST_URL');
+    });
+
+    it('accepts a disabled limiter outside production', () => {
+      expect(serverEnvSchema.safeParse({ ...base, RATE_LIMIT_ENABLED: 'false' }).success).toBe(
+        true,
+      );
+    });
+
+    it('refuses a disabled limiter in production', () => {
+      const result = serverEnvSchema.safeParse({
+        ...base,
+        NODE_ENV: 'production',
+        RATE_LIMIT_ENABLED: 'false',
+      });
+
+      expect(!result.success && result.error.issues.map((issue) => issue.path[0])).toContain(
+        'RATE_LIMIT_ENABLED',
+      );
+    });
   });
 });
 
 describe('resolveRateLimitSettings', () => {
-  it('refuses to build an upstash limiter from an environment the rules would have refused', () => {
-    expect(() => resolveRateLimitSettings(input({ RATE_LIMIT_BACKEND: 'upstash' }))).toThrow(
-      /Upstash URL, token or secret missing/,
+  it('refuses to build an enabled limiter from an environment the rules would have refused', () => {
+    expect(() => resolveRateLimitSettings(input({ UPSTASH_REDIS_REST_URL: undefined }))).toThrow(
+      /Upstash URL, token, secret or client address source missing/,
     );
   });
 });

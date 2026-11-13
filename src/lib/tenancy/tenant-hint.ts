@@ -24,8 +24,8 @@ export function isWebsiteId(value: string): boolean {
 }
 
 /**
- * The website an admin address names (`/<locale>/websites/<id>/...`), or `null`. The path must be
- * exactly that shape: the locale first, then `websites`, then a website id. The list
+ * The website an admin address names (`/<locale>/websites/<id>/...` or `/<locale>/bookings/<id>/...`), or `null`. The path must be
+ * exactly that shape: the locale first, then `websites` or `bookings`, then a website id. The list
  * (`/websites`), the platform screens beside it and every other address, such as a published
  * site that happens to have a page called "websites", name no website.
  *
@@ -33,7 +33,9 @@ export function isWebsiteId(value: string): boolean {
  */
 export function tenantHintFromPathname(pathname: string): string | null {
   const [, section, candidate] = pathname.split('/').filter((segment) => segment !== '');
-  return section === 'websites' && candidate !== undefined && isWebsiteId(candidate)
+  return (section === 'websites' || section === 'bookings') &&
+    candidate !== undefined &&
+    isWebsiteId(candidate)
     ? candidate
     : null;
 }

@@ -4,9 +4,24 @@ import createMiddleware from 'next-intl/middleware';
 
 import { I18N_ROUTING } from '@i18n';
 
+import { publicEnv } from '@lib/config';
+import { serverEnv } from '@lib/config/server';
+import { contentSecurityPolicy } from '@lib/security';
 import { TENANT_HINT_HEADER, tenantHintFromPathname } from '@lib/tenancy';
 
 const handleI18nRouting = createMiddleware(I18N_ROUTING);
+
+/**
+ * The page policy of this process. It names the storage endpoint, which only the running server
+ * knows (a container build has a placeholder), so it is built here from the validated
+ * configuration and not in `next.config.ts`. The configuration is fixed for the life of the
+ * process, so it is built once.
+ */
+const CONTENT_SECURITY_POLICY = contentSecurityPolicy({
+  isProduction: serverEnv.NODE_ENV === 'production',
+  storageUrls: [serverEnv.STORAGE_S3_ENDPOINT, serverEnv.STORAGE_PUBLIC_BASE_URL],
+  hasMap: publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN !== undefined,
+});
 
 /** Addresses with no locale: the routes behind them are not pages, so locale routing must not touch them. */
 const NON_LOCALIZED = /^\/(?:api|trpc)(?:\/|$)/;
@@ -29,12 +44,15 @@ function withTenantHint(request: NextRequest): NextRequest {
   return new NextRequest(request, { headers });
 }
 
-// A named function keeps room to compose request-id / CSP-nonce logic around the i18n handler.
+// A named function keeps room to compose request-id logic around the i18n handler.
 export function proxy(request: NextRequest): ReturnType<typeof handleI18nRouting> {
   const sanitized = withTenantHint(request);
-  return NON_LOCALIZED.test(sanitized.nextUrl.pathname)
+  const response = NON_LOCALIZED.test(sanitized.nextUrl.pathname)
     ? NextResponse.next({ request: { headers: sanitized.headers } })
     : handleI18nRouting(sanitized);
+  // Redirects carry it too, so every response of an address the proxy matches is covered.
+  response.headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+  return response;
 }
 
 export const config = {

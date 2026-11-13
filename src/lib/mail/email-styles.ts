@@ -1,6 +1,6 @@
 import type { EmailBrand } from './email-brand';
 
-/**
+/*
  * Every style of a message, in one place. Mail clients drop `<style>` blocks and classes, so each
  * element carries its CSS inline; written here as objects and joined, instead of as long strings
  * inside the markup. Colours, radius, padding and fonts come from the brand and nowhere else: the
@@ -28,6 +28,7 @@ const PREHEADER = css({
   color: 'transparent',
 });
 
+/** The drawn size of the platform logo, in px (the hosted PNG is twice as large, for sharp screens). */
 export const LOGO_WIDTH = 120;
 export const LOGO_HEIGHT = 81;
 
@@ -133,3 +134,6 @@ export function emailStyles(brand: EmailBrand) {
     }),
   };
 }
+
+/** The styles of one brand, as the blocks and the layout receive them. */
+export type EmailStyles = ReturnType<typeof emailStyles>;

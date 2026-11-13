@@ -19,6 +19,7 @@ export interface EnvRule<Env> {
   readonly message: string | ((env: Env) => string);
 }
 
+/** One violated rule: the variable at fault and what to do about it. */
 export interface EnvIssue<Env> {
   readonly path: keyof Env & string;
   readonly message: string;

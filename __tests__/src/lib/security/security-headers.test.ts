@@ -12,13 +12,12 @@ describe('securityHeaders', () => {
     expect(valueOf(headers, 'X-Content-Type-Options')).toBe('nosniff');
     expect(valueOf(headers, 'X-Frame-Options')).toBe('SAMEORIGIN');
     expect(valueOf(headers, 'Referrer-Policy')).toBe('strict-origin-when-cross-origin');
-    expect(valueOf(headers, 'Content-Security-Policy')).toContain("frame-ancestors 'self'");
   });
 
-  it('adds no script policy that could break pages without a nonce', () => {
-    const csp = valueOf(securityHeaders({ isProduction: true }), 'Content-Security-Policy');
-    expect(csp).not.toContain('script-src');
-    expect(csp).not.toContain('default-src');
+  it('leaves the page policy to the proxy, which knows the hosts only the running server does', () => {
+    for (const isProduction of [false, true]) {
+      expect(valueOf(securityHeaders({ isProduction }), 'Content-Security-Policy')).toBeUndefined();
+    }
   });
 
   it('sends HSTS in production only', () => {
@@ -28,5 +27,32 @@ describe('securityHeaders', () => {
     expect(valueOf(securityHeaders({ isProduction: true }), 'Strict-Transport-Security')).toContain(
       'max-age=63072000',
     );
+  });
+
+  it('switches off the browser features no page uses, and keeps the ones the site needs', () => {
+    const policy = valueOf(securityHeaders({ isProduction: false }), 'Permissions-Policy') ?? '';
+    for (const feature of [
+      'camera',
+      'microphone',
+      'geolocation',
+      'payment',
+      'usb',
+      'browsing-topics',
+    ]) {
+      expect(policy).toContain(`${feature}=()`);
+    }
+    expect(policy).not.toContain('fullscreen');
+    expect(policy).not.toContain('clipboard');
+  });
+
+  it('isolates the browsing context and refuses cross-domain policy files', () => {
+    const headers = securityHeaders({ isProduction: false });
+    expect(valueOf(headers, 'Cross-Origin-Opener-Policy')).toBe('same-origin');
+    expect(valueOf(headers, 'X-Permitted-Cross-Domain-Policies')).toBe('none');
+  });
+
+  it('never repeats a header', () => {
+    const keys = securityHeaders({ isProduction: true }).map((header) => header.key);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });

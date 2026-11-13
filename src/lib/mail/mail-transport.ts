@@ -1,6 +1,12 @@
 import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
+/**
+ * How long one send may take before it is abandoned, whichever transport. Without a bound, an
+ * unreachable relay would hold a sign-in request open for the library's own, much longer defaults.
+ */
+export const MAIL_SEND_TIMEOUT_MS = 10_000;
+
 /** A file sent with a message, as text: a calendar entry is the one kind so far. */
 export interface MailAttachment {
   readonly filename: string;

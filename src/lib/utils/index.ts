@@ -4,8 +4,6 @@
  * A helper used only inside its own file stays out of this list.
  */
 
-export { assertNever, invariant } from './assert';
-
 export {
   groupBy,
   insertItem,
@@ -18,7 +16,9 @@ export {
   unique,
 } from './array';
 
-export { TimeoutError, withTimeout } from './async';
+export { assertNever, invariant } from './assert';
+
+export { retry, sleep, TimeoutError, withTimeout, type RetryOptions } from './async';
 
 export { type Brand } from './brand';
 
@@ -40,6 +40,8 @@ export {
   formatRelativeTime,
   MS_PER_DAY,
   MS_PER_MINUTE,
+  MS_PER_SECOND,
+  SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
   type DateInput,
@@ -58,6 +60,16 @@ export {
 } from './json';
 
 export { isJsonRecord, isJsonValue, jsonWeight } from './json-value';
+
+export {
+  BUILD_RETRY_INTERVAL_MS,
+  createLazyCell,
+  resolveLazy,
+  type LazyCell,
+  type LazyFailure,
+  type LazyResult,
+  type ResolveLazyDeps,
+} from './lazy-cell';
 
 export { clamp, formatBytes, formatMoney, formatNumber, formatPercent } from './number';
 

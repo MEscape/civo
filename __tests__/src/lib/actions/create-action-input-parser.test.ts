@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createActionInputParser } from '@lib/actions/parse-action-input';
+import { createActionInputParser } from '@lib/actions/create-action-input-parser';
 
 const parse = createActionInputParser('site.invalid_input');
 

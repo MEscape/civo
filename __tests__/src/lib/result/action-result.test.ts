@@ -1,21 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AppError } from '@lib/errors';
+import {
+  infrastructureError,
+  notFoundError,
+  rateLimitedError,
+  toErrorResponseBody,
+  validationError,
+} from '@lib/errors';
 import { toActionResult } from '@lib/result/action-app-result';
 import { err, ok } from '@lib/result/app-result';
-
-// Stubbing an AppError for testing boundaries without importing actual domain errors
-const createError = (
-  kind: 'domain' | 'validation' | 'system' | 'rate_limited',
-  code: string,
-  fieldErrors?: Record<string, string[]>,
-): AppError =>
-  ({
-    kind,
-    code,
-    message: 'Test error message',
-    ...(fieldErrors ? { fieldErrors } : {}),
-  }) as unknown as AppError;
 
 describe('toActionResult', () => {
   it('maps an Ok result to a serializable success object', () => {
@@ -27,23 +20,23 @@ describe('toActionResult', () => {
   });
 
   it('maps an Err result to a serializable error object omitting internal details', () => {
-    const error = createError('domain', 'NOT_FOUND');
-    const result = err(error);
+    const result = err(
+      infrastructureError('STORE_DOWN', 'Test error message', new Error('connection string')),
+    );
 
     expect(toActionResult(result)).toEqual({
       ok: false,
       error: {
-        code: 'NOT_FOUND',
+        code: 'STORE_DOWN',
         message: 'Test error message',
       },
     });
   });
 
   it('includes fieldErrors exclusively for validation errors', () => {
-    const error = createError('validation', 'INVALID_INPUT', {
-      email: ['Must be valid email'],
-    });
-    const result = err(error);
+    const result = err(
+      validationError('INVALID_INPUT', 'Test error message', { email: ['Must be valid email'] }),
+    );
 
     expect(toActionResult(result)).toEqual({
       ok: false,
@@ -56,18 +49,19 @@ describe('toActionResult', () => {
       },
     });
   });
-});
 
-describe('toActionResult for a rate-limited error', () => {
-  it('keeps the retry delay so the client can show when to try again', () => {
-    const error = {
-      ...createError('rate_limited', 'RATE_LIMITED'),
-      retryAfterSeconds: 30,
-    } as unknown as AppError;
+  it('includes the whole-second retry delay for a rate-limited error', () => {
+    const result = err(rateLimitedError('SLOW_DOWN', 'Test error message', 2.2));
 
-    expect(toActionResult(err(error))).toEqual({
+    expect(toActionResult(result)).toEqual({
       ok: false,
-      error: { code: 'RATE_LIMITED', message: 'Test error message', retryAfterSeconds: 30 },
+      error: { code: 'SLOW_DOWN', message: 'Test error message', retryAfterSeconds: 3 },
     });
+  });
+
+  it('answers with exactly the body a Route Handler would', () => {
+    const error = notFoundError('GONE', 'Test error message');
+
+    expect(toActionResult(err(error))).toEqual({ ok: false, error: toErrorResponseBody(error) });
   });
 });

@@ -1,3 +1,5 @@
+import { SECONDS_PER_DAY } from '@lib/utils';
+
 /**
  * What happens to the protected operation when the limiter's store cannot answer.
  *
@@ -42,9 +44,10 @@ export interface RateLimitPolicy {
   readonly onUnresolvedClient?: RateLimitUnresolvedClientMode;
 }
 
+/** The id is part of every stored key; the bounds keep a policy to what a counter can sensibly hold. */
 export const MAX_POLICY_ID_LENGTH = 64;
 export const MAX_POLICY_LIMIT = 100_000;
-export const MAX_POLICY_WINDOW_SECONDS = 86_400;
+export const MAX_POLICY_WINDOW_SECONDS = SECONDS_PER_DAY;
 
 const POLICY_ID_PATTERN = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/;
 

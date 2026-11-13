@@ -9,12 +9,12 @@ interface ContentMetadataOptions {
   readonly pathname: string;
   readonly title: string;
   readonly description: string;
-  /** The name of the site the content belongs to, e.g. the municipality's website. */
+  /** The name of the site the content belongs to; it is the brand of the page. */
   readonly siteName: string;
 }
 
 /**
- * Metadata for content that is NOT translated, like a municipality's pages:
+ * Metadata for content that is NOT translated, such as pages a customer publishes:
  * `/en/...` and `/de/...` show the same text, so claiming them as language
  * alternates (what `buildLocalizedMetadata` does) would mislead search
  * engines. One canonical URL, in the default locale, collects them all.

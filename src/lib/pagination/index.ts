@@ -1,4 +1,5 @@
 export { loadClampedPage } from './load-clamped-page';
+export { pageHrefOf, pageParamsSchema } from './page-params';
 export {
   DEFAULT_PAGE_LIMITS,
   PAGE_SIZE_OPTIONS,
@@ -9,5 +10,5 @@ export {
   toPage,
 } from './page-request';
 export type { Page, PageLimits, PageRequest } from './page-request';
-export { formatSort, resolveSort } from './sort';
+export { formatSort, nextSort, resolveSort } from './sort';
 export type { SortDirection, SortSpec } from './sort';

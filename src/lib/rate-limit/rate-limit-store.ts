@@ -22,3 +22,18 @@ export interface RateLimitStore {
    */
   hit(bucketKey: string, windowSeconds: number): Promise<BucketHit>;
 }
+
+/** Whether an answer from a store has the shape of a `BucketHit`: a store is behind an interface, so its answer is checked, not trusted. */
+export function isBucketHit(value: unknown): value is BucketHit {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const { hits, retryAfterSeconds } = value as Partial<Record<keyof BucketHit, unknown>>;
+  return (
+    typeof hits === 'number' &&
+    Number.isInteger(hits) &&
+    hits >= 1 &&
+    typeof retryAfterSeconds === 'number' &&
+    Number.isFinite(retryAfterSeconds)
+  );
+}

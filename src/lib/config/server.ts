@@ -15,6 +15,13 @@ import { parseEnv } from './parse-env';
  */
 export const serverEnv: ServerEnv = parseEnv('server', serverEnvSchema, process.env);
 
+/** Runtime-created credential names cannot be declared in the startup schema. Trusted server adapters only. */
+export function readServerSecret(name: string): string | undefined {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(name) ? process.env[name] : undefined;
+}
+
 export type { ServerEnv } from './env-schema';
+export type { MailEnv } from './mail-env-schema';
+export type { StorageEnv } from './storage-env-schema';
 export { resolveRateLimitSettings } from './rate-limit-settings';
 export type { ClientAddressSettings, RateLimitSettings } from './rate-limit-settings';

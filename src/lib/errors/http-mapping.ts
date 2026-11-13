@@ -1,4 +1,4 @@
-import { matchAppError } from './factory';
+import { matchAppError } from './match-app-error';
 
 import type { AppError, AppErrorKind } from './app-error';
 
@@ -21,6 +21,7 @@ const STATUS_BY_KIND: Record<AppErrorKind, number> = {
   unexpected: 500,
 };
 
+/** The HTTP status for an error's kind: 422, 404, 409, 401, 403, 429, 502 or 500. */
 export function httpStatusForError(error: AppError): number {
   return STATUS_BY_KIND[error.kind];
 }

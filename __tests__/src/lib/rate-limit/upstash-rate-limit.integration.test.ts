@@ -35,7 +35,11 @@ function uniqueKey(label: string): string {
 
 /** The wiring caches its limiter on `globalThis` (hot-reload safety) and reads the environment once per import. */
 async function limiterBuiltFromEnvironment(token: string): Promise<RateLimiter> {
-  vi.stubEnv('RATE_LIMIT_BACKEND', 'upstash');
+  // The unit and integration configs switch the limiter off; this test is about it being on.
+  vi.stubEnv('AUTH_ENABLED', 'false');
+  vi.stubEnv('RATE_LIMIT_ENABLED', 'true');
+  vi.stubEnv('RATE_LIMIT_CLIENT_ADDRESS_SOURCE', 'proxies');
+  vi.stubEnv('AUTH_TRUSTED_PROXIES', '10.0.0.0/8');
   vi.stubEnv('RATE_LIMIT_SECRET', SECRET);
   vi.stubEnv('UPSTASH_REDIS_REST_URL', REST_URL ?? '');
   vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', token);

@@ -4,6 +4,7 @@ import type { AppResultAsync } from '@lib/result';
 import type { RateLimitPolicy } from './rate-limit-policy';
 import type { RateLimitSubject } from './rate-limit-subject';
 
+/** One attempt to count: against which budget, and for whom. */
 export interface RateLimitRequest {
   readonly policy: RateLimitPolicy;
   readonly subject: RateLimitSubject;
@@ -12,7 +13,7 @@ export interface RateLimitRequest {
 /** What an allowed attempt looks like. */
 export interface RateLimitAllowance {
   readonly limit: number;
-  /** Attempts left in this window, or `null` when the limiter could not count (see `degraded`). */
+  /** Attempts left in this window, or `null` when nothing was counted (limiter disabled, or `degraded`). */
   readonly remaining: number | null;
   /** Seconds until the window restarts, or `null` when unknown. */
   readonly resetAfterSeconds: number | null;

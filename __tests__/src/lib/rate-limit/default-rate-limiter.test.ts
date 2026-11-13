@@ -10,37 +10,36 @@ const POLICY: RateLimitPolicy = {
   onBackendFailure: 'deny',
 };
 
-describe('getRateLimiter (the real wiring, in the test environment: memory backend)', () => {
+// vitest.config.ts sets RATE_LIMIT_ENABLED=false, so unit tests never reach Redis.
+describe('getRateLimiter (the real wiring, in the test environment: rate limiting disabled)', () => {
   it('is cheap to obtain and builds nothing until it is used', () => {
     expect(() => getRateLimiter()).not.toThrow();
   });
 
-  it('counts and refuses end to end through the configured store', async () => {
+  it('allows every attempt without counting, however often it is repeated', async () => {
     const limiter = getRateLimiter();
-    const subject = { kind: 'identifier', value: `smoke-${Date.now()}@example.org` } as const;
+    const subject = { kind: 'identifier', value: 'smoke@example.org' } as const;
 
     const results = [];
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
       results.push(await limiter.enforce({ policy: POLICY, subject }));
     }
 
-    expect(results.map((result) => result.isOk())).toEqual([true, true, false]);
-    expect(results[2]?.isErr() && results[2].error.kind).toBe('rate_limited');
+    expect(results.map((result) => result.isOk())).toEqual([true, true, true, true, true]);
+    expect(results[0]?.isOk() && results[0].value).toEqual({
+      limit: 2,
+      remaining: null,
+      resetAfterSeconds: null,
+      degraded: false,
+    });
   });
 
-  it('supports a composite and never throws for an invalid request', async () => {
-    const limiter = getRateLimiter();
-
-    const composite = await limiter.enforceAll([
+  it('allows a composite as well', async () => {
+    const composite = await getRateLimiter().enforceAll([
       { policy: { ...POLICY, id: 'default-wiring.a' }, subject: { kind: 'global' } },
       { policy: { ...POLICY, id: 'default-wiring.b' }, subject: { kind: 'global' } },
     ]);
-    const invalid = await limiter.enforce({
-      policy: { ...POLICY, limit: 0 },
-      subject: { kind: 'global' },
-    });
 
-    expect(composite.isOk()).toBe(true);
-    expect(invalid.isErr() && invalid.error.code).toBe('rate_limit.invalid_request');
+    expect(composite.isOk() && composite.value).toHaveLength(2);
   });
 });

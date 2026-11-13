@@ -1,7 +1,7 @@
 import type { SVGProps } from 'react';
 
 /**
- * Union of every icon key exported from `components/ui/icons.tsx`.
+ * Union of every icon key exported from `components/icons/icons.tsx`.
  *
  * Derive — do not hard-code — this so adding an icon automatically
  * broadens the union without touching this file.
@@ -12,18 +12,18 @@ import type { SVGProps } from 'react';
  * interface ButtonProps { icon?: IconName }
  * ```
  */
-import type { Icons } from '@components/ui/icons';
+import type { Icons } from '@components/icons/icons';
 
 /**
  * Props for a raw SVG icon element.
  *
- * Spread onto every `<svg>` element in `components/ui/icons.tsx` so callers
+ * Spread onto every `<svg>` element in `components/icons/icons.tsx` so callers
  * can pass `className`, `aria-label`, `aria-hidden`, `width`, `height`, etc.
  * without a separate prop type per icon.
  *
  * Rule §13: `IconProps` is intentionally a thin alias — do not add custom
  * fields here. If a specific icon variant needs extra behavior, define a
- * richer component in `components/ui/icons.tsx` instead.
+ * richer component in `components/icons/icons.tsx` instead.
  */
 export type IconProps = SVGProps<SVGSVGElement>;
 

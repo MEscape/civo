@@ -2,10 +2,11 @@ import 'server-only';
 
 import { z } from 'zod';
 
+import { MS_PER_SECOND } from '@lib/utils';
+
 import type { BucketHit, RateLimitStore } from './rate-limit-store';
 
 const KEY_PREFIX = 'rate-limit:';
-const MILLISECONDS_PER_SECOND = 1000;
 const TRAILING_SLASHES = /\/+$/;
 const SINGLE_KEY = 1;
 
@@ -18,6 +19,7 @@ const SINGLE_KEY = 1;
  * - `EXPIRE ... NX` starts the window by giving a counter without a lifetime one, and leaves a
  *   running window alone. A rejected attempt is counted but never extends the window, and a counter
  *   that somehow lost its lifetime heals itself on the next attempt instead of living forever.
+ * - `EXPIRE ... NX` needs Redis 7 or newer (the compose image is `redis:8`; Upstash runs a current one).
  * - `PTTL` reads what is left. Redis deletes the counter when it runs out, so no clean-up job exists.
  */
 const HIT_SCRIPT = `
@@ -31,6 +33,7 @@ const hitAnswerSchema = z.object({
   result: z.tuple([z.number().int().min(1), z.number().int().min(0)]),
 });
 
+/** Where the database is and how long to wait for it. */
 export interface UpstashRateLimitStoreOptions {
   /** The database's REST endpoint, e.g. `https://eu1-example-12345.upstash.io`. */
   readonly restUrl: string;
@@ -83,6 +86,6 @@ export class UpstashRateLimitStore implements RateLimitStore {
       });
     }
     const [hits, timeToLiveMs] = answer.data.result;
-    return { hits, retryAfterSeconds: Math.ceil(timeToLiveMs / MILLISECONDS_PER_SECOND) };
+    return { hits, retryAfterSeconds: Math.ceil(timeToLiveMs / MS_PER_SECOND) };
   }
 }

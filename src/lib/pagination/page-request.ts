@@ -4,12 +4,14 @@ export interface PageRequest {
   readonly pageSize: number;
 }
 
+/** The bounds one list applies to a request. */
 export interface PageLimits {
   readonly defaultPageSize: number;
   /** The most one request may ask for: a list is never unbounded, whatever the URL says. */
   readonly maxPageSize: number;
 }
 
+/** What a list uses unless it declares its own limits. */
 export const DEFAULT_PAGE_LIMITS: PageLimits = { defaultPageSize: 25, maxPageSize: 100 };
 
 /** The page sizes a user can choose in the interface (all within `DEFAULT_PAGE_LIMITS`). */

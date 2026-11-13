@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRateLimiter } from '@lib/rate-limit/create-rate-limiter';
-import { InMemoryRateLimitStore } from '@lib/rate-limit/in-memory-rate-limit-store';
 import type { RateLimitPolicy } from '@lib/rate-limit/rate-limit-policy';
 import type { RateLimitStore } from '@lib/rate-limit/rate-limit-store';
 import type { RateLimitSubject } from '@lib/rate-limit/rate-limit-subject';
 
+import { InMemoryRateLimitStore } from './in-memory-rate-limit-store';
 import { SECRET, createFakeLog, createManualClock } from './support';
 
 const POLICY: RateLimitPolicy = {

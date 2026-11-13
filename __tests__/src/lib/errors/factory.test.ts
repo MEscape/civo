@@ -5,13 +5,13 @@ import {
   conflictError,
   forbiddenError,
   infrastructureError,
-  matchAppError,
   notFoundError,
   rateLimitedError,
   unauthorizedError,
   unexpectedError,
   validationError,
 } from '@lib/errors/factory';
+import { matchAppError } from '@lib/errors/match-app-error';
 
 describe('error constructors', () => {
   it('rateLimitedError carries the retry delay, rounded up to a whole second', () => {

@@ -6,10 +6,9 @@ import type { ClientAddressProviderDeps } from '@lib/rate-limit/client-address-p
 import { createFakeLog, createManualClock } from './support';
 
 function providerFor(
-  source: 'vercel' | 'none',
+  source: 'vercel' | 'cloudflare',
   values: Record<string, string> | 'no-request',
   overrides: Partial<ClientAddressProviderDeps> = {},
-  configured = true,
 ) {
   const log = createFakeLog();
   const clock = createManualClock();
@@ -18,7 +17,7 @@ function providerFor(
       values === 'no-request'
         ? () => Promise.reject(new Error('headers() was called outside a request scope'))
         : () => Promise.resolve({ get: (name: string) => values[name.toLowerCase()] ?? null }),
-    settings: { source, configured, trustedProxies: [] },
+    settings: { source, trustedProxies: [] },
     clock,
     log,
     ...overrides,
@@ -50,24 +49,13 @@ describe('client address provider', () => {
     expect(log.warn).toHaveBeenCalledWith('rate_limit.client_unresolved', { reason: 'no_request' });
   });
 
-  it('logs the deliberate "none" source as info, not as a misconfiguration', async () => {
-    const { provider, log } = providerFor('none', { 'x-forwarded-for': '203.0.113.7' });
-
-    expect(await provider.current()).toEqual({ kind: 'unresolved-client' });
-    expect(log.info).toHaveBeenCalledWith('rate_limit.client_unresolved', {
-      reason: 'source_disabled',
+  it('reads the header of the platform it is configured for, and no other', async () => {
+    const { provider } = providerFor('cloudflare', {
+      'cf-connecting-ip': '203.0.113.7',
+      'x-vercel-forwarded-for': '198.51.100.9',
     });
-    expect(log.warn).not.toHaveBeenCalled();
-  });
 
-  it('warns, not just informs, when nothing was configured: an oversight must be visible', async () => {
-    const { provider, log } = providerFor('none', { 'x-forwarded-for': '203.0.113.7' }, {}, false);
-
-    expect(await provider.current()).toEqual({ kind: 'unresolved-client' });
-    expect(log.warn).toHaveBeenCalledWith('rate_limit.client_unresolved', {
-      reason: 'source_not_configured',
-    });
-    expect(log.info).not.toHaveBeenCalled();
+    expect(await provider.current()).toEqual({ kind: 'client', address: '203.0.113.7' });
   });
 
   it('logs once per interval and reason during a flood, with the count of the rest', async () => {
@@ -107,5 +95,31 @@ describe('client address provider', () => {
 
     expect(await provider.current()).toEqual({ kind: 'client', address: '203.0.113.7' });
     expect(await provider.current()).toEqual({ kind: 'client', address: '198.51.100.9' });
+  });
+});
+
+describe('createClientSubjectResolver', () => {
+  it('resolves directly from headers and provides withoutRequest', async () => {
+    const { createClientSubjectResolver } = await import('@lib/rate-limit/client-address-provider');
+    const clock = createManualClock();
+    const log = createFakeLog();
+    const resolver = createClientSubjectResolver({
+      settings: { source: 'vercel', trustedProxies: [] },
+      clock,
+      log,
+    });
+
+    const resolved = resolver.fromHeaders({
+      get: (name) => (name.toLowerCase() === 'x-vercel-forwarded-for' ? '203.0.113.15' : null),
+    });
+    expect(resolved).toEqual({ kind: 'client', address: '203.0.113.15' });
+
+    const unresolvedFromHeaders = resolver.fromHeaders({
+      get: () => null,
+    });
+    expect(unresolvedFromHeaders).toEqual({ kind: 'unresolved-client' });
+
+    const withoutReq = resolver.withoutRequest();
+    expect(withoutReq).toEqual({ kind: 'unresolved-client' });
   });
 });

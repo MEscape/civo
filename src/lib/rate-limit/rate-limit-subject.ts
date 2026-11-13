@@ -26,6 +26,15 @@ export type RateLimitSubject =
 /** Longer than any email address (254) or IPv6 text form (45); anything beyond is not a real value. */
 export const MAX_SUBJECT_PART_LENGTH = 320;
 
+/**
+ * What is accepted BEFORE normalising. Unicode normalisation costs time proportional to its input,
+ * and the input is attacker-chosen (an email field), so an oversized value is refused without
+ * being touched. Wider than the normalised limit because normalisation can shorten text
+ * (combining sequences compose), but small enough to bound the work.
+ */
+const MAX_RAW_MULTIPLIER = 4;
+const MAX_RAW_SUBJECT_PART_LENGTH = MAX_SUBJECT_PART_LENGTH * MAX_RAW_MULTIPLIER;
+
 /** Separates fields inside the hashed material, so ("ab","c") and ("a","bc") cannot collide. */
 const FIELD_SEPARATOR = '\u0000';
 
@@ -37,16 +46,16 @@ function normalise(value: string): string {
   return value.normalize('NFKC').trim().toLowerCase();
 }
 
-function materialFor(
-  subject: Exclude<RateLimitSubject, { kind: 'global' | 'unresolved-client' }>,
-): string[] {
+type CountedSubject = Exclude<RateLimitSubject, { kind: 'global' | 'unresolved-client' }>;
+
+function rawPartsOf(subject: CountedSubject): string[] {
   switch (subject.kind) {
     case 'actor':
       return [subject.tenantId, subject.actorId];
     case 'client':
-      return [normalise(subject.address)];
+      return [subject.address];
     case 'identifier':
-      return [normalise(subject.value)];
+      return [subject.value];
   }
 }
 
@@ -75,12 +84,21 @@ export function buildBucketKey(
     return { isValid: false, problem: 'an unresolved client has no counter' };
   }
 
-  const parts = materialFor(subject);
+  const raw = rawPartsOf(subject);
+  if (raw.some((part) => part.length > MAX_RAW_SUBJECT_PART_LENGTH)) {
+    return { isValid: false, problem: `${subject.kind} subject is too long` };
+  }
+  // Actor ids come from authorization and are used as they are; the others are free text.
+  const parts = subject.kind === 'actor' ? raw : raw.map(normalise);
   if (parts.some((part) => part.length === 0)) {
     return { isValid: false, problem: `${subject.kind} subject is empty` };
   }
   if (parts.some((part) => part.length > MAX_SUBJECT_PART_LENGTH)) {
     return { isValid: false, problem: `${subject.kind} subject is too long` };
+  }
+  // The separator only keeps ("ab","c") apart from ("a","bc") if it cannot occur inside a part.
+  if (parts.some((part) => part.includes(FIELD_SEPARATOR))) {
+    return { isValid: false, problem: `${subject.kind} subject contains a reserved character` };
   }
 
   const digest = createHmac('sha256', secret)

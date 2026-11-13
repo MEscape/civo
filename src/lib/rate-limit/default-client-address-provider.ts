@@ -2,25 +2,75 @@ import 'server-only';
 
 import { systemClock } from '@lib/clock';
 import { resolveRateLimitSettings, serverEnv } from '@lib/config/server';
+import { createLazyCell, resolveLazy } from '@lib/utils';
+import type { LazyCell } from '@lib/utils';
 
-import { createClientAddressProvider } from './client-address-provider';
+import { createClientSubjectResolver, providerFor } from './client-address-provider';
 import { createRateLimitLog } from './rate-limit-logger';
 
 import type { HeaderReader } from './client-address';
-import type { ClientAddressProvider } from './client-address-provider';
+import type {
+  ClientAddressProvider,
+  ClientSubject,
+  ClientSubjectResolver,
+} from './client-address-provider';
+
+const cell: LazyCell<ClientSubjectResolver> = createLazyCell();
+
+/** Nothing is known, so nothing is guessed: the policy's `onUnresolvedClient` decides. */
+const UNRESOLVED: ClientSubject = { kind: 'unresolved-client' };
+
+/** While rate limiting is off nobody enforces anything, so no address is needed. */
+const NO_ADDRESS: ClientSubjectResolver = {
+  fromHeaders: () => UNRESOLVED,
+  withoutRequest: () => UNRESOLVED,
+};
+
+function buildResolver(): ClientSubjectResolver {
+  const settings = resolveRateLimitSettings(serverEnv);
+  if (!settings.enabled) {
+    return NO_ADDRESS;
+  }
+  return createClientSubjectResolver({
+    settings: settings.clientAddress,
+    clock: systemClock,
+    log: createRateLimitLog(),
+  });
+}
+
+function resolver(): ClientSubjectResolver | null {
+  const built = resolveLazy({
+    cell,
+    build: buildResolver,
+    clock: systemClock,
+    onFailure: (thrown) => {
+      createRateLimitLog().error('rate_limit.client_unresolved', thrown, {
+        reason: 'misconfigured',
+      });
+    },
+  });
+  return built.isReady ? built.value : null;
+}
 
 /**
  * The application's client-address provider, built from validated configuration. Only
  * `composition.ts` files call this, passing the framework's header reader:
  * `getClientAddressProvider(() => headers())`.
+ *
+ * Like `getRateLimiter`, it reads no configuration until the first request that needs an address,
+ * so importing a composition root (during `next build`, say) can neither read the environment nor
+ * throw; the trusted-proxy list and the log throttle are built once and shared, whatever the
+ * number of providers handed out. If the configuration turns out to be unusable, every address is
+ * `unresolved-client` (never a guess) and the failure is logged once per few seconds as an error.
  */
 export function getClientAddressProvider(
   getHeaders: () => Promise<HeaderReader>,
 ): ClientAddressProvider {
-  return createClientAddressProvider({
+  return providerFor(
+    {
+      fromHeaders: (headers) => resolver()?.fromHeaders(headers) ?? UNRESOLVED,
+      withoutRequest: () => resolver()?.withoutRequest() ?? UNRESOLVED,
+    },
     getHeaders,
-    settings: resolveRateLimitSettings(serverEnv).clientAddress,
-    clock: systemClock,
-    log: createRateLimitLog(),
-  });
+  );
 }

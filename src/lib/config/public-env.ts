@@ -9,6 +9,7 @@ import { publicEnvSchema, type PublicEnv } from './public-env-schema';
  * Secrets live in `./server` instead, which refuses to enter a client bundle.
  */
 export const publicEnv: PublicEnv = parseEnv('public', publicEnvSchema, {
+  NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED: process.env['NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED'],
   NEXT_PUBLIC_APP_URL: process.env['NEXT_PUBLIC_APP_URL'],
   NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: process.env['NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN'],
   NEXT_PUBLIC_MAPBOX_STYLE_URL: process.env['NEXT_PUBLIC_MAPBOX_STYLE_URL'],

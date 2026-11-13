@@ -1,19 +1,22 @@
 export { getRateLimiter } from './default-rate-limiter';
 
 export { getClientAddressProvider } from './default-client-address-provider';
-export { createClientAddressProvider } from './client-address-provider';
+export {
+  createClientAddressProvider,
+  createClientSubjectResolver,
+} from './client-address-provider';
 export type {
   ClientAddressProvider,
   ClientAddressProviderDeps,
   ClientSubject,
+  ClientSubjectResolver,
+  ClientSubjectResolverDeps,
 } from './client-address-provider';
 export { createClientAddressResolver } from './client-address';
 export type { ClientAddress, HeaderReader, UnresolvedReason } from './client-address';
 
 export { createRateLimiter } from './create-rate-limiter';
 export type { RateLimiterDeps } from './create-rate-limiter';
-
-export { InMemoryRateLimitStore } from './in-memory-rate-limit-store';
 
 export {
   MAX_POLICY_ID_LENGTH,

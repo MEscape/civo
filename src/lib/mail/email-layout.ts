@@ -13,7 +13,9 @@ import { emailStyles } from './email-styles';
 
 import type { EmailAction, EmailFact } from './email-blocks';
 import type { EmailBrand } from './email-brand';
+import type { EmailStyles } from './email-styles';
 
+/** The words of one message. Plain text only: the renderer escapes everything it draws. */
 export interface EmailContent {
   /** The `lang` of the document: the language of every text below. */
   readonly locale: string;
@@ -32,6 +34,7 @@ export interface EmailContent {
   readonly outro: string;
 }
 
+/** A message ready for a `MailTransport`: the subject and both bodies. */
 export interface RenderedEmail {
   readonly subject: string;
   readonly text: string;
@@ -52,7 +55,7 @@ function renderText(content: EmailContent, brand: EmailBrand): string {
     .join('\n\n');
 }
 
-function renderCard(content: EmailContent, styles: ReturnType<typeof emailStyles>): string {
+function renderCard(content: EmailContent, styles: EmailStyles): string {
   const { locale, title, greeting, intro, facts = [], action = null, outro } = content;
   const inner = [
     `<h1 style="${styles.heading}">${escapeHtml(title)}</h1>`,

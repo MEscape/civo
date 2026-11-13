@@ -9,6 +9,7 @@
  * functions take a list of roots; the others take a single root.
  */
 
+/** How to read a node's children; `undefined` means it has none. */
 export type GetChildren<T> = (node: T) => readonly T[] | undefined;
 
 /** Rebuilds a node around a new children array. The write-side counterpart of `GetChildren`. */

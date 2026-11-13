@@ -1,10 +1,10 @@
+import type { MailEnv } from '@lib/config/server';
 import { assertNever, invariant, isDefined } from '@lib/utils';
 
 import { ResendMailTransport } from './resend-mail-transport';
 import { SmtpMailTransport } from './smtp-mail-transport';
 
 import type { MailTransport } from './mail-transport';
-import type { MailEnv } from '../config/mail-env-schema';
 
 /**
  * Builds the transport the mail settings name, or `null` for `none`. The

@@ -1,12 +1,11 @@
 import { z } from 'zod';
 
+import { SECONDS_PER_DAY, SECONDS_PER_MINUTE } from '@lib/utils';
+
 import { booleanFlag, commaSeparatedList, integerSetting, postgresUrl } from './env-primitives';
 import { refineEnv } from './env-rules';
 
 import type { EnvRule } from './env-rules';
-
-const SECONDS_PER_MINUTE = 60;
-const SECONDS_PER_DAY = 24 * 60 * SECONDS_PER_MINUTE;
 
 const DEFAULT_AUTH_ENABLED = true;
 const DEFAULT_AUTH_DATABASE_POOL_SIZE = 5;
@@ -20,7 +19,8 @@ const DEFAULT_DEV_ACTOR_ROLE = 'viewer';
 
 const MIN_AUTH_SECRET_LENGTH = 32;
 
-const authEnvObjectSchema = z.object({
+/** The authentication variables before their rules; other domains pick the ones they share. */
+export const authEnvObjectSchema = z.object({
   /** `false` skips sign-in and acts as `AUTH_DEV_ACTOR_ROLE`. Refused in production (see `env-schema.ts`). */
   AUTH_ENABLED: booleanFlag(DEFAULT_AUTH_ENABLED),
 
@@ -60,6 +60,7 @@ const authEnvObjectSchema = z.object({
   AUTH_DEV_ACTOR_ROLE: z.string().min(1).default(DEFAULT_DEV_ACTOR_ROLE),
 });
 
+/** The authentication variables, validated and typed. */
 export type AuthEnv = z.infer<typeof authEnvObjectSchema>;
 
 /** Auth is off in development only, and then none of its settings matter. */
@@ -101,4 +102,5 @@ export const authEnvRules: ReadonlyArray<EnvRule<AuthEnv>> = [
   },
 ];
 
+/** The authentication variables with their cross-variable rules; composed into the server schema. */
 export const authEnvSchema = authEnvObjectSchema.superRefine(refineEnv(authEnvRules));

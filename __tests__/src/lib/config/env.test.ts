@@ -3,13 +3,23 @@ import { describe, expect, it } from 'vitest';
 import { serverEnvSchema } from '@lib/config/env-schema';
 import { publicEnvSchema } from '@lib/config/public-env-schema';
 
-/** Authentication is on by default and then needs its own settings; these tests are about the rest. */
+/** Authentication and rate limiting are on by default and then need their own settings; these tests are about the rest. */
 const AUTH_DISABLED = { AUTH_ENABLED: 'false' } as const;
+const RATE_LIMIT_DISABLED = { RATE_LIMIT_ENABLED: 'false' } as const;
+/** Storage cannot be switched off, so every valid configuration carries it. */
+const STORAGE = {
+  STORAGE_S3_ENDPOINT: 'https://s3.example.org',
+  STORAGE_S3_ACCESS_KEY_ID: 'id',
+  STORAGE_S3_SECRET_ACCESS_KEY: 'secret',
+  STORAGE_S3_PRIVATE_BUCKET: 'civo-private',
+} as const;
 
 describe('serverEnvSchema', () => {
   it('applies expected defaults when optional fields are omitted', () => {
     const result = serverEnvSchema.safeParse({
       ...AUTH_DISABLED,
+      ...RATE_LIMIT_DISABLED,
+      ...STORAGE,
       DATABASE_URL: 'postgres://user:pass@localhost:5432/db',
     });
 
@@ -20,6 +30,7 @@ describe('serverEnvSchema', () => {
         NODE_ENV: 'development',
         DATABASE_POOL_SIZE: 10,
         DATABASE_POOL_TIMEOUT_SECONDS: 10,
+        DATABASE_STATEMENT_TIMEOUT_SECONDS: 30,
         LOG_LEVEL: 'info',
         AUTH_ENABLED: false,
         MAIL_PROVIDER: 'none',
@@ -41,6 +52,8 @@ describe('serverEnvSchema', () => {
   ])('reads the flag MAIL_SMTP_SECURE=%s as %s', (raw, expected) => {
     const result = serverEnvSchema.safeParse({
       ...AUTH_DISABLED,
+      ...RATE_LIMIT_DISABLED,
+      ...STORAGE,
       DATABASE_URL: 'postgres://localhost/db',
       MAIL_SMTP_SECURE: raw,
     });
@@ -62,6 +75,8 @@ describe('serverEnvSchema', () => {
   it('coerces string values to integers for pool configurations', () => {
     const result = serverEnvSchema.safeParse({
       ...AUTH_DISABLED,
+      ...RATE_LIMIT_DISABLED,
+      ...STORAGE,
       DATABASE_URL: 'postgres://localhost/db',
       DATABASE_POOL_SIZE: '15',
       DATABASE_POOL_TIMEOUT_SECONDS: '5',
@@ -168,10 +183,12 @@ describe('serverEnvSchema: authentication modes', () => {
     AUTH_SECRET: 'x'.repeat(40),
     AUTH_DATABASE_URL: 'postgres://localhost/auth',
   } as const;
-  const PRODUCTION_RATE_LIMIT = {
+  const PRODUCTION_SERVICES = {
+    RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'vercel',
     UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io',
     UPSTASH_REDIS_REST_TOKEN: 'token',
     RATE_LIMIT_SECRET: 'r'.repeat(32),
+    ...STORAGE,
   } as const;
   const PRODUCTION_MAIL = {
     MAIL_PROVIDER: 'resend',
@@ -180,17 +197,33 @@ describe('serverEnvSchema: authentication modes', () => {
   } as const;
 
   it('needs no authentication secrets in development with auth disabled', () => {
-    expect(serverEnvSchema.safeParse({ ...DATABASE, ...AUTH_DISABLED }).success).toBe(true);
+    expect(
+      serverEnvSchema.safeParse({
+        ...DATABASE,
+        ...AUTH_DISABLED,
+        ...RATE_LIMIT_DISABLED,
+        ...STORAGE,
+      }).success,
+    ).toBe(true);
   });
 
   it('still requires the database when auth is disabled', () => {
-    const result = serverEnvSchema.safeParse({ ...AUTH_DISABLED });
+    const result = serverEnvSchema.safeParse({
+      ...AUTH_DISABLED,
+      ...RATE_LIMIT_DISABLED,
+      ...STORAGE,
+    });
     expect(result.success).toBe(false);
     expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['DATABASE_URL']);
   });
 
   it('names exactly the authentication settings that are missing when auth is enabled', () => {
-    const result = serverEnvSchema.safeParse({ ...DATABASE, AUTH_ENABLED: 'true' });
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...RATE_LIMIT_DISABLED,
+      ...STORAGE,
+      AUTH_ENABLED: 'true',
+    });
     expect(result.error?.issues.map((issue) => issue.path.join('.')).sort()).toEqual([
       'AUTH_DATABASE_URL',
       'AUTH_SECRET',
@@ -198,7 +231,14 @@ describe('serverEnvSchema: authentication modes', () => {
   });
 
   it('accepts development with auth enabled and its secrets', () => {
-    expect(serverEnvSchema.safeParse({ ...DATABASE, ...AUTH_SECRETS }).success).toBe(true);
+    expect(
+      serverEnvSchema.safeParse({
+        ...DATABASE,
+        ...AUTH_SECRETS,
+        ...RATE_LIMIT_DISABLED,
+        ...STORAGE,
+      }).success,
+    ).toBe(true);
   });
 
   it('refuses a production start with auth disabled', () => {
@@ -206,7 +246,7 @@ describe('serverEnvSchema: authentication modes', () => {
       ...DATABASE,
       ...AUTH_DISABLED,
       ...PRODUCTION_MAIL,
-      ...PRODUCTION_RATE_LIMIT,
+      ...PRODUCTION_SERVICES,
       NODE_ENV: 'production',
     });
     expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['AUTH_ENABLED']);
@@ -216,7 +256,7 @@ describe('serverEnvSchema: authentication modes', () => {
     const result = serverEnvSchema.safeParse({
       ...DATABASE,
       ...AUTH_SECRETS,
-      ...PRODUCTION_RATE_LIMIT,
+      ...PRODUCTION_SERVICES,
       NODE_ENV: 'production',
     });
     expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['MAIL_PROVIDER']);
@@ -227,11 +267,40 @@ describe('serverEnvSchema: authentication modes', () => {
       ...DATABASE,
       ...AUTH_SECRETS,
       ...PRODUCTION_MAIL,
+      ...STORAGE,
+      RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'vercel',
       NODE_ENV: 'production',
     });
     expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual([
       'UPSTASH_REDIS_REST_URL',
       'UPSTASH_REDIS_REST_TOKEN',
+    ]);
+  });
+
+  it('refuses a production start with the rate limiter switched off', () => {
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...AUTH_SECRETS,
+      ...PRODUCTION_MAIL,
+      ...STORAGE,
+      RATE_LIMIT_ENABLED: 'false',
+      NODE_ENV: 'production',
+    });
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual([
+      'RATE_LIMIT_ENABLED',
+    ]);
+  });
+
+  it('refuses a start without storage, in any environment: it cannot be switched off', () => {
+    const result = serverEnvSchema.safeParse({
+      ...DATABASE,
+      ...AUTH_DISABLED,
+      ...RATE_LIMIT_DISABLED,
+    });
+    expect(result.error?.issues.map((issue) => issue.path.join('.')).sort()).toEqual([
+      'STORAGE_S3_ACCESS_KEY_ID',
+      'STORAGE_S3_ENDPOINT',
+      'STORAGE_S3_SECRET_ACCESS_KEY',
     ]);
   });
 
@@ -242,7 +311,7 @@ describe('serverEnvSchema: authentication modes', () => {
           ...DATABASE,
           ...AUTH_SECRETS,
           ...PRODUCTION_MAIL,
-          ...PRODUCTION_RATE_LIMIT,
+          ...PRODUCTION_SERVICES,
           NODE_ENV: 'production',
           ...overrides,
         })
@@ -259,7 +328,7 @@ describe('serverEnvSchema: authentication modes', () => {
       ...DATABASE,
       ...AUTH_SECRETS,
       ...PRODUCTION_MAIL,
-      ...PRODUCTION_RATE_LIMIT,
+      ...PRODUCTION_SERVICES,
       NODE_ENV: 'production',
     });
     expect(result.success).toBe(true);
@@ -267,7 +336,12 @@ describe('serverEnvSchema: authentication modes', () => {
 });
 
 describe('serverEnvSchema: mail', () => {
-  const BASE = { DATABASE_URL: 'postgres://localhost/db', AUTH_ENABLED: 'false' } as const;
+  const BASE = {
+    DATABASE_URL: 'postgres://localhost/db',
+    AUTH_ENABLED: 'false',
+    RATE_LIMIT_ENABLED: 'false',
+    ...STORAGE,
+  } as const;
   const paths = (input: Record<string, string>) =>
     serverEnvSchema
       .safeParse({ ...BASE, ...input })
@@ -321,10 +395,39 @@ describe('serverEnvSchema: mail', () => {
         MAIL_SMTP_USER: 'mailer',
         MAIL_SMTP_PASSWORD: 'secret',
         MAIL_FROM: 'a@b.c',
+        RATE_LIMIT_ENABLED: 'true',
+        RATE_LIMIT_CLIENT_ADDRESS_SOURCE: 'vercel',
+        ...STORAGE,
         UPSTASH_REDIS_REST_URL: 'https://eu1-example.upstash.io',
         UPSTASH_REDIS_REST_TOKEN: 'token',
       }),
     ).toBeUndefined();
+  });
+
+  it.each([
+    ['MAIL_API_KEY', 'smtp'],
+    ['MAIL_API_KEY', 'none'],
+    ['MAIL_SMTP_HOST', 'none'],
+    ['MAIL_SMTP_USER', 'none'],
+    ['MAIL_SMTP_PASSWORD', 'none'],
+  ] as const)('refuses %s while MAIL_PROVIDER is "%s"', (name, provider) => {
+    const base: Record<string, string> =
+      provider === 'smtp' ? { MAIL_SMTP_HOST: 'h', MAIL_FROM: 'a@b.c' } : {};
+
+    expect(paths({ ...base, MAIL_PROVIDER: provider, [name]: 'x' })).toEqual([name]);
+  });
+
+  it('refuses smtp settings under resend', () => {
+    expect(
+      paths({
+        NODE_ENV: 'production',
+        AUTH_ENABLED: 'true',
+        MAIL_PROVIDER: 'resend',
+        MAIL_API_KEY: 're_key',
+        MAIL_FROM: 'a@b.c',
+        MAIL_SMTP_HOST: 'h',
+      }),
+    ).toEqual(expect.arrayContaining(['MAIL_SMTP_HOST']));
   });
 
   it('needs the smtp user and password together', () => {
@@ -335,7 +438,12 @@ describe('serverEnvSchema: mail', () => {
 });
 
 describe('serverEnvSchema: platform administrators', () => {
-  const BASE = { DATABASE_URL: 'postgres://localhost/db', AUTH_ENABLED: 'false' } as const;
+  const BASE = {
+    DATABASE_URL: 'postgres://localhost/db',
+    AUTH_ENABLED: 'false',
+    RATE_LIMIT_ENABLED: 'false',
+    ...STORAGE,
+  } as const;
   const admins = (value: string | undefined) =>
     serverEnvSchema.safeParse({ ...BASE, AUTH_PLATFORM_ADMIN_EMAILS: value });
 

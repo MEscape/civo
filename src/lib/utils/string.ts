@@ -45,25 +45,29 @@ export function slugify(text: string): string {
 }
 
 /**
- * Truncates to `maxLength` characters (Unicode code points, so emoji are not split), appending an
+ * Truncates display text to `maxLength` graphemes, preserving combining marks and compound emoji, appending an
  * ellipsis only when truncation actually happened. The ellipsis counts toward `maxLength`, and
- * trailing whitespace before it is dropped. `maxLength` should be a whole number of at least 1;
- * with 1 the result is the ellipsis alone, with 0 or less it is empty.
+ * trailing whitespace before it is dropped. `maxLength` must be a safe integer;
+ * with 1 the result is the ellipsis alone, with 0 or less it is empty. Never use this to shorten
+ * canonical data, identifiers or tokens. Non-integer or non-finite limits throw an invariant error.
  *
  * @example truncate('Hello world', 8) // 'Hello w…'
  */
 export function truncate(text: string, maxLength: number): string {
-  const characters = Array.from(text);
-  if (characters.length <= maxLength) {
-    return text;
+  invariant(Number.isSafeInteger(maxLength), 'The display text limit must be a safe integer.');
+  if (maxLength <= 0) {
+    return '';
   }
-  if (maxLength <= 1) {
-    return '…'.slice(0, Math.max(0, maxLength));
+  const characters: string[] = [];
+  for (const { segment } of new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(
+    text,
+  )) {
+    if (characters.length === maxLength) {
+      return `${characters.slice(0, -1).join('').trimEnd()}…`;
+    }
+    characters.push(segment);
   }
-  return `${characters
-    .slice(0, maxLength - 1)
-    .join('')
-    .trimEnd()}…`;
+  return text;
 }
 
 /**

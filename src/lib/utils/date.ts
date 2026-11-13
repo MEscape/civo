@@ -1,17 +1,21 @@
 /**
  * Locale-aware date helpers. Zero dependencies.
  *
- * Dates are stored as UTC instants and converted to a time zone only at presentation (i18n.md),
+ * Timestamps are stored as UTC instants and converted to a time zone only at presentation (i18n.md),
  * so every formatter takes the zone explicitly. Components do not call these directly: they use
  * the formatters bound to the request locale and time zone (`getAppFormatters` /
  * `useAppFormatters`). An input that is not a valid date throws a `RangeError`: showing a wrong
- * date is worse than failing loudly.
+ * date is worse than failing loudly. Source calendar dates have no time zone and use formatCalendarDate.
  */
 
+/** Time-unit constants; the one place these multiples are written (a lint rule rejects local copies). */
 export const SECONDS_PER_MINUTE = 60;
 export const SECONDS_PER_HOUR = 3600;
+export const SECONDS_PER_DAY = 86_400;
+export const MS_PER_SECOND = 1000;
 export const MS_PER_MINUTE = 60_000;
 export const MS_PER_DAY = 86_400_000;
+const CALENDAR_DATE_LENGTH = 10;
 
 /** Anything `new Date()` takes: an instant, an ISO string or epoch milliseconds. */
 export type DateInput = Date | string | number;
@@ -39,6 +43,22 @@ export function formatDate(
   return new Intl.DateTimeFormat(locale, { ...options, timeZone }).format(toDate(input));
 }
 
+/** A source calendar date has no time zone; preserve its day in every visitor's zone. */
+export function formatCalendarDate(
+  input: string,
+  locale: string,
+  options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' },
+): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    throw new RangeError('Invalid calendar date');
+  }
+  const anchor = toDate(`${input}T00:00:00.000Z`);
+  if (anchor.toISOString().slice(0, CALENDAR_DATE_LENGTH) !== input) {
+    throw new RangeError('Invalid calendar date');
+  }
+  return formatDate(anchor, locale, 'UTC', options);
+}
+
 /**
  * Formats a date and time (`medium` date, `short` time) for a locale and time zone.
  *
@@ -56,7 +76,7 @@ const RELATIVE_UNITS: ReadonlyArray<readonly [Intl.RelativeTimeFormatUnit, numbe
   ['month', 30 * MS_PER_DAY],
   ['week', 7 * MS_PER_DAY],
   ['day', MS_PER_DAY],
-  ['hour', SECONDS_PER_HOUR * 1000],
+  ['hour', SECONDS_PER_HOUR * MS_PER_SECOND],
   ['minute', MS_PER_MINUTE],
 ];
 
@@ -79,7 +99,7 @@ export function formatRelativeTime(input: DateInput, now: DateInput, locale: str
       return formatter.format(Math.round(differenceMs / unitMs), unit);
     }
   }
-  return formatter.format(Math.round(differenceMs / 1000), 'second');
+  return formatter.format(Math.round(differenceMs / MS_PER_SECOND), 'second');
 }
 
 /**

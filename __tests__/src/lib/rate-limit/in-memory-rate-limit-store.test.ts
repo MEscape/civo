@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { InMemoryRateLimitStore } from '@lib/rate-limit/in-memory-rate-limit-store';
-
+import { InMemoryRateLimitStore } from './in-memory-rate-limit-store';
 import { createManualClock } from './support';
 
 describe('InMemoryRateLimitStore', () => {
@@ -40,5 +39,26 @@ describe('InMemoryRateLimitStore', () => {
     clock.advanceSeconds(10);
     expect((await store.hit('c', 10)).hits).toBe(1);
     expect((await store.hit('b', 100)).hits).toBe(3);
+  });
+
+  it('tracks earliest expiry across multiple surviving buckets and rejects when still full after sweep', async () => {
+    const clock = createManualClock();
+    const store = new InMemoryRateLimitStore(clock, 4);
+    await store.hit('a', 5);
+    await store.hit('b', 10);
+    await store.hit('c', 20);
+    await store.hit('d', 30);
+
+    // a expires after 5s; b (10s), c (20s), d (30s) remain.
+    // In dropFinished: b sets earliest=10; c has 20 > 10 (false branch); d has 30 > 10 (false branch).
+    clock.advanceSeconds(5);
+    expect((await store.hit('e', 25)).hits).toBe(1);
+
+    // Now table is full with 4 live buckets: b, c, d, e.
+    await expect(store.hit('f', 10)).rejects.toThrow(/full/);
+
+    // Before earliestExpiryMs (10s total): nowMs < earliestExpiryMs, sweep skipped, immediately rejected
+    clock.advanceSeconds(1);
+    await expect(store.hit('f', 10)).rejects.toThrow(/full/);
   });
 });

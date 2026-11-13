@@ -1,5 +1,7 @@
+/** `desc` is written with a leading `-` in the address (`-createdAt`). */
 export type SortDirection = 'asc' | 'desc';
 
+/** The column a list is ordered by and which way. */
 export interface SortSpec<Field extends string> {
   readonly field: Field;
   readonly direction: SortDirection;
@@ -27,4 +29,15 @@ export function resolveSort<Field extends string>(
 /** The inverse of `resolveSort`, for building a link that sorts by `field`. */
 export function formatSort<Field extends string>(spec: SortSpec<Field>): string {
   return spec.direction === 'desc' ? `-${spec.field}` : spec.field;
+}
+
+/** What a column heading links to: sorted by `field`, descending when the list already sorts ascending by it. */
+export function nextSort<Field extends string>(
+  current: SortSpec<Field>,
+  field: Field,
+): SortSpec<Field> {
+  return {
+    field,
+    direction: current.field === field && current.direction === 'asc' ? 'desc' : 'asc',
+  };
 }

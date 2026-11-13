@@ -1,22 +1,19 @@
 import 'server-only';
 
-import { randomBytes } from 'node:crypto';
-
 import { systemClock } from '@lib/clock';
 import { resolveRateLimitSettings, serverEnv } from '@lib/config/server';
 import { infrastructureError } from '@lib/errors';
 import { errAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { resolveLazy } from '@lib/utils';
+import type { LazyCell, LazyFailure } from '@lib/utils';
 
 import { createRateLimiter } from './create-rate-limiter';
-import { InMemoryRateLimitStore } from './in-memory-rate-limit-store';
+import { disabledRateLimiter } from './disabled-rate-limiter';
 import { createRateLimitLog } from './rate-limit-logger';
 import { UpstashRateLimitStore } from './upstash-rate-limit-store';
 
-import type { RateLimitStore } from './rate-limit-store';
 import type { RateLimitFailure, RateLimiter } from './rate-limiter';
-
-const MEMORY_SECRET_BYTES = 32;
 
 const globalForRateLimit = globalThis as unknown as {
   rateLimiter: RateLimiter | undefined;
@@ -24,30 +21,46 @@ const globalForRateLimit = globalThis as unknown as {
 
 function buildLimiter(): RateLimiter {
   const settings = resolveRateLimitSettings(serverEnv);
+  const log = createRateLimitLog();
 
-  const store: RateLimitStore =
-    settings.backend === 'upstash'
-      ? new UpstashRateLimitStore({
-          restUrl: settings.restUrl,
-          restToken: settings.restToken,
-          timeoutMs: settings.timeoutMs,
-        })
-      : new InMemoryRateLimitStore(systemClock);
+  if (!settings.enabled) {
+    log.info('rate_limit.disabled', { reason: 'RATE_LIMIT_ENABLED=false' });
+    return disabledRateLimiter;
+  }
 
+  // The key secret is part of every counter's key. Instances that do not share one count the same
+  // client under different keys, so the "shared" limit would silently become one limit per
+  // instance; there is no random fallback.
+  if (settings.keySecret.length === 0) {
+    throw new Error('A shared rate-limit store needs a configured key secret.');
+  }
   return createRateLimiter({
-    store,
-    // The memory backend is per process, so a per-process key is as good as a configured one.
-    keySecret: settings.keySecret ?? randomBytes(MEMORY_SECRET_BYTES).toString('hex'),
+    store: new UpstashRateLimitStore({
+      restUrl: settings.restUrl,
+      restToken: settings.restToken,
+      timeoutMs: settings.timeoutMs,
+    }),
+    keySecret: settings.keySecret,
     clock: systemClock,
     timeoutMs: settings.timeoutMs,
-    log: createRateLimitLog(),
+    log,
   });
 }
 
-function limiter(): RateLimiter {
-  globalForRateLimit.rateLimiter ??= buildLimiter();
-  return globalForRateLimit.rateLimiter;
-}
+let failureState: LazyFailure | undefined;
+
+/** The limiter lives on `globalThis` so hot reload does not rebuild it; a remembered failure need not. */
+const cell: LazyCell<RateLimiter> = {
+  get: () => globalForRateLimit.rateLimiter,
+  set: (limiter) => {
+    globalForRateLimit.rateLimiter = limiter;
+    failureState = undefined;
+  },
+  getFailure: () => failureState,
+  setFailure: (failure) => {
+    failureState = failure;
+  },
+};
 
 /**
  * The application's rate limiter. Only `composition.ts` files call this and hand the result to use
@@ -56,25 +69,33 @@ function limiter(): RateLimiter {
  * Nothing is built until the first `enforce`: importing a composition root (during `next build`, or
  * at module load) reads no configuration and opens no connection. If building the real limiter then
  * fails, the attempt is refused with an infrastructure error, which is what every policy that denies
- * on failure wants, and `enforce` still never throws. It never falls back to another backend: if the
- * configured store is down, each policy's `onBackendFailure` decides.
+ * on failure wants, and `enforce` still never throws. The failure is remembered for a few seconds
+ * and logged once, not rebuilt and logged per request. It never falls back to another backend or to
+ * "off": if the configured store is down, each policy's `onBackendFailure` decides. Only
+ * `RATE_LIMIT_ENABLED=false` turns the limiter off, and then every attempt is allowed.
  */
 export function getRateLimiter(): RateLimiter {
   function guarded<T>(
     run: (built: RateLimiter) => AppResultAsync<T, RateLimitFailure>,
   ): AppResultAsync<T, RateLimitFailure> {
-    try {
-      return run(limiter());
-    } catch (thrown) {
-      createRateLimitLog().error('rate_limit.unavailable', thrown, { reason: 'build_failed' });
+    const built = resolveLazy({
+      cell,
+      build: buildLimiter,
+      clock: systemClock,
+      onFailure: (thrown) => {
+        createRateLimitLog().error('rate_limit.unavailable', thrown, { reason: 'build_failed' });
+      },
+    });
+    if (!built.isReady) {
       return errAsync(
-        infrastructureError('rate_limit.unavailable', 'Rate limiting is unavailable.', thrown),
+        infrastructureError('rate_limit.unavailable', 'Rate limiting is unavailable.', built.error),
       );
     }
+    return run(built.value);
   }
 
   return {
-    enforce: (request) => guarded((built) => built.enforce(request)),
-    enforceAll: (requests) => guarded((built) => built.enforceAll(requests)),
+    enforce: (request) => guarded((limiter) => limiter.enforce(request)),
+    enforceAll: (requests) => guarded((limiter) => limiter.enforceAll(requests)),
   };
 }

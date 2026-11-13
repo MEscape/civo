@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { httpUrl } from './env-primitives';
+import { booleanFlag, httpUrl } from './env-primitives';
 
 const DEFAULT_PUBLIC_APP_URL = 'http://localhost:3000';
 const DEFAULT_MAPBOX_STYLE_URL = 'mapbox://styles/mapbox/light-v11';
@@ -15,6 +15,8 @@ const MAPBOX_STYLE_URL_PATTERN = /^mapbox:\/\/styles\/[\w-]+\/[\w-]+$/;
  * no server dependency so it can sit in a browser bundle.
  */
 export const publicEnvSchema = z.object({
+  /** Explicit operator approval after documenting a lawful basis; default denies external map requests. */
+  NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED: booleanFlag(false),
   /** Origin the app is served from. */
   NEXT_PUBLIC_APP_URL: httpUrl.default(DEFAULT_PUBLIC_APP_URL),
 
@@ -35,4 +37,5 @@ export const publicEnvSchema = z.object({
     .default(DEFAULT_MAPBOX_STYLE_URL),
 });
 
+/** The configuration a Client Component may read. */
 export type PublicEnv = z.infer<typeof publicEnvSchema>;

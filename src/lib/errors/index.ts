@@ -15,13 +15,14 @@ export {
   conflictError,
   forbiddenError,
   infrastructureError,
-  matchAppError,
   notFoundError,
   rateLimitedError,
   unauthorizedError,
   unexpectedError,
   validationError,
 } from './factory';
+
+export { matchAppError } from './match-app-error';
 
 export {
   httpHeadersForError,
@@ -32,4 +33,4 @@ export {
 
 export { FieldErrorBag } from './field-error-bag';
 
-export { ROOT_FIELD, fieldPath, type NestedKeyOf } from './validation';
+export { ROOT_FIELD, fieldPath, type NestedKeyOf } from './field-path';

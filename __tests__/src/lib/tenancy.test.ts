@@ -19,7 +19,7 @@ describe('tenantHintFromPathname', () => {
     [`/de/websites/${ID}`, ID],
     [`/en/websites/${ID}/builder/p1`, ID],
     [`/de/websites/${ID}/`, ID],
-    [`/de/websites/${ID.toUpperCase()}/bookings`, ID.toUpperCase()],
+    [`/de/bookings/${ID.toUpperCase()}`, ID.toUpperCase()],
   ])('names the website in %s', (pathname, expected) => {
     expect(tenantHintFromPathname(pathname)).toBe(expected);
   });

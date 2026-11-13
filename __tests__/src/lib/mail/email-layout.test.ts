@@ -129,6 +129,14 @@ describe('the markup', () => {
     expect(html).toMatch(/display: none;[^>]*>The first line, shown beside the subject\./u);
   });
 
+  it('limits only the inbox preview and preserves Unicode and the full message', () => {
+    const intro = `${'a'.repeat(108)}👩🏽‍💻bc`;
+    const { html, text } = renderEmail({ ...content, intro });
+    expect(html).toContain(`${'a'.repeat(108)}👩🏽‍💻…&zwnj;`);
+    expect(html).toContain(intro);
+    expect(text).toContain(intro);
+  });
+
   it('keeps the heading as the subject unless the subject says it better', () => {
     expect(renderEmail(content).subject).toBe('Title');
     expect(renderEmail({ ...content, subject: 'Title: which one' }).subject).toBe(

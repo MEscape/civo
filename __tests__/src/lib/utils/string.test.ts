@@ -67,6 +67,29 @@ describe('truncate', () => {
   });
 });
 
+describe('display truncation boundaries', () => {
+  it.each(['e\u0301', '👩🏽‍💻', '🇩🇪'])('preserves the complete grapheme %s', (grapheme) => {
+    expect(truncate(grapheme.repeat(3), 2)).toBe(`${grapheme}…`);
+    expect(truncate(grapheme.repeat(2), 2)).toBe(grapheme.repeat(2));
+  });
+
+  it('preserves empty input and the original value at the exact limit', () => {
+    expect(truncate('', 0)).toBe('');
+    expect(truncate('', 3)).toBe('');
+    expect(truncate('a ', 2)).toBe('a ');
+    expect(truncate('ab', 1)).toBe('…');
+  });
+
+  it.each([NaN, Infinity, -Infinity, 1.5, Number.MAX_SAFE_INTEGER + 1])(
+    'rejects invalid display limit %s',
+    (limit) => {
+      expect(() => truncate('text', limit)).toThrow(
+        'The display text limit must be a safe integer.',
+      );
+    },
+  );
+});
+
 describe('normalizeWhitespace', () => {
   it('collapses whitespace runs and trims', () => {
     expect(normalizeWhitespace('  a \n\t b  ')).toBe('a b');
