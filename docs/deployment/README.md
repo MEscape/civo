@@ -28,20 +28,22 @@ Production on Oracle Cloud, a preview per pull request, Neon branches, Cloudflar
 
 Settings, Secrets and variables, Actions, Variables. None is secret.
 
-| Variable                          | Example                          | Used for                                                                                     |
-| --------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
-| `OCI_HOST`                        | `203.0.113.10`                   | SSH target: the host's public IP, **not** a Cloudflare-proxied name                          |
-| `OCI_SSH_KNOWN_HOSTS`             | `203.0.113.10 ssh-ed25519 AAAA…` | Pinned host key; output of `ssh-keyscan -t ed25519 <ip>`, verified against the host          |
-| `PRODUCTION_URL`                  | `https://app.example.com`        | Production origin: image build argument, health check, environment URL                       |
-| `PREVIEW_DOMAIN`                  | `example.com`                    | Previews are served at `pr-<n>.<PREVIEW_DOMAIN>`. Must equal `PREVIEW_SUFFIX` in `host.conf` |
-| `NEON_PROJECT_ID`                 | `rapid-haze-373089`              | The **preview** Neon project                                                                 |
-| `NEON_PREVIEW_PARENT_BRANCH`      | `preview-base` (default)         | Parent of every preview branch                                                               |
-| `NEON_DATABASE`                   | `neondb` (default)               | Application database name                                                                    |
-| `NEON_AUTH_DATABASE`              | `civo_auth` (default)            | Authentication database name, same branch                                                    |
-| `NEON_ROLE`                       | `neondb_owner` (default)         | Role in the connection string used for migrations                                            |
-| `IMAGE_BUILD_RUNNER`              | `ubuntu-24.04-arm` (optional)    | Native arm64 build on a public repository; unset builds under QEMU                           |
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | `pk.…` (optional)                | Public Mapbox token, inlined into the client bundle                                          |
-| `NEXT_PUBLIC_MAPBOX_STYLE_URL`    | `mapbox://styles/…` (optional)   | Map style                                                                                    |
+| Variable                            | Example                          | Used for                                                                                                         |
+| ----------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `OCI_HOST`                          | `203.0.113.10`                   | SSH target: the host's public IP, **not** a Cloudflare-proxied name                                              |
+| `OCI_SSH_KNOWN_HOSTS`               | `203.0.113.10 ssh-ed25519 AAAA…` | Pinned host key; output of `ssh-keyscan -t ed25519 <ip>`, verified against the host                              |
+| `PRODUCTION_URL`                    | `https://app.example.com`        | Production origin: image build argument, health check, environment URL                                           |
+| `PREVIEW_DOMAIN`                    | `example.com`                    | Previews are served at `<PREVIEW_HOST_PREFIX><n>.<PREVIEW_DOMAIN>`. Must equal `PREVIEW_SUFFIX` in `host.conf`   |
+| `PREVIEW_HOST_PREFIX`               | `pr-` (default)                  | Hostname prefix before `<n>.<PREVIEW_DOMAIN>` (e.g. `civo-pr-`). Must match `PREVIEW_HOST_PREFIX` in `host.conf` |
+| `NEON_PROJECT_ID`                   | `rapid-haze-373089`              | The **preview** Neon project                                                                                     |
+| `NEON_PREVIEW_PARENT_BRANCH`        | `preview-base` (default)         | Parent of every preview branch                                                                                   |
+| `NEON_DATABASE`                     | `neondb` (default)               | Application database name                                                                                        |
+| `NEON_AUTH_DATABASE`                | `civo_auth` (default)            | Authentication database name, same branch                                                                        |
+| `NEON_ROLE`                         | `neondb_owner` (default)         | Role in the connection string used for migrations                                                                |
+| `IMAGE_BUILD_RUNNER`                | `ubuntu-24.04-arm` (optional)    | Native arm64 build on a public repository; unset builds under QEMU                                               |
+| `NEXT_PUBLIC_EXTERNAL_MAPS_ALLOWED` | `true` (optional)                | Enables external Mapbox requests; must also be set in host `prod.env` / `preview.env` so runtime CSP allows them |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`   | `pk.…` (optional)                | Public Mapbox token, inlined into the client bundle (keep in sync with host runtime env)                         |
+| `NEXT_PUBLIC_MAPBOX_STYLE_URL`      | `mapbox://styles/…` (optional)   | Map style (keep in sync with host runtime env so runtime CSP allows custom style/tile hosts)                     |
 
 ### Environments and secrets
 
