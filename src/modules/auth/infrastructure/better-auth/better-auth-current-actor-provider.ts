@@ -1,7 +1,7 @@
 import type { Clock } from '@lib/clock';
 import { matchAppError } from '@lib/errors';
 import type { AppError } from '@lib/errors';
-import { errAsync, fromThrowableAsync, okAsync, ResultAsync } from '@lib/result';
+import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -9,13 +9,14 @@ import {
   sessionLookupFailed,
   unauthenticated,
 } from '../../domain/errors/auth-errors';
+import { normalizeEmail } from '../../domain/models/credentials';
 import { toActorId } from '../../domain/models/ids';
 import { isRole, PLATFORM_ADMIN_ROLE } from '../../domain/models/role';
 import { hasExceededMaxLifetime } from '../../domain/models/session-policy';
 import {
   PLATFORM_TENANT_ID,
   UNASSIGNED_TENANT_ID,
-  parseTenantHint,
+  readTenantHint,
 } from '../../domain/models/tenant';
 
 import { mapBetterAuthError } from './map-better-auth-error';
@@ -23,6 +24,7 @@ import { mapBetterAuthError } from './map-better-auth-error';
 import type { SessionSnapshot, SessionSource } from './better-auth-session-source';
 import type { Actor } from '../../domain/models/actor';
 import type { ActorId, TenantId } from '../../domain/models/ids';
+import type { TenantRole } from '../../domain/models/role';
 import type {
   CurrentActorError,
   CurrentActorProvider,
@@ -44,8 +46,8 @@ export interface BetterAuthCurrentActorProviderDeps {
   readonly platformAdminEmails: ReadonlySet<string>;
   /**
    * The website the request is about (`x-civo-tenant`, set by the proxy from the
-   * address). Only a platform administrator, who may work in any tenant, is
-   * resolved by it; everyone else ignores it.
+   * address). Platform administrators may work in any tenant; members select
+   * it only when they hold roles there, otherwise their oldest membership is used.
    */
   readonly getTenantHint: () => Promise<string | null>;
 }
@@ -82,21 +84,29 @@ export class BetterAuthCurrentActorProvider implements CurrentActorProvider {
     const actorId = toActorId(session.user.id);
     const isBootstrapAdmin =
       session.user.emailVerified &&
-      this.deps.platformAdminEmails.has(session.user.email.trim().toLowerCase());
-
-    return (
-      isBootstrapAdmin ? okAsync(true) : this.deps.memberships.isPlatformAdmin(actorId)
-    ).andThen((isPlatformAdmin) =>
-      isPlatformAdmin ? this.resolvePlatformAdmin(actorId) : this.resolveMember(actorId),
-    );
+      this.deps.platformAdminEmails.has(normalizeEmail(session.user.email));
+    if (isBootstrapAdmin) {
+      return this.resolvePlatformAdmin(actorId, 'bootstrap');
+    }
+    return this.deps.memberships
+      .isPlatformAdmin(actorId)
+      .andThen((isPlatformAdmin) =>
+        isPlatformAdmin
+          ? this.resolvePlatformAdmin(actorId, 'membership')
+          : this.resolveMember(actorId),
+      );
   }
 
   /** A platform administrator stands in the website the request names, or in no tenant at all. */
-  private resolvePlatformAdmin(actorId: ActorId): AppResultAsync<Actor, CurrentActorError> {
-    return this.readTenantHint().map((hint) => ({
+  private resolvePlatformAdmin(
+    actorId: ActorId,
+    platformAuthority: NonNullable<Actor['platformAuthority']>,
+  ): AppResultAsync<Actor, CurrentActorError> {
+    return readTenantHint(this.deps.getTenantHint).map((hint) => ({
       id: actorId,
       tenantId: hint ?? PLATFORM_TENANT_ID,
       roles: [PLATFORM_ADMIN_ROLE],
+      platformAuthority,
     }));
   }
 
@@ -108,25 +118,40 @@ export class BetterAuthCurrentActorProvider implements CurrentActorProvider {
    * permission. It must not be an error here.
    */
   private resolveMember(actorId: ActorId): AppResultAsync<Actor, CurrentActorError> {
-    return this.deps.memberships.findTenantsOf(actorId).andThen((tenants) =>
-      this.readTenantHint().andThen((hint) => {
-        const tenantId =
-          hint !== null && tenants.includes(hint) ? hint : (tenants[0] ?? UNASSIGNED_TENANT_ID);
-        return this.deps.memberships
-          .findRoles(actorId, tenantId)
-          .map((roles) => ({ id: actorId, tenantId, roles: roles.filter(isRole) }));
-      }),
+    return readTenantHint(this.deps.getTenantHint).andThen((hint) => {
+      if (hint === null) {
+        return this.resolveFirstMembership(actorId);
+      }
+      return this.tenantRolesOf(actorId, hint).andThen((roles) =>
+        roles.length === 0
+          ? this.resolveFirstMembership(actorId)
+          : okAsync({ id: actorId, tenantId: hint, roles }),
+      );
+    });
+  }
+
+  /** Login needs the selected membership, not a capped enumeration of every website a person can access. */
+  private resolveFirstMembership(actorId: ActorId): AppResultAsync<Actor, CurrentActorError> {
+    return this.deps.memberships.findFirstTenant(actorId).andThen((tenantId) =>
+      tenantId === null
+        ? okAsync({ id: actorId, tenantId: UNASSIGNED_TENANT_ID, roles: [] })
+        : this.tenantRolesOf(actorId, tenantId).map((roles) => ({
+            id: actorId,
+            tenantId,
+            roles,
+          })),
     );
   }
 
-  /** A header that cannot be read is no hint: it can only narrow what a request is about, never widen it. */
-  private readTenantHint(): AppResultAsync<TenantId | null, never> {
-    return ResultAsync.fromSafePromise(
-      this.deps.getTenantHint().then(
-        (raw) => parseTenantHint(raw),
-        () => null,
-      ),
-    );
+  /**
+   * The roles held inside a tenant. The platform role is never a tenant role: a membership row that
+   * names it here is discarded, whatever the repository returned.
+   */
+  private tenantRolesOf(
+    actorId: ActorId,
+    tenantId: TenantId,
+  ): AppResultAsync<readonly TenantRole[], CurrentActorError> {
+    return this.deps.memberships.findRoles(actorId, tenantId).map((held) => held.filter(isRole));
   }
 }
 
@@ -139,16 +164,14 @@ export class BetterAuthCurrentActorProvider implements CurrentActorProvider {
  * match forces a decision if `AppError` ever gains a kind.
  */
 function narrowSessionLookupError(error: AppError): CurrentActorError {
-  const failClosed = (cause: AppError): CurrentActorError => sessionLookupFailed(cause);
-
   return matchAppError<CurrentActorError>(error, {
     unauthorized: (allowed) => allowed,
     infrastructure: (allowed) => allowed,
-    validation: failClosed,
-    not_found: failClosed,
-    conflict: failClosed,
-    rate_limited: failClosed,
-    forbidden: failClosed,
-    unexpected: failClosed,
+    validation: sessionLookupFailed,
+    not_found: sessionLookupFailed,
+    conflict: sessionLookupFailed,
+    rate_limited: sessionLookupFailed,
+    forbidden: sessionLookupFailed,
+    unexpected: sessionLookupFailed,
   });
 }

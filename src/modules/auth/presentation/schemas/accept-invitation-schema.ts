@@ -8,9 +8,9 @@ import { nameSchema, newPasswordSchema, tokenSchema } from './auth-fields-schema
 export const acceptInvitationSchema = z
   .object({
     token: tokenSchema,
-    name: nameSchema,
-    password: newPasswordSchema,
-    confirmPassword: z.string(),
+    name: nameSchema.optional(),
+    password: newPasswordSchema.optional(),
+    confirmPassword: z.string().optional(),
   })
   .refine((values) => values.password === values.confirmPassword, {
     path: ['confirmPassword'],

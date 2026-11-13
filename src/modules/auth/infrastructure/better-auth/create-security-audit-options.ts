@@ -5,7 +5,7 @@ import { toActorId } from '../../domain/models/ids';
 
 import { mapBetterAuthError } from './map-better-auth-error';
 
-import type { SecurityAuditLog } from '../../domain/ports/security-audit-log.port';
+import type { SecurityAuditLog, SecurityEvent } from '../../domain/ports/security-audit-log.port';
 import type { BetterAuthOptions } from 'better-auth';
 
 const SIGN_IN_PATH_PREFIX = '/sign-in';
@@ -23,53 +23,40 @@ const SIGN_IN_PATH_PREFIX = '/sign-in';
 export function createSecurityAuditOptions(
   audit: SecurityAuditLog,
 ): Pick<BetterAuthOptions, 'databaseHooks' | 'hooks'> {
+  // Better Auth's hooks return promises; the audit port is synchronous and never throws.
+  const record = (event: SecurityEvent): Promise<void> => {
+    audit.record(event);
+    return Promise.resolve();
+  };
+
   return {
     databaseHooks: {
       user: {
         create: {
-          after: (user) => {
-            audit.record({
-              type: 'authentication.account_created',
-              actorId: toActorId(user.id),
-            });
-            return Promise.resolve();
-          },
+          after: (user) =>
+            record({ type: 'authentication.account_created', actorId: toActorId(user.id) }),
         },
       },
       session: {
         create: {
-          after: (session) => {
-            audit.record({
-              type: 'authentication.session_created',
-              actorId: toActorId(session.userId),
-            });
-            return Promise.resolve();
-          },
+          after: (session) =>
+            record({ type: 'authentication.session_created', actorId: toActorId(session.userId) }),
         },
         delete: {
-          after: (session) => {
-            audit.record({
-              type: 'authentication.session_revoked',
-              actorId: toActorId(session.userId),
-            });
-            return Promise.resolve();
-          },
+          after: (session) =>
+            record({ type: 'authentication.session_revoked', actorId: toActorId(session.userId) }),
         },
       },
     },
     hooks: {
       after: createAuthMiddleware((ctx) => {
-        if (!ctx.path.startsWith(SIGN_IN_PATH_PREFIX)) {
-          return Promise.resolve();
-        }
         const returned: unknown = ctx.context.returned;
-        if (!isAPIError(returned)) {
-          return Promise.resolve();
+        if (ctx.path.startsWith(SIGN_IN_PATH_PREFIX) && isAPIError(returned)) {
+          return record({
+            type: 'authentication.sign_in_failed',
+            errorCode: mapBetterAuthError(returned, providerFailed).code,
+          });
         }
-        audit.record({
-          type: 'authentication.sign_in_failed',
-          errorCode: mapBetterAuthError(returned, providerFailed).code,
-        });
         return Promise.resolve();
       }),
     },

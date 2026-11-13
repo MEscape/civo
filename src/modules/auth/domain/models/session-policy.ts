@@ -6,5 +6,13 @@
  * clock is passed in because the domain never reads it.
  */
 export function hasExceededMaxLifetime(createdAt: Date, now: Date, maxLifetimeMs: number): boolean {
-  return now.getTime() - createdAt.getTime() >= maxLifetimeMs;
+  const ageMs = now.getTime() - createdAt.getTime();
+  // Invalid timestamps or limits cannot prove a session is within its permitted lifetime.
+  return (
+    !Number.isFinite(ageMs) ||
+    !Number.isFinite(maxLifetimeMs) ||
+    maxLifetimeMs <= 0 ||
+    ageMs < 0 ||
+    ageMs >= maxLifetimeMs
+  );
 }

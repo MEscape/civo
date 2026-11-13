@@ -19,6 +19,12 @@ const SIGN_IN_WINDOW_SECONDS = SIGN_IN_WINDOW_MINUTES * SECONDS_PER_MINUTE;
  * budget and so lock that person out for the rest of it.
  */
 export const AUTH_RATE_LIMITS = {
+  updateProfile: {
+    id: 'auth.update-profile',
+    limit: 20,
+    windowSeconds: SECONDS_PER_HOUR,
+    onBackendFailure: 'deny',
+  },
   signIn: {
     id: 'auth.sign-in',
     limit: 10,
@@ -60,6 +66,18 @@ export const AUTH_RATE_LIMITS = {
   },
   passwordResetClient: {
     id: 'auth.password-reset-client',
+    limit: 20,
+    windowSeconds: SECONDS_PER_HOUR,
+    onBackendFailure: 'deny',
+    onUnresolvedClient: 'skip',
+  },
+  /**
+   * Opening an emailed link (verify an address, start a password reset) over HTTP. The link's token is
+   * the credential, so the budget only bounds how much work one client can ask for; a person opens a
+   * link once or twice. It is the only budget the HTTP endpoint has: Better Auth's own limiter is off.
+   */
+  linkClient: {
+    id: 'auth.link-client',
     limit: 20,
     windowSeconds: SECONDS_PER_HOUR,
     onBackendFailure: 'deny',

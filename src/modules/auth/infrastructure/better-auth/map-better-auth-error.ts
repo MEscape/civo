@@ -2,7 +2,7 @@ import { isAPIError } from 'better-auth/api';
 
 import type { AppError, InfrastructureAppError } from '@lib/errors';
 import { logger } from '@lib/logger';
-import { assertNever, isDefined, isString, objectOf } from '@lib/utils';
+import { isDefined, isString, objectOf } from '@lib/utils';
 
 import {
   accountConflict,
@@ -40,6 +40,16 @@ type ProviderCodeClass =
   | 'email_not_verified'
   | 'conflict'
   | 'validation';
+
+/** The error each class becomes. `satisfies` makes a class without an outcome a compile error. */
+const ERROR_BY_CODE_CLASS = {
+  credential_failure: invalidCredentials,
+  reauthentication: reauthenticationRequired,
+  token: invalidToken,
+  email_not_verified: emailNotVerified,
+  conflict: accountConflict,
+  validation: () => authValidationFailed({}),
+} as const satisfies Record<ProviderCodeClass, () => AppError>;
 
 /**
  * Better Auth's stable `body.code` strings (BASE_ERROR_CODES in
@@ -90,25 +100,6 @@ function readProviderCode(body: unknown): string | undefined {
   return isProviderErrorBody(body) ? body.code : undefined;
 }
 
-function fromCodeClass(codeClass: ProviderCodeClass): AppError {
-  switch (codeClass) {
-    case 'credential_failure':
-      return invalidCredentials();
-    case 'reauthentication':
-      return reauthenticationRequired();
-    case 'token':
-      return invalidToken();
-    case 'email_not_verified':
-      return emailNotVerified();
-    case 'conflict':
-      return accountConflict();
-    case 'validation':
-      return authValidationFailed({});
-    default:
-      return assertNever(codeClass);
-  }
-}
-
 /**
  * Maps anything thrown by Better Auth into one of our AppErrors. This is
  * the error-mapping boundary for authentication, the counterpart of
@@ -131,13 +122,16 @@ export function mapBetterAuthError(
   onUnclassified: (cause: unknown) => InfrastructureAppError,
 ): AppError {
   if (!isAPIError(thrown)) {
-    return onUnclassified(thrown);
+    const fallback = onUnclassified(thrown);
+    // Provider messages may contain credentials or account data. Keep the cause on the result, not in the log.
+    authLogger.error('auth.provider_failed', { kind: fallback.kind, code: fallback.code });
+    return fallback;
   }
 
   const code = readProviderCode(thrown.body);
   const codeClass = code === undefined ? undefined : PROVIDER_CODE_CLASSES.get(code);
   if (isDefined(codeClass)) {
-    return fromCodeClass(codeClass);
+    return ERROR_BY_CODE_CLASS[codeClass]();
   }
 
   // A bare 401 with no recognizable code means "no valid session".

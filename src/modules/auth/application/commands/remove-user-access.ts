@@ -1,41 +1,44 @@
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { lastAdmin } from '../../domain/errors/auth-errors';
-import { resolveAccessTarget } from '../services/resolve-access-target';
+import { loadAuthorizedManagedWebsite } from '../services/load-authorized-user-management';
+import { accessWriteRefused, resolveAccessChange } from '../services/resolve-access-target';
 
 import type { PlatformAccessDependencies } from '../auth-dependencies';
-import type { SetUserAccessError } from './set-user-access';
+import type { AccessTargetError } from '../services/resolve-access-target';
 
 export interface RemoveUserAccessInput {
   readonly userId: string;
   readonly tenantId: string;
+  readonly expectedRoles?: readonly string[] | undefined;
 }
 
 /** Takes a person's access to a website away, from outside it; the website's last administrator cannot be removed. */
 export class RemoveUserAccess {
   constructor(private readonly deps: PlatformAccessDependencies) {}
 
-  execute(input: RemoveUserAccessInput): AppResultAsync<undefined, SetUserAccessError> {
-    const { authorization, members, audit } = this.deps;
+  execute(input: RemoveUserAccessInput): AppResultAsync<undefined, AccessTargetError> {
+    const { members, audit } = this.deps;
 
-    return authorization.requireInTenant('platform.admin.manage').andThen((actor) =>
-      resolveAccessTarget(this.deps, input).andThen(({ subject, tenantId }) =>
+    return loadAuthorizedManagedWebsite(this.deps, input.tenantId).andThen((website) => {
+      const { actor, tenantId } = website;
+      return resolveAccessChange(this.deps, website, input).andThen(({ subject, options }) =>
         members
-          .removeMemberKeepingAdministrator(subject, tenantId)
-          .andThen((isRemoved): AppResultAsync<undefined, SetUserAccessError> => {
+          .removeMemberKeepingAdministrator(subject, tenantId, options)
+          .andThen((isRemoved): AppResultAsync<undefined, AccessTargetError> => {
             if (!isRemoved) {
-              return errAsync(lastAdmin());
+              return errAsync(accessWriteRefused(input.expectedRoles));
             }
             audit.record({
               type: 'membership.removed',
               actorId: actor.id,
               tenantId,
               subjectId: subject,
+              removedRoles: options.expectedRoles,
             });
             return okAsync(undefined);
           }),
-      ),
-    );
+      );
+    });
   }
 }

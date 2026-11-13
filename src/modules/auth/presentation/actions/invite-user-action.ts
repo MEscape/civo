@@ -12,13 +12,19 @@ import { ROOT_LAYOUT_PATH } from '../routes';
 import { parseAuthInput } from '../schemas/parse-auth-input';
 import { inviteUserSchema } from '../schemas/user-admin-schema';
 
-import type { InviteOutcome } from '../../application/contracts/user-views';
-
-/** Framework adapter: validate, call the use case (which authorizes user.manage), refresh the lists. */
-export async function inviteUserAction(input: unknown): Promise<ActionResult<InviteOutcome>> {
+/** Framework adapter: validate, call the use case (which authorizes the scope's permission), refresh the lists. */
+export async function inviteUserAction(input: unknown): Promise<ActionResult<void>> {
   const locale = await getLocale();
-  const result = await parseAuthInput(inviteUserSchema, input).asyncAndThen((invitation) =>
-    getAuthCommands().inviteUser.execute({ ...invitation, locale }),
+  const result = await parseAuthInput(inviteUserSchema, input).asyncAndThen(
+    ({ email, ...invitation }) =>
+      getAuthCommands().inviteUser.execute({
+        email,
+        locale,
+        scope:
+          invitation.scope === 'platform'
+            ? { kind: 'platform' }
+            : { kind: 'website', role: invitation.role, tenantId: invitation.tenantId },
+      }),
   );
   if (result.isOk()) {
     revalidatePath(ROOT_LAYOUT_PATH, 'layout');

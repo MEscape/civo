@@ -1,5 +1,9 @@
 {
   "auth": {
+    "password": {
+      "toggle": "Passwort anzeigen",
+      "capsLock": "Die Feststelltaste ist aktiv."
+    },
     "signIn": {
       "title": "Willkommen zurück",
       "description": "Melden Sie sich an, um Ihre Websites zu verwalten.",
@@ -66,7 +70,8 @@
     },
     "signOut": {
       "label": "Abmelden",
-      "pending": "Wird abgemeldet…"
+      "pending": "Wird abgemeldet…",
+      "failed": "Abmelden fehlgeschlagen. Erneut versuchen."
     },
     "pageError": {
       "title": "Authentifizierungsfehler",
@@ -91,7 +96,13 @@
       "unexpected": "Ein unerwarteter Fehler ist aufgetreten.",
       "lastAdmin": "Ein Mandant braucht mindestens einen Administrator, und Sie können Ihren eigenen Zugang nicht ändern oder entfernen.",
       "userNotFound": "Dieser Benutzer wurde nicht gefunden.",
-      "invitationFailed": "Die Einladung konnte nicht verarbeitet werden. Bitte versuchen Sie es später erneut."
+      "invitationFailed": "Die Einladung konnte nicht verarbeitet werden. Bitte versuchen Sie es später erneut.",
+      "membershipExists": "Dieses Konto hat bereits Zugriff auf den ausgewählten Bereich.",
+      "invitationPending": "Für diese Adresse und diesen Bereich ist bereits eine Einladung offen. Widerrufen Sie diese, bevor Sie eine neue senden.",
+      "invitationAccountRequired": "Melden Sie sich mit dem eingeladenen Konto an, um die Einladung anzunehmen. Melden Sie ein anderes Konto zuerst ab.",
+      "accessConflict": "Der Zugriff wurde während der Bearbeitung geändert. Laden Sie die Seite neu und prüfen Sie die aktuellen Rollen.",
+      "platformRoleConfigured": "Diese Plattformrolle wird durch die Bereitstellungskonfiguration verwaltet und kann hier nicht entfernt werden.",
+      "cannotRevokeSelf": "Sie können Ihre eigene Plattform-Administratorrolle nicht widerrufen."
     },
     "validation": {
       "emailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
@@ -106,7 +117,8 @@
       "tokenInvalid": "Dieser Link ist ungültig. Fordern Sie einen neuen an.",
       "roleInvalid": "Wählen Sie eine gültige Rolle.",
       "rolesRequired": "Wählen Sie mindestens eine Rolle.",
-      "tenantInvalid": "Wählen Sie eine vorhandene Website."
+      "tenantInvalid": "Wählen Sie eine vorhandene Website.",
+      "profileImageInvalid": "Wählen Sie ein gültiges PNG-, JPEG- oder WebP-Bild mit höchstens 512 KB."
     },
     "acceptInvitation": {
       "title": "Einladung annehmen",
@@ -117,7 +129,7 @@
       "submit": "Konto erstellen",
       "submitting": "Konto wird erstellt …",
       "successTitle": "Ihr Konto ist bereit",
-      "success": "Ihr Konto wurde angelegt.",
+      "success": "Ihr Konto wurde erstellt. Bestätigen Sie Ihre E-Mail-Adresse, melden Sie sich an und kehren Sie zu dieser Einladung zurück, um den Zugriff anzunehmen.",
       "signInLink": "Zur Anmeldung",
       "missingTokenTitle": "Dieser Einladungslink ist unvollständig",
       "missingToken": "Öffnen Sie den Link aus Ihrer Einladungs-E-Mail erneut oder fordern Sie eine neue Einladung an.",
@@ -139,17 +151,27 @@
         "organisation": "Website",
         "email": "E-Mail-Adresse",
         "role": "Rolle",
-        "expires": "Gültig bis"
+        "expires": "Gültig bis",
+        "invitedBy": "Eingeladen von",
+        "platform": "Plattform"
       },
       "invalidTitle": "Diese Einladung ist nicht mehr gültig",
-      "invalid": "Sie wurde vielleicht schon verwendet, zurückgezogen oder ist abgelaufen. Bitten Sie um eine neue Einladung."
+      "invalid": "Sie wurde vielleicht schon verwendet, zurückgezogen oder ist abgelaufen. Bitten Sie um eine neue Einladung.",
+      "existingDescription": "Prüfen Sie den angebotenen Zugriff. Melden Sie sich zum Annehmen mit dem eingeladenen Konto an. Melden Sie ein anderes Konto zuerst ab.",
+      "accept": "Zugriff annehmen",
+      "accepting": "Zugriff wird angenommen…",
+      "acceptedTitle": "Zugriff erteilt",
+      "accepted": "Sie haben jetzt den in dieser Einladung beschriebenen Zugriff.",
+      "alreadyMemberTitle": "Sie haben bereits Zugriff",
+      "alreadyMember": "Ihr Konto hat hier bereits Zugriff, daher wurde nichts geändert.",
+      "continue": "Weiter"
     },
     "users": {
       "metadata": {
         "title": "Benutzer"
       },
       "title": "Benutzer",
-      "description": "Wer in dieser Organisation arbeiten darf, und mit welcher Rolle.",
+      "description": "Wer an dieser Website arbeiten darf, und mit welcher Rolle.",
       "roles": {
         "admin": "Administrator",
         "editor": "Redakteur",
@@ -159,16 +181,30 @@
         "platformAdmin": "Plattform-Administration"
       },
       "invite": {
-        "title": "Jemanden einladen",
-        "description": "Konten werden nur auf Einladung angelegt. Die Person erhält einen einmal nutzbaren Link per E-Mail; ein bestehendes Konto erhält die Rolle sofort.",
+        "title": "Person einladen",
+        "description": "Senden Sie eine einmalige Einladung für Website-Zugriff oder berechtigten Plattformzugriff. Bestehende Konten müssen neuen Zugriff ebenfalls annehmen.",
         "email": "E-Mail-Adresse",
         "role": "Rolle",
+        "target": "Einladen zu",
+        "platformTarget": "Plattform-Administratoren",
         "submit": "Einladung senden",
         "sending": "Wird gesendet …",
-        "outcome": {
-          "invited": "Die Einladung wurde gesendet.",
-          "granted": "Diese Person hat bereits ein Konto und besitzt jetzt die Rolle."
-        }
+        "sent": "Die Einladung wurde gesendet. Sie steht unter „Offene Einladungen“, bis sie angenommen wird.",
+        "chooseTarget": "Website oder Plattform auswählen",
+        "chooseWebsite": "Website auswählen",
+        "action": "Person einladen",
+        "websitesDescription": "Senden Sie eine einmalige Einladung zu einer Website, die Sie verwalten. Bestehende Konten müssen neuen Zugriff ebenfalls annehmen.",
+        "websiteDescription": "Senden Sie eine einmalige Einladung zu dieser Website. Bestehende Konten müssen den Zugriff ebenfalls annehmen.",
+        "emailHint": "An diese Adresse geht der Einladungslink.",
+        "next": "Weiter: {step}",
+        "steps": {
+          "person": "Person",
+          "access": "Zugriff",
+          "review": "Prüfen"
+        },
+        "reviewHint": "Die Person erhält eine einmalige Einladung per E-Mail. Bis sie annimmt, steht sie unter „Offene Einladungen“ und hat noch keinen Zugriff.",
+        "unsavedTitle": "Einladung verwerfen?",
+        "unsavedDescription": "Die Einladung wurde noch nicht gesendet. Möchten Sie die Seite trotzdem verlassen?"
       },
       "filters": {
         "search": "Name oder E-Mail suchen",
@@ -177,44 +213,48 @@
         "pageSize": "Pro Seite",
         "perPage": "{size} pro Seite",
         "apply": "Anwenden",
-        "reset": "Filter zurücksetzen"
+        "reset": "Filter zurücksetzen",
+        "website": "Website",
+        "anyWebsite": "Alle Websites"
       },
       "table": {
         "title": "Mitglieder",
         "name": "Name",
         "email": "E-Mail",
-        "roles": "Rollen",
         "since": "Mitglied seit",
         "actions": "Aktionen",
         "unverified": "Unbestätigt",
         "you": "Sie",
-        "empty": "Keine passenden Mitglieder.",
+        "empty": "Noch keine Mitglieder.",
         "count": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
-        "truncated": "Diese Organisation hat mehr Mitglieder, als auf einmal aufgelistet werden können. Schränken Sie die Suche ein.",
-        "editRoles": "Rollen bearbeiten",
-        "save": "Speichern",
-        "cancel": "Abbrechen",
-        "remove": "Entfernen",
-        "rolesOf": "Rollen von {name}",
-        "removeTitle": "{name} entfernen?",
-        "confirmRemove": "{name} aus dieser Organisation entfernen? Das Konto bleibt bestehen, hier gehen aber alle Zugriffsrechte verloren."
+        "truncated": "Diese Liste ist unvollständig: Es treffen mehr Personen zu, als geladen werden können; Ergebnisse und Suche erfassen nur eine Teilmenge. Grenzen Sie Website, Rolle oder Suche weiter ein.",
+        "access": "Zugriff",
+        "manage": "Zugriff verwalten",
+        "noWebsiteAccess": "Keine direkten Website-Rollen",
+        "moreRoles": "+{count}",
+        "emptyDescription": "Laden Sie die erste Person ein. Sie erscheint hier, sobald sie die Einladung annimmt.",
+        "noMatch": "Keine passenden Mitglieder.",
+        "noMatchDescription": "Ändern Sie die Suche oder setzen Sie die Filter zurück."
       },
       "pagination": {
         "nav": "Seiten der Benutzerliste"
       },
       "invitations": {
+        "pages": "Einladungsseiten",
         "title": "Offene Einladungen",
         "expires": "läuft ab am {date}",
         "none": "Keine offenen Einladungen.",
         "withdraw": "Zurückziehen",
-        "revoke": "Einladung für {email} zurückziehen"
+        "revoke": "Einladung für {email} zurückziehen",
+        "count": "{count, plural, one {# Einladung} other {# Einladungen}}",
+        "confirmTitle": "Einladung zurückziehen?",
+        "confirmDescription": "Der Link in der Einladung an {email} funktioniert danach nicht mehr. Sie können die Person jederzeit erneut einladen.",
+        "confirm": "Zurückziehen",
+        "cancel": "Abbrechen"
       },
       "overview": {
         "title": "Personen",
-        "link": "Benutzer verwalten",
-        "members": "Mitglieder",
-        "openInvitations": "Offene Einladungen",
-        "byRole": "Mitglieder nach Rolle"
+        "openInvitations": "Offene Einladungen"
       },
       "roleHints": {
         "admin": "Alles an der Website: Einstellungen, Veröffentlichen, Daten und Personen.",
@@ -222,20 +262,52 @@
         "contributor": "Bearbeitet Inhalte vorhandener Seiten. Kann keine Komponenten hinzufügen oder verschieben.",
         "viewer": "Sieht die Website und ihre Buchungen an; ändert nichts.",
         "employee": "Nur der eigene Buchungskalender und das eigene Profil."
+      },
+      "global": {
+        "title": "Benutzer",
+        "description": "Personen auf Websites, die Sie verwalten dürfen. Filtern Sie nach Website oder Rolle und verwalten Sie jede Website einzeln.",
+        "metadata": {
+          "title": "Benutzer"
+        }
+      },
+      "access": {
+        "title": "Zugriff von {name}",
+        "description": "Legen Sie fest, in welchen Websites diese Person arbeitet und was sie dort darf. Eine Website behält immer mindestens eine Administration.",
+        "rolesOf": "Rollen in {site}",
+        "manageWebsite": "Personen auf {site} verwalten",
+        "partialFailure": "{count, plural, one {# Änderung wurde gespeichert.} other {# Änderungen wurden gespeichert.}} Die übrigen Änderungen wurden nicht gespeichert. {reason}",
+        "remove": "Entfernen",
+        "keep": "Behalten",
+        "addTitle": "Zu einer Website hinzufügen",
+        "addWebsite": "Website",
+        "save": "Änderungen speichern",
+        "cancel": "Abbrechen",
+        "empty": "Noch in keiner Website.",
+        "needRole": "Wählen Sie mindestens eine Rolle aus oder entfernen Sie den Zugriff.",
+        "nothingToAdd": "Diese Person gehört bereits zu jeder Website, die Sie verwalten dürfen.",
+        "saveCount": "{count, plural, one {# Änderung} other {# Änderungen}} speichern",
+        "state": {
+          "new": "Neu",
+          "changed": "Geändert",
+          "removed": "Wird entfernt"
+        },
+        "platformAdminLabel": "Plattform-Administrator",
+        "platformAdminHint": "Darf Websites anlegen und in jeder Website arbeiten. Die Rollen darunter sind die, die die Person als Mitglied hat.",
+        "unsavedTitle": "Zugriffsänderungen verwerfen?",
+        "unsavedDescription": "Sie haben ungespeicherte Zugriffsänderungen. Möchten Sie die Seite ohne Speichern verlassen?",
+        "discard": "Änderungen verwerfen",
+        "keepEditing": "Weiter bearbeiten",
+        "websiteDescription": "Legen Sie fest, was diese Person auf dieser Website darf. Eine Website behält immer mindestens eine Administration.",
+        "otherWebsites": "Zugriff auf andere Websites verwalten Sie unter Benutzer.",
+        "otherWebsitesLink": "Zu allen Benutzern",
+        "rolesTitle": "Rollen von {name} auf dieser Website"
+      },
+      "websites": {
+        "truncated": "Sie verwalten mehr Websites, als hier aufgelistet werden können. Es werden nur die ersten angeboten und durchsucht."
+      },
+      "navigation": {
+        "breadcrumb": "Benutzer-Navigation"
       }
-    },
-    "platformAdmins": {
-      "title": "Plattform-Administratoren",
-      "description": "Wer Websites anlegen und in jeder Website arbeiten darf. Die Person braucht zuerst ein Konto mit bestätigter Adresse.",
-      "none": "Noch niemand per Mitgliedschaft. In der Konfiguration genannte Administratoren werden hier nicht aufgeführt.",
-      "email": "E-Mail-Adresse",
-      "emailHint": "Eines bestehenden Kontos.",
-      "add": "Zum Plattform-Administrator machen",
-      "remove": "Entfernen",
-      "failed": "Das hat nicht geklappt. Prüfen Sie die Adresse: Sie muss zu einem bestehenden Konto mit bestätigter Adresse gehören.",
-      "count": "{count, plural, one {# Administrator} other {# Administratoren}}",
-      "confirmTitle": "{name} entfernen?",
-      "confirmDescription": "Die Person bleibt Mitglied ihrer Websites, kann die Plattform aber nicht mehr administrieren."
     },
     "auditEvents": {
       "authorization": {
@@ -292,55 +364,36 @@
       "tip": "Tipp: Eine Passphrase aus vier oder mehr unzusammenhängenden Wörtern ist stark und leicht zu merken.",
       "match": "Die Passwörter stimmen überein"
     },
-    "platformUsers": {
-      "title": "Benutzer",
-      "description": "Alle Konten über alle Websites hinweg. Nach Website oder Rolle filtern und festlegen, wer wo arbeitet.",
-      "metadata": {
-        "title": "Benutzer"
-      },
-      "table": {
-        "title": "Personen",
-        "count": "{count, plural, one {# Person} other {# Personen}}",
-        "access": "Zugriff",
-        "empty": "Keine Person passt zu diesen Filtern.",
-        "allWebsites": "Alle Websites",
-        "noAccess": "Noch keine Website",
-        "platformAdmin": "Plattform-Administrator",
-        "truncated": "Der Filter trifft mehr Personen, als auf einmal eingegrenzt werden können. Ergänzen Sie einen Suchtext.",
-        "more": "+{count} weitere",
-        "manage": "Zugriff verwalten",
-        "you": "Sie"
-      },
-      "filters": {
-        "website": "Website",
-        "anyWebsite": "Alle Websites",
-        "kind": "Personen",
-        "everyone": "Alle",
-        "platformAdmins": "Plattform-Administratoren",
-        "reset": "Filter zurücksetzen"
-      },
-      "access": {
-        "title": "Zugriff von {name}",
-        "description": "Legen Sie fest, in welchen Websites diese Person arbeitet und was sie dort darf. Eine Website behält immer mindestens eine Administration.",
-        "rolesOf": "Rollen in {site}",
-        "remove": "Entfernen",
-        "keep": "Behalten",
-        "addTitle": "Zu einer Website hinzufügen",
-        "addWebsite": "Website",
-        "addButton": "Hinzufügen",
-        "save": "Änderungen speichern",
-        "cancel": "Abbrechen",
-        "empty": "Noch in keiner Website.",
-        "needRole": "Wählen Sie für jede Website mindestens eine Rolle.",
-        "nothingToAdd": "Diese Person arbeitet bereits in jeder Website.",
-        "saveCount": "{count, plural, one {# Änderung} other {# Änderungen}} speichern",
-        "state": {
-          "new": "Neu",
-          "changed": "Geändert",
-          "removed": "Wird entfernt"
-        },
-        "platformAdminNote": "Diese Person administriert die Plattform und kann ohnehin in jeder Website arbeiten. Die Rollen hier sind die, die sie als Mitglied hat."
-      }
+    "profile": {
+      "menu": "Kontomenü",
+      "settings": "Profil & Einstellungen",
+      "title": "Mein Profil",
+      "description": "Verwalten Sie Ihre persönlichen Angaben und Ihr Profilbild.",
+      "editTitle": "Persönliche Angaben",
+      "editDescription": "Ihr Name und Bild erscheinen in Ihrem Kontomenü.",
+      "name": "Anzeigename",
+      "photo": "Profilbild",
+      "photoHint": "PNG, JPEG oder WebP, bis zu 512 KB. Profilbilder sind öffentlich abrufbar.",
+      "removePhoto": "Bild entfernen",
+      "save": "Änderungen speichern",
+      "saving": "Wird gespeichert…",
+      "saved": "Profil gespeichert.",
+      "accountTitle": "Kontoinformationen",
+      "email": "E-Mail-Adresse",
+      "emailStatus": "E-Mail-Status",
+      "verified": "Bestätigt",
+      "unverified": "Nicht bestätigt",
+      "memberSince": "Mitglied seit",
+      "resetPassword": "Passwort zurücksetzen",
+      "unsavedTitle": "Änderungen verwerfen?",
+      "unsavedDescription": "Ihr Profil enthält ungespeicherte Änderungen. Möchten Sie die Seite ohne Speichern verlassen?",
+      "discard": "Änderungen verwerfen",
+      "keepEditing": "Weiter bearbeiten",
+      "choosePhoto": "Bild auswählen",
+      "changePhoto": "Bild ändern",
+      "clearSelection": "Auswahl verwerfen",
+      "unsaved": "Ungespeicherte Änderungen",
+      "back": "Zurück"
     }
   }
 }

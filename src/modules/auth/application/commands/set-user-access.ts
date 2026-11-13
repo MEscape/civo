@@ -1,31 +1,21 @@
-import type {
-  ConflictAppError,
-  InfrastructureAppError,
-  NotFoundAppError,
-  ValidationAppError,
-} from '@lib/errors';
 import { errAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { lastAdmin } from '../../domain/errors/auth-errors';
 import { createRoleSet } from '../../domain/models/role-set';
-import { resolveAccessTarget } from '../services/resolve-access-target';
+import { loadAuthorizedManagedWebsite } from '../services/load-authorized-user-management';
+import { accessWriteRefused, resolveAccessChange } from '../services/resolve-access-target';
 
 import type { PlatformAccessDependencies } from '../auth-dependencies';
-import type { AuthorizationError } from '../authorization-service';
+import type { AccessTargetError } from '../services/resolve-access-target';
 
-export type SetUserAccessError =
-  | AuthorizationError
-  | ConflictAppError
-  | InfrastructureAppError
-  | NotFoundAppError
-  | ValidationAppError;
+export type SetUserAccessError = AccessTargetError;
 
 export interface SetUserAccessInput {
   readonly userId: string;
   readonly tenantId: string;
   /** The complete set the person holds in the website afterwards; at least one. */
   readonly roles: readonly string[];
+  readonly expectedRoles?: readonly string[] | undefined;
 }
 
 /**
@@ -39,32 +29,31 @@ export class SetUserAccess {
   constructor(private readonly deps: PlatformAccessDependencies) {}
 
   execute(input: SetUserAccessInput): AppResultAsync<undefined, SetUserAccessError> {
-    const { authorization, members, audit } = this.deps;
+    const { members, audit } = this.deps;
 
-    return authorization.requireInTenant('platform.admin.manage').andThen((actor) => {
+    return loadAuthorizedManagedWebsite(this.deps, input.tenantId).andThen((website) => {
       const roles = createRoleSet(input.roles);
       if (roles.isErr()) {
         return errAsync(roles.error);
       }
-      return resolveAccessTarget(this.deps, input).andThen(({ subject, tenantId }) =>
-        members.findRoles(subject, tenantId).andThen((current) => {
-          const write =
-            current.length === 0
-              ? members.replaceRoles(subject, tenantId, roles.value).map(() => true)
-              : members.replaceRolesKeepingAdministrator(subject, tenantId, roles.value);
-          return write.andThen((isChanged): AppResultAsync<undefined, SetUserAccessError> => {
+      const { actor, tenantId } = website;
+      return resolveAccessChange(this.deps, website, input).andThen(({ subject, options }) =>
+        members
+          .replaceRolesKeepingAdministrator(subject, tenantId, { ...options, roles: roles.value })
+          .andThen((isChanged): AppResultAsync<undefined, SetUserAccessError> => {
             if (!isChanged) {
-              return errAsync(lastAdmin());
+              return errAsync(accessWriteRefused(input.expectedRoles));
             }
             audit.record({
               type: 'membership.roles_changed',
               actorId: actor.id,
               tenantId,
               subjectId: subject,
+              roles: roles.value,
+              previousRoles: options.expectedRoles,
             });
             return okAsync(undefined);
-          });
-        }),
+          }),
       );
     });
   }

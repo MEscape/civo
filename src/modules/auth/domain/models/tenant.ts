@@ -1,3 +1,6 @@
+import { ResultAsync } from '@lib/result';
+import type { AppResultAsync } from '@lib/result';
+
 import { toTenantId } from './ids';
 
 import type { TenantId } from './ids';
@@ -24,4 +27,19 @@ export function parseTenantHint(raw: string | null): TenantId | null {
   }
   const tenantId = toTenantId(raw);
   return tenantId === PLATFORM_TENANT_ID || tenantId === UNASSIGNED_TENANT_ID ? null : tenantId;
+}
+
+/**
+ * The website a request is about (`x-civo-tenant`, set by the proxy from the address).
+ *
+ * A header that cannot be read or parsed is no hint, and never a failure: a hint can only narrow what
+ * a request is about, never widen it. A synchronous throw from `getTenantHint` counts the same as a
+ * rejected promise.
+ */
+export function readTenantHint(
+  getTenantHint: () => Promise<string | null>,
+): AppResultAsync<TenantId | null, never> {
+  return ResultAsync.fromSafePromise(
+    (async () => parseTenantHint(await getTenantHint()))().catch(() => null),
+  );
 }

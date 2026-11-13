@@ -67,7 +67,8 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
     trustedOrigins: [settings.baseUrl],
     // Sign-up is closed to the public: accounts exist only through an administrator's invitation,
     // which calls the server-side API. A disabled path answers 404 over HTTP and stays callable in-process.
-    disabledPaths: ['/sign-up/email'],
+    // Profile writes also go through validated, rate-limited application actions.
+    disabledPaths: ['/sign-up/email', '/update-user'],
 
     emailAndPassword: {
       enabled: true,
@@ -79,7 +80,7 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
       sendResetPassword: async ({ user, url }) => {
         const locale = await resolveMailLocale();
         return deliverAuthEmail(
-          deps.mailer.sendPasswordReset({ to: user.email, url, locale, name: user.name }),
+          () => deps.mailer.sendPasswordReset({ to: user.email, url, locale, name: user.name }),
           'password_reset',
         );
       },
@@ -97,10 +98,11 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
       // Accept-Language header to confuse the real owner.
       onExistingUserSignUp: async ({ user }) => {
         return deliverAuthEmail(
-          deps.mailer.sendExistingAccountNotice({
-            to: user.email,
-            locale: I18N_CONFIG.defaultLocale,
-          }),
+          () =>
+            deps.mailer.sendExistingAccountNotice({
+              to: user.email,
+              locale: I18N_CONFIG.defaultLocale,
+            }),
           'existing_account',
         );
       },
@@ -110,7 +112,7 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
       sendVerificationEmail: async ({ user, url }) => {
         const locale = await resolveMailLocale();
         return deliverAuthEmail(
-          deps.mailer.sendVerification({ to: user.email, url, locale, name: user.name }),
+          () => deps.mailer.sendVerification({ to: user.email, url, locale, name: user.name }),
           'verification',
         );
       },
@@ -131,15 +133,11 @@ export function createAuth(settings: AuthSettings, deps: AuthDeps) {
       cookieCache: { enabled: false },
     },
 
-    // Applies only to requests that arrive through Better Auth's HTTP
-    // handler (verification and reset links). Direct `auth.api.*` calls from
-    // Server Actions do NOT pass it; those are throttled by the rate-limit budgets
-    // of the use cases (docs/architecture/rate-limiting.md). Memory storage is per-process and
-    // ineffective on serverless or multi-instance hosting; `database` is shared.
-    rateLimit: {
-      enabled: true,
-      storage: 'database',
-    },
+    // Off. The platform's rate limiter (@lib/rate-limit) is the only one: the use cases spend its budgets
+    // before they call `auth.api.*`, and the route handler spends one before it serves an emailed link
+    // (create-auth-route-handlers.ts). A second limiter in the auth database would count the same
+    // attempts twice, with different numbers and no shared store.
+    rateLimit: { enabled: false },
 
     advanced: {
       useSecureCookies: settings.isProduction,

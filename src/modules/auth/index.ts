@@ -5,7 +5,7 @@
  * code through `composition.ts` and must never end up in a client bundle.
  */
 
-export { toTenantId } from './domain/models/ids';
+export { toActorId, toTenantId } from './domain/models/ids';
 export type { ActorId, TenantId } from './domain/models/ids';
 export { PERMISSIONS } from './domain/models/permission';
 export type { Permission } from './domain/models/permission';
@@ -19,11 +19,15 @@ export {
   getAccessControl,
   getAuthQueries,
   getCurrentTenantId,
-  getMemberTenantIds,
   getHeldPermissions,
   isAuthEnabled,
 } from './composition';
-export type { EmployeeView, MemberSummaryView } from './application/contracts/user-views';
+export type {
+  AccessibleWebsites,
+  EmployeeListing,
+  EmployeeView,
+  MemberSummaryView,
+} from './application/contracts/user-views';
 
 /** Framework entry points: the auth Route Handler and the page guard. */
 export { authRouteHandlers, runAuthStartup } from './composition';
@@ -37,20 +41,23 @@ export {
   parseSignInPageParams,
 } from './presentation/schemas/page-params-schema';
 
-export { UsersAdministration } from './presentation/components/users-administration';
-export { PlatformUsersAdministration } from './presentation/components/platform-users-administration';
-export { MemberOverviewCard } from './presentation/components/member-overview-card';
-export { EmailVerificationResult } from './presentation/components/email-verification-result';
-export { ForgotPasswordForm } from './presentation/components/forgot-password-form';
-export { ResetPasswordForm } from './presentation/components/reset-password-form';
-export { ResetPasswordLinkMissing } from './presentation/components/reset-password-link-missing';
-export { AuthShell } from './presentation/components/auth-shell';
-export { SignInForm } from './presentation/components/sign-in-form';
-export { SignOutButton } from './presentation/components/sign-out-button';
-export { AcceptInvitationForm } from './presentation/components/accept-invitation-form';
-export { InvitationLinkInvalid } from './presentation/components/invitation-link-invalid';
-export { InvitationLinkMissing } from './presentation/components/invitation-link-missing';
+export { UsersAdministration } from './presentation/components/users/users-administration';
+export { InviteUserAdministration } from './presentation/components/users/invite-user-administration';
+export { MemberOverviewTile } from './presentation/components/users/member-overview-tile';
+export { EmailVerificationResult } from './presentation/components/verification/email-verification-result';
+export { ForgotPasswordForm } from './presentation/components/password/forgot-password-form';
+export { ResetPasswordForm } from './presentation/components/password/reset-password-form';
+export { ResetPasswordLinkMissing } from './presentation/components/password/reset-password-link-missing';
+export { AuthShell } from './presentation/components/shared/auth-shell';
+export { SignInForm } from './presentation/components/sign-in/sign-in-form';
+export { SignOutButton } from './presentation/components/shared/sign-out-button';
+export { AccountNavigation } from './presentation/components/profile/account-navigation';
+export { ProfileAdministration } from './presentation/components/profile/profile-administration';
+export { AcceptInvitationForm } from './presentation/components/invitations/accept-invitation-form';
+export { InvitationLinkInvalid } from './presentation/components/invitations/invitation-link-invalid';
+export { InvitationLinkMissing } from './presentation/components/invitations/invitation-link-missing';
 
 export { default as enAuth } from './presentation/i18n/en.json';
 export { default as deAuth } from './presentation/i18n/de.json';
-export { PlatformAdmins } from './presentation/components/platform-admins';
+
+export { loadMemberNames } from './presentation/components/users/load-member-names';

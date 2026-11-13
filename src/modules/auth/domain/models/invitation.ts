@@ -1,26 +1,31 @@
-import type { FieldErrorBag, ValidationAppError } from '@lib/errors';
+import type { ValidationAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
+import { MS_PER_DAY } from '@lib/utils';
 
 import { AUTH_VALIDATION_CODES, createAuthErrorBag } from '../errors/auth-errors';
 
-import { CREDENTIAL_LIMITS, EMAIL_PATTERN, normalizeEmail } from './credentials';
-import { isRole } from './role';
+import { CREDENTIAL_LIMITS, checkEmail, normalizeEmail } from './credentials';
+import { toActorId } from './ids';
+import { PLATFORM_ADMIN_ROLE, isRole } from './role';
+import { PLATFORM_TENANT_ID, parseTenantHint } from './tenant';
 
 import type { ActorId, InvitationId, TenantId } from './ids';
 import type { PlatformRole, TenantRole } from './role';
 
-const MS_PER_DAY = 86_400_000;
 const INVITATION_LIFETIME_DAYS = 7;
+
+/** Existing deployment bootstrap identity; it grants nothing unless configuration still names the recipient. */
+export const BOOTSTRAP_INVITER_ID = toActorId('system');
 
 /** How long an emailed invitation link works: long enough for a busy week, short enough to expire unused. */
 export const INVITATION_LIFETIME_MS = INVITATION_LIFETIME_DAYS * MS_PER_DAY;
 
 /**
  * What an invitation offers: a role in a tenant, or (only in the platform
- * scope, and only from the deployment's own administrator list) the platform
- * administrator role. No request can ask for the latter: `createInvitationOffer`
- * knows tenant roles alone.
+ * scope) the platform administrator role. A request never names the role of
+ * a platform offer: `createInvitationOffer` knows tenant roles alone and
+ * `createPlatformInvitationOffer` fixes the platform one.
  */
 export type InvitationRole = TenantRole | PlatformRole;
 
@@ -46,33 +51,51 @@ export interface InvitationOffer {
   readonly role: TenantRole;
 }
 
-function checkOffer(email: string, role: string, bag: FieldErrorBag): void {
-  if (email.length === 0) {
-    bag.add('email', AUTH_VALIDATION_CODES.emailRequired);
-  } else if (email.length > CREDENTIAL_LIMITS.emailMax) {
-    bag.add('email', AUTH_VALIDATION_CODES.emailTooLong);
-  } else if (!EMAIL_PATTERN.test(email)) {
-    bag.add('email', AUTH_VALIDATION_CODES.emailInvalid);
-  }
-  if (!isRole(role)) {
-    bag.add('role', AUTH_VALIDATION_CODES.roleInvalid);
-  }
+export interface PlatformInvitationOffer {
+  readonly email: string;
+  readonly role: PlatformRole;
 }
 
-/** The only way an offer enters the system: a normalised address and a role this code knows. */
+/** The only way a tenant offer enters the system: a normalised address and a role this code knows. */
 export function createInvitationOffer(
   input: InvitationInput,
 ): AppResult<InvitationOffer, ValidationAppError> {
   const bag = createAuthErrorBag();
   const email = normalizeEmail(input.email);
-  checkOffer(email, input.role, bag);
+  checkEmail(email, bag);
+  if (!isRole(input.role)) {
+    bag.add('role', AUTH_VALIDATION_CODES.roleInvalid);
+  }
   if (bag.hasErrors || !isRole(input.role)) {
     return err(bag.toError());
   }
   return ok({ email, role: input.role });
 }
 
-/** True while the invitation can still be accepted: not used, not expired. */
+/** The platform's own offer: a normalised address and the one role the platform scope hands out. */
+export function createPlatformInvitationOffer(
+  rawEmail: string,
+): AppResult<PlatformInvitationOffer, ValidationAppError> {
+  const bag = createAuthErrorBag();
+  const email = normalizeEmail(rawEmail);
+  checkEmail(email, bag);
+  return bag.hasErrors ? err(bag.toError()) : ok({ email, role: PLATFORM_ADMIN_ROLE });
+}
+
+/** A token is opaque and case-sensitive: reject malformed values, never trim or truncate them. */
+export function isInvitationToken(token: string): boolean {
+  return (
+    token.length > 0 && token.length <= CREDENTIAL_LIMITS.tokenMax && /^[A-Za-z0-9_-]+$/.test(token)
+  );
+}
+
+/** True while the invitation can still be accepted: valid scope, not used, not expired. */
 export function isInvitationOpen(invitation: Invitation, now: Date): boolean {
-  return invitation.acceptedAt === null && invitation.expiresAt.getTime() > now.getTime();
+  return (
+    invitation.acceptedAt === null &&
+    invitation.expiresAt.getTime() > now.getTime() &&
+    (invitation.role === PLATFORM_ADMIN_ROLE
+      ? invitation.tenantId === PLATFORM_TENANT_ID
+      : isRole(invitation.role) && parseTenantHint(invitation.tenantId) !== null)
+  );
 }

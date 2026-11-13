@@ -8,6 +8,7 @@ export interface DirectoryUser {
   readonly id: ActorId;
   readonly email: string;
   readonly name: string;
+  readonly image?: string | null;
   readonly emailVerified: boolean;
   readonly createdAt: Date;
 }

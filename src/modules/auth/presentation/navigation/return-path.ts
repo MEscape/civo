@@ -26,7 +26,8 @@ export function resolveReturnPath(raw: string | undefined): string {
   }
 
   const resolved = new URL(raw, PLACEHOLDER_ORIGIN);
-  if (resolved.origin !== PLACEHOLDER_ORIGIN) {
+  // `/.//evil.example` keeps the origin but normalises to `//evil.example`, which a browser reads as another host.
+  if (resolved.origin !== PLACEHOLDER_ORIGIN || resolved.pathname.startsWith('//')) {
     return DEFAULT_RETURN_PATH;
   }
 

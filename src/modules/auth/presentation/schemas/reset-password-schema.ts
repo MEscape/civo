@@ -15,10 +15,10 @@ export const resetPasswordFormSchema = z
     message: CODES.passwordMismatch,
   });
 
-export type ResetPasswordForm = z.infer<typeof resetPasswordFormSchema>;
-
 /** What the action receives: the form values plus the token from the link. */
 export const resetPasswordActionSchema = z.object({
   token: tokenSchema,
   newPassword: newPasswordSchema,
 });
+
+export type ResetPasswordForm = z.infer<typeof resetPasswordFormSchema>;

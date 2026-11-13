@@ -1,6 +1,7 @@
-import type { InfrastructureAppError } from '@lib/errors';
+import type { ConflictAppError, InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
+import type { Actor } from '../models/actor';
 import type { ActorId, TenantId } from '../models/ids';
 import type { TenantRole } from '../models/role';
 
@@ -27,17 +28,37 @@ export interface MembershipRepository {
    */
   isPlatformAdmin(actorId: ActorId): AppResultAsync<boolean, InfrastructureAppError>;
 
-  /** Everyone who is a platform administrator by membership, oldest first. Bounded. */
-  listPlatformAdmins(): AppResultAsync<readonly ActorId[], InfrastructureAppError>;
+  /** Platform administrators by membership, oldest first, at most `limit`; `isTruncated` says there are more. */
+  listPlatformAdmins(
+    limit: number,
+  ): AppResultAsync<
+    { readonly ids: readonly ActorId[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
 
-  /** Makes the person a platform administrator, or not. Idempotent. */
-  setPlatformAdmin(
+  /** Makes the person a platform administrator. Idempotent and serialized with revocations. */
+  grantPlatformAdmin(
     actorId: ActorId,
-    isAdministrator: boolean,
-  ): AppResultAsync<void, InfrastructureAppError>;
+    options?: MembershipWriteOptions,
+  ): AppResultAsync<boolean, InfrastructureAppError>;
 
-  /** The tenants the person holds a role in, oldest membership first. Bounded; the platform scope is not one. */
-  findTenantsOf(actorId: ActorId): AppResultAsync<readonly TenantId[], InfrastructureAppError>;
+  /**
+   * Revokes a platform membership only while the initiating actor still has platform authority.
+   * The authority comes from the trusted actor provider, never request input. A membership actor
+   * is rechecked inside the same lock as deletion; bootstrap authority is configured independently.
+   * `false` means the actor lost authority and nothing was changed.
+   */
+  revokePlatformAdmin(
+    subjectId: ActorId,
+    actor: {
+      readonly actorId: ActorId;
+      readonly authority: NonNullable<Actor['platformAuthority']>;
+      readonly subjectEmail?: string;
+    },
+  ): AppResultAsync<boolean, InfrastructureAppError>;
+
+  /** The oldest website membership used when no eligible website hint is selected; no full roster is loaded. */
+  findFirstTenant(actorId: ActorId): AppResultAsync<TenantId | null, InfrastructureAppError>;
 
   /**
    * Every member of the tenant with their roles, optionally only those
@@ -55,52 +76,75 @@ export interface MembershipRepository {
    * The platform scope is not a tenant here.
    */
   findMemberIds(
-    filter: { readonly tenantId: TenantId | null; readonly role: TenantRole | null },
+    filter: {
+      readonly tenantId: TenantId | null;
+      readonly role: TenantRole | null;
+      readonly tenantIds?: readonly TenantId[];
+    },
     limit: number,
   ): AppResultAsync<
     { readonly ids: readonly ActorId[]; readonly isTruncated: boolean },
     InfrastructureAppError
   >;
   /**
+   * The websites where the person holds at least one of `roles`, oldest membership first, at most `limit`;
+   * `isTruncated` says there are more. The platform scope is not a tenant here. Bound to the person's own id.
+   */
+  findTenantIdsWithRoles(
+    actorId: ActorId,
+    roles: readonly TenantRole[],
+    limit: number,
+  ): AppResultAsync<
+    { readonly tenantIds: readonly TenantId[]; readonly isTruncated: boolean },
+    InfrastructureAppError
+  >;
+  /**
    * Where each of these people holds roles, in one read for all of them: the
    * tenants, oldest membership first, with their roles. People without a
-   * membership are absent. The platform scope is not a tenant here.
+   * membership are absent. The platform scope is not a tenant here. Exceeding the read budget fails
+   * explicitly rather than presenting an incomplete access list.
    */
   listMembershipsOf(
     actorIds: readonly ActorId[],
+    tenantIds?: readonly TenantId[],
   ): AppResultAsync<ReadonlyMap<ActorId, readonly TenantMembership[]>, InfrastructureAppError>;
   /** How many people hold a role in the tenant, and how many hold each role (a person may hold several). */
   countMembers(tenantId: TenantId): AppResultAsync<MemberCounts, InfrastructureAppError>;
 
-  /**
-   * Makes `roles` the member's complete set in the tenant. Roles are added
-   * before the others are removed, so a failure part-way never leaves a
-   * member with none.
-   */
-  replaceRoles(
+  /** Atomically adds one role without replacing any role already held. Idempotent and serialized with replacements. */
+  grantRole(
     actorId: ActorId,
     tenantId: TenantId,
-    roles: readonly TenantRole[],
+    role: TenantRole,
   ): AppResultAsync<void, InfrastructureAppError>;
 
   /**
-   * `replaceRoles` for a change that may take the administrator role away.
+   * Atomically makes `roles` the member's complete set, adding the member if absent.
    * The count of administrators and the write happen in one transaction that
    * is serialized per tenant, so two concurrent changes cannot each see "one
-   * more administrator remains". `false`: refused, the member is the tenant's
-   * last administrator and nothing was written.
+   * more administrator remains". Last-administrator protection returns a typed conflict.
+   * `false` means the website, authorization, or observed role baseline changed; nothing was written.
    */
   replaceRolesKeepingAdministrator(
     actorId: ActorId,
     tenantId: TenantId,
-    roles: readonly TenantRole[],
-  ): AppResultAsync<boolean, InfrastructureAppError>;
+    input: MembershipWriteOptions & { readonly roles: readonly TenantRole[] },
+  ): AppResultAsync<boolean, InfrastructureAppError | ConflictAppError>;
 
-  /** Removing a member is `replaceRolesKeepingAdministrator` with no roles; `false` has the same meaning. */
+  /** Removing a member is `replaceRolesKeepingAdministrator` with no roles and the same refusal outcomes. */
   removeMemberKeepingAdministrator(
     actorId: ActorId,
     tenantId: TenantId,
-  ): AppResultAsync<boolean, InfrastructureAppError>;
+    options?: MembershipWriteOptions,
+  ): AppResultAsync<boolean, InfrastructureAppError | ConflictAppError>;
+}
+
+/** Trusted actor and optional observed role baseline are checked while holding the write lock. */
+export interface MembershipWriteOptions {
+  readonly actor?: Actor;
+  readonly expectedRoles?: readonly TenantRole[];
+  /** Resolved from the target account, never accepted from a mutation request. */
+  readonly subjectEmail?: string;
 }
 
 /** One person's roles in one tenant. */

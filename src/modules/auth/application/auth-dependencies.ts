@@ -41,6 +41,7 @@ export interface CurrentActorDependencies {
 
 /** What every administration use case (users, roles, invitations) is built from. */
 export interface UserAdministrationDependencies {
+  readonly bootstrapAdminEmails?: ReadonlySet<string>;
   readonly authorization: AuthorizationService;
   readonly members: MembershipRepository;
   readonly directory: UserDirectory;
@@ -49,6 +50,7 @@ export interface UserAdministrationDependencies {
   readonly mailer: AuthMailer;
   readonly audit: SecurityAuditLog;
   readonly clock: Clock;
+  readonly tenants: TenantRepository;
 }
 
 /** What inviting a person is built from: administration, plus a budget for the mail it sends. */
@@ -59,14 +61,23 @@ export interface InviteUserDependencies extends UserAdministrationDependencies {
 /** What the platform-wide user listing is built from: who may ask, and the stores it reads. */
 export type PlatformUserListDependencies = Pick<
   UserAdministrationDependencies,
-  'authorization' | 'members' | 'directory'
+  'authorization' | 'members' | 'directory' | 'bootstrapAdminEmails'
 >;
 
-/** What changing a person's access to a website from outside it is built from: also whether the website exists. */
-export interface PlatformAccessDependencies extends Pick<
+/** What the website selector for user management is built from: who may manage, and the public website names. */
+export type ListManageableWebsitesDependencies = Pick<
   UserAdministrationDependencies,
-  'authorization' | 'members' | 'directory'
-> {
+  'authorization' | 'members' | 'tenants'
+>;
+
+/** What answering which websites a permission reaches is built from: who asks, their memberships, and the public website names. */
+export type WebsiteAccessDependencies = ListManageableWebsitesDependencies;
+
+/** What changing a person's access to a website from outside it is built from: also whether the website exists. */
+export interface PlatformAccessDependencies {
+  readonly authorization: AuthorizationService;
+  readonly members: MembershipRepository;
+  readonly directory: UserDirectory;
   readonly tenants: TenantRepository;
   readonly audit: SecurityAuditLog;
 }
@@ -77,11 +88,14 @@ export interface AcceptInvitationDependencies
     AuthenticationDependencies,
     Pick<
       UserAdministrationDependencies,
-      'invitations' | 'tokens' | 'members' | 'directory' | 'clock'
-    > {}
+      'invitations' | 'tokens' | 'members' | 'directory' | 'clock' | 'tenants'
+    > {
+  readonly currentActor: CurrentActorProvider;
+  readonly bootstrapAdminEmails: ReadonlySet<string>;
+}
 
-/** What looking at an invitation needs: the invitations, the way a token is hashed, and the time. */
+/** What looking at an invitation needs: its token, expiry, and the public website name. */
 export type PreviewInvitationDependencies = Pick<
   UserAdministrationDependencies,
-  'invitations' | 'tokens' | 'clock'
->;
+  'invitations' | 'tokens' | 'clock' | 'tenants' | 'directory'
+> & { readonly currentActor: CurrentActorProvider };

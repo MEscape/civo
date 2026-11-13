@@ -14,4 +14,6 @@ export interface Actor {
   readonly id: ActorId;
   readonly tenantId: TenantId;
   readonly roles: readonly Role[];
+  /** Trusted origin of platform authority, resolved from the session rather than request input. */
+  readonly platformAuthority?: 'bootstrap' | 'membership';
 }

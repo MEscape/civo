@@ -1,5 +1,6 @@
 import { renderEmail } from '@lib/mail';
 import type { RenderedEmail } from '@lib/mail';
+import { MS_PER_DAY, SECONDS_PER_MINUTE, isDefined } from '@lib/utils';
 
 import { AUTH_LINK_LIFETIME_SECONDS } from '../../domain/models/credentials';
 import { INVITATION_LIFETIME_MS } from '../../domain/models/invitation';
@@ -20,10 +21,35 @@ interface EmailCopy {
   readonly outro: string;
 }
 
-const SECONDS_PER_MINUTE = 60;
+/** Labels of the line that tells an invitee who invited them and to what. */
+interface InvitationContext {
+  readonly inviter: string;
+  readonly website: string;
+  readonly platform: string;
+  /** The inviter's name when the invitation came from the system itself. */
+  readonly system: string;
+}
+
 const LINK_LIFETIME_MINUTES = AUTH_LINK_LIFETIME_SECONDS / SECONDS_PER_MINUTE;
-const MS_PER_DAY = 86_400_000;
 const INVITATION_LIFETIME_DAYS = INVITATION_LIFETIME_MS / MS_PER_DAY;
+
+/** `{name}` is the name on the account; a message to someone without one has no greeting. */
+const GREETING: Record<MailLocale, string> = { de: 'Hallo {name},', en: 'Hello {name},' };
+
+const INVITATION_CONTEXT: Record<MailLocale, InvitationContext> = {
+  en: {
+    inviter: 'Invited by',
+    website: 'Website',
+    platform: 'Platform administration',
+    system: 'Platform',
+  },
+  de: {
+    inviter: 'Eingeladen von',
+    website: 'Website',
+    platform: 'Plattformverwaltung',
+    system: 'Plattform',
+  },
+};
 
 /**
  * Email copy lives in the adapter, not in the app's translation files
@@ -31,9 +57,6 @@ const INVITATION_LIFETIME_DAYS = INVITATION_LIFETIME_MS / MS_PER_DAY;
  * from a provider hook, so the locale is configuration.
  * `{appName}`, `{minutes}` and `{days}` are the only placeholders.
  */
-/** `{name}` is the name on the account; a message to someone without one has no greeting. */
-const GREETING: Record<MailLocale, string> = { de: 'Hallo {name},', en: 'Hello {name},' };
-
 const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
   de: {
     verification: {
@@ -56,7 +79,7 @@ const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
     invitation: {
       subject: 'Einladung zu {appName}',
       intro:
-        'Sie wurden eingeladen, bei {appName} mitzuarbeiten. Legen Sie mit dem Button Ihren Namen und Ihr Passwort fest, dann können Sie sofort loslegen.',
+        'Sie wurden zu {appName} eingeladen. Öffnen Sie die Einladung, prüfen Sie den Zugriff und nehmen Sie ihn mit Ihrem Konto an. Erstellen Sie bei Bedarf zuerst ein Konto.',
       actionLabel: 'Einladung annehmen',
       note: 'Der Link ist {days} Tage gültig und kann nur einmal verwendet werden.',
       outro: 'Sie haben keine Einladung erwartet? Dann können Sie diese Nachricht ignorieren.',
@@ -92,7 +115,7 @@ const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
     invitation: {
       subject: 'Invitation to {appName}',
       intro:
-        'You have been invited to work with {appName}. Use the button to choose your name and password, then you can get started right away.',
+        'You have been invited to {appName}. Open the invitation to review the access and accept it with your account. Create an account first if needed.',
       actionLabel: 'Accept invitation',
       note: 'The link is valid for {days} days and can be used once.',
       outro: 'Were you not expecting an invitation? Then you can ignore this message.',
@@ -106,13 +129,32 @@ const COPY: Record<MailLocale, Record<AuthEmailKind, EmailCopy>> = {
       outro: 'If this was not you, no action is needed; your account and password are unchanged.',
     },
   },
-} as const satisfies Record<MailLocale, Record<AuthEmailKind, EmailCopy>>;
+};
 
+/** Replacements are functions so a `$` in a value is never read as a replacement pattern. */
 function interpolate(template: string, appName: string): string {
   return template
-    .replaceAll('{appName}', appName)
+    .replaceAll('{appName}', () => appName)
     .replaceAll('{minutes}', String(LINK_LIFETIME_MINUTES))
     .replaceAll('{days}', String(INVITATION_LIFETIME_DAYS));
+}
+
+/**
+ * Says who invited the reader and to what, ahead of the copy. The names come from people, so this runs
+ * after the copy's placeholders are filled: a name that contains `{appName}` stays as it was typed.
+ * No website means the invitation is to the platform itself.
+ */
+function withInvitationContext(
+  locale: MailLocale,
+  intro: string,
+  {
+    inviterName,
+    websiteName,
+  }: Pick<Parameters<typeof renderAuthEmail>[0], 'inviterName' | 'websiteName'>,
+): string {
+  const labels = INVITATION_CONTEXT[locale];
+  const scope = isDefined(websiteName) ? `${labels.website}: ${websiteName}` : labels.platform;
+  return `${labels.inviter}: ${inviterName ?? labels.system}. ${scope}. ${intro}`;
 }
 
 /**
@@ -126,15 +168,18 @@ export function renderAuthEmail(input: {
   readonly url: string | null;
   /** The name on the account, when the message is for an account holder. */
   readonly name?: string | null | undefined;
+  readonly inviterName?: string | null | undefined;
+  readonly websiteName?: string | null | undefined;
 }): RenderedEmail {
-  const copy: EmailCopy = COPY[input.locale][input.kind];
+  const copy = COPY[input.locale][input.kind];
   const name = input.name?.trim() ?? '';
+  const intro = interpolate(copy.intro, input.appName);
 
   return renderEmail({
     locale: input.locale,
     title: interpolate(copy.subject, input.appName),
-    ...(name === '' ? {} : { greeting: GREETING[input.locale].replace('{name}', name) }),
-    intro: interpolate(copy.intro, input.appName),
+    ...(name === '' ? {} : { greeting: GREETING[input.locale].replace('{name}', () => name) }),
+    intro: input.kind === 'invitation' ? withInvitationContext(input.locale, intro, input) : intro,
     action:
       copy.actionLabel !== null && input.url !== null
         ? {

@@ -45,6 +45,8 @@ export interface AuthMailer {
     readonly to: string;
     readonly token: string;
     readonly locale: MailLocale;
+    readonly inviterName?: string | null;
+    readonly websiteName?: string | null;
   }): AppResultAsync<void, InfrastructureAppError>;
 
   sendExistingAccountNotice(message: {

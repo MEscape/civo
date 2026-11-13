@@ -1,14 +1,14 @@
-import type { InfrastructureAppError } from '@lib/errors';
+import type { ConflictAppError, InfrastructureAppError } from '@lib/errors';
 import { ResultAsync, errAsync, okAsync } from '@lib/result';
-import type { AppResultAsync } from '@lib/result';
+import type { AppResult, AppResultAsync } from '@lib/result';
+import { unique } from '@lib/utils';
 
-import { invitationFailed } from '../../domain/errors/auth-errors';
+import { AUTH_ERROR_CODES, invitationFailed } from '../../domain/errors/auth-errors';
 import { EMAIL_PATTERN, normalizeEmail } from '../../domain/models/credentials';
-import { toActorId } from '../../domain/models/ids';
-import { INVITATION_LIFETIME_MS } from '../../domain/models/invitation';
+import { BOOTSTRAP_INVITER_ID } from '../../domain/models/invitation';
 import { PLATFORM_ADMIN_ROLE } from '../../domain/models/role';
 import { PLATFORM_TENANT_ID } from '../../domain/models/tenant';
-import { MAX_BOOTSTRAP_INVITATIONS_SCANNED } from '../auth-limits';
+import { issueInvitation } from '../services/issue-invitation';
 
 import type { MailLocale } from '../../domain/ports/auth-mailer.port';
 import type { BootstrapDependencies } from '../auth-dependencies';
@@ -27,7 +27,22 @@ export interface BootstrapOutcome {
   readonly failed: number;
 }
 
-const SYSTEM_ACTOR = toActorId('system');
+type InviteOutcome = 'invited' | 'skipped';
+type InviteOneError = InfrastructureAppError | ConflictAppError;
+
+const NO_OUTCOME: BootstrapOutcome = { invited: 0, skipped: 0, failed: 0 };
+
+function tally(
+  total: BootstrapOutcome,
+  result: AppResult<InviteOutcome, InviteOneError>,
+): BootstrapOutcome {
+  if (result.isErr()) {
+    return { ...total, failed: total.failed + 1 };
+  }
+  return result.value === 'invited'
+    ? { ...total, invited: total.invited + 1 }
+    : { ...total, skipped: total.skipped + 1 };
+}
 
 /**
  * Sign-up is closed and invitations need an administrator, so the first
@@ -43,6 +58,7 @@ const SYSTEM_ACTOR = toActorId('system');
  * and makes it a platform administrator (`AcceptInvitation`). A link nobody
  * received is revoked, like any invitation.
  *
+ * @audit-exempt Successful invitation creation is audited by the shared issueInvitation service; startup reports per-address failures.
  * @authorization system Runs at server start for addresses the deployment's configuration names; no request and no actor are involved.
  */
 export class InviteBootstrapAdmins {
@@ -51,79 +67,57 @@ export class InviteBootstrapAdmins {
   execute(
     input: InviteBootstrapAdminsInput,
   ): AppResultAsync<BootstrapOutcome, InfrastructureAppError> {
-    const unique = [...new Set(input.emails.map((email) => email.trim().toLowerCase()))].filter(
+    const addresses = unique(input.emails.map((email) => normalizeEmail(email))).filter(
       (email) => email !== '',
     );
     // One address at a time: the number is tiny and the mail relay should not be hit in parallel.
     return ResultAsync.fromSafePromise(
-      unique.reduce<Promise<BootstrapOutcome>>(
-        async (total, email) => {
-          const totalSoFar = await total;
-          const result = await this.inviteOne(email, input.locale);
-          if (result.isErr()) {
-            return { ...totalSoFar, failed: totalSoFar.failed + 1 };
-          }
-          return result.value === 'invited'
-            ? { ...totalSoFar, invited: totalSoFar.invited + 1 }
-            : { ...totalSoFar, skipped: totalSoFar.skipped + 1 };
-        },
-        Promise.resolve({ invited: 0, skipped: 0, failed: 0 }),
-      ),
+      (async () => {
+        let total = NO_OUTCOME;
+        for (const email of addresses) {
+          total = tally(total, await this.inviteOne(email, input.locale));
+        }
+        return total;
+      })(),
     );
   }
 
+  /** `email` is already normalised. */
   private inviteOne(
-    address: string,
+    email: string,
     locale: MailLocale,
-  ): AppResultAsync<'invited' | 'skipped', InfrastructureAppError> {
-    const { directory, invitations, tokens, mailer, audit, clock } = this.deps;
-    const email = normalizeEmail(address);
+  ): AppResultAsync<InviteOutcome, InviteOneError> {
     if (!EMAIL_PATTERN.test(email)) {
       return errAsync(
         invitationFailed('an address in the platform administrator list is not valid'),
       );
     }
-    const now = clock.now();
+    return this.deps.directory
+      .findByEmail(email)
+      .andThen((existing): AppResultAsync<InviteOutcome, InviteOneError> =>
+        existing === null
+          ? this.inviteUnlessOpen(email, locale)
+          : okAsync<InviteOutcome>('skipped'),
+      );
+  }
 
-    return directory.findByEmail(email).andThen((existing) => {
-      if (existing !== null) {
-        return okAsync<'invited' | 'skipped', InfrastructureAppError>('skipped');
-      }
-      return invitations
-        .listOpen(PLATFORM_TENANT_ID, now, { page: 1, pageSize: MAX_BOOTSTRAP_INVITATIONS_SCANNED })
-        .andThen((open) => {
-          if (open.items.some((invitation) => invitation.email === email)) {
-            return okAsync<'invited' | 'skipped', InfrastructureAppError>('skipped');
-          }
-          const issued = tokens.issue();
-          return invitations
-            .create({
-              tenantId: PLATFORM_TENANT_ID,
-              email,
-              role: PLATFORM_ADMIN_ROLE,
-              invitedBy: SYSTEM_ACTOR,
-              expiresAt: new Date(now.getTime() + INVITATION_LIFETIME_MS),
-              tokenHash: issued.hash,
-            })
-            .andThen((invitation) =>
-              mailer
-                .sendInvitation({ to: email, token: issued.token, locale })
-                .orElse((error) =>
-                  invitations
-                    .revoke(invitation.id, PLATFORM_TENANT_ID)
-                    .andThen(() => errAsync<undefined, InfrastructureAppError>(error)),
-                )
-                .map((): 'invited' => {
-                  audit.record({
-                    type: 'invitation.created',
-                    actorId: SYSTEM_ACTOR,
-                    tenantId: PLATFORM_TENANT_ID,
-                    invitationId: invitation.id,
-                  });
-                  return 'invited';
-                }),
-            );
-        });
-    });
+  private inviteUnlessOpen(
+    email: string,
+    locale: MailLocale,
+  ): AppResultAsync<InviteOutcome, InviteOneError> {
+    return (
+      issueInvitation(this.deps, {
+        tenantId: PLATFORM_TENANT_ID,
+        email,
+        role: PLATFORM_ADMIN_ROLE,
+        invitedBy: BOOTSTRAP_INVITER_ID,
+        locale,
+      })
+        .map((): InviteOutcome => 'invited')
+        // The atomic creation check also covers another process issuing the same offer during startup.
+        .orElse((error): AppResultAsync<InviteOutcome, InviteOneError> =>
+          error.code === AUTH_ERROR_CODES.invitationPending ? okAsync('skipped') : errAsync(error),
+        )
+    );
   }
 }

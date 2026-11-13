@@ -1,18 +1,24 @@
-import { createPersistenceFailures, db, dateToInstant, instantToDate } from '@lib/db';
-import type { InstantRecord } from '@lib/db';
+import { createPersistenceFailures, db, dateToInstant } from '@lib/db';
 import type { InfrastructureAppError } from '@lib/errors';
 import { offsetOf, toPage } from '@lib/pagination';
 import type { Page, PageRequest } from '@lib/pagination';
-import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
+import { fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { isDefined } from '@lib/utils';
 
-import { AUTH_ERROR_CODES, invitationFailed } from '../../domain/errors/auth-errors';
-import { toActorId, toInvitationId, toTenantId } from '../../domain/models/ids';
-import { isAnyRole } from '../../domain/models/role';
+import { AUTH_ERROR_CODES } from '../../domain/errors/auth-errors';
+import { acceptInvitation } from '../transactions/accept-invitation';
+import { insertPendingInvitation } from '../transactions/create-pending-invitation';
+
+import { INVITATION_SELECT, toInvitation } from './invitation-record-mapper';
 
 import type { InvitationId, TenantId } from '../../domain/models/ids';
 import type { Invitation } from '../../domain/models/invitation';
-import type { InvitationRepository, NewInvitation } from '../../domain/ports/invitation.repository';
+import type {
+  InvitationAcceptance,
+  InvitationRepository,
+  NewInvitation,
+} from '../../domain/ports/invitation.repository';
 
 const failures = createPersistenceFailures({
   module: 'auth.invitation.persistence',
@@ -20,75 +26,32 @@ const failures = createPersistenceFailures({
   subject: 'Invitation',
 });
 
-const INVITATION_SELECT = [
-  'id',
-  'tenantId',
-  'email',
-  'role',
-  'invitedBy',
-  'expiresAt',
-  'acceptedAt',
-  'createdAt',
-] as const;
-
-interface InvitationRecord {
-  readonly id: string;
-  readonly tenantId: string;
-  readonly email: string;
-  readonly role: string;
-  readonly invitedBy: string;
-  readonly expiresAt: InstantRecord;
-  readonly acceptedAt: InstantRecord | null;
-  readonly createdAt: InstantRecord;
-}
-
-/** A stored role this code no longer knows makes the invitation unusable, never a broader one. */
-function toInvitation(record: InvitationRecord): Invitation | null {
-  if (!isAnyRole(record.role)) {
-    return null;
-  }
-  return {
-    id: toInvitationId(record.id),
-    tenantId: toTenantId(record.tenantId),
-    email: record.email,
-    role: record.role,
-    invitedBy: toActorId(record.invitedBy),
-    expiresAt: instantToDate(record.expiresAt),
-    acceptedAt: record.acceptedAt === null ? null : instantToDate(record.acceptedAt),
-    createdAt: instantToDate(record.createdAt),
-  };
-}
-
-/** @tenant-scope builder Created with its tenant, found by a secret token hash, or tagged by the caller. */
+/** @owner-scope builder Created with its tenant, found by a secret token hash, or tagged by the caller. */
 const invitations = () => db.orm.public.Invitation.select(...INVITATION_SELECT);
 
 /**
  * Prisma 8 repository for invitations. Only the hash of an emailed token is
- * ever stored or compared. `claim` is one conditional UPDATE, so two requests
+ * ever stored or compared. Acceptance uses one conditional UPDATE, so two requests
  * with the same link cannot both succeed.
  */
 export class PrismaInvitationRepository implements InvitationRepository {
-  create(invitation: NewInvitation): AppResultAsync<Invitation, InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () =>
-        invitations().create({
-          tenantId: invitation.tenantId,
-          email: invitation.email,
-          role: invitation.role,
-          invitedBy: invitation.invitedBy,
-          tokenHash: invitation.tokenHash,
-          expiresAt: dateToInstant(invitation.expiresAt),
-        }),
-      failures.infraOnly('create'),
-    ).andThen((record) => {
-      const mapped = toInvitation(record);
-      return mapped === null
-        ? errAsync(invitationFailed('the stored invitation could not be read back'))
-        : okAsync(mapped);
-    });
+  accept(
+    input: Parameters<InvitationRepository['accept']>[0],
+  ): AppResultAsync<InvitationAcceptance, InfrastructureAppError> {
+    return fromThrowableAsync(() => acceptInvitation(input), failures.infraOnly('accept'));
   }
 
-  /** @tenant-scope capability The hash of a single-use secret that only the invited person has; the invitation names the tenant. */
+  createPending(
+    invitation: NewInvitation,
+    now: Date,
+  ): AppResultAsync<Invitation | null, InfrastructureAppError> {
+    return fromThrowableAsync(
+      () => insertPendingInvitation(invitation, now),
+      failures.infraOnly('createPending'),
+    ).map((record) => (record === null ? null : toInvitation(record)));
+  }
+
+  /** @owner-scope capability The hash of a single-use secret that only the invited person has; the invitation names the tenant. */
   findByTokenHash(tokenHash: string): AppResultAsync<Invitation | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () => invitations().where({ tokenHash }).first(),
@@ -96,24 +59,20 @@ export class PrismaInvitationRepository implements InvitationRepository {
     ).map((record) => (record === null ? null : toInvitation(record)));
   }
 
-  /** @tenant-scope capability The id was read by the token hash of the person claiming it. */
-  claim(id: InvitationId, now: Date): AppResultAsync<boolean, InfrastructureAppError> {
+  hasOpenForEmail(
+    tenantId: TenantId,
+    email: string,
+    now: Date,
+  ): AppResultAsync<boolean, InfrastructureAppError> {
     return fromThrowableAsync(
       async () =>
-        db.orm.public.Invitation.where({ id })
+        db.orm.public.Invitation.where({ tenantId, email })
           .where((invitation) => invitation.acceptedAt.isNull())
           .where((invitation) => invitation.expiresAt.gt(dateToInstant(now)))
-          .updateAndCount({ acceptedAt: dateToInstant(now) }),
-      failures.infraOnly('claim'),
-    ).map((count) => count === 1);
-  }
-
-  /** @tenant-scope capability Gives back an invitation the same request claimed by its token hash. */
-  release(id: InvitationId): AppResultAsync<void, InfrastructureAppError> {
-    return fromThrowableAsync(
-      async () => db.orm.public.Invitation.where({ id }).updateAndCount({ acceptedAt: null }),
-      failures.infraOnly('release'),
-    ).map(() => undefined);
+          .select('id')
+          .first(),
+      failures.infraOnly('hasOpenForEmail'),
+    ).map((record) => record !== null);
   }
 
   countOpen(tenantId: TenantId, now: Date): AppResultAsync<number, InfrastructureAppError> {
@@ -127,14 +86,23 @@ export class PrismaInvitationRepository implements InvitationRepository {
     ).map(({ total }) => total);
   }
 
-  listOpen(
-    tenantId: TenantId,
+  /** @owner-scope platform The open invitations of the websites the reader may manage (`null`: every website, for the platform administrator); the caller names the allowed tenants. */
+  listOpenForTenants(
+    tenantIds: readonly TenantId[] | null,
     now: Date,
     page: PageRequest,
   ): AppResultAsync<Page<Invitation>, InfrastructureAppError> {
+    if (tenantIds?.length === 0) {
+      return okAsync(toPage([], 0, page));
+    }
     return fromThrowableAsync(async () => {
+      const records = db.orm.public.Invitation;
+      const scoped =
+        tenantIds === null
+          ? records
+          : records.where((invitation) => invitation.tenantId.in([...tenantIds]));
       const open = () =>
-        db.orm.public.Invitation.where({ tenantId })
+        scoped
           .where((invitation) => invitation.acceptedAt.isNull())
           .where((invitation) => invitation.expiresAt.gt(dateToInstant(now)));
       const total = await open().aggregate((aggregate) => ({ total: aggregate.count() }));
@@ -146,20 +114,17 @@ export class PrismaInvitationRepository implements InvitationRepository {
         .all();
       return { rows, total: total.total };
     }, failures.infraOnly('listOpen')).map(({ rows, total }) =>
-      toPage(
-        rows
-          .map(toInvitation)
-          .filter((invitation): invitation is Invitation => invitation !== null),
-        total,
-        page,
-      ),
+      toPage(rows.map(toInvitation).filter(isDefined), total, page),
     );
   }
 
-  revoke(id: InvitationId, tenantId: TenantId): AppResultAsync<void, InfrastructureAppError> {
+  revoke(id: InvitationId, tenantId: TenantId): AppResultAsync<boolean, InfrastructureAppError> {
     return fromThrowableAsync(
-      async () => db.orm.public.Invitation.where({ id, tenantId }).deleteAndCount(),
+      async () =>
+        db.orm.public.Invitation.where({ id, tenantId })
+          .where((record) => record.acceptedAt.isNull())
+          .deleteAndCount(),
       failures.infraOnly('revoke'),
-    ).map(() => undefined);
+    ).map((removed) => removed > 0);
   }
 }

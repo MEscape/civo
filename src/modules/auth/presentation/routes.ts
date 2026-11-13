@@ -1,3 +1,5 @@
+import { buildQueryString } from '@lib/utils';
+
 /**
  * Where a successful sign-in lands when no safe `returnTo` was given: the
  * websites page, which sends a member to their own website and shows a platform
@@ -15,10 +17,8 @@ export const ROOT_LAYOUT_PATH = '/';
  * routes by locale.
  */
 export const authRoutes = {
-  signIn: (returnTo?: string) =>
-    returnTo === undefined
-      ? '/sign-in'
-      : `/sign-in?${new URLSearchParams({ returnTo }).toString()}`,
+  profile: () => '/profile',
+  signIn: (returnTo?: string) => `/sign-in${buildQueryString({ returnTo })}`,
   /** Landing page of an invitation link; the token travels as `?token=`. */
   acceptInvitation: () => '/accept-invitation',
   forgotPassword: () => '/forgot-password',

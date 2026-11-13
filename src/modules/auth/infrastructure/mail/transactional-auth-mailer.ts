@@ -6,7 +6,7 @@ import { mailDeliveryFailed } from '../../domain/errors/auth-errors';
 
 import { renderAuthEmail } from './auth-email-templates';
 
-import type { AuthEmailKind, MailLocale } from './auth-email-templates';
+import type { MailLocale } from './auth-email-templates';
 import type { AuthLinkMessage, AuthMailer } from '../../domain/ports/auth-mailer.port';
 
 export interface TransactionalAuthMailerSettings {
@@ -17,6 +17,13 @@ export interface TransactionalAuthMailerSettings {
   readonly signInLink: (locale: MailLocale) => string;
 }
 
+type MailResult = AppResultAsync<void, InfrastructureAppError>;
+
+/** Everything a template needs except the app name, which is this mailer's own setting. */
+type OutgoingMail = Omit<Parameters<typeof renderAuthEmail>[0], 'appName'> & {
+  readonly to: string;
+};
+
 /** The real `AuthMailer`: renders the copy and hands it to a `MailTransport`. */
 export class TransactionalAuthMailer implements AuthMailer {
   constructor(
@@ -24,62 +31,35 @@ export class TransactionalAuthMailer implements AuthMailer {
     private readonly settings: TransactionalAuthMailerSettings,
   ) {}
 
-  sendVerification(message: AuthLinkMessage): AppResultAsync<void, InfrastructureAppError> {
+  sendVerification(message: AuthLinkMessage): MailResult {
     return this.send({ kind: 'verification', ...message });
   }
 
-  sendPasswordReset(message: AuthLinkMessage): AppResultAsync<void, InfrastructureAppError> {
+  sendPasswordReset(message: AuthLinkMessage): MailResult {
     return this.send({ kind: 'password_reset', ...message });
   }
 
-  sendInvitation(message: {
-    readonly to: string;
-    readonly token: string;
-    readonly locale: MailLocale;
-  }): AppResultAsync<void, InfrastructureAppError> {
+  sendInvitation({ token, ...message }: Parameters<AuthMailer['sendInvitation']>[0]): MailResult {
     return this.send({
       kind: 'invitation',
-      to: message.to,
-      locale: message.locale,
-      url: this.settings.invitationLink(message.locale, message.token),
+      ...message,
+      url: this.settings.invitationLink(message.locale, token),
     });
   }
 
-  sendExistingAccountNotice(message: {
-    readonly to: string;
-    readonly locale: MailLocale;
-  }): AppResultAsync<void, InfrastructureAppError> {
+  sendExistingAccountNotice(
+    message: Parameters<AuthMailer['sendExistingAccountNotice']>[0],
+  ): MailResult {
     return this.send({
       kind: 'existing_account',
-      url: this.settings.signInLink(message.locale),
       ...message,
+      url: this.settings.signInLink(message.locale),
     });
   }
 
-  private send({
-    kind,
-    to,
-    url,
-    locale,
-    name,
-  }: {
-    readonly kind: AuthEmailKind;
-    readonly to: string;
-    readonly url: string | null;
-    readonly locale: MailLocale;
-    readonly name?: string | undefined;
-  }): AppResultAsync<void, InfrastructureAppError> {
+  private send({ to, ...content }: OutgoingMail): MailResult {
     return this.transport
-      .send({
-        to,
-        ...renderAuthEmail({
-          kind,
-          locale,
-          appName: this.settings.appName,
-          url,
-          name,
-        }),
-      })
+      .send({ to, ...renderAuthEmail({ ...content, appName: this.settings.appName }) })
       .mapErr(mailDeliveryFailed);
   }
 }

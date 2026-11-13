@@ -1,5 +1,9 @@
 {
   "auth": {
+    "password": {
+      "toggle": "Show password",
+      "capsLock": "Caps Lock is on."
+    },
     "signIn": {
       "title": "Welcome back",
       "description": "Sign in to manage your websites.",
@@ -66,7 +70,8 @@
     },
     "signOut": {
       "label": "Sign out",
-      "pending": "Signing out…"
+      "pending": "Signing out…",
+      "failed": "Sign out failed. Try again."
     },
     "pageError": {
       "title": "Authentication Error",
@@ -91,7 +96,13 @@
       "unexpected": "An unexpected error occurred.",
       "lastAdmin": "A tenant must keep at least one administrator, and you cannot change or remove your own access.",
       "userNotFound": "This user was not found.",
-      "invitationFailed": "The invitation could not be processed. Please try again later."
+      "invitationFailed": "The invitation could not be processed. Please try again later.",
+      "membershipExists": "This account already has access to the selected scope.",
+      "invitationPending": "An invitation is already pending for this address and scope. Revoke it before sending another.",
+      "invitationAccountRequired": "Sign in with the invited account to accept this invitation. If another account is signed in, sign out first.",
+      "accessConflict": "Access changed while you were editing. Refresh and review the current roles.",
+      "platformRoleConfigured": "This platform role is managed by deployment configuration and cannot be removed here.",
+      "cannotRevokeSelf": "You cannot revoke your own platform administrator role."
     },
     "validation": {
       "emailRequired": "Please enter your email address.",
@@ -106,7 +117,8 @@
       "tokenInvalid": "This link is invalid. Request a new one.",
       "roleInvalid": "Choose a valid role.",
       "rolesRequired": "Choose at least one role.",
-      "tenantInvalid": "Choose a website that exists."
+      "tenantInvalid": "Choose a website that exists.",
+      "profileImageInvalid": "Choose a valid PNG, JPEG or WebP image up to 512 KB."
     },
     "acceptInvitation": {
       "title": "Accept your invitation",
@@ -117,7 +129,7 @@
       "submit": "Create account",
       "submitting": "Creating account…",
       "successTitle": "Your account is ready",
-      "success": "Your account has been created.",
+      "success": "Your account has been created. Verify your email, then sign in and return to this invitation to accept access.",
       "signInLink": "Go to sign in",
       "missingTokenTitle": "This invitation link is incomplete",
       "missingToken": "Open the link from your invitation email again, or ask for a new invitation.",
@@ -139,17 +151,27 @@
         "organisation": "Website",
         "email": "Email address",
         "role": "Role",
-        "expires": "Valid until"
+        "expires": "Valid until",
+        "invitedBy": "Invited by",
+        "platform": "Platform"
       },
       "invalidTitle": "This invitation is no longer valid",
-      "invalid": "It may have been used already, withdrawn or expired. Ask for a new invitation."
+      "invalid": "It may have been used already, withdrawn or expired. Ask for a new invitation.",
+      "existingDescription": "Review the access offered below. Sign in with the invited account to accept. If another account is signed in, sign out first.",
+      "accept": "Accept access",
+      "accepting": "Accepting access…",
+      "acceptedTitle": "Access granted",
+      "accepted": "You now have the access described in this invitation.",
+      "alreadyMemberTitle": "You already have access",
+      "alreadyMember": "Your account already has access here, so nothing was changed.",
+      "continue": "Continue"
     },
     "users": {
       "metadata": {
         "title": "Users"
       },
       "title": "Users",
-      "description": "Who can work in this organisation, and in which role.",
+      "description": "Who can work on this website, and in which role.",
       "roles": {
         "admin": "Administrator",
         "editor": "Editor",
@@ -159,16 +181,30 @@
         "platformAdmin": "Platform administrator"
       },
       "invite": {
-        "title": "Invite someone",
-        "description": "Accounts are created by invitation only. The person receives a single-use link by email; an existing account gets the role at once.",
+        "title": "Invite a person",
+        "description": "Send a single-use invitation to website access or authorized platform access. Existing accounts must accept new access too.",
         "email": "Email address",
         "role": "Role",
+        "target": "Invite to",
+        "platformTarget": "Platform administrators",
         "submit": "Send invitation",
         "sending": "Sending…",
-        "outcome": {
-          "invited": "The invitation was sent.",
-          "granted": "This person already has an account and now holds the role."
-        }
+        "sent": "The invitation was sent. It is listed under “Open invitations” until it is accepted.",
+        "chooseTarget": "Choose a website or platform",
+        "chooseWebsite": "Choose a website",
+        "action": "Invite person",
+        "websitesDescription": "Send a single-use invitation to a website you manage. Existing accounts must accept new access too.",
+        "websiteDescription": "Send a single-use invitation to this website. Existing accounts must accept the access too.",
+        "emailHint": "The invitation link is sent to this address.",
+        "next": "Next: {step}",
+        "steps": {
+          "person": "Person",
+          "access": "Access",
+          "review": "Review"
+        },
+        "reviewHint": "The person receives a single-use invitation by email. Until they accept, it is listed under “Open invitations” and grants no access.",
+        "unsavedTitle": "Discard the invitation?",
+        "unsavedDescription": "The invitation has not been sent yet. Do you want to leave the page anyway?"
       },
       "filters": {
         "search": "Search name or email",
@@ -177,44 +213,48 @@
         "pageSize": "Per page",
         "perPage": "{size} per page",
         "apply": "Apply",
-        "reset": "Reset filters"
+        "reset": "Reset filters",
+        "website": "Website",
+        "anyWebsite": "All websites"
       },
       "table": {
         "title": "Members",
         "name": "Name",
         "email": "Email",
-        "roles": "Roles",
         "since": "Member since",
         "actions": "Actions",
         "unverified": "Unverified",
         "you": "You",
-        "empty": "No members match.",
+        "empty": "No members yet.",
         "count": "{count, plural, one {# member} other {# members}}",
-        "truncated": "This organisation has more members than can be listed at once. Narrow the search.",
-        "editRoles": "Edit roles",
-        "save": "Save",
-        "cancel": "Cancel",
-        "remove": "Remove",
-        "rolesOf": "Roles of {name}",
-        "removeTitle": "Remove {name}?",
-        "confirmRemove": "Remove {name} from this organisation? Their account stays, but they lose all access here."
+        "truncated": "This list is partial: more people match than can be loaded, so results and search cover only a subset. Narrow the website, role or search.",
+        "access": "Access",
+        "manage": "Manage access",
+        "noWebsiteAccess": "No direct website roles",
+        "moreRoles": "+{count}",
+        "emptyDescription": "Invite the first person. They appear here once they accept the invitation.",
+        "noMatch": "No members match.",
+        "noMatchDescription": "Change the search or reset the filters."
       },
       "pagination": {
         "nav": "Users pages"
       },
       "invitations": {
+        "pages": "Invitation pages",
         "title": "Open invitations",
         "expires": "expires {date}",
         "none": "No open invitations.",
         "withdraw": "Withdraw",
-        "revoke": "Withdraw invitation for {email}"
+        "revoke": "Withdraw invitation for {email}",
+        "count": "{count, plural, one {# invitation} other {# invitations}}",
+        "confirmTitle": "Withdraw the invitation?",
+        "confirmDescription": "The link in the invitation to {email} stops working. You can invite the person again at any time.",
+        "confirm": "Withdraw",
+        "cancel": "Cancel"
       },
       "overview": {
         "title": "People",
-        "link": "Manage users",
-        "members": "Members",
-        "openInvitations": "Open invitations",
-        "byRole": "Members by role"
+        "openInvitations": "Open invitations"
       },
       "roleHints": {
         "admin": "Everything on the website: settings, publishing, data and people.",
@@ -222,20 +262,52 @@
         "contributor": "Edits the content of existing pages. Cannot add or move components.",
         "viewer": "Looks at the website and its bookings; changes nothing.",
         "employee": "Only their own booking calendar and profile."
+      },
+      "global": {
+        "title": "Users",
+        "description": "People across websites you can manage. Filter by website or role, and manage each website independently.",
+        "metadata": {
+          "title": "Users"
+        }
+      },
+      "access": {
+        "title": "Access of {name}",
+        "description": "Choose the websites this person works in and what they may do there. A website always keeps at least one administrator.",
+        "rolesOf": "Roles in {site}",
+        "manageWebsite": "Manage people on {site}",
+        "partialFailure": "{count, plural, one {# change was saved.} other {# changes were saved.}} Remaining changes were not saved. {reason}",
+        "remove": "Remove",
+        "keep": "Keep",
+        "addTitle": "Add to a website",
+        "addWebsite": "Website",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "empty": "Not in any website yet.",
+        "needRole": "Choose at least one role, or remove the access.",
+        "nothingToAdd": "This person already belongs to every website you can manage.",
+        "saveCount": "Save {count, plural, one {# change} other {# changes}}",
+        "state": {
+          "new": "New",
+          "changed": "Changed",
+          "removed": "Will be removed"
+        },
+        "platformAdminLabel": "Platform administrator",
+        "platformAdminHint": "May create websites and work in every website. The roles below are the ones they hold as a member.",
+        "unsavedTitle": "Discard access changes?",
+        "unsavedDescription": "You have unsaved access changes. Leave without saving?",
+        "discard": "Discard changes",
+        "keepEditing": "Keep editing",
+        "websiteDescription": "Choose what this person may do on this website. A website always keeps at least one administrator.",
+        "otherWebsites": "Access to other websites is managed under Users.",
+        "otherWebsitesLink": "Go to all users",
+        "rolesTitle": "Roles of {name} on this website"
+      },
+      "websites": {
+        "truncated": "You manage more websites than can be listed here. Only the first ones are offered and searched."
+      },
+      "navigation": {
+        "breadcrumb": "User navigation"
       }
-    },
-    "platformAdmins": {
-      "title": "Platform administrators",
-      "description": "Who may create websites and work in every website. A person needs an account with a verified address first.",
-      "none": "Nobody yet by membership. Administrators named in the deployment's configuration are not listed.",
-      "email": "Email address",
-      "emailHint": "Of an existing account.",
-      "add": "Make platform administrator",
-      "remove": "Remove",
-      "failed": "That did not work. Check the address: it must belong to an existing account with a verified address.",
-      "count": "{count, plural, one {# administrator} other {# administrators}}",
-      "confirmTitle": "Remove {name}?",
-      "confirmDescription": "They stay a member of their websites but can no longer administer the platform."
     },
     "auditEvents": {
       "authorization": {
@@ -292,55 +364,36 @@
       "tip": "Tip: a passphrase of four or more unrelated words is strong and easy to remember.",
       "match": "The passwords match"
     },
-    "platformUsers": {
-      "title": "Users",
-      "description": "Everyone with an account, across all websites. Filter by website or role, and change who works where.",
-      "metadata": {
-        "title": "Users"
-      },
-      "table": {
-        "title": "People",
-        "count": "{count, plural, one {# person} other {# people}}",
-        "access": "Access",
-        "empty": "No one matches these filters.",
-        "allWebsites": "All websites",
-        "noAccess": "No website yet",
-        "platformAdmin": "Platform administrator",
-        "truncated": "The filter matches more people than can be narrowed at once. Add a search text.",
-        "more": "+{count} more",
-        "manage": "Manage access",
-        "you": "You"
-      },
-      "filters": {
-        "website": "Website",
-        "anyWebsite": "All websites",
-        "kind": "People",
-        "everyone": "Everyone",
-        "platformAdmins": "Platform administrators",
-        "reset": "Reset filters"
-      },
-      "access": {
-        "title": "Access of {name}",
-        "description": "Choose the websites this person works in and what they may do there. A website always keeps at least one administrator.",
-        "rolesOf": "Roles in {site}",
-        "remove": "Remove",
-        "keep": "Keep",
-        "addTitle": "Add to a website",
-        "addWebsite": "Website",
-        "addButton": "Add",
-        "save": "Save changes",
-        "cancel": "Cancel",
-        "empty": "Not in any website yet.",
-        "needRole": "Choose at least one role for each website.",
-        "nothingToAdd": "This person already works in every website.",
-        "saveCount": "Save {count, plural, one {# change} other {# changes}}",
-        "state": {
-          "new": "New",
-          "changed": "Changed",
-          "removed": "Will be removed"
-        },
-        "platformAdminNote": "This person administers the platform and can work in every website anyway. The roles here are the ones they hold as a member."
-      }
+    "profile": {
+      "menu": "Account menu",
+      "settings": "Profile & settings",
+      "title": "My profile",
+      "description": "Manage your personal details and profile photo.",
+      "editTitle": "Personal details",
+      "editDescription": "Your name and photo appear in your account menu.",
+      "name": "Display name",
+      "photo": "Profile photo",
+      "photoHint": "PNG, JPEG or WebP, up to 512 KB. Profile photos are publicly accessible.",
+      "removePhoto": "Remove photo",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Profile saved.",
+      "accountTitle": "Account information",
+      "email": "Email address",
+      "emailStatus": "Email status",
+      "verified": "Verified",
+      "unverified": "Not verified",
+      "memberSince": "Member since",
+      "resetPassword": "Reset password",
+      "unsavedTitle": "Discard changes?",
+      "unsavedDescription": "Your profile has unsaved changes. Leave without saving?",
+      "discard": "Discard changes",
+      "keepEditing": "Keep editing",
+      "choosePhoto": "Choose photo",
+      "changePhoto": "Change photo",
+      "clearSelection": "Clear selection",
+      "unsaved": "Unsaved changes",
+      "back": "Back"
     }
   }
 }

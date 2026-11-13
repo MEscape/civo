@@ -22,6 +22,10 @@ const invitationTokenSchema = z.object({
 
 const verificationSchema = z.object({
   error: z.string().optional().catch(undefined),
+  token: tokenSchema
+    .regex(/^[A-Za-z0-9_-]+$/)
+    .optional()
+    .catch(undefined),
 });
 
 export function parseSignInPageParams(raw: unknown): {
@@ -45,6 +49,8 @@ export function parseAcceptInvitationPageParams(raw: unknown): {
 /** `hasFailed` is true when Better Auth redirected back with an `error` parameter. */
 export function parseEmailVerifiedPageParams(raw: unknown): {
   readonly hasFailed: boolean;
+  readonly invitationToken: string | undefined;
 } {
-  return { hasFailed: verificationSchema.parse(raw).error !== undefined };
+  const { error, token } = verificationSchema.parse(raw);
+  return { hasFailed: error !== undefined, invitationToken: token };
 }

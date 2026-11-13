@@ -37,6 +37,12 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
   [ERRORS.validationFailed]: fieldPath('errors', 'validation'),
   [ERRORS.accountConflict]: fieldPath('errors', 'unexpected'),
+  [ERRORS.accessConflict]: fieldPath('errors', 'accessConflict'),
+  [ERRORS.platformRoleConfigured]: fieldPath('errors', 'platformRoleConfigured'),
+  [ERRORS.cannotRevokeSelf]: fieldPath('errors', 'cannotRevokeSelf'),
+  [ERRORS.membershipExists]: fieldPath('errors', 'membershipExists'),
+  [ERRORS.invitationPending]: fieldPath('errors', 'invitationPending'),
+  [ERRORS.invitationAccountRequired]: fieldPath('errors', 'invitationAccountRequired'),
   [ERRORS.sessionLookupFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.membershipLookupFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.lastAdmin]: fieldPath('errors', 'lastAdmin'),
@@ -60,6 +66,7 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.roleInvalid]: fieldPath('validation', 'roleInvalid'),
   [VALIDATION.tenantInvalid]: fieldPath('validation', 'tenantInvalid'),
   [VALIDATION.rolesRequired]: fieldPath('validation', 'rolesRequired'),
+  [VALIDATION.profileImageInvalid]: fieldPath('validation', 'profileImageInvalid'),
 } as const satisfies Record<AuthCode, ValidKeys>;
 
 export const ROLE_MESSAGE_KEYS = {

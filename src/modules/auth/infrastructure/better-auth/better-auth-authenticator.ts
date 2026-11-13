@@ -2,8 +2,10 @@ import { matchAppError } from '@lib/errors';
 import type { AppError } from '@lib/errors';
 import { errAsync, fromThrowableAsync, okAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
+import { buildQueryString } from '@lib/utils';
 
-import { providerFailed } from '../../domain/errors/auth-errors';
+import { invalidToken, providerFailed } from '../../domain/errors/auth-errors';
+import { isInvitationToken } from '../../domain/models/invitation';
 
 import { mapBetterAuthError } from './map-better-auth-error';
 
@@ -35,17 +37,15 @@ export interface BetterAuthAuthenticatorDeps {
  * closed. The exhaustive match forces a decision if `AppError` gains a kind.
  */
 function narrowAuthenticatorError(error: AppError): AuthenticatorError {
-  const failClosed = (cause: AppError): AuthenticatorError => providerFailed(cause);
-
   return matchAppError<AuthenticatorError>(error, {
     unauthorized: (allowed) => allowed,
     forbidden: (allowed) => allowed,
     validation: (allowed) => allowed,
     infrastructure: (allowed) => allowed,
-    not_found: failClosed,
-    conflict: failClosed,
-    rate_limited: failClosed,
-    unexpected: failClosed,
+    not_found: providerFailed,
+    conflict: providerFailed,
+    rate_limited: providerFailed,
+    unexpected: providerFailed,
   });
 }
 
@@ -59,7 +59,7 @@ export class BetterAuthAuthenticator implements Authenticator {
         callbackURL: this.deps.paths.afterEmailVerification,
         headers,
       }),
-    ).mapErr(narrowAuthenticatorError);
+    );
   }
 
   /**
@@ -68,27 +68,23 @@ export class BetterAuthAuthenticator implements Authenticator {
    * conflict only reaches us if that changes, and surfacing it would turn
    * sign-up into an enumeration oracle.
    */
-  signUp(draft: SignUpDraft): AppResultAsync<void, AuthenticatorError> {
-    return this.call((api, headers) =>
-      api.signUpEmail({
-        ...draft,
-        callbackURL: this.deps.paths.afterEmailVerification,
-        headers,
-      }),
-    )
-      .orElse((error): AppResultAsync<void> =>
-        error.kind === 'conflict' ? okAsync(undefined) : errAsync(error),
-      )
-      .mapErr(narrowAuthenticatorError);
+  signUp(draft: SignUpDraft, invitationToken?: string): AppResultAsync<void, AuthenticatorError> {
+    if (invitationToken !== undefined && !isInvitationToken(invitationToken)) {
+      return errAsync(invalidToken());
+    }
+    const callbackURL =
+      invitationToken === undefined
+        ? this.deps.paths.afterEmailVerification
+        : `${this.deps.paths.afterEmailVerification}${buildQueryString({ token: invitationToken })}`;
+    return this.call(
+      (api, headers) => api.signUpEmail({ ...draft, callbackURL, headers }),
+      'conflict',
+    );
   }
 
   /** Signing out while signed out is a no-op, not a failure. */
   signOut(): AppResultAsync<void, AuthenticatorError> {
-    return this.call((api, headers) => api.signOut({ headers }))
-      .orElse((error): AppResultAsync<void> =>
-        error.kind === 'unauthorized' ? okAsync(undefined) : errAsync(error),
-      )
-      .mapErr(narrowAuthenticatorError);
+    return this.call((api, headers) => api.signOut({ headers }), 'unauthorized');
   }
 
   /** The provider answers identically for unknown addresses, so this cannot enumerate. */
@@ -99,24 +95,32 @@ export class BetterAuthAuthenticator implements Authenticator {
         redirectTo: this.deps.paths.passwordReset,
         headers,
       }),
-    ).mapErr(narrowAuthenticatorError);
-  }
-
-  resetPassword(draft: PasswordResetDraft): AppResultAsync<void, AuthenticatorError> {
-    return this.call((api, headers) => api.resetPassword({ ...draft, headers })).mapErr(
-      narrowAuthenticatorError,
     );
   }
 
+  resetPassword(draft: PasswordResetDraft): AppResultAsync<void, AuthenticatorError> {
+    return this.call((api, headers) => api.resetPassword({ ...draft, headers }));
+  }
+
+  /**
+   * Runs one provider call and reports only success or a port-conforming failure. A failure of the
+   * `tolerated` kind counts as success: the flows that must not reveal whether an account exists
+   * (or whether anyone is signed in) rely on that.
+   */
   private call(
     operation: (api: AuthenticationApi, headers: Headers) => Promise<unknown>,
-  ): AppResultAsync<void> {
+    tolerated?: AppError['kind'],
+  ): AppResultAsync<void, AuthenticatorError> {
     // `fromThrowableAsync` also catches a synchronous throw from `getHeaders`.
     return fromThrowableAsync(
       async () => {
         await operation(this.deps.api, await this.deps.getHeaders());
       },
       (thrown) => mapBetterAuthError(thrown, providerFailed),
-    );
+    )
+      .orElse((error): AppResultAsync<void> =>
+        error.kind === tolerated ? okAsync(undefined) : errAsync(error),
+      )
+      .mapErr(narrowAuthenticatorError);
   }
 }

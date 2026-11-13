@@ -30,6 +30,8 @@ export type AuthorizationError = CurrentActorError | ForbiddenAppError;
  * optional argument that can be forgotten.
  */
 export interface AuthorizationService {
+  /** Authenticate before resolving permissions across independently authorized website scopes. */
+  requireActor(): AppResultAsync<Actor, AuthorizationError>;
   /**
    * For operations not tied to an existing resource: create, or list
    * within the actor's own tenant. Call it FIRST, before loading anything,
@@ -86,6 +88,7 @@ export function createAuthorizationService(deps: {
   }
 
   return {
+    requireActor: () => deps.currentActor.getCurrentActor(),
     requireInTenant: (permission) => authorize(permission),
     requireOnResource: (permission, resource) => authorize(permission, resource),
   };

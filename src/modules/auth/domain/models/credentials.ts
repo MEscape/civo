@@ -1,6 +1,7 @@
 import type { FieldErrorBag, ValidationAppError } from '@lib/errors';
 import { err, ok } from '@lib/result';
 import type { AppResult } from '@lib/result';
+import { SECONDS_PER_HOUR } from '@lib/utils';
 
 import { AUTH_VALIDATION_CODES, createAuthErrorBag } from '../errors/auth-errors';
 
@@ -19,9 +20,7 @@ export const CREDENTIAL_LIMITS = {
 } as const;
 
 /** How long verification and password-reset links stay valid. */
-const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
-export const AUTH_LINK_LIFETIME_SECONDS = SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
+export const AUTH_LINK_LIFETIME_SECONDS = SECONDS_PER_HOUR;
 
 /** Deliberately loose: the real proof of an address is the verification email. */
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -72,23 +71,13 @@ export function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
-function emailViolation(email: string): string | null {
+export function checkEmail(email: string, bag: FieldErrorBag): void {
   if (email.length === 0) {
-    return CODES.emailRequired;
-  }
-  if (email.length > CREDENTIAL_LIMITS.emailMax) {
-    return CODES.emailTooLong;
-  }
-  if (!EMAIL_PATTERN.test(email)) {
-    return CODES.emailInvalid;
-  }
-  return null;
-}
-
-function checkEmail(email: string, bag: FieldErrorBag): void {
-  const violation = emailViolation(email);
-  if (violation !== null) {
-    bag.add('email', violation);
+    bag.add('email', CODES.emailRequired);
+  } else if (email.length > CREDENTIAL_LIMITS.emailMax) {
+    bag.add('email', CODES.emailTooLong);
+  } else if (!EMAIL_PATTERN.test(email)) {
+    bag.add('email', CODES.emailInvalid);
   }
 }
 

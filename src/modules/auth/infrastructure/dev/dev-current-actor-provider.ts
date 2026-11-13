@@ -1,10 +1,10 @@
 import { logger } from '@lib/logger';
-import { ResultAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 import { invariant, isValidUrl } from '@lib/utils';
 
 import { toActorId } from '../../domain/models/ids';
-import { PLATFORM_TENANT_ID, parseTenantHint } from '../../domain/models/tenant';
+import { isAnyRole } from '../../domain/models/role';
+import { PLATFORM_TENANT_ID, readTenantHint } from '../../domain/models/tenant';
 
 import type { Actor } from '../../domain/models/actor';
 import type { Role } from '../../domain/models/role';
@@ -54,7 +54,7 @@ export class DevCurrentActorProvider implements CurrentActorProvider {
   private readonly getTenantHint: () => Promise<string | null>;
 
   constructor(options: {
-    readonly role: Role;
+    readonly role: string;
     readonly getTenantHint: () => Promise<string | null>;
     readonly nodeEnv: string;
     readonly appUrl: string;
@@ -69,6 +69,11 @@ export class DevCurrentActorProvider implements CurrentActorProvider {
       isLoopbackUrl(options.appUrl),
       'DevCurrentActorProvider may only run when the app URL is a loopback address.',
     );
+    // Validate the deployment role here so composition and direct construction share the same guard.
+    invariant(
+      isAnyRole(options.role),
+      `AUTH_DEV_ACTOR_ROLE "${options.role}" is not a known role.`,
+    );
     this.role = options.role;
     this.getTenantHint = options.getTenantHint;
     // Loud on purpose: every request is now this actor.
@@ -76,12 +81,7 @@ export class DevCurrentActorProvider implements CurrentActorProvider {
   }
 
   getCurrentActor(): AppResultAsync<Actor, CurrentActorError> {
-    return ResultAsync.fromSafePromise(
-      this.getTenantHint().then(
-        (raw) => parseTenantHint(raw),
-        () => null,
-      ),
-    ).map((hint) => ({
+    return readTenantHint(this.getTenantHint).map((hint) => ({
       id: toActorId(DEV_ACTOR_ID),
       tenantId: hint ?? PLATFORM_TENANT_ID,
       roles: [this.role],

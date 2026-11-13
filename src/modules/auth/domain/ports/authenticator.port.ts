@@ -33,7 +33,8 @@ export type AuthenticatorError =
  */
 export interface Authenticator {
   signIn(credentials: SignInCredentials): AppResultAsync<void, AuthenticatorError>;
-  signUp(draft: SignUpDraft): AppResultAsync<void, AuthenticatorError>;
+  /** An invitation token preserves the fixed acceptance destination through email verification. */
+  signUp(draft: SignUpDraft, invitationToken?: string): AppResultAsync<void, AuthenticatorError>;
   signOut(): AppResultAsync<void, AuthenticatorError>;
   requestPasswordReset(request: PasswordResetRequest): AppResultAsync<void, AuthenticatorError>;
   resetPassword(draft: PasswordResetDraft): AppResultAsync<void, AuthenticatorError>;

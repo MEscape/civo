@@ -1,123 +1,92 @@
-import type { InfrastructureAppError, RateLimitedAppError, ValidationAppError } from '@lib/errors';
-import { errAsync } from '@lib/result';
+import type { ConflictAppError, InfrastructureAppError, RateLimitedAppError } from '@lib/errors';
+import { errAsync, okAsync, ResultAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
-import { fromRateLimitFailure } from '../../domain/errors/auth-errors';
-import { INVITATION_LIFETIME_MS, createInvitationOffer } from '../../domain/models/invitation';
-import { ROLES } from '../../domain/models/role';
+import { fromRateLimitFailure, membershipExists } from '../../domain/errors/auth-errors';
+import { PLATFORM_TENANT_ID } from '../../domain/models/tenant';
 import { AUTH_RATE_LIMITS } from '../rate-limits';
+import { findAccount } from '../services/find-account';
+import { isPlatformAdministrator } from '../services/is-platform-administrator';
+import { issueInvitation } from '../services/issue-invitation';
+import { loadAuthorizedInvitationTarget } from '../services/load-authorized-invitation-target';
 
-import type { Actor } from '../../domain/models/actor';
-import type { InvitationOffer } from '../../domain/models/invitation';
-import type { MailLocale } from '../../domain/ports/auth-mailer.port';
 import type { InviteUserDependencies } from '../auth-dependencies';
-import type { AuthorizationError } from '../authorization-service';
-import type { InviteOutcome } from '../contracts/user-views';
+import type { InviteUserInput } from '../contracts/auth-inputs';
+import type { InvitationTarget } from '../services/load-authorized-invitation-target';
+import type { ScopeError } from '../services/load-authorized-user-management';
 
-export type InviteUserError =
-  AuthorizationError | InfrastructureAppError | RateLimitedAppError | ValidationAppError;
-
-export interface InviteUserInput {
-  readonly email: string;
-  readonly role: string;
-  /** The language of the invitation mail: the inviting administrator's. */
-  readonly locale: MailLocale;
-}
+type InviteUserError = ScopeError | ConflictAppError | RateLimitedAppError;
 
 /**
- * Gives a person access to the actor's tenant, by the only two doors there
- * are (sign-up is closed):
- *
- *  - an address that already has an account gets the role at once;
- *  - any other address gets a single-use, expiring link by email, through
- *    which the person sets a name and password and joins with that role.
- *
- * Only the hash of the link's token is stored, and the address is fixed by
- * the invitation, so the link cannot be used to open an account for anyone
- * else. Each invitation to a new address sends a mail, so how many one
- * administrator may send is limited.
+ * A request for one explicit access scope, for both new and existing accounts.
+ * Existing memberships and pending offers are conflicts; account existence alone is not.
+ * Access is never granted here: the intended account must explicitly accept its offer.
+ * @audit-exempt Successful invitation issuance is audited by the shared issueInvitation service.
  */
 export class InviteUser {
   constructor(private readonly deps: InviteUserDependencies) {}
 
-  execute(input: InviteUserInput): AppResultAsync<InviteOutcome, InviteUserError> {
-    const { authorization, rateLimiter } = this.deps;
+  execute(input: InviteUserInput): AppResultAsync<undefined, InviteUserError> {
+    return loadAuthorizedInvitationTarget(this.deps, input).andThen((target) =>
+      this.spendInvitationBudget(target)
+        .andThen(() => this.rejectExistingAccess(target))
+        .andThen(() => this.issue(target, input.locale)),
+    );
+  }
 
-    return authorization.requireInTenant('user.manage').andThen((actor) => {
-      const offer = createInvitationOffer(input);
-      if (offer.isErr()) {
-        return errAsync(offer.error);
+  /** Every invitation sends a mail, so one administrator's budget per scope is bounded. */
+  private spendInvitationBudget({
+    actor,
+    tenantId,
+  }: InvitationTarget): AppResultAsync<undefined, RateLimitedAppError | InfrastructureAppError> {
+    return this.deps.rateLimiter
+      .enforce({
+        policy: AUTH_RATE_LIMITS.inviteUser,
+        subject: { kind: 'actor', tenantId, actorId: actor.id },
+      })
+      .mapErr(fromRateLimitFailure)
+      .map(() => undefined);
+  }
+
+  private rejectExistingAccess({
+    email,
+    tenantId,
+  }: InvitationTarget): AppResultAsync<undefined, InfrastructureAppError | ConflictAppError> {
+    return this.deps.directory.findByEmail(email).andThen((existing) => {
+      if (existing === null) {
+        return okAsync(undefined);
       }
-
-      return rateLimiter
-        .enforce({
-          policy: AUTH_RATE_LIMITS.inviteUser,
-          subject: { kind: 'actor', tenantId: actor.tenantId, actorId: actor.id },
-        })
-        .mapErr(fromRateLimitFailure)
-        .andThen(() => this.invite(actor, offer.value, input.locale));
+      const access =
+        tenantId === PLATFORM_TENANT_ID
+          ? isPlatformAdministrator(this.deps, existing)
+          : this.deps.members.findRoles(existing.id, tenantId).map((roles) => roles.length > 0);
+      return access.andThen((hasAccess) =>
+        hasAccess ? errAsync(membershipExists()) : okAsync(undefined),
+      );
     });
   }
 
-  private invite(
-    actor: Actor,
-    { email, role }: InvitationOffer,
-    locale: MailLocale,
-  ): AppResultAsync<InviteOutcome, InviteUserError> {
-    const { directory, members, invitations, tokens, mailer, audit, clock } = this.deps;
+  private issue(
+    { actor, tenantId, email, role }: InvitationTarget,
+    locale: InviteUserInput['locale'],
+  ): AppResultAsync<undefined, InfrastructureAppError | ConflictAppError> {
+    const { directory, tenants } = this.deps;
 
-    return directory
-      .findByEmail(email)
-      .andThen((existing): AppResultAsync<InviteOutcome, InviteUserError> => {
-        if (existing !== null) {
-          return members
-            .findRoles(existing.id, actor.tenantId)
-            .andThen((current) => {
-              const wanted = ROLES.filter(
-                (candidate) => candidate === role || current.includes(candidate),
-              );
-              return members.replaceRoles(existing.id, actor.tenantId, wanted);
-            })
-            .map((): InviteOutcome => {
-              audit.record({
-                type: 'membership.roles_changed',
-                actorId: actor.id,
-                tenantId: actor.tenantId,
-                subjectId: existing.id,
-              });
-              return 'granted';
-            });
-        }
-
-        const issued = tokens.issue();
-        return invitations
-          .create({
-            tenantId: actor.tenantId,
-            email,
-            role,
-            invitedBy: actor.id,
-            expiresAt: new Date(clock.now().getTime() + INVITATION_LIFETIME_MS),
-            tokenHash: issued.hash,
-          })
-          .andThen((invitation) =>
-            mailer
-              .sendInvitation({ to: email, token: issued.token, locale })
-              // A link nobody received must not stay claimable.
-              .orElse((error) =>
-                invitations
-                  .revoke(invitation.id, actor.tenantId)
-                  .andThen(() => errAsync<undefined, InfrastructureAppError>(error)),
-              )
-              .map((): InviteOutcome => {
-                audit.record({
-                  type: 'invitation.created',
-                  actorId: actor.id,
-                  tenantId: actor.tenantId,
-                  invitationId: invitation.id,
-                });
-                return 'invited';
-              }),
-          );
-      });
+    return ResultAsync.combine([
+      findAccount(directory, actor.id),
+      tenantId === PLATFORM_TENANT_ID ? okAsync(null) : tenants.findName(tenantId),
+    ] as const)
+      .andThen(([inviter, websiteName]) =>
+        issueInvitation(this.deps, {
+          tenantId,
+          email,
+          role,
+          invitedBy: actor.id,
+          locale,
+          inviterName: inviter?.name ?? null,
+          websiteName,
+        }),
+      )
+      .map(() => undefined);
   }
 }

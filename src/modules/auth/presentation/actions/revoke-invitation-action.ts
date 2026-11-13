@@ -13,7 +13,8 @@ import { revokeInvitationSchema } from '../schemas/user-admin-schema';
 /** Framework adapter: validate, call the use case (which authorizes user.manage), refresh the lists. */
 export async function revokeInvitationAction(input: unknown): Promise<ActionResult<void>> {
   const result = await parseAuthInput(revokeInvitationSchema, input).asyncAndThen(
-    ({ invitationId }) => getAuthCommands().revokeInvitation.execute(invitationId),
+    ({ invitationId, tenantId }) =>
+      getAuthCommands().revokeInvitation.execute(invitationId, tenantId),
   );
   if (result.isOk()) {
     revalidatePath(ROOT_LAYOUT_PATH, 'layout');

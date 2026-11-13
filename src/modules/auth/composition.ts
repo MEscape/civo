@@ -1,32 +1,31 @@
 import 'server-only';
-import { cache } from 'react';
+
+import { randomUUID } from 'node:crypto';
 
 import { headers } from 'next/headers';
-import { connection } from 'next/server';
 
-import { withAuditTrail } from '@modules/audit';
+import { setAuditAccessAdapter, withAuditTrail } from '@modules/audit';
 
 import type { Locale } from '@i18n';
 
 import { systemClock } from '@lib/clock';
 import { APP_IDENTITY, publicEnv } from '@lib/config';
 import { serverEnv } from '@lib/config/server';
-import type { ServerEnv } from '@lib/config/server';
 import { logger } from '@lib/logger';
 import { getMailTransport } from '@lib/mail/server';
 import { getClientAddressProvider, getRateLimiter } from '@lib/rate-limit';
-import { ResultAsync } from '@lib/result';
+import { errAsync } from '@lib/result';
 import { toLocalizedPath } from '@lib/seo';
+import { getObjectStore } from '@lib/storage/server';
 import { TENANT_HINT_HEADER, isWebsiteId } from '@lib/tenancy';
-import { invariant, isDefined, once } from '@lib/utils';
+import { MS_PER_SECOND, once } from '@lib/utils';
 
 import { createAuthorizationService } from './application/authorization-service';
 import { AcceptInvitation } from './application/commands/accept-invitation';
-import { ChangeUserRoles } from './application/commands/change-user-roles';
+import { AdmitLinkRequest } from './application/commands/admit-link-request';
 import { GrantPlatformAdmin } from './application/commands/grant-platform-admin';
 import { InviteBootstrapAdmins } from './application/commands/invite-bootstrap-admins';
 import { InviteUser } from './application/commands/invite-user';
-import { RemoveUser } from './application/commands/remove-user';
 import { RemoveUserAccess } from './application/commands/remove-user-access';
 import { RequestPasswordReset } from './application/commands/request-password-reset';
 import { ResetPassword } from './application/commands/reset-password';
@@ -35,30 +34,42 @@ import { RevokePlatformAdmin } from './application/commands/revoke-platform-admi
 import { SetUserAccess } from './application/commands/set-user-access';
 import { SignIn } from './application/commands/sign-in';
 import { SignOut } from './application/commands/sign-out';
+import { UpdateOwnProfile } from './application/commands/update-own-profile';
+import { AuthorizeWebsiteAccess } from './application/queries/authorize-website-access';
 import { GetCurrentActor } from './application/queries/get-current-actor';
 import { GetMemberSummary } from './application/queries/get-member-summary';
+import { GetOwnProfile } from './application/queries/get-own-profile';
+import { ListAccessibleWebsites } from './application/queries/list-accessible-websites';
+import { ListEmployees } from './application/queries/list-employees';
 import { ListInvitations } from './application/queries/list-invitations';
-import { ListPlatformAdmins } from './application/queries/list-platform-admins';
+import { ListManageableWebsites } from './application/queries/list-manageable-websites';
 import { ListPlatformUsers } from './application/queries/list-platform-users';
 import { ListUsers } from './application/queries/list-users';
 import { PreviewInvitation } from './application/queries/preview-invitation';
 import { ResolveMemberNames } from './application/queries/resolve-member-names';
+import { unauthenticated } from './domain/errors/auth-errors';
 import { actorHasPermission } from './domain/models/authorize';
-import { PLATFORM_ADMIN_ROLE, isAnyRole } from './domain/models/role';
 import { PLATFORM_TENANT_ID, UNASSIGNED_TENANT_ID } from './domain/models/tenant';
-import { authenticationApiFrom } from './infrastructure/better-auth/better-auth-authentication-api';
-import { BetterAuthAuthenticator } from './infrastructure/better-auth/better-auth-authenticator';
-import { BetterAuthCurrentActorProvider } from './infrastructure/better-auth/better-auth-current-actor-provider';
-import { sessionSourceFrom } from './infrastructure/better-auth/better-auth-session-source';
-import { createAuth } from './infrastructure/better-auth/create-auth';
-import { createAuthRouteHandlers } from './infrastructure/better-auth/create-auth-route-handlers';
-import { Sha256TokenGenerator } from './infrastructure/crypto/sha256-token-generator';
-import { DevCurrentActorProvider } from './infrastructure/dev/dev-current-actor-provider';
+import { AuthAuditAccess } from './infrastructure/access/auth-audit-access';
 import {
   LEVEL_BY_EVENT,
   TRAIL_BY_EVENT,
   loggerSecurityAuditLog,
-} from './infrastructure/logging/logger-security-audit-log';
+} from './infrastructure/audit/logger-security-audit-log';
+import { requireAuthCredentials, toAuthSettings } from './infrastructure/better-auth/auth-settings';
+import { authenticationApiFrom } from './infrastructure/better-auth/better-auth-authentication-api';
+import { BetterAuthAuthenticator } from './infrastructure/better-auth/better-auth-authenticator';
+import { BetterAuthCurrentActorProvider } from './infrastructure/better-auth/better-auth-current-actor-provider';
+import { BetterAuthProfileAccount } from './infrastructure/better-auth/better-auth-profile-account';
+import { sessionSourceFrom } from './infrastructure/better-auth/better-auth-session-source';
+import { createAuth } from './infrastructure/better-auth/create-auth';
+import { createAuthRouteHandlers } from './infrastructure/better-auth/create-auth-route-handlers';
+import {
+  memoizePerRequest,
+  requestScoped,
+} from './infrastructure/better-auth/current-actor-request-scope';
+import { Sha256TokenGenerator } from './infrastructure/crypto/sha256-token-generator';
+import { DevCurrentActorProvider } from './infrastructure/dev/dev-current-actor-provider';
 import { TransactionalAuthMailer } from './infrastructure/mail/transactional-auth-mailer';
 import { UnconfiguredAuthMailer } from './infrastructure/mail/unconfigured-auth-mailer';
 import { getAuthPool } from './infrastructure/pg/auth-pool';
@@ -66,21 +77,20 @@ import { PgUserDirectory } from './infrastructure/pg/pg-user-directory';
 import { PrismaInvitationRepository } from './infrastructure/prisma/prisma-invitation.repository';
 import { PrismaMembershipRepository } from './infrastructure/prisma/prisma-membership.repository';
 import { PrismaTenantRepository } from './infrastructure/prisma/prisma-tenant.repository';
+import { StoredProfileImages } from './infrastructure/storage/stored-profile-images';
 import { authRoutes } from './presentation/routes';
 
 import type {
   AuthenticationDependencies,
-  PlatformAccessDependencies,
   UserAdministrationDependencies,
 } from './application/auth-dependencies';
 import type { AuthorizationService } from './application/authorization-service';
-import type { TenantId } from './domain/models/ids';
+import type { ProfileDependencies } from './application/profile-dependencies';
 import type { Permission } from './domain/models/permission';
-import type { Role } from './domain/models/role';
 import type { AuthMailer } from './domain/ports/auth-mailer.port';
 import type { CurrentActorProvider } from './domain/ports/current-actor-provider.port';
 import type { MembershipRepository } from './domain/ports/membership.repository';
-import type { AuthSettings, BetterAuthInstance } from './infrastructure/better-auth/create-auth';
+import type { BetterAuthInstance } from './infrastructure/better-auth/create-auth';
 
 /**
  * Composition root for authentication and access control, at the framework
@@ -94,53 +104,15 @@ import type { AuthSettings, BetterAuthInstance } from './infrastructure/better-a
  * build error.
  */
 
-const MILLISECONDS_PER_SECOND = 1000;
-
 /**
- * The website a request is about, as `proxy.ts` set it from the address. Only a
- * platform administrator (and the loopback-only dev actor) is resolved by it. This is the one place
+ * The website a request is about, as `proxy.ts` set it from the address. Members select it only
+ * when they belong to it; platform administrators and the loopback-only dev actor may select any website. This is the one place
  * the header is read, and it is checked here against the shape of a website id, as well as by the
  * proxy that wrote it: the reader does not trust the writer.
  */
 async function readTenantHint(): Promise<string | null> {
   const raw = (await headers()).get(TENANT_HINT_HEADER);
   return raw !== null && isWebsiteId(raw) ? raw : null;
-}
-
-function requireAuthCredentials(env: ServerEnv): {
-  readonly secret: string;
-  readonly databaseUrl: string;
-} {
-  const { AUTH_SECRET: secret, AUTH_DATABASE_URL: databaseUrl } = env;
-  // The env schema guarantees both when AUTH_ENABLED=true; this narrows the
-  // type and fails fast if that guarantee is ever removed.
-  invariant(
-    isDefined(secret) && isDefined(databaseUrl),
-    'AUTH_SECRET and AUTH_DATABASE_URL are required when AUTH_ENABLED=true.',
-  );
-  return { secret, databaseUrl };
-}
-
-function toAuthSettings(env: ServerEnv): AuthSettings {
-  return {
-    baseUrl: publicEnv.NEXT_PUBLIC_APP_URL,
-    secret: requireAuthCredentials(env).secret,
-    isProduction: env.NODE_ENV === 'production',
-    trustedProxies: env.AUTH_TRUSTED_PROXIES,
-    session: {
-      expiresInSeconds: env.AUTH_SESSION_EXPIRES_IN_SECONDS,
-      updateAgeSeconds: env.AUTH_SESSION_UPDATE_AGE_SECONDS,
-      freshAgeSeconds: env.AUTH_SESSION_FRESH_AGE_SECONDS,
-    },
-  };
-}
-
-// Env input, so this is an explicit error rather than an invariant.
-function resolveDevActorRole(raw: string): Role {
-  if (isAnyRole(raw)) {
-    return raw;
-  }
-  throw new Error(`AUTH_DEV_ACTOR_ROLE "${raw}" is not a known role.`);
 }
 
 function buildMailer(): AuthMailer {
@@ -173,6 +145,8 @@ const getPool = once(() =>
   getAuthPool({
     databaseUrl: requireAuthCredentials(serverEnv).databaseUrl,
     maxConnections: serverEnv.AUTH_DATABASE_POOL_SIZE,
+    connectionTimeoutMs: serverEnv.DATABASE_POOL_TIMEOUT_SECONDS * MS_PER_SECOND,
+    statementTimeoutMs: serverEnv.DATABASE_STATEMENT_TIMEOUT_SECONDS * MS_PER_SECOND,
     reuseAcrossReloads: serverEnv.NODE_ENV !== 'production',
   }),
 );
@@ -203,51 +177,26 @@ const getAuth = once<BetterAuthInstance>(() => {
   });
 });
 
-/**
- * Resolving the actor costs a session lookup plus a membership query. React's
- * `cache` collapses repeats within ONE server render or action into a
- * single lookup, and never outlives the request, so a role change is still
- * visible on the next request. Do not swap it for a longer-lived cache
- * (caching.md: authorization decisions need an explicit identity boundary).
- */
-function memoizePerRequest(provider: CurrentActorProvider): CurrentActorProvider {
-  const resolve = cache(() => provider.getCurrentActor());
-  return { getCurrentActor: () => resolve() };
-}
-
-/**
- * Knowing the actor is request-time work. A real session lookup reads
- * `headers()`, which keeps everything that depends on the actor out of
- * prerendering; the fixed dev actor reads nothing, so without this a protected
- * page would prerender and run its database queries at build time.
- */
-function requestScoped(provider: CurrentActorProvider): CurrentActorProvider {
-  return {
-    getCurrentActor: () =>
-      ResultAsync.fromSafePromise(connection()).andThen(() => provider.getCurrentActor()),
-  };
-}
-
 function buildCurrentActorProvider(): CurrentActorProvider {
-  if (!serverEnv.AUTH_ENABLED) {
-    return requestScoped(
-      new DevCurrentActorProvider({
-        role: resolveDevActorRole(serverEnv.AUTH_DEV_ACTOR_ROLE),
+  return serverEnv.AUTH_ENABLED
+    ? new BetterAuthCurrentActorProvider({
+        sessions: sessionSourceFrom(getAuth),
+        memberships: getMemberships(),
+        getHeaders: () => headers(),
+        sessionMaxLifetimeMs: serverEnv.AUTH_SESSION_MAX_LIFETIME_SECONDS * MS_PER_SECOND,
+        clock: systemClock,
+        platformAdminEmails: new Set(serverEnv.AUTH_PLATFORM_ADMIN_EMAILS),
         getTenantHint: readTenantHint,
-        nodeEnv: serverEnv.NODE_ENV,
-        appUrl: publicEnv.NEXT_PUBLIC_APP_URL,
-      }),
-    );
-  }
-  return new BetterAuthCurrentActorProvider({
-    sessions: sessionSourceFrom(getAuth),
-    memberships: getMemberships(),
-    getHeaders: () => headers(),
-    sessionMaxLifetimeMs: serverEnv.AUTH_SESSION_MAX_LIFETIME_SECONDS * MILLISECONDS_PER_SECOND,
-    clock: systemClock,
-    platformAdminEmails: new Set(serverEnv.AUTH_PLATFORM_ADMIN_EMAILS),
-    getTenantHint: readTenantHint,
-  });
+      })
+    : requestScoped(
+        () =>
+          new DevCurrentActorProvider({
+            role: serverEnv.AUTH_DEV_ACTOR_ROLE,
+            getTenantHint: readTenantHint,
+            nodeEnv: serverEnv.NODE_ENV,
+            appUrl: publicEnv.NEXT_PUBLIC_APP_URL,
+          }),
+      );
 }
 
 /** One memoized provider per process, shared by authorization and the actor query. */
@@ -260,6 +209,21 @@ export const getAccessControl = once<AuthorizationService>(() =>
     audit: auditLog,
   }),
 );
+
+/** The disabled account adapter also refuses direct action calls when real authentication is off. */
+const getProfileDependencies = once<ProfileDependencies>(() => ({
+  authorization: getAccessControl(),
+  account: serverEnv.AUTH_ENABLED
+    ? new BetterAuthProfileAccount({ getApi: () => getAuth().api, getHeaders: () => headers() })
+    : { read: () => errAsync(unauthenticated()), update: () => errAsync(unauthenticated()) },
+  images: new StoredProfileImages({ getStore: getObjectStore, newId: randomUUID }),
+  rateLimiter: getRateLimiter(),
+  audit: auditLog,
+}));
+
+export const getProfileCommands = once(() => ({
+  updateOwnProfile: new UpdateOwnProfile(getProfileDependencies()),
+}));
 
 /**
  * Which of `candidates` the signed-in actor holds, for screens that show only
@@ -295,52 +259,57 @@ export async function getCurrentTenantId(): Promise<string | null> {
 }
 
 /**
- * Every tenant the signed-in person holds a role in (never the platform scope),
- * oldest first, taken from their memberships alone: nothing in the request
- * adds to it. Empty when nobody is signed in, and for a platform administrator,
- * who belongs to no tenant in particular and sees them all. For screens that
- * let someone with several tenants choose one; like `getHeldPermissions` it
- * decides nothing.
- */
-export async function getMemberTenantIds(): Promise<readonly TenantId[]> {
-  const actor = await getCurrentActorProvider().getCurrentActor();
-  if (actor.isErr() || actor.value.roles.includes(PLATFORM_ADMIN_ROLE)) {
-    return [];
-  }
-  const tenants = await getMemberships().findTenantsOf(actor.value.id);
-  return tenants.isOk() ? tenants.value : [];
-}
-
-/**
  * Everything user administration is built from. The user directory opens the
  * auth pool only when it is first asked, so building this needs no auth
  * configuration (the screens answer 404 while AUTH_ENABLED=false).
  */
-const getAdministrationDependencies = once((): UserAdministrationDependencies => ({
-  authorization: getAccessControl(),
-  members: getMemberships(),
-  directory: new PgUserDirectory(getPool),
-  invitations: new PrismaInvitationRepository(),
-  tokens: new Sha256TokenGenerator(),
-  mailer: getMailer(),
-  audit: auditLog,
-  clock: systemClock,
-}));
-
-export const getAuthQueries = once(
+const getAdministrationDependencies = once(
   () =>
     ({
-      getCurrentActor: new GetCurrentActor({
-        currentActor: getCurrentActorProvider(),
-      }),
-      listUsers: new ListUsers(getAdministrationDependencies()),
-      resolveMemberNames: new ResolveMemberNames(getAdministrationDependencies()),
-      listPlatformAdmins: new ListPlatformAdmins(getAdministrationDependencies()),
-      listInvitations: new ListInvitations(getAdministrationDependencies()),
-      getMemberSummary: new GetMemberSummary(getAdministrationDependencies()),
-      previewInvitation: new PreviewInvitation(getAdministrationDependencies()),
-      listPlatformUsers: new ListPlatformUsers(getAdministrationDependencies()),
-    }) as const,
+      bootstrapAdminEmails: new Set(serverEnv.AUTH_PLATFORM_ADMIN_EMAILS),
+      authorization: getAccessControl(),
+      members: getMemberships(),
+      directory: new PgUserDirectory(getPool),
+      invitations: new PrismaInvitationRepository(),
+      tokens: new Sha256TokenGenerator(),
+      mailer: getMailer(),
+      audit: auditLog,
+      clock: systemClock,
+      tenants: new PrismaTenantRepository(),
+    }) satisfies UserAdministrationDependencies,
+);
+
+/** Shared lazy dependencies, with identity resolved afresh through the request-scoped provider. */
+export const getAuthQueries = once(() => {
+  const currentActor = getCurrentActorProvider();
+  const administration = getAdministrationDependencies();
+  return {
+    getCurrentActor: new GetCurrentActor({ currentActor }),
+    getOwnProfile: new GetOwnProfile(getProfileDependencies()),
+    listUsers: new ListUsers(administration),
+    resolveMemberNames: new ResolveMemberNames(administration),
+    listEmployees: new ListEmployees(administration),
+    listInvitations: new ListInvitations(administration),
+    getMemberSummary: new GetMemberSummary(administration),
+    previewInvitation: new PreviewInvitation({
+      ...administration,
+      currentActor,
+    }),
+    listPlatformUsers: new ListPlatformUsers(administration),
+    listManageableWebsites: new ListManageableWebsites(administration),
+    listAccessibleWebsites: new ListAccessibleWebsites(administration),
+    authorizeWebsiteAccess: new AuthorizeWebsiteAccess(administration),
+  } as const;
+});
+
+/**
+ * Access adapter wired to the auth module's queries.
+ * Supplies the audit module's access port and member name resolver without the audit module
+ * needing a compile-time dependency on auth. Registration constructs no queries and reads no
+ * session. The adapter delegates every permission decision to auth; audit owns trail scoping.
+ */
+setAuditAccessAdapter(new AuthAuditAccess(getAuthQueries), (memberIds) =>
+  getAuthQueries().resolveMemberNames.execute(memberIds),
 );
 
 /**
@@ -348,54 +317,41 @@ export const getAuthQueries = once(
  * AUTH_ENABLED=true; the pages that host them answer 404 otherwise, and
  * calling this with auth disabled is a programmer error that throws.
  */
-const getAuthenticationDependencies = once((): AuthenticationDependencies => {
-  const dependencies: AuthenticationDependencies = {
-    authenticator: new BetterAuthAuthenticator({
-      api: authenticationApiFrom(getAuth()),
-      getHeaders: () => headers(),
-      paths: {
-        afterEmailVerification: authRoutes.emailVerified(),
-        passwordReset: authRoutes.resetPassword(),
-      },
-    }),
-    rateLimiter: getRateLimiter(),
-    clientAddress: getClientAddressProvider(() => headers()),
-    audit: auditLog,
-  };
-  return dependencies;
-});
+const getAuthenticationDependencies = once((): AuthenticationDependencies => ({
+  authenticator: new BetterAuthAuthenticator({
+    api: authenticationApiFrom(getAuth()),
+    getHeaders: () => headers(),
+    paths: {
+      afterEmailVerification: authRoutes.emailVerified(),
+      passwordReset: authRoutes.resetPassword(),
+    },
+  }),
+  rateLimiter: getRateLimiter(),
+  clientAddress: getClientAddressProvider(() => headers()),
+  audit: auditLog,
+}));
 
 export const getAuthCommands = once(() => {
   const dependencies = getAuthenticationDependencies();
   const administration = getAdministrationDependencies();
-  const platformAccess: PlatformAccessDependencies = {
-    authorization: administration.authorization,
-    members: administration.members,
-    directory: administration.directory,
-    audit: administration.audit,
-    tenants: new PrismaTenantRepository(),
-  };
 
   return {
     signIn: new SignIn(dependencies),
+    admitLinkRequest: new AdmitLinkRequest(dependencies),
     signOut: new SignOut(dependencies),
     requestPasswordReset: new RequestPasswordReset(dependencies),
     resetPassword: new ResetPassword(dependencies),
     inviteUser: new InviteUser({ ...administration, rateLimiter: getRateLimiter() }),
-    changeUserRoles: new ChangeUserRoles(administration),
-    removeUser: new RemoveUser(administration),
-    setUserAccess: new SetUserAccess(platformAccess),
-    removeUserAccess: new RemoveUserAccess(platformAccess),
+    setUserAccess: new SetUserAccess(administration),
+    removeUserAccess: new RemoveUserAccess(administration),
     grantPlatformAdmin: new GrantPlatformAdmin(administration),
     revokePlatformAdmin: new RevokePlatformAdmin(administration),
     revokeInvitation: new RevokeInvitation(administration),
     acceptInvitation: new AcceptInvitation({
       ...dependencies,
-      invitations: administration.invitations,
-      tokens: administration.tokens,
-      members: administration.members,
-      directory: administration.directory,
-      clock: administration.clock,
+      ...administration,
+      currentActor: getCurrentActorProvider(),
+      bootstrapAdminEmails: administration.bootstrapAdminEmails,
     }),
   } as const;
 });
@@ -404,7 +360,11 @@ export const getAuthCommands = once(() => {
 export const authRouteHandlers = createAuthRouteHandlers({
   isEnabled: serverEnv.AUTH_ENABLED,
   getAuth,
+  admit: () => getAuthCommands().admitLinkRequest.execute(),
 });
+
+/** The language of the first mail, before anyone has chosen one: the platform's default locale. */
+const BOOTSTRAP_MAIL_LOCALE: Locale = 'de';
 
 /**
  * Work the server does once when it starts. With sign-up closed, the
@@ -414,9 +374,6 @@ export const authRouteHandlers = createAuthRouteHandlers({
  * provider; without either it says so in the log and does nothing. A failure
  * is logged, never thrown: the application must start with or without it.
  */
-/** The language of the first mail, before anyone has chosen one: the platform's default locale. */
-const BOOTSTRAP_MAIL_LOCALE: Locale = 'en';
-
 export async function runAuthStartup(): Promise<void> {
   const emails = serverEnv.AUTH_PLATFORM_ADMIN_EMAILS;
   if (!serverEnv.AUTH_ENABLED || emails.length === 0) {
@@ -436,6 +393,6 @@ export async function runAuthStartup(): Promise<void> {
       logger.info('auth.bootstrap_platform_admins', { invited, skipped, failed });
     }
   } catch (error) {
-    logger.error('auth.bootstrap_failed', { error });
+    logger.error('auth.bootstrap_failed', error);
   }
 }

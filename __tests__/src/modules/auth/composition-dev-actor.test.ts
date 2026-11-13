@@ -32,6 +32,20 @@ vi.mock('@lib/config', async (importOriginal) => ({
  */
 describe('auth composition with AUTH_ENABLED=false', () => {
   it(
+    'refuses profile reads and writes even though a development actor exists',
+    async () => {
+      const { getAuthQueries, getProfileCommands } = await import('@modules/auth/composition');
+      expect((await getAuthQueries().getOwnProfile.execute())._unsafeUnwrapErr().kind).toBe(
+        'unauthorized',
+      );
+      expect(
+        (await getProfileCommands().updateOwnProfile.execute({ name: 'Dev' }))._unsafeUnwrapErr()
+          .kind,
+      ).toBe('unauthorized');
+    },
+    IMPORT_TIMEOUT_MS,
+  );
+  it(
     'resolves the dev actor only at request time',
     async () => {
       const { getAuthQueries } = await import('@modules/auth/composition');

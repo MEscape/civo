@@ -42,9 +42,15 @@ export const AUTH_ERROR_CODES = {
   rateLimited: 'auth.rate_limited',
   validationFailed: 'auth.validation_failed',
   accountConflict: 'auth.account_conflict',
+  membershipExists: 'auth.membership_exists',
+  invitationPending: 'auth.invitation_pending',
+  invitationAccountRequired: 'auth.invitation_account_required',
   sessionLookupFailed: 'auth.session_lookup_failed',
   membershipLookupFailed: 'auth.membership_lookup_failed',
   lastAdmin: 'auth.last_admin',
+  accessConflict: 'auth.access_conflict',
+  platformRoleConfigured: 'auth.platform_role_configured',
+  cannotRevokeSelf: 'auth.cannot_revoke_self',
   userNotFound: 'auth.user_not_found',
   invitationFailed: 'auth.invitation_failed',
   directoryFailed: 'auth.directory_failed',
@@ -70,6 +76,7 @@ export const AUTH_VALIDATION_CODES = {
   roleInvalid: 'auth.validation.role_invalid',
   tenantInvalid: 'auth.validation.tenant_invalid',
   rolesRequired: 'auth.validation.roles_required',
+  profileImageInvalid: 'auth.validation.profile_image_invalid',
 } as const;
 
 export type AuthErrorCode = (typeof AUTH_ERROR_CODES)[keyof typeof AUTH_ERROR_CODES];
@@ -155,6 +162,30 @@ export function authValidationFailed(fieldErrors: Record<string, string[]>): Val
   );
 }
 
+/** An account already belongs to the invitation's exact scope. */
+export function membershipExists(): ConflictAppError {
+  return conflictError(
+    AUTH_ERROR_CODES.membershipExists,
+    'This account already has access to the selected scope.',
+  );
+}
+
+/** Pending offers are unique per normalized address and scope, regardless of role. */
+export function invitationPending(): ConflictAppError {
+  return conflictError(
+    AUTH_ERROR_CODES.invitationPending,
+    'An invitation is already pending for this address and scope.',
+  );
+}
+
+/** Existing accounts accept only through the intended authenticated identity. */
+export function invitationAccountRequired(): UnauthorizedAppError {
+  return unauthorizedError(
+    AUTH_ERROR_CODES.invitationAccountRequired,
+    'Sign in with the invited account to accept this invitation.',
+  );
+}
+
 /** One place wires the bag to this module's error factory. */
 export function createAuthErrorBag(): FieldErrorBag {
   return new FieldErrorBag(authValidationFailed);
@@ -222,6 +253,30 @@ export function lastAdmin(): ConflictAppError {
   );
 }
 
+/** A baseline or authorization changed while an access edit was pending. */
+export function accessConflict(): ConflictAppError {
+  return conflictError(
+    AUTH_ERROR_CODES.accessConflict,
+    'Access changed. Refresh the user list before retrying.',
+  );
+}
+
+/** Configured operator authority cannot be revoked by deleting a database role. */
+export function platformRoleConfigured(): ConflictAppError {
+  return conflictError(
+    AUTH_ERROR_CODES.platformRoleConfigured,
+    'This platform role is managed by deployment configuration.',
+  );
+}
+
+/** A platform administrator cannot revoke their own role; another administrator must do it. */
+export function cannotRevokeSelf(): ConflictAppError {
+  return conflictError(
+    AUTH_ERROR_CODES.cannotRevokeSelf,
+    'You cannot revoke your own platform administrator role.',
+  );
+}
+
 /** The website an access change names does not exist. */
 export function tenantInvalid(): ValidationAppError {
   const bag = createAuthErrorBag();
@@ -232,14 +287,6 @@ export function tenantInvalid(): ValidationAppError {
 /** Also covers a user of another tenant: one outcome for both, so ids reveal nothing. */
 export function userNotFound(): NotFoundAppError {
   return notFoundError(AUTH_ERROR_CODES.userNotFound, 'The user was not found.');
-}
-
-export function membershipLookupFailed(cause: unknown): InfrastructureAppError {
-  return infrastructureError(
-    AUTH_ERROR_CODES.membershipLookupFailed,
-    'Memberships could not be read or changed.',
-    cause,
-  );
 }
 
 export function invitationFailed(cause: unknown): InfrastructureAppError {
