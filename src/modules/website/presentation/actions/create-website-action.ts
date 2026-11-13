@@ -1,11 +1,11 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidateLocalizedPath } from '@i18n/server';
 
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { websiteCommands } from '../../composition';
+import { getWebsiteCommands } from '../../composition';
 import { toWebsiteDto } from '../dto/website-dto';
 import { websiteRoutes } from '../routes';
 import { newWebsiteSchema } from '../schemas/new-website-schema';
@@ -19,11 +19,11 @@ import type { WebsiteDto } from '../dto/website-dto';
  */
 export async function createWebsiteAction(input: unknown): Promise<ActionResult<WebsiteDto>> {
   const result = await parseWebsiteInput(newWebsiteSchema, input).asyncAndThen((command) =>
-    websiteCommands.createWebsite.execute(command),
+    getWebsiteCommands().createWebsite.execute(command),
   );
 
   if (result.isOk()) {
-    revalidatePath(websiteRoutes.list());
+    revalidateLocalizedPath(websiteRoutes.list());
   }
   return toActionResult(result.map(toWebsiteDto));
 }

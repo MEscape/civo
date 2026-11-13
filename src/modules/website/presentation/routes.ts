@@ -4,7 +4,11 @@
  * cached by path, add its route here and revalidate it in the actions.
  */
 export const websiteRoutes = {
+  /** Filesystem layout pattern for revalidatePath; distinct from concrete navigation URLs. */
+  layout: '/[locale]/(protected)/websites/[websiteId]',
   list: () => '/websites',
+  /** The "new website" wizard; a static segment, so it wins over `[websiteId]`. */
+  create: () => '/websites/new',
   detail: (id: string) => `/websites/${id}`,
   settings: (id: string) => `/websites/${id}/settings`,
   /** The members and invitations of the tenant, shown among the website's sections. */

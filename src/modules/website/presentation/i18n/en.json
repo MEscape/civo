@@ -7,7 +7,15 @@
       "slugPlaceholder": "exampleville",
       "template": "Template",
       "submit": "Create website",
-      "submitting": "Creating…"
+      "submitting": "Creating…",
+      "slugHint": "Part of the public address. Suggested from the name; it cannot be changed later.",
+      "next": "Next: {step}",
+      "afterCreate": "The home page is created from the template. The website overview then shows the next steps.",
+      "steps": {
+        "basics": "Basics",
+        "template": "Template",
+        "review": "Review"
+      }
     },
     "templates": {
       "municipal": {
@@ -88,6 +96,7 @@
       "slugTaken": "This slug is already taken.",
       "validation": "Please check your input.",
       "infrastructure": "A service error occurred. Please try again later.",
+      "rateLimited": "Too many attempts. Please wait a moment and try again.",
       "unexpected": "An unexpected error occurred."
     },
     "validation": {
@@ -110,7 +119,9 @@
       "builder": "Pages",
       "bookings": "Bookings",
       "releases": "Releases",
+      "media": "Media",
       "data": "Data sources",
+      "maps": "Maps",
       "settings": "Settings",
       "users": "Users",
       "audit": "Audit log",
@@ -118,28 +129,28 @@
       "allWebsites": "All websites",
       "sections": "Sections",
       "administration": "Administration",
-      "more": "More"
+      "more": "More",
+      "truncated": "Only part of your website list is shown.",
+      "breadcrumb": "Breadcrumb"
     },
     "pages": {
       "list": {
+        "truncated": "This list covers only part of the websites you can access. Open another website directly if it is missing here.",
         "title": "Websites",
-        "description": "Create and manage your municipality's websites.",
+        "description": "The websites you can access. Choose one to work in.",
         "empty": "No websites yet",
-        "emptyDescription": "Create your first website to get started.",
+        "emptyDescription": "No websites are available in your access scope yet.",
         "createTitle": "Create a website",
-        "pagination": {
-          "nav": "Websites pages"
-        },
-        "memberDescription": "The websites you belong to. Choose one to work in.",
-        "panelTitle": "Websites",
+        "panelTitle": "Accessible websites",
         "count": "{count, plural, one {# website} other {# websites}}",
         "paginationNav": "Websites pages",
-        "open": "Open",
+        "open": "Manage",
         "columns": {
           "website": "Website",
           "address": "Address",
           "actions": "Actions"
-        }
+        },
+        "emptyCreateDescription": "Create the first website from a template."
       },
       "detail": {
         "publicSite": "Public site",
@@ -173,12 +184,25 @@
             },
             "booking": {
               "title": "Set up booking",
-              "description": "Citizens book appointments directly on your website."
+              "description": "Add a location, services, resources and a team: then citizens can book appointments directly on your website."
             },
             "dataSource": {
               "title": "Connect a data source",
               "description": "For example locations or opening hours."
+            },
+            "map": {
+              "title": "Configure your first map",
+              "description": "Mark public buildings or show location data, then place the map on a page."
             }
+          }
+        },
+        "groups": {
+          "metrics": {
+            "title": "At a glance"
+          },
+          "activity": {
+            "title": "Activity & publication",
+            "description": "Follow recent changes and review your release history."
           }
         }
       },
@@ -190,6 +214,16 @@
           "description": "The website details or the theme have changes that are not saved yet. They are lost if you leave.",
           "confirm": "Discard changes",
           "stay": "Keep editing"
+        }
+      },
+      "create": {
+        "title": "Create website",
+        "description": "Set the name, address and template of the new website.",
+        "leave": {
+          "title": "Leave without creating?",
+          "description": "Your entries for the new website are lost if you leave this page.",
+          "confirm": "Discard entries",
+          "stay": "Keep filling in"
         }
       }
     },

@@ -8,7 +8,7 @@ import { ThemeProvider } from './theme-provider';
 
 import type { WebsiteThemeView } from '../../application/contracts/website-views';
 
-export interface ThemePreviewProps {
+interface ThemePreviewProps {
   readonly theme: WebsiteThemeView;
 }
 

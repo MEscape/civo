@@ -2,11 +2,11 @@ import { randomUUID } from 'node:crypto';
 
 import type { TenantId } from '@modules/auth';
 
-import { db, createPersistenceFailures } from '@lib/db';
+import { db, createPersistenceFailures, retryTransient } from '@lib/db';
 import type { ConflictAppError, InfrastructureAppError, NotFoundAppError } from '@lib/errors';
 import { offsetOf, toPage } from '@lib/pagination';
 import type { Page, PageRequest } from '@lib/pagination';
-import { fromThrowableAsync, okAsync } from '@lib/result';
+import { fromThrowableAsync } from '@lib/result';
 import type { AppResultAsync } from '@lib/result';
 
 import {
@@ -14,7 +14,6 @@ import {
   websiteNotFound,
   websiteSlugTaken,
 } from '../../domain/errors/website-errors';
-import { toWebsiteId } from '../../domain/models/ids';
 
 import {
   THEME_SELECT,
@@ -38,7 +37,7 @@ const failures = createPersistenceFailures({
 /**
  * Website fields plus its theme, narrowed to what the mapper reads.
  *
- * @tenant-scope builder Every caller pins it by id and tenant, or says why it need not.
+ * @owner-scope builder Every caller pins it by id and tenant, or says why it need not.
  */
 const websiteWithTheme = () =>
   db.orm.public.Website.select(...WEBSITE_SUMMARY_SELECT).include('theme', (theme) =>
@@ -67,7 +66,7 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     ).map((record) => record && toWebsite(record));
   }
 
-  /** @tenant-scope capability The slug is the public address of a published site, unique across the platform. */
+  /** @owner-scope capability The slug is the public address of a published site, unique across the platform. */
   findBySlug(slug: string): AppResultAsync<Website | null, InfrastructureAppError> {
     return fromThrowableAsync(
       async () => websiteWithTheme().where({ slug }).first(),
@@ -75,60 +74,21 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     ).map((record) => record && toWebsite(record));
   }
 
-  findNames(
-    tenantIds: readonly TenantId[],
-    limit: number,
-  ): AppResultAsync<
-    ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>,
-    InfrastructureAppError
-  > {
-    if (tenantIds.length === 0) {
-      return okAsync([]);
-    }
-    return fromThrowableAsync(
-      async () =>
-        db.orm.public.Website.where((website) => website.id.in([...tenantIds]))
-          .select('id', 'name')
-          .orderBy([(website) => website.name.asc(), (website) => website.id.asc()])
-          .limit(limit)
-          .all(),
-      failures.infraOnly('findNames'),
-    ).map((records) =>
-      records.map((record) => ({ id: toWebsiteId(record.id), name: record.name })),
-    );
-  }
-
-  /** @tenant-scope platform Every website, for the platform administrator's website pickers. */
-  listOptions(limit: number): AppResultAsync<
-    {
-      readonly items: ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>;
-      readonly isTruncated: boolean;
-    },
-    InfrastructureAppError
-  > {
-    return fromThrowableAsync(
-      async () =>
-        db.orm.public.Website.select('id', 'name')
-          .orderBy([(website) => website.name.asc(), (website) => website.id.asc()])
-          // One more than asked, to know whether there are more.
-          .limit(limit + 1)
-          .all(),
-      failures.infraOnly('listOptions'),
-    ).map((records) => ({
-      items: records
-        .slice(0, limit)
-        .map((record) => ({ id: toWebsiteId(record.id), name: record.name })),
-      isTruncated: records.length > limit,
-    }));
-  }
-
-  /** @tenant-scope platform Every website, for the platform administrator's list. */
-  list(page: PageRequest): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
+  /** @owner-scope capability Auth supplies the allowlist; only platform authority supplies null. */
+  list(
+    page: PageRequest,
+    websiteIds: readonly WebsiteId[] | null,
+  ): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError> {
     return fromThrowableAsync(async () => {
-      const total = await db.orm.public.Website.aggregate((aggregate) => ({
+      const scoped =
+        websiteIds === null
+          ? db.orm.public.Website
+          : db.orm.public.Website.where((website) => website.id.in([...websiteIds]));
+      const total = await scoped.aggregate((aggregate) => ({
         total: aggregate.count(),
       }));
-      const records = await db.orm.public.Website.select(...WEBSITE_SUMMARY_SELECT)
+      const records = await scoped
+        .select(...WEBSITE_SUMMARY_SELECT)
         // `id` breaks ties so the order is stable between requests.
         .orderBy([(w) => w.updatedAt.desc(), (w) => w.id.asc()])
         .limit(page.pageSize)
@@ -180,22 +140,26 @@ export class PrismaWebsiteRepository implements WebsiteRepository {
     const data = toThemeData(theme);
     return fromThrowableAsync(
       () =>
-        db.transaction(async (tx) => {
-          const website = await tx.orm.public.Website.where({ id, tenantId })
-            .select(...WEBSITE_SUMMARY_SELECT)
-            .first();
-          if (website === null) {
-            return null;
-          }
+        retryTransient(() =>
+          db.transaction(async (tx) => {
+            const website = await tx.orm.public.Website.where({ id, tenantId })
+              .select(...WEBSITE_SUMMARY_SELECT)
+              // Serialize theme edits and deletion without blocking foreign-key checks on the website.
+              .forNoKeyUpdate()
+              .first();
+            if (website === null) {
+              return null;
+            }
 
-          const themeRow = await tx.orm.public.WebsiteTheme.select(...THEME_SELECT).upsert({
-            create: { websiteId: id, ...data },
-            update: data,
-            conflictOn: { websiteId: id },
-          });
+            const themeRow = await tx.orm.public.WebsiteTheme.select(...THEME_SELECT).upsert({
+              create: { websiteId: id, ...data },
+              update: data,
+              conflictOn: { websiteId: id },
+            });
 
-          return { ...website, theme: themeRow };
-        }),
+            return { ...website, theme: themeRow };
+          }),
+        ),
       failures.infraOnly('updateTheme'),
     )
       .andThen(failures.requireRow(websiteNotFound))

@@ -1,18 +1,18 @@
 import type { AppResultAsync } from '@lib/result';
 
-import { loadAuthorizedWebsite } from '../load-authorized-website';
+import { findWebsite } from '../services/find-website';
 import { toWebsiteView } from '../website-view-mappers';
 
 import type { WebsiteView } from '../contracts/website-views';
-import type { LoadWebsiteError } from '../load-authorized-website';
-import type { WebsiteDependencies } from '../website-dependencies';
+import type { ExistingWebsiteDependencies, WebsiteOperationError } from '../website-dependencies';
 
 export class GetWebsiteById {
-  constructor(private readonly deps: WebsiteDependencies) {}
+  constructor(private readonly deps: ExistingWebsiteDependencies) {}
 
-  execute(id: string): AppResultAsync<WebsiteView, LoadWebsiteError> {
-    return loadAuthorizedWebsite(this.deps, id, 'website.read').map(({ website }) =>
-      toWebsiteView(website),
-    );
+  execute(id: string): AppResultAsync<WebsiteView, WebsiteOperationError> {
+    return this.deps.access
+      .authorizeWebsite('website.read', id)
+      .andThen((scope) => findWebsite(this.deps.websites, scope))
+      .map(toWebsiteView);
   }
 }

@@ -7,7 +7,15 @@
       "slugPlaceholder": "musterstadt",
       "template": "Vorlage",
       "submit": "Website erstellen",
-      "submitting": "Wird erstellt…"
+      "submitting": "Wird erstellt…",
+      "slugHint": "Teil der öffentlichen Adresse. Wird aus dem Namen vorgeschlagen und kann später nicht geändert werden.",
+      "next": "Weiter: {step}",
+      "afterCreate": "Die Startseite wird aus der Vorlage angelegt. Danach zeigt die Übersicht der Website die nächsten Schritte.",
+      "steps": {
+        "basics": "Grundlagen",
+        "template": "Vorlage",
+        "review": "Prüfen"
+      }
     },
     "templates": {
       "municipal": {
@@ -88,6 +96,7 @@
       "slugTaken": "Dieser Slug ist bereits vergeben.",
       "validation": "Bitte überprüfen Sie Ihre Eingabe.",
       "infrastructure": "Ein Servicefehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
+      "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
       "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
     },
     "validation": {
@@ -110,7 +119,9 @@
       "builder": "Seiten",
       "bookings": "Buchungen",
       "releases": "Releases",
+      "media": "Medien",
       "data": "Datenquellen",
+      "maps": "Karten",
       "settings": "Einstellungen",
       "users": "Benutzer",
       "audit": "Protokoll",
@@ -118,28 +129,28 @@
       "allWebsites": "Alle Websites",
       "sections": "Bereiche",
       "administration": "Verwaltung",
-      "more": "Mehr"
+      "more": "Mehr",
+      "truncated": "Es wird nur ein Teil Ihrer Websites angezeigt.",
+      "breadcrumb": "Navigationspfad"
     },
     "pages": {
       "list": {
+        "truncated": "Diese Liste umfasst nur einen Teil Ihrer zugänglichen Websites. Öffnen Sie eine fehlende Website direkt.",
         "title": "Websites",
-        "description": "Erstellen und verwalten Sie die Websites Ihrer Kommune.",
+        "description": "Ihre zugänglichen Websites. Wählen Sie eine zum Arbeiten.",
         "empty": "Noch keine Websites",
-        "emptyDescription": "Erstellen Sie Ihre erste Website, um loszulegen.",
+        "emptyDescription": "In Ihrem Zugriffsbereich sind noch keine Websites verfügbar.",
         "createTitle": "Website erstellen",
-        "pagination": {
-          "nav": "Seiten der Webseitenliste"
-        },
-        "memberDescription": "Die Websites, zu denen Sie gehören. Wählen Sie eine zum Arbeiten.",
-        "panelTitle": "Websites",
+        "panelTitle": "Zugängliche Websites",
         "count": "{count, plural, one {# Website} other {# Websites}}",
         "paginationNav": "Seiten der Websiteliste",
-        "open": "Öffnen",
+        "open": "Verwalten",
         "columns": {
           "website": "Website",
           "address": "Adresse",
           "actions": "Aktionen"
-        }
+        },
+        "emptyCreateDescription": "Erstellen Sie die erste Website aus einer Vorlage."
       },
       "detail": {
         "publicSite": "Öffentliche Seite",
@@ -173,12 +184,25 @@
             },
             "booking": {
               "title": "Buchung einrichten",
-              "description": "Bürger buchen Termine direkt auf Ihrer Website."
+              "description": "Standort, Services, Ressourcen und ein Team anlegen: dann können Bürger direkt auf Ihrer Website Termine buchen."
             },
             "dataSource": {
               "title": "Datenquelle verbinden",
               "description": "Zum Beispiel Standorte oder Öffnungszeiten."
+            },
+            "map": {
+              "title": "Erste Karte einrichten",
+              "description": "Markieren Sie öffentliche Gebäude oder zeigen Sie Standortdaten und fügen Sie die Karte auf einer Seite ein."
             }
+          }
+        },
+        "groups": {
+          "metrics": {
+            "title": "Auf einen Blick"
+          },
+          "activity": {
+            "title": "Aktivität & Veröffentlichungen",
+            "description": "Änderungen verfolgen und den Veröffentlichungsverlauf prüfen."
           }
         }
       },
@@ -190,6 +214,16 @@
           "description": "Die Angaben oder das Design der Website haben ungespeicherte Änderungen. Sie gehen verloren, wenn Sie die Seite verlassen.",
           "confirm": "Änderungen verwerfen",
           "stay": "Weiter bearbeiten"
+        }
+      },
+      "create": {
+        "title": "Website erstellen",
+        "description": "Name, Adresse und Vorlage der neuen Website festlegen.",
+        "leave": {
+          "title": "Ohne Erstellen verlassen?",
+          "description": "Ihre Angaben zur neuen Website gehen verloren, wenn Sie die Seite verlassen.",
+          "confirm": "Angaben verwerfen",
+          "stay": "Weiter ausfüllen"
         }
       }
     },

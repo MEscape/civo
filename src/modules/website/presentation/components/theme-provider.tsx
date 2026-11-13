@@ -6,7 +6,7 @@ import { themeToCssVariables } from '../theme/theme-css';
 
 import type { WebsiteThemeView } from '../../application/contracts/website-views';
 
-export interface ThemeProviderProps {
+interface ThemeProviderProps {
   readonly theme: WebsiteThemeView;
   /** Layout is the caller's concern: the public site passes `min-h-dvh`, the preview does not. */
   readonly className?: string;

@@ -1,30 +1,34 @@
 import 'server-only';
-import { auditQueries, withAuditTrail } from '@modules/audit';
-import { getAccessControl } from '@modules/auth';
+import { cache } from 'react';
+
+import { withAuditTrail } from '@modules/audit';
+import { getAccessControl, getAuthQueries } from '@modules/auth';
 import { HOME_PAGE_PATH, createSystemPage } from '@modules/builder';
+
+import { getRateLimiter } from '@lib/rate-limit';
+import { once } from '@lib/utils';
 
 import { CreateWebsite } from './application/commands/create-website';
 import { UpdateWebsite } from './application/commands/update-website';
 import { UpdateWebsiteTheme } from './application/commands/update-website-theme';
-import { GetPlatformAuditTrail } from './application/queries/get-platform-audit-trail';
 import { GetPublicWebsiteBySlug } from './application/queries/get-public-website-by-slug';
-import { GetWebsiteAuditDigest } from './application/queries/get-website-audit-digest';
-import { GetWebsiteAuditTrail } from './application/queries/get-website-audit-trail';
 import { GetWebsiteById } from './application/queries/get-website-by-id';
-import { ListWebsiteNames } from './application/queries/list-website-names';
-import { ListWebsiteOptions } from './application/queries/list-website-options';
 import { ListWebsites } from './application/queries/list-websites';
 import { restoreWebsiteTheme } from './domain/models/website-theme';
-import { AuditModuleTrailReader } from './infrastructure/audit-trail/audit-module-trail-reader';
+import { AuthWebsiteAccess } from './infrastructure/access/auth-website-access';
 import {
   LEVEL_BY_EVENT,
   TRAIL_BY_EVENT,
   loggerWebsiteAuditLog,
-} from './infrastructure/logging/logger-website-audit-log';
+} from './infrastructure/audit/logger-website-audit-log';
 import { PrismaWebsiteRepository } from './infrastructure/prisma/prisma-website.repository';
 import { BuilderHomePageProvisioner } from './infrastructure/provisioner/builder-home-page-provisioner';
 
 import type { WebsiteThemeView } from './application/contracts/website-views';
+import type {
+  ExistingWebsiteDependencies,
+  WebsiteDependencies,
+} from './application/website-dependencies';
 import type { StoredWebsiteTheme } from './domain/models/website-theme';
 
 /** The module's audit port: its log lines, and the trail the website's audit page reads. */
@@ -39,30 +43,57 @@ const auditLog = withAuditTrail(loggerWebsiteAuditLog, {
  * application use cases and their infrastructure adapters. Presentation
  * and framework entry points reach use cases only through here, so they
  * never import infrastructure. `server-only` makes an accidental import
- * from a Client Component a build error.
+ * from a Client Component a build error. Like auth and audit, dependencies and
+ * use cases are process singletons built only when first requested. The access
+ * adapter delegates target authority to auth; events feed audit through its public API.
  */
-const websites = new PrismaWebsiteRepository();
-const homePages = new BuilderHomePageProvisioner(createSystemPage, HOME_PAGE_PATH);
-const authorization = getAccessControl();
-const dependencies = { authorization, websites, audit: auditLog };
-const auditTrail = new AuditModuleTrailReader(auditQueries);
+const getWebsites = once(() => new PrismaWebsiteRepository());
+const getDependencies = once<WebsiteDependencies>(() => ({
+  websites: getWebsites(),
+  authorization: getAccessControl(),
+  audit: auditLog,
+  rateLimiter: getRateLimiter(),
+}));
+const getExistingWebsiteDependencies = once<ExistingWebsiteDependencies>(() => ({
+  ...getDependencies(),
+  access: new AuthWebsiteAccess(getAuthQueries, getAccessControl()),
+}));
 
-export const websiteCommands = {
-  createWebsite: new CreateWebsite({ ...dependencies, homePages }),
-  updateWebsite: new UpdateWebsite(dependencies),
-  updateWebsiteTheme: new UpdateWebsiteTheme(dependencies),
-} as const;
+/** Commands retain independent authorization and emit events only after successful writes. */
+export const getWebsiteCommands = once(() => {
+  const dependencies = getExistingWebsiteDependencies();
+  return {
+    createWebsite: new CreateWebsite({
+      ...dependencies,
+      homePages: new BuilderHomePageProvisioner(createSystemPage, HOME_PAGE_PATH),
+    }),
+    updateWebsite: new UpdateWebsite(dependencies),
+    updateWebsiteTheme: new UpdateWebsiteTheme(dependencies),
+  } as const;
+});
 
+/** Website-owned reads only. Auth owns accessible website names; audit owns trail reads. */
+export const getWebsiteQueries = once(
+  () =>
+    ({
+      getWebsiteById: new GetWebsiteById(getExistingWebsiteDependencies()),
+      listWebsites: new ListWebsites(getExistingWebsiteDependencies()),
+      getPublicWebsiteBySlug: new GetPublicWebsiteBySlug({ websites: getWebsites() }),
+    }) as const,
+);
+
+/** Compatibility entry points for the website-owned query contracts. */
 export const websiteQueries = {
-  getWebsiteById: new GetWebsiteById(dependencies),
-  listWebsites: new ListWebsites(dependencies),
-  listWebsiteOptions: new ListWebsiteOptions(dependencies),
-  listWebsiteNames: new ListWebsiteNames({ websites }),
-  getPublicWebsiteBySlug: new GetPublicWebsiteBySlug({ websites }),
-  getAuditTrail: new GetWebsiteAuditTrail({ ...dependencies, auditTrail }),
-  getPlatformAuditTrail: new GetPlatformAuditTrail({ ...dependencies, auditTrail }),
-  getAuditDigest: new GetWebsiteAuditDigest({ ...dependencies, auditTrail }),
-} as const;
+  get getWebsiteById() {
+    return getWebsiteQueries().getWebsiteById;
+  },
+  get listWebsites() {
+    return getWebsiteQueries().listWebsites;
+  },
+  get getPublicWebsiteBySlug() {
+    return getWebsiteQueries().getPublicWebsiteBySlug;
+  },
+};
 
 /**
  * Reads a theme that the website module once validated and someone else
@@ -75,3 +106,8 @@ export function restoreStoredWebsiteTheme(
 ): WebsiteThemeView {
   return restoreWebsiteTheme(stored);
 }
+
+/** The metadata and screen share this authorized website read within one request. */
+export const loadWebsite = cache((websiteId: string) =>
+  getWebsiteQueries().getWebsiteById.execute(websiteId),
+);

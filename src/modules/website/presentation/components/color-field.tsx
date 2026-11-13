@@ -4,12 +4,13 @@ import { useId } from 'react';
 
 import { useController } from 'react-hook-form';
 
-import { FieldMessage } from '@components/shared/field-message';
+import { FieldMessage } from '@components/shared/field';
 import { Input, Label } from '@components/ui/input';
 
 import { useTranslations } from '@i18n/client';
 
-import { HEX_COLOR_PATTERN } from '../../application/contracts/website-constraints';
+import { parseHexColor } from '@lib/utils';
+
 import { MESSAGE_PARAMS, messageKeyForCode } from '../messages/message-keys';
 
 import type { ThemeSettings } from '../schemas/theme-settings-schema';
@@ -18,7 +19,7 @@ import type { Control } from 'react-hook-form';
 /** A native colour input needs a valid value; this shows while the hex text is half-typed. */
 const NEUTRAL_PICKER_COLOR = '#000000';
 
-export interface ColorFieldProps {
+interface ColorFieldProps {
   readonly control: Control<ThemeSettings>;
   readonly name: 'colors.primary' | 'colors.secondary' | 'colors.accent';
   readonly label: string;
@@ -41,7 +42,7 @@ export function ColorField({ control, name, label }: ColorFieldProps) {
           type="color"
           aria-label={t('themeSettings.colorPicker', { color: label })}
           className="h-9 w-12 cursor-pointer p-1"
-          value={HEX_COLOR_PATTERN.test(field.value) ? field.value : NEUTRAL_PICKER_COLOR}
+          value={parseHexColor(field.value) === null ? NEUTRAL_PICKER_COLOR : field.value}
           onChange={field.onChange}
         />
         <Input

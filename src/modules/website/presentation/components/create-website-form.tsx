@@ -1,133 +1,63 @@
 'use client';
 
-import { useId, useState, useTransition } from 'react';
-import type { ChangeEvent } from 'react';
+import { useId } from 'react';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-
-import { builderRoutes } from '@modules/builder/client';
-
-import { FieldMessage } from '@components/shared/field-message';
-import { FormPanelBody, FormPanelFooter } from '@components/shared/form-panel';
-import { TextField } from '@components/shared/text-field';
-import { Button } from '@components/ui/button';
-
-import { useRouter } from '@i18n';
+import { FieldMessage } from '@components/shared/field';
+import { Wizard, WizardActions } from '@components/shared/wizard';
 
 import { useTranslations } from '@i18n/client';
 
-import { applyActionError } from '@lib/actions';
-import { slugify } from '@lib/utils';
-
-import {
-  TEMPLATE_KEYS,
-  WEBSITE_ERROR_CODES,
-} from '../../application/contracts/website-constraints';
-import { createWebsiteAction } from '../actions/create-website-action';
+import { NEW_WEBSITE_STEP_LABELS, NEW_WEBSITE_STEPS } from '../forms/new-website-steps';
+import { useCreateWebsiteForm } from '../hooks/use-create-website-form';
 import { MESSAGE_PARAMS, messageKeyForCode } from '../messages/message-keys';
-import { newWebsiteSchema } from '../schemas/new-website-schema';
+import { websiteRoutes } from '../routes';
 
-import { TemplatePicker } from './template-picker';
+import { CreateWebsiteFormFields } from './create-website-form-fields';
 
-import type { NewWebsite } from '../schemas/new-website-schema';
-import type { FieldPath } from 'react-hook-form';
+import type { NewWebsiteStep } from '../forms/new-website-steps';
 
-// @unsaved-work none creating, not editing; the fields are re-entered in a minute
-const DEFAULT_TEMPLATE_KEY = TEMPLATE_KEYS[0];
-
-/** "Slug taken" is reported on the slug input, not as a form-level message. */
-const CODE_FIELDS: Readonly<Record<string, FieldPath<NewWebsite>>> = {
-  [WEBSITE_ERROR_CODES.slugTaken]: 'slug',
-};
-
-export function CreateWebsiteForm() {
+/** The "new website" wizard: basics, template, review. Each step lives in the address. */
+export function CreateWebsiteForm({ step }: { readonly step: NewWebsiteStep }) {
   const t = useTranslations('website');
-  /** A field's error code as text in this module's language; `undefined` while the field is valid. */
-  const errorText = (code: string | undefined) =>
-    code === undefined ? undefined : t(messageKeyForCode(code), MESSAGE_PARAMS);
-
-  const router = useRouter();
   const id = useId();
-  const [isPending, startTransition] = useTransition();
-  const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
-
-  const form = useForm<NewWebsite>({
-    resolver: zodResolver(newWebsiteSchema),
-    defaultValues: { name: '', slug: '', templateKey: DEFAULT_TEMPLATE_KEY },
-  });
-  const { errors } = form.formState;
-
-  const nameId = `${id}-name`;
-  const slugId = `${id}-slug`;
-
-  /** Follow the name until the user has typed their own slug. */
-  function handleNameChange(event: ChangeEvent<HTMLInputElement>) {
-    if (form.getFieldState('slug').isDirty) {
-      return;
-    }
-    form.setValue('slug', slugify(event.target.value), {
-      shouldValidate: form.formState.isSubmitted,
-    });
-  }
-
-  /** Normalise on blur, not per keystroke, so typing a hyphen is possible. */
-  function handleSlugBlur(event: ChangeEvent<HTMLInputElement>) {
-    form.setValue('slug', slugify(event.target.value), {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  }
-
-  function handleSubmit(values: NewWebsite) {
-    setFormErrorCode(null);
-    startTransition(async () => {
-      const result = await createWebsiteAction(values);
-      if (result.ok) {
-        router.push(builderRoutes.pages(result.data.id));
-        return;
-      }
-      setFormErrorCode(applyActionError(result.error, form.setError, CODE_FIELDS));
-    });
-  }
+  const screen = useCreateWebsiteForm(step);
+  const { wizard } = screen;
 
   return (
-    <form onSubmit={form.handleSubmit(handleSubmit)} noValidate aria-busy={isPending}>
-      <FormPanelBody>
-        <TextField
-          id={nameId}
-          label={t('createForm.name')}
-          placeholder={t('createForm.namePlaceholder')}
-          autoComplete="organization"
-          error={errorText(errors.name?.message)}
-          {...form.register('name', { onChange: handleNameChange })}
-        />
-
-        <TextField
-          id={slugId}
-          label={t('createForm.slug')}
-          placeholder={t('createForm.slugPlaceholder')}
-          autoComplete="off"
-          error={errorText(errors.slug?.message)}
-          {...form.register('slug', { onBlur: handleSlugBlur })}
-        />
-
-        <TemplatePicker control={form.control} />
-      </FormPanelBody>
-      <FormPanelFooter
+    <form noValidate aria-busy={screen.isPending} onSubmit={screen.onSubmit}>
+      <Wizard
+        steps={NEW_WEBSITE_STEPS.map((key) => ({ key, label: t(NEW_WEBSITE_STEP_LABELS[key]) }))}
+        currentKey={step}
         status={
-          formErrorCode !== null && (
-            <FieldMessage
-              id={`${id}-form-error`}
-              message={t(messageKeyForCode(formErrorCode), MESSAGE_PARAMS)}
-            />
-          )
+          <FieldMessage
+            id={`${id}-error`}
+            message={
+              screen.formErrorCode === null
+                ? undefined
+                : t(messageKeyForCode(screen.formErrorCode), MESSAGE_PARAMS)
+            }
+          />
+        }
+        actions={
+          <WizardActions
+            cancelHref={websiteRoutes.list()}
+            hasPrevious={wizard.previous !== undefined}
+            nextLabel={
+              wizard.next === undefined
+                ? undefined
+                : t('createForm.next', { step: t(NEW_WEBSITE_STEP_LABELS[wizard.next]) })
+            }
+            saveLabel={screen.isPending ? t('createForm.submitting') : t('createForm.submit')}
+            isPending={screen.isPending}
+            onBack={wizard.goBack}
+            onNext={() => {
+              void wizard.goNext();
+            }}
+          />
         }
       >
-        <Button type="submit" disabled={isPending}>
-          {isPending ? t('createForm.submitting') : t('createForm.submit')}
-        </Button>
-      </FormPanelFooter>
+        <CreateWebsiteFormFields key={step} id={id} step={step} screen={screen} />
+      </Wizard>
     </form>
   );
 }

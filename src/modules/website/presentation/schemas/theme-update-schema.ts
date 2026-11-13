@@ -8,5 +8,3 @@ export const themeUpdateSchema = z.object({
   websiteId: websiteIdSchema,
   theme: themeSettingsSchema,
 });
-
-export type ThemeUpdate = z.infer<typeof themeUpdateSchema>;

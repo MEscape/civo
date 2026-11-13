@@ -1,26 +1,20 @@
 'use client';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@components/ui/select';
+import { NavDisclosure } from '@components/layout/nav-disclosure';
+import { Alert } from '@components/ui/alert';
 
-import { usePathname, useRouter } from '@i18n';
+import { usePathname } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
 
 import { websiteRoutes } from '../routes';
 
-export interface SwitchableWebsite {
+interface SwitchableWebsite {
   readonly id: string;
   readonly name: string;
 }
 
-export interface WebsiteSwitcherProps {
+interface WebsiteSwitcherProps {
   readonly current: SwitchableWebsite;
   /** The websites the person can go to, the current one included or not. */
   readonly websites: readonly SwitchableWebsite[];
@@ -32,9 +26,9 @@ export interface WebsiteSwitcherProps {
   readonly keepSection: boolean;
   /** Offer the list of all websites as the last choice. */
   readonly offerList: boolean;
+  /** Auth reports when its bounded selector omits websites. */
+  readonly isTruncated?: boolean;
 }
-
-const ALL = '__all__';
 
 /** The first part of the path below the website: `releases` for `/websites/<id>/releases/<release>/preview`. */
 function sectionOf(pathname: string | null, currentId: string): string {
@@ -53,44 +47,48 @@ export function WebsiteSwitcher({
   websites,
   keepSection,
   offerList,
+  isTruncated = false,
 }: WebsiteSwitcherProps) {
   const t = useTranslations('website');
   const pathname = usePathname();
-  const router = useRouter();
   const choices = websites.some((website) => website.id === current.id)
     ? websites
     : [current, ...websites];
 
-  function handleChange(value: string) {
-    if (value === ALL) {
-      router.push(websiteRoutes.list());
-      return;
-    }
-    const section = keepSection ? sectionOf(pathname, current.id) : '';
-    router.push(`${websiteRoutes.detail(value)}${section}`);
-  }
+  const section = keepSection ? sectionOf(pathname, current.id) : '';
+  const links = choices.map((website) => ({
+    href: `${websiteRoutes.detail(website.id)}${section}`,
+    label: website.name,
+    isCurrent: pathname === `${websiteRoutes.detail(website.id)}${section}`,
+  }));
 
   return (
-    <Select value={current.id} onValueChange={handleChange}>
-      <SelectTrigger
-        aria-label={t('nav.switch')}
-        className="mr-1 h-8 w-auto max-w-36 self-center sm:mr-3 sm:max-w-56 gap-2 border-transparent bg-transparent px-2 font-heading font-semibold shadow-none hover:bg-canvas"
-      >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {choices.map((website) => (
-          <SelectItem key={website.id} value={website.id}>
-            {website.name}
-          </SelectItem>
-        ))}
-        {offerList && (
-          <>
-            <SelectSeparator />
-            <SelectItem value={ALL}>{t('nav.allWebsites')}</SelectItem>
-          </>
-        )}
-      </SelectContent>
-    </Select>
+    <NavDisclosure
+      label={
+        <>
+          <span className="sr-only">{t('nav.switch')}: </span>
+          <span className="max-w-24 truncate font-heading font-semibold text-copy sm:max-w-56">
+            {current.name}
+          </span>
+        </>
+      }
+      links={
+        offerList
+          ? [
+              ...links,
+              { href: websiteRoutes.list(), label: t('nav.allWebsites'), isCurrent: false },
+            ]
+          : links
+      }
+      isCurrent={false}
+      notice={
+        isTruncated ? (
+          <Alert variant="warning" role="status">
+            {t('nav.truncated')}
+          </Alert>
+        ) : undefined
+      }
+      className="mr-3 shrink-0 self-stretch"
+    />
   );
 }

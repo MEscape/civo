@@ -2,6 +2,7 @@ import {
   conflictError,
   infrastructureError,
   notFoundError,
+  rateLimitedError,
   unexpectedError,
   validationError,
   FieldErrorBag,
@@ -10,9 +11,11 @@ import type {
   ConflictAppError,
   InfrastructureAppError,
   NotFoundAppError,
+  RateLimitedAppError,
   UnexpectedAppError,
   ValidationAppError,
 } from '@lib/errors';
+import type { RateLimitFailure } from '@lib/rate-limit';
 
 /**
  * Stable codes. Presentation maps these to translation keys (i18n.md);
@@ -29,6 +32,8 @@ export const WEBSITE_ERROR_CODES = {
   persistenceFailed: 'website.persistence_failed',
   homePageProvisioningFailed: 'website.home_page_provisioning_failed',
   homePageBlueprintRejected: 'website.home_page_blueprint_rejected',
+  rateLimited: 'website.rate_limited',
+  rateLimiterFailed: 'website.rate_limiter_failed',
 } as const;
 
 /** Field-level codes, carried in `fieldErrors`. Also stable, also never prose. */
@@ -102,4 +107,26 @@ export function homePageBlueprintRejected(cause: unknown): UnexpectedAppError {
     'The builder rejected the home page blueprint.',
     cause,
   );
+}
+
+/** The same person asked for too much in a short time. */
+function rateLimited(retryAfterSeconds: number): RateLimitedAppError {
+  return rateLimitedError(
+    WEBSITE_ERROR_CODES.rateLimited,
+    'Too many requests. Please wait a moment and try again.',
+    retryAfterSeconds,
+  );
+}
+
+/** A refusal of the shared limiter, in this module's own codes, so its message table stays complete. */
+export function fromRateLimitFailure(
+  failure: RateLimitFailure,
+): RateLimitedAppError | InfrastructureAppError {
+  return failure.kind === 'rate_limited'
+    ? rateLimited(failure.retryAfterSeconds)
+    : infrastructureError(
+        WEBSITE_ERROR_CODES.rateLimiterFailed,
+        'The request limit could not be checked.',
+        failure.cause,
+      );
 }

@@ -1,16 +1,14 @@
-import { OverviewCard, OverviewRow } from '@components/shared/overview-card';
-import { ProgressBar } from '@components/shared/progress-bar';
+import { OnboardingChecklist } from '@components/shared/process-steps';
 import { buttonVariants } from '@components/ui/button';
-import { Check } from '@components/ui/icons';
 
 import { Link } from '@i18n';
 import type { Locale } from '@i18n';
 
 import { getTranslations } from '@i18n/server';
 
-import { cn } from '@lib/utils';
+import { ONBOARDING_STEP_MESSAGE_KEYS } from '../messages/message-keys';
 
-export type OnboardingStepId = 'page' | 'publish' | 'booking' | 'dataSource';
+type OnboardingStepId = keyof typeof ONBOARDING_STEP_MESSAGE_KEYS;
 
 export interface OnboardingStep {
   readonly id: OnboardingStepId;
@@ -19,7 +17,7 @@ export interface OnboardingStep {
   readonly href: string | null;
 }
 
-export interface OnboardingCardProps {
+interface OnboardingCardProps {
   readonly locale: Locale;
   readonly steps: readonly OnboardingStep[];
 }
@@ -37,53 +35,20 @@ export async function OnboardingCard({ locale, steps }: OnboardingCardProps) {
   }
 
   return (
-    <OverviewCard title={t('pages.detail.onboarding.title')}>
-      <OverviewRow className="space-y-2">
-        <p className="text-sm text-copy-muted">
-          {t('pages.detail.onboarding.progress', { done, total: steps.length })}
-        </p>
-        <ProgressBar
-          value={done}
-          max={steps.length}
-          label={t('pages.detail.onboarding.progress', { done, total: steps.length })}
-        />
-      </OverviewRow>
-      {steps.map((step) => (
-        <OverviewRow key={step.id} className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className={cn(
-              'flex size-5 shrink-0 items-center justify-center rounded-full border',
-              step.isDone
-                ? 'border-success-border bg-success-subtle text-success'
-                : 'border-border-strong',
-            )}
-          >
-            {step.isDone && <Check className="size-3" />}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className={cn('text-sm font-medium', step.isDone ? 'text-copy-muted' : 'text-copy')}>
-              {t(`pages.detail.onboarding.steps.${step.id}.title`)}
-            </p>
-            {!step.isDone && (
-              <p className="text-xs text-copy-muted">
-                {t(`pages.detail.onboarding.steps.${step.id}.description`)}
-              </p>
-            )}
-          </div>
-          {step.isDone ? (
-            <span className="text-xs font-medium text-copy-muted">
-              {t('pages.detail.onboarding.done')}
-            </span>
-          ) : (
-            step.href !== null && (
-              <Link href={step.href} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                {t('pages.detail.onboarding.start')}
-              </Link>
-            )
-          )}
-        </OverviewRow>
-      ))}
-    </OverviewCard>
+    <OnboardingChecklist
+      title={t('pages.detail.onboarding.title')}
+      progressLabel={t('pages.detail.onboarding.progress', { done, total: steps.length })}
+      doneLabel={t('pages.detail.onboarding.done')}
+      steps={steps.map((step) => ({
+        ...step,
+        title: t(ONBOARDING_STEP_MESSAGE_KEYS[step.id].title),
+        description: t(ONBOARDING_STEP_MESSAGE_KEYS[step.id].description),
+        action: step.href !== null && (
+          <Link href={step.href} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            {t('pages.detail.onboarding.start')}
+          </Link>
+        ),
+      }))}
+    />
   );
 }

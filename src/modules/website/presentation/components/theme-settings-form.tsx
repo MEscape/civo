@@ -1,104 +1,34 @@
 'use client';
 
-import { useId, useState, useTransition } from 'react';
+import { useId } from 'react';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useWatch } from 'react-hook-form';
-
-import { DataPanel } from '@components/shared/data-panel';
-import { FormSelectField } from '@components/shared/form-select-field';
-import { useReportUnsavedChanges } from '@components/shared/unsaved-changes-guard';
+import { DataPanel, DataPanelSaveFooter } from '@components/shared/data-panel';
+import { FormSelectField } from '@components/shared/select-field';
 
 import { useTranslations } from '@i18n/client';
 
-import { applyActionError } from '@lib/actions';
-
-import {
-  BODY_FONT_FAMILIES,
-  THEME_FONT_FAMILIES,
-  THEME_RADII,
-  THEME_SPACING_SCALES,
-} from '../../application/contracts/website-constraints';
-import { updateWebsiteThemeAction } from '../actions/update-website-theme-action';
-import {
-  RADIUS_MESSAGE_KEYS,
-  SPACING_MESSAGE_KEYS,
-  messageKeyForCode,
-} from '../messages/message-keys';
-import { themeSettingsSchema } from '../schemas/theme-settings-schema';
-import { toPreviewTheme } from '../theme/preview-theme';
+import { useThemeSettingsForm } from '../hooks/use-theme-settings-form';
 
 import { ColorField } from './color-field';
-import { SettingsActions } from './settings-actions';
 import { ThemePreview } from './theme-preview';
 
 import type { WebsiteThemeView } from '../../application/contracts/website-views';
-import type { ThemeSettings } from '../schemas/theme-settings-schema';
 
-/** A font's name is its own label: font names are not translated. */
-function fontOption(font: string) {
-  return { value: font, label: font };
-}
-
-export interface ThemeSettingsFormProps {
+interface ThemeSettingsFormProps {
   readonly websiteId: string;
   readonly initialTheme: WebsiteThemeView;
 }
 
 export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsFormProps) {
   const t = useTranslations('website');
-  /** A field's error code as text in this module's language; `undefined` while the field is valid. */
-  const errorText = (code: string | undefined) =>
-    code === undefined ? undefined : t(messageKeyForCode(code));
-
-  const headingFontOptions = THEME_FONT_FAMILIES.map(fontOption);
-  const bodyFontOptions = BODY_FONT_FAMILIES.map(fontOption);
-  const radiusOptions = THEME_RADII.map((radius) => ({
-    value: radius,
-    label: t(RADIUS_MESSAGE_KEYS[radius]),
-  }));
-  const spacingOptions = THEME_SPACING_SCALES.map((scale) => ({
-    value: scale,
-    label: t(SPACING_MESSAGE_KEYS[scale]),
-  }));
-
   const id = useId();
-  const [isPending, startTransition] = useTransition();
-  const [formErrorCode, setFormErrorCode] = useState<string | null>(null);
-  const [hasSaved, setHasSaved] = useState(false);
-
-  const form = useForm<ThemeSettings>({
-    resolver: zodResolver(themeSettingsSchema),
-    defaultValues: initialTheme,
-  });
-  const { isDirty } = form.formState;
-  useReportUnsavedChanges(isDirty);
-  const previewTheme = toPreviewTheme(useWatch({ control: form.control }), initialTheme);
-
-  // Derived, not stored: the confirmation disappears as soon as the user edits again.
-  const showSaved = hasSaved && !isDirty;
-
-  function handleSubmit(values: ThemeSettings) {
-    setFormErrorCode(null);
-    setHasSaved(false);
-    startTransition(async () => {
-      const result = await updateWebsiteThemeAction({
-        websiteId,
-        theme: values,
-      });
-      if (!result.ok) {
-        setFormErrorCode(applyActionError(result.error, form.setError));
-        return;
-      }
-      form.reset(result.data.theme);
-      setHasSaved(true);
-    });
-  }
+  const theme = useThemeSettingsForm({ websiteId, initialTheme });
+  const { form, isPending, isDirty, errorText, options } = theme;
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <DataPanel title={t('themeSettings.title')} description={t('themeSettings.description')}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} noValidate aria-busy={isPending}>
+        <form onSubmit={theme.onSubmit} noValidate aria-busy={isPending}>
           <div className="divide-y divide-border">
             <fieldset className="p-4 sm:p-6">
               <legend className="float-left mb-4 w-full text-xs font-semibold uppercase tracking-wide text-copy-muted">
@@ -133,7 +63,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
                   name="typography.headingFont"
                   id={`${id}-heading-font`}
                   label={t('themeSettings.headingFont')}
-                  options={headingFontOptions}
+                  options={options.headingFont}
                   errorText={errorText}
                 />
                 <FormSelectField
@@ -141,7 +71,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
                   name="typography.bodyFont"
                   id={`${id}-body-font`}
                   label={t('themeSettings.bodyFont')}
-                  options={bodyFontOptions}
+                  options={options.bodyFont}
                   errorText={errorText}
                 />
               </div>
@@ -157,7 +87,7 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
                   name="radius"
                   id={`${id}-radius`}
                   label={t('themeSettings.radiusLabel')}
-                  options={radiusOptions}
+                  options={options.radius}
                   errorText={errorText}
                 />
                 <FormSelectField
@@ -165,27 +95,27 @@ export function ThemeSettingsForm({ websiteId, initialTheme }: ThemeSettingsForm
                   name="spacingScale"
                   id={`${id}-spacing`}
                   label={t('themeSettings.spacingLabel')}
-                  options={spacingOptions}
+                  options={options.spacing}
                   errorText={errorText}
                 />
               </div>
             </fieldset>
           </div>
 
-          <SettingsActions
+          <DataPanelSaveFooter
             id={id}
             isPending={isPending}
             isDirty={isDirty}
-            showSaved={showSaved}
+            showSaved={theme.showSaved}
             savedLabel={t('themeSettings.saved')}
             unsavedLabel={t('settingsActions.unsaved')}
             submitLabel={isPending ? t('themeSettings.submitting') : t('themeSettings.submit')}
-            error={formErrorCode === null ? undefined : t(messageKeyForCode(formErrorCode))}
+            error={theme.formError}
           />
         </form>
       </DataPanel>
 
-      <ThemePreview theme={previewTheme} />
+      <ThemePreview theme={theme.previewTheme} />
     </div>
   );
 }

@@ -32,29 +32,14 @@ export interface WebsiteRepository {
   findBySlug(slug: string): AppResultAsync<Website | null, InfrastructureAppError>;
 
   /**
-   * One page of every website of the platform, newest activity first, with the
-   * total (performance.md: every list is bounded). Not tenant-scoped: only the
-   * platform administrator's use case calls it.
+   * One page within the authorized allowlist, newest activity first. Apply the same
+   * scope to counts and rows. Null explicitly requests platform authority; an empty
+   * allowlist matches nothing.
    */
-  list(page: PageRequest): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError>;
-
-  /** The names of the websites of these tenants (a tenant is its website), by name. Bounded by `limit`; tenants that name no website are skipped. */
-  findNames(
-    tenantIds: readonly TenantId[],
-    limit: number,
-  ): AppResultAsync<
-    ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>,
-    InfrastructureAppError
-  >;
-
-  /** Every website's id and name, by name, for choosing one. Bounded by `limit`; `isTruncated` says there are more. */
-  listOptions(limit: number): AppResultAsync<
-    {
-      readonly items: ReadonlyArray<{ readonly id: WebsiteId; readonly name: string }>;
-      readonly isTruncated: boolean;
-    },
-    InfrastructureAppError
-  >;
+  list(
+    page: PageRequest,
+    websiteIds: readonly WebsiteId[] | null,
+  ): AppResultAsync<Page<WebsiteSummary>, InfrastructureAppError>;
 
   /**
    * Stores the website as its own tenant: a tenant is its website, so the

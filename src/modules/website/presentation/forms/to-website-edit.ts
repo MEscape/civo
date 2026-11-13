@@ -1,3 +1,5 @@
+import { isBlank } from '@lib/utils';
+
 import type { GeneralSettings } from '../schemas/general-settings-schema';
 import type { WebsiteEdit } from '../schemas/website-edit-schema';
 
@@ -6,6 +8,6 @@ export function toWebsiteEdit(websiteId: string, values: GeneralSettings): Websi
   return {
     id: websiteId,
     name: values.name,
-    description: values.description.trim() === '' ? null : values.description,
+    description: isBlank(values.description) ? null : values.description,
   };
 }

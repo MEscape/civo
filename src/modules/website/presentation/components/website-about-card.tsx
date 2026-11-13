@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { CopyButton } from '@components/shared/copy-button';
-import { OverviewCard, OverviewRow } from '@components/shared/overview-card';
-import { ExternalLink } from '@components/ui/icons';
+import { ExternalLink } from '@components/icons/icons';
+import { OverviewPanel, OverviewRow } from '@components/shared/data-panel';
+import { CopyButton } from '@components/shared/page-parts.client';
 
 import { Link } from '@i18n';
 import type { Locale } from '@i18n';
@@ -11,7 +11,7 @@ import { getAppFormatters, getTranslations } from '@i18n/server';
 
 import type { WebsiteView } from '../../application/contracts/website-views';
 
-export interface WebsiteAboutCardProps {
+interface WebsiteAboutCardProps {
   readonly locale: Locale;
   readonly website: WebsiteView;
   /** Where the public site is served; `null` until something is published. */
@@ -47,7 +47,7 @@ export async function WebsiteAboutCard({
   ]);
 
   return (
-    <OverviewCard title={t('pages.detail.about.title')}>
+    <OverviewPanel title={t('pages.detail.about.title')}>
       <OverviewRow>
         <dl className="space-y-2.5">
           <Fact label={t('pages.detail.about.address')}>
@@ -87,6 +87,6 @@ export async function WebsiteAboutCard({
           <Fact label={t('pages.detail.about.updated')}>{format.dateTime(website.updatedAt)}</Fact>
         </dl>
       </OverviewRow>
-    </OverviewCard>
+    </OverviewPanel>
   );
 }

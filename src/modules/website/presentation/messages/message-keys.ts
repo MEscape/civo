@@ -22,6 +22,7 @@ type ValidKeys = NestedKeyOf<MessageCatalog['website']>;
  * Codes -> translation keys, relative to the `website` namespace.
  * `satisfies Record<WebsiteCode, ...>` makes a new code fail to compile
  * until it has a message.
+ * @keep Architecture tooling inspects this named export for error-code coverage.
  */
 export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.notFound]: fieldPath('errors', 'notFound'),
@@ -30,6 +31,8 @@ export const MESSAGE_KEY_BY_CODE = {
   [ERRORS.persistenceFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.homePageProvisioningFailed]: fieldPath('errors', 'infrastructure'),
   [ERRORS.homePageBlueprintRejected]: fieldPath('errors', 'infrastructure'),
+  [ERRORS.rateLimited]: fieldPath('errors', 'rateLimited'),
+  [ERRORS.rateLimiterFailed]: fieldPath('errors', 'infrastructure'),
   [VALIDATION.idInvalid]: fieldPath('validation', 'idInvalid'),
   [VALIDATION.nameTooShort]: fieldPath('validation', 'nameTooShort'),
   [VALIDATION.nameTooLong]: fieldPath('validation', 'nameTooLong'),
@@ -44,10 +47,10 @@ export const MESSAGE_KEY_BY_CODE = {
   [VALIDATION.spacingUnsupported]: fieldPath('validation', 'spacingUnsupported'),
 } as const satisfies Record<WebsiteCode, ValidKeys>;
 
+/** @keep Architecture tooling inspects this named fallback export. */
 export const GENERIC_ERROR_MESSAGE_KEY = fieldPath('errors', 'unexpected');
 
-export type MessageKey =
-  (typeof MESSAGE_KEY_BY_CODE)[WebsiteCode] | typeof GENERIC_ERROR_MESSAGE_KEY;
+type MessageKey = (typeof MESSAGE_KEY_BY_CODE)[WebsiteCode] | typeof GENERIC_ERROR_MESSAGE_KEY;
 
 function isWebsiteCode(code: string): code is WebsiteCode {
   return Object.hasOwn(MESSAGE_KEY_BY_CODE, code);
@@ -104,3 +107,27 @@ export const SPACING_MESSAGE_KEYS = {
   comfortable: fieldPath('themeSettings', 'spacing', 'comfortable'),
   spacious: fieldPath('themeSettings', 'spacing', 'spacious'),
 } as const satisfies Record<ThemeSpacingScale, ValidKeys>;
+
+/** Static keys keep every onboarding step covered by both locale catalogs. */
+export const ONBOARDING_STEP_MESSAGE_KEYS = {
+  page: {
+    title: 'pages.detail.onboarding.steps.page.title',
+    description: 'pages.detail.onboarding.steps.page.description',
+  },
+  publish: {
+    title: 'pages.detail.onboarding.steps.publish.title',
+    description: 'pages.detail.onboarding.steps.publish.description',
+  },
+  booking: {
+    title: 'pages.detail.onboarding.steps.booking.title',
+    description: 'pages.detail.onboarding.steps.booking.description',
+  },
+  dataSource: {
+    title: 'pages.detail.onboarding.steps.dataSource.title',
+    description: 'pages.detail.onboarding.steps.dataSource.description',
+  },
+  map: {
+    title: 'pages.detail.onboarding.steps.map.title',
+    description: 'pages.detail.onboarding.steps.map.description',
+  },
+} as const satisfies Record<string, { readonly title: ValidKeys; readonly description: ValidKeys }>;
