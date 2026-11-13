@@ -12,3 +12,5 @@ terraform init
 terraform import oci_core_public_ip.reserved <reserved-public-ip-ocid>
 terraform apply
 ```
+
+If `eu-frankfurt-1` returns `Out of host capacity` for `VM.Standard.A1.Flex`, [`retry-a1.sh`](./retry-a1.sh) loops across all Frankfurt availability domains (`2/12`, `2/8`, `1/6`, `1/4` OCPU/GB within Always Free limits) until capacity opens and attaches the reserved public IP.
