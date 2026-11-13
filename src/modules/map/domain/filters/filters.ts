@@ -1,3 +1,5 @@
+import { isDefined } from '@lib/utils';
+
 import type { FieldProfile, MapFeature, MapLayer } from '../features/map-features';
 
 export const FILTER_LIMITS = {
@@ -126,7 +128,7 @@ export function deriveFilters(layers: readonly MapLayer[]): readonly FilterDefin
     }
   }
   return [...merged.values()]
-    .filter((definition): definition is FilterDefinition => definition !== null)
+    .filter(isDefined)
     .sort((a, b) => priorityOf(a.field) - priorityOf(b.field))
     .slice(0, FILTER_LIMITS.maxFilters);
 }
@@ -174,13 +176,16 @@ function matches(feature: MapFeature, field: string, value: FilterValue): boolea
 
 /**
  * Features of one layer that pass every active filter. A filter only
- * constrains layers that have its field: filtering parking by `status` must
- * not make an unrelated districts layer disappear.
+ * constrains layers that offer it, the same layers `deriveFilters` counted
+ * its options from: filtering parking by `status` must not make an unrelated
+ * districts layer disappear, nor may a background layer whose `category` is
+ * one constant value (`Stadtbezirk`) vanish when a visitor picks a toilet type.
  */
 export function filterFeatures(layer: MapLayer, state: FilterState): readonly MapFeature[] {
   const applicable = Object.entries(state).filter(
     ([field, value]) =>
-      isFilterActive(value) && layer.fields.some((profile) => profile.key === field),
+      isFilterActive(value) &&
+      layer.fields.some((profile) => profile.key === field && definitionOf(profile) !== null),
   );
   if (applicable.length === 0) {
     return layer.features;

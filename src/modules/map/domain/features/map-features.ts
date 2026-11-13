@@ -4,6 +4,16 @@ import type { Bounds, GeoGeometry, GeometryFamily } from '../geo/geometry';
 export type AttributeValue = string | number | boolean;
 export type Attributes = Readonly<Record<string, AttributeValue>>;
 
+export const MAP_FEATURE_LIMITS = {
+  id: 128,
+  label: 300,
+  description: 500,
+  href: 2_048,
+  properties: 40,
+  propertyKey: 64,
+  propertyText: 200,
+} as const;
+
 /**
  * One located record as the host hands it over. Untrusted: the geometry is
  * `unknown` on purpose, because the map decides what it can draw.
@@ -28,6 +38,7 @@ export interface MapLayerInput {
   readonly id: string;
   readonly label: string;
   readonly features: readonly MapFeatureInput[];
+  readonly rejectedFeatures?: number | undefined;
 }
 
 export interface MapFeature {

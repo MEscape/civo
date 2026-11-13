@@ -1,3 +1,5 @@
+import { unique } from '@lib/utils';
+
 import type { FieldProfile, MapLayer } from '../features/map-features';
 import type { GeometryFamily } from '../geo/geometry';
 import type { MapConfig, PointStyle } from '../models/map-config';
@@ -128,7 +130,7 @@ export function resolveLayerStyle(
   config: MapConfig,
   layerIndex: number,
 ): LayerStyle {
-  const families = [...new Set(layer.features.map((feature) => feature.family))];
+  const families = unique(layer.features.map((feature) => feature.family));
   return {
     layerId: layer.id,
     label: layer.label,

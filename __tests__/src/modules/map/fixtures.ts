@@ -4,14 +4,21 @@ import type { MapModel } from '@modules/map/application/contracts/map-views';
 import { BuildMapModel } from '@modules/map/application/queries/build-map-model';
 import type { DataIssues } from '@modules/map/domain/features/map-features';
 
-/** Runs the use case with a reporter that remembers what it was told. */
+/** Runs the use case with an audit log that remembers the dropped-feature reports it was told. */
 export function prepareMap(
   layers: readonly MapLayerInput[],
   config: MapConfig,
   reports: DataIssues[] = [],
 ): MapModel {
   const result = new BuildMapModel({
-    reporter: { report: (issues) => reports.push(issues) },
+    audit: {
+      record: (event) => {
+        if (event.type === 'map.features_dropped') {
+          const { type: _type, ...issues } = event;
+          reports.push(issues);
+        }
+      },
+    },
   }).execute({ layers, config });
   if (result.isErr()) {
     throw new Error('BuildMapModel cannot fail');

@@ -1,13 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
-import {
-  buildLayerGroups,
-  colorExpression,
-  highlightFilters,
-  withAlpha,
-} from '@modules/map/presentation/mapbox/mapbox-layers';
-import type { ResolvedPalette } from '@modules/map/presentation/mapbox/mapbox-layers';
+import { colorExpression, withAlpha } from '@modules/map/presentation/mapbox/mapbox-expressions';
+import type { ResolvedPalette } from '@modules/map/presentation/mapbox/mapbox-expressions';
+import { buildLayerGroups, highlightFilters } from '@modules/map/presentation/mapbox/mapbox-layers';
 
 import { layer, parkingLayer, point, prepareMap } from './fixtures';
 

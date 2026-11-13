@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it, vi } from 'vitest';
 
-import { MapCanvas } from '@modules/map/presentation/components/map-canvas.client';
+import { MapCanvas } from '@modules/map/presentation/components/canvas/map-canvas.client';
 import enMap from '@modules/map/presentation/i18n/en.json';
 import type {
   CreateMapRenderer,

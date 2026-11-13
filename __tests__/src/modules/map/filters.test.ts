@@ -152,6 +152,20 @@ describe('filterFeatures', () => {
     ).toHaveLength(1);
   });
 
+  it('keeps a layer whose field holds one constant value, which the filter does not offer', () => {
+    const background = districtsLayer();
+    const [, districts] = layersOf(parkingLayer(), {
+      ...background,
+      features: background.features.map((feature) => ({
+        ...feature,
+        attributes: { ...feature.attributes, status: 'district' },
+      })),
+    });
+    expect(
+      filterFeatures(districts!, { status: { kind: 'select', selected: ['available'] } }),
+    ).toHaveLength(1);
+  });
+
   it('hides features that have no value for an active filter', () => {
     const [sparse] = layersOf(
       layer('s', [

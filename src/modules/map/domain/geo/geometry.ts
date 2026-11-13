@@ -43,6 +43,12 @@ export const GEOMETRY_LIMITS = {
 
 const MAX_LATITUDE = 90;
 const MAX_LONGITUDE = 180;
+export const GEO_LIMITS = {
+  longitude: MAX_LONGITUDE,
+  latitude: MAX_LATITUDE,
+  boundsLength: 4,
+} as const;
+export const WORLD_BOUNDS: Bounds = [-MAX_LONGITUDE, -MAX_LATITUDE, MAX_LONGITUDE, MAX_LATITUDE];
 
 const SUPPORTED_TYPES: ReadonlySet<string> = new Set<GeometryKind>([
   'Point',

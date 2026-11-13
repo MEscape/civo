@@ -107,9 +107,13 @@ function prepareLayer(input: MapLayerInput, dropped: Map<FeatureIssue, number>):
  */
 export function prepareLayers(inputs: readonly MapLayerInput[]): PreparedLayers {
   const dropped = new Map<FeatureIssue, number>();
+  const rejected = inputs.reduce((count, layer) => count + (layer.rejectedFeatures ?? 0), 0);
+  if (rejected > 0) {
+    dropped.set(MAP_VALIDATION_CODES.recordInvalid, rejected);
+  }
   const layers = inputs.map((input) => prepareLayer(input, dropped));
 
-  const received = inputs.reduce((sum, layer) => sum + layer.features.length, 0);
+  const received = inputs.reduce((sum, layer) => sum + layer.features.length, rejected);
   const droppedCount = [...dropped.values()].reduce((sum, count) => sum + count, 0);
 
   return {

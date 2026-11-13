@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MapLayerInput } from '@modules/map';
 import type { MapConfig } from '@modules/map/application/contracts/map-constraints';
-import { MapExplorer } from '@modules/map/presentation/components/map-explorer.client';
+import { MapExplorer } from '@modules/map/presentation/components/explorer/map-explorer.client';
 import enMap from '@modules/map/presentation/i18n/en.json';
 import type {
   CreateMapRenderer,
@@ -15,12 +15,7 @@ import type {
 
 import { districtsLayer, layer, parkingLayer, point, prepareMap } from './fixtures';
 
-const push = vi.hoisted(() => vi.fn());
-// Only the router needs replacing: it requires a mounted Next.js app router.
-vi.mock('@i18n', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  useRouter: () => ({ push }),
-}));
+const assign = vi.fn();
 
 const CONFIG: MapConfig = {
   pointStyle: 'circles',
@@ -103,7 +98,8 @@ async function ready(fake: ReturnType<typeof fakeRenderer>) {
 }
 
 beforeEach(() => {
-  push.mockClear();
+  assign.mockClear();
+  vi.spyOn(window.location, 'assign').mockImplementation(assign);
 });
 
 describe('loading, ready and failure states', () => {
@@ -138,16 +134,34 @@ describe('loading, ready and failure states', () => {
     );
   });
 
-  it('keeps everything but the background when no map token is configured', () => {
+  it('draws first-party geography and keeps the list without a map token', () => {
     const create = vi.fn<CreateMapRenderer>();
     renderMap({ tiles: null, create });
 
     expect(create).not.toHaveBeenCalled();
-    expect(screen.getByText(/map background is not available/i)).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Map: Parking' }).querySelectorAll('path')).toHaveLength(
+      4,
+    );
+    const image = screen.getByRole('img', { name: 'Map: Parking' });
+    const initialView = image.getAttribute('viewBox');
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(image.getAttribute('viewBox')).not.toBe(initialView);
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    expect(image.getAttribute('viewBox')).toBe(initialView);
     expect(screen.getByRole('button', { name: 'Show Feature a on the map' })).toBeInTheDocument();
   });
 
-  it('falls back to the list when the renderer reports a failure', async () => {
+  it('draws a heatmap layer as a glow on the first-party map, keeping each place selectable', () => {
+    renderMap({ tiles: null, config: { pointStyle: 'heatmap' } });
+
+    const image = screen.getByRole('img', { name: 'Map: Parking' });
+    const glows = image.querySelectorAll('circle');
+    expect(glows.length).toBeGreaterThan(0);
+    expect(glows[0]?.getAttribute('fill')).toMatch(/^url\(#/);
+    expect(image.querySelectorAll('[data-feature-key] path')).toHaveLength(glows.length);
+  });
+
+  it('falls back to first-party geography and the list when the renderer fails', async () => {
     const { fake } = renderMap();
     await waitFor(() => {
       expect(fake.box.options).not.toBeNull();
@@ -157,7 +171,7 @@ describe('loading, ready and failure states', () => {
     });
 
     expect(screen.getByText(/map could not be displayed/i)).toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: 'Map: Parking' })).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Map: Parking' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Show Feature a on the map' })).toBeInTheDocument();
   });
 
@@ -248,6 +262,34 @@ describe('filters', () => {
     expect(featureCount(lastLayers(fake))).toBe(4);
   });
 
+  it('keep the vector map and its background areas when a category is picked', () => {
+    const background = districtsLayer();
+    renderMap({
+      tiles: null,
+      inputs: [
+        parkingLayer(),
+        {
+          ...background,
+          features: background.features.map((feature) => ({
+            ...feature,
+            attributes: { ...feature.attributes, status: 'district' },
+          })),
+        },
+      ],
+    });
+    const image = screen.getByRole('img', { name: 'Map: Parking' });
+    expect(image.querySelectorAll('[data-feature-key]')).toHaveLength(5);
+
+    const status = screen.getByRole('group', { name: 'Status' });
+    fireEvent.click(within(status).getByRole('checkbox', { name: 'available (2)' }));
+
+    expect(screen.getByRole('img', { name: 'Map: Parking' })).toBe(image);
+    const keys = [...image.querySelectorAll('[data-feature-key]')].map((g) =>
+      g.getAttribute('data-feature-key'),
+    );
+    expect(keys).toEqual(['districts:north', 'parking:a', 'parking:c']);
+  });
+
   it('are not shown when the map is configured without them', () => {
     renderMap({ config: { showFilters: false } });
     expect(screen.queryByText('Filters')).not.toBeInTheDocument();
@@ -302,7 +344,7 @@ describe('selecting a feature', () => {
     expect(within(details).getByText('Status')).toBeInTheDocument();
     expect(within(details).getByText('available')).toBeInTheDocument();
     expect(within(details).getByText('Mar 1, 2025, 8:00 AM')).toBeInTheDocument();
-    expect(details).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByText('Selected: Feature a')).toHaveAttribute('role', 'status');
     expect(screen.getByRole('button', { name: 'Show Feature a on the map' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -364,7 +406,7 @@ describe('selecting a feature', () => {
     ).not.toBeInTheDocument();
   });
 
-  it("offers a real link for a feature that has one, keeping the visitor's locale for site pages", async () => {
+  it('offers a real link without rewriting the content address', async () => {
     const { fake } = renderMap({
       inputs: [
         layer('l', [
@@ -380,7 +422,7 @@ describe('selecting a feature', () => {
     });
     expect(screen.getByRole('link', { name: 'Open page for Feature a' })).toHaveAttribute(
       'href',
-      '/en/services/parking',
+      '/services/parking',
     );
 
     act(() => {
@@ -404,7 +446,7 @@ describe('selecting a feature', () => {
     act(() => {
       fake.box.options?.onSelect('l:a');
     });
-    expect(push).toHaveBeenCalledWith('/services/parking');
+    expect(assign).toHaveBeenCalledWith('/services/parking');
 
     act(() => {
       fake.box.options?.onSelect('l:b');

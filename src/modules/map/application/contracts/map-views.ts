@@ -16,4 +16,5 @@ export interface MapModel {
   readonly bounds: Bounds | null;
   readonly featureCount: number;
   readonly issues: DataIssues;
+  readonly isTruncated?: boolean | undefined;
 }

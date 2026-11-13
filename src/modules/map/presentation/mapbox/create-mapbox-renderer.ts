@@ -1,6 +1,9 @@
+import { GEO_LIMITS } from '../../application/contracts/map-constraints';
+
 import { KEY_PROPERTY, buildLayerGroups, highlightFilters } from './mapbox-layers';
 
-import type { LayerGroups, ResolvedPalette } from './mapbox-layers';
+import type { ResolvedPalette } from './mapbox-expressions';
+import type { LayerGroups } from './mapbox-layers';
 import type { Bounds, LayerStyle, MapFeature } from '../../application/contracts/map-constraints';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { GeoJSONSource, Map as MapboxMap, MapMouseEvent } from 'mapbox-gl';
@@ -26,6 +29,7 @@ export interface RendererOptions {
   readonly onReady: () => void;
   /** Fired when the map can no longer work (invalid token, style failed). */
   readonly onFailure: () => void;
+  readonly onViewportChange?: ((bounds: Bounds) => void) | undefined;
 }
 
 /**
@@ -38,6 +42,7 @@ export interface MapRenderer {
   /** Moves the view to a location, e.g. after picking it from the list. */
   showBounds(bounds: Bounds): void;
   destroy(): void;
+  resize?(): void;
 }
 
 export type CreateMapRenderer = (options: RendererOptions) => Promise<MapRenderer>;
@@ -84,6 +89,8 @@ class MapboxRenderer implements MapRenderer {
   private pending: readonly RenderLayer[] = [];
   private selectedKey: string | null = null;
   private areLayersAdded = false;
+  private appliedStyle: string | null = null;
+  private pointerCleanups: Array<() => void> = [];
 
   constructor(
     private readonly map: MapboxMap,
@@ -93,6 +100,10 @@ class MapboxRenderer implements MapRenderer {
       this.isLoaded = true;
       this.apply();
       options.onReady();
+      this.reportViewport();
+    });
+    map.on('moveend', () => {
+      this.reportViewport();
     });
     map.on('error', (event) => {
       const status = (event.error as { status?: number } | undefined)?.status;
@@ -132,6 +143,24 @@ class MapboxRenderer implements MapRenderer {
     this.map.remove();
   }
 
+  resize(): void {
+    this.map.resize();
+  }
+
+  private reportViewport(): void {
+    const bounds = this.map.getBounds();
+    const west = Math.max(-GEO_LIMITS.longitude, bounds.getWest());
+    const east = Math.min(GEO_LIMITS.longitude, bounds.getEast());
+    if (west < east) {
+      this.options.onViewportChange?.([
+        west,
+        Math.max(-GEO_LIMITS.latitude, bounds.getSouth()),
+        east,
+        Math.min(GEO_LIMITS.latitude, bounds.getNorth()),
+      ]);
+    }
+  }
+
   private fit(bounds: Bounds, extra: { maxZoom: number }): void {
     this.map.fitBounds(
       [
@@ -143,8 +172,11 @@ class MapboxRenderer implements MapRenderer {
   }
 
   private apply(): void {
-    if (!this.areLayersAdded) {
+    const signature = JSON.stringify(this.pending.map((layer) => layer.style));
+    if (!this.areLayersAdded || signature !== this.appliedStyle) {
+      this.clearLayers();
       this.addLayers(this.pending);
+      this.appliedStyle = signature;
       this.areLayersAdded = true;
       this.applyHighlight();
     } else {
@@ -153,6 +185,24 @@ class MapboxRenderer implements MapRenderer {
         source?.setData(this.collection(layer));
       }
     }
+  }
+
+  private clearLayers(): void {
+    for (const cleanup of this.pointerCleanups) {
+      cleanup();
+    }
+    this.pointerCleanups = [];
+    for (const [layerId, group] of this.groups) {
+      for (const layer of [...group.highlights, ...group.points, ...group.lines, ...group.areas]) {
+        if (this.map.getLayer(layer.id) !== undefined) {
+          this.map.removeLayer(layer.id);
+        }
+      }
+      if (this.map.getSource(sourceIdOf(layerId)) !== undefined) {
+        this.map.removeSource(sourceIdOf(layerId));
+      }
+    }
+    this.groups.clear();
   }
 
   private collection(layer: RenderLayer): FeatureCollection {
@@ -190,11 +240,17 @@ class MapboxRenderer implements MapRenderer {
     };
     for (const group of ordered) {
       for (const id of group.interactiveIds) {
-        this.map.on('mouseenter', id, () => {
+        const enter = () => {
           pointer(true);
-        });
-        this.map.on('mouseleave', id, () => {
+        };
+        const leave = () => {
           pointer(false);
+        };
+        this.map.on('mouseenter', id, enter);
+        this.map.on('mouseleave', id, leave);
+        this.pointerCleanups.push(() => {
+          this.map.off('mouseenter', id, enter);
+          this.map.off('mouseleave', id, leave);
         });
       }
     }
@@ -261,6 +317,7 @@ export const createMapboxRenderer: CreateMapRenderer = async (options) => {
     locale: { ...options.locale },
     // The map sits inside a scrolling page: gestures must not trap the scroll.
     cooperativeGestures: true,
+    renderWorldCopies: options.onViewportChange === undefined,
     center: WORLD_CENTER,
     zoom: WORLD_ZOOM,
     respectPrefersReducedMotion: true,

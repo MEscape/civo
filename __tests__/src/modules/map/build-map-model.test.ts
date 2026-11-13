@@ -116,7 +116,7 @@ describe('prepareMap: partial and invalid geographic data', () => {
 });
 
 describe('BuildMapModel: reporting', () => {
-  it('tells the reporter what was left out, and stays silent when nothing was', () => {
+  it('records what was left out in the audit log, and stays silent when nothing was', () => {
     const reports: DataIssues[] = [];
     prepareMap([layer('l', [point('ok', 10, 51)])], CONFIG, reports);
     expect(reports).toEqual([]);
