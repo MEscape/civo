@@ -1,3 +1,12 @@
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@components/ui/breadcrumb';
+
 import { Link } from '@i18n';
 
 import { useTranslations } from '@i18n/client';
@@ -10,21 +19,20 @@ export interface ToolbarBreadcrumbProps {
 /** Where the page sits: the website's name and sections are the bar above the editor, so only the page list and the page are named here. */
 export function ToolbarBreadcrumb({ pageTitle, pagesHref }: ToolbarBreadcrumbProps) {
   const t = useTranslations('builder');
+
   return (
-    <nav aria-label={t('toolbar.breadcrumb')} className="min-w-0">
-      <ol className="flex min-w-0 items-center gap-2 text-sm">
-        <li className="hidden sm:block">
-          <Link href={pagesHref} className="text-copy-muted hover:underline">
-            {t('toolbar.pages')}
-          </Link>
-        </li>
-        <li aria-hidden="true" className="hidden text-border sm:block">
-          /
-        </li>
-        <li aria-current="page" className="truncate font-medium text-copy">
-          {pageTitle}
-        </li>
-      </ol>
-    </nav>
+    <Breadcrumb aria-label={t('toolbar.breadcrumb')} className="min-w-0">
+      <BreadcrumbList className="flex-nowrap gap-2">
+        <BreadcrumbItem className="shrink-0">
+          <BreadcrumbLink asChild>
+            <Link href={pagesHref}>{t('toolbar.pages')}</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem className="min-w-0">
+          <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }

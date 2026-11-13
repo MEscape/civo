@@ -1,3 +1,4 @@
+// @ui-plain button editor chrome: a gesture surface (pointer and keyboard drag) with its own focus ring and hit area, which Button would change
 import type { ReactNode } from 'react';
 
 import { cn } from '@lib/utils';

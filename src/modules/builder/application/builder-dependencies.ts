@@ -1,15 +1,14 @@
-import type { AuthorizationService } from '@modules/auth';
-
 import type { RateLimiter } from '@lib/rate-limit';
 
 import type { ComponentCatalog } from '../domain/models/component-catalog';
+import type { BuilderAccess } from '../domain/ports/builder-access.port';
 import type { BuilderAuditLog } from '../domain/ports/builder-audit-log.port';
 import type { DraftPageRenderer } from '../domain/ports/draft-page-renderer.port';
 import type { PageRepository } from '../domain/ports/page.repository';
 
 /** What every operation on an existing page needs to authorize and load it. */
-export interface PageAccessDependencies {
-  readonly authorization: AuthorizationService;
+export interface BuilderAccessDependencies {
+  readonly access: BuilderAccess;
   readonly pages: PageRepository;
 }
 
@@ -18,23 +17,20 @@ export interface PageAccessDependencies {
  * pure model built once from the platform's descriptors by the composition
  * root, so use cases never touch the component registry.
  */
-export interface PageDependencies extends PageAccessDependencies {
+export interface BuilderDependencies extends BuilderAccessDependencies {
   readonly components: ComponentCatalog;
   readonly audit: BuilderAuditLog;
 }
 
 /** Saving also has a budget per editor: a save is a write of up to a whole page. */
-export interface SavePageDependencies extends PageDependencies {
+export interface SavePageDependencies extends BuilderDependencies {
   readonly rateLimiter: RateLimiter;
 }
 
 /** The page list reads pages and sketches them from the catalog. */
-export type ListPagesDependencies = Pick<
-  PageDependencies,
-  'authorization' | 'pages' | 'components'
->;
+export type ListPagesDependencies = Pick<BuilderDependencies, 'access' | 'pages' | 'components'>;
 
-export interface RenderDraftPageDependencies<TOutput> extends PageAccessDependencies {
+export interface RenderDraftPageDependencies<TOutput> extends BuilderAccessDependencies {
   readonly rateLimiter: RateLimiter;
   readonly renderer: DraftPageRenderer<TOutput>;
 }

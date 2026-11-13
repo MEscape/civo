@@ -80,6 +80,8 @@ export interface PageRepository {
   ): AppResultAsync<Slice<PageListItem>, InfrastructureAppError>;
 
   /**
+   * @truncation none The caller asks for one row more than its bound allows and refuses the read when it comes back; a cut result is never used.
+   *
    * Every page of a website with its latest configuration, restored
    * leniently: a damaged page is reported as such instead of failing the
    * read. Bounded: never returns more than `limit` items.

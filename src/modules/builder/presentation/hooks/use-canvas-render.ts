@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { requestDraftRender } from '../render/request-draft-render';
 import { useBuilderSelector } from '../state/builder-hooks';
-import { selectPageId } from '../state/builder-selectors';
+import { selectPageId, selectWebsiteId } from '../state/builder-selectors';
 
 import type { PageNode } from '../../application/contracts/editor-model';
 
@@ -33,7 +33,11 @@ const INITIAL_STATE: CanvasRenderState = {
  * content already on the canvas and tear down its effects on every edit. In a
  * transition the old content stays until the new one is ready.
  */
-export function useCanvasRender(children: readonly PageNode[]): CanvasRenderState {
+export function useCanvasRender(
+  children: readonly PageNode[],
+  view: 'canvas' | 'preview' = 'canvas',
+): CanvasRenderState {
+  const websiteId = useBuilderSelector(selectWebsiteId);
   const pageId = useBuilderSelector(selectPageId);
   const [state, setState] = useState(INITIAL_STATE);
 
@@ -43,7 +47,7 @@ export function useCanvasRender(children: readonly PageNode[]): CanvasRenderStat
       setState((previous) =>
         previous.isRendering ? previous : { ...previous, isRendering: true },
       );
-      void requestDraftRender(pageId, children).then((outcome) => {
+      void requestDraftRender({ websiteId, pageId }, children, view).then((outcome) => {
         if (!isCurrent) {
           return;
         }
@@ -61,7 +65,7 @@ export function useCanvasRender(children: readonly PageNode[]): CanvasRenderStat
       isCurrent = false;
       clearTimeout(timeout);
     };
-  }, [pageId, children]);
+  }, [websiteId, pageId, children, view]);
 
   return state;
 }

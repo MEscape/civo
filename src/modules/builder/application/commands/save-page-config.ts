@@ -1,5 +1,3 @@
-import type { Actor } from '@modules/auth';
-
 import type { ConflictAppError, ForbiddenAppError, ValidationAppError } from '@lib/errors';
 import { ok } from '@lib/result';
 import type { AppResult, AppResultAsync } from '@lib/result';
@@ -7,26 +5,29 @@ import type { AppResult, AppResultAsync } from '@lib/result';
 import { parsePageVersion } from '../../domain/models/page';
 import { parsePageConfig } from '../../domain/models/page-config';
 import { checkComposition, checkEditScope } from '../../domain/rules/page-save-checks';
-import { countPageNodes } from '../../domain/tree/tree-operations';
-import { loadAuthorizedPage } from '../load-authorized-page';
-import { toSavedRevisionView } from '../page-view-mappers';
+import { countPageNodes } from '../../domain/tree/tree-queries';
+import { toSavedRevisionView } from '../builder-view-mappers';
 import { BUILDER_RATE_LIMITS } from '../rate-limits';
+import { findPage } from '../services/find-page';
 import { mayRestructure } from '../services/may-restructure';
 import { withinActorLimit } from '../services/within-actor-limit';
 
 import type { Page } from '../../domain/models/page';
 import type { PageConfig } from '../../domain/models/page-config';
-import type { SavePageConfigInput, SavedRevisionView } from '../contracts/page-views';
-import type { LoadPageError } from '../load-authorized-page';
-import type { SavePageDependencies } from '../page-dependencies';
+import type { BuilderAccessError, BuilderScope } from '../../domain/ports/builder-access.port';
+import type { SavePageDependencies } from '../builder-dependencies';
+import type { SavePageConfigInput } from '../contracts/page-inputs';
+import type { SavedRevisionView } from '../contracts/page-views';
+import type { FindPageError } from '../services/find-page';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
-export type SavePageConfigError = LoadPageError | ConflictAppError | ActorLimitError;
+export type SavePageConfigError =
+  BuilderAccessError | FindPageError | ConflictAppError | ActorLimitError;
 
 /** What a save is judged against: the stored page and who is saving it, in which mode. */
 interface SaveContext {
   readonly page: Page;
-  readonly actor: Actor;
+  readonly scope: BuilderScope;
   readonly canRestructure: boolean;
 }
 
@@ -38,46 +39,42 @@ interface ValidatedSave {
 /**
  * Saves the editor's draft as a new revision.
  *
- * What the actor may change is decided HERE, from their permissions, and
- * checked against the stored page: hiding a control in the UI is not
- * authorization. A save is refused when it exceeds what the actor may change
- * (and recorded as a security signal), or when someone saved a newer
- * revision since this editor loaded the page (`expectedVersion`). Each
+ * What the actor may change is decided HERE, from their permissions in the page's website, and
+ * checked against the stored page: hiding a control in the UI is not authorization. A save is
+ * refused when it exceeds what the actor may change (and recorded as a security signal), or when
+ * someone saved a newer revision since this editor loaded the page (`expectedVersion`). Each
  * editor has a budget of saves, spent after authorization.
  */
 export class SavePageConfig {
   constructor(private readonly deps: SavePageDependencies) {}
 
   execute(input: SavePageConfigInput): AppResultAsync<SavedRevisionView, SavePageConfigError> {
-    const { pages, audit } = this.deps;
+    const { access, pages, audit } = this.deps;
 
-    return loadAuthorizedPage(this.deps, input.pageId, 'page.update')
+    return access
+      .authorizeWebsite('page.update', input.websiteId)
       .andThen(withinActorLimit(this.deps, BUILDER_RATE_LIMITS.savePage))
-      .andThen(({ actor, page }) =>
-        this.validate(input, {
-          page,
-          actor,
-          canRestructure: mayRestructure(actor),
-        }).asyncAndThen(({ config, expectedVersion }) =>
-          pages
-            .saveConfig({
-              id: page.id,
-              tenantId: actor.tenantId,
-              config,
-              expectedVersion,
-            })
-            .map((revision) => {
-              audit.record({
-                type: 'page.config_saved',
-                actorId: actor.id,
-                tenantId: actor.tenantId,
-                pageId: page.id,
-                websiteId: page.websiteId,
-                version: revision.version,
-                nodeCount: countPageNodes(config.children),
-              });
-              return toSavedRevisionView(revision, page);
-            }),
+      .andThen((scope) =>
+        findPage(pages, scope, input.pageId).andThen((page) =>
+          mayRestructure(access, input.websiteId).andThen((canRestructure) =>
+            this.validate(input, { page, scope, canRestructure }).asyncAndThen(
+              ({ config, expectedVersion }) =>
+                pages
+                  .saveConfig({ id: page.id, tenantId: scope.tenantId, config, expectedVersion })
+                  .map((revision) => {
+                    audit.record({
+                      type: 'page.config_saved',
+                      actorId: scope.actorId,
+                      tenantId: scope.tenantId,
+                      pageId: page.id,
+                      websiteId: page.websiteId,
+                      version: revision.version,
+                      nodeCount: countPageNodes(config.children),
+                    });
+                    return toSavedRevisionView(revision, page);
+                  }),
+            ),
+          ),
         ),
       );
   }
@@ -96,7 +93,7 @@ export class SavePageConfig {
 
   private checkScope(
     config: PageConfig,
-    { page, actor, canRestructure }: SaveContext,
+    { page, scope, canRestructure }: SaveContext,
   ): AppResult<PageConfig, ForbiddenAppError> {
     return checkEditScope({
       previous: page.config,
@@ -108,8 +105,8 @@ export class SavePageConfig {
       .mapErr((error) => {
         this.deps.audit.record({
           type: 'page.edit_scope_violation',
-          actorId: actor.id,
-          tenantId: actor.tenantId,
+          actorId: scope.actorId,
+          tenantId: scope.tenantId,
           pageId: page.id,
           errorCode: error.code,
         });

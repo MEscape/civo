@@ -37,8 +37,20 @@ export function PropertyFieldRow({ nodeId, field, nodeProps }: PropertyFieldRowP
   const labelId = `${id}-label`;
 
   return (
-    <div className="space-y-1.5">
-      <Label id={labelId} htmlFor={id}>
+    <div
+      className={
+        field.control === 'switch'
+          ? 'flex items-center justify-between gap-4 rounded-token border border-border bg-canvas p-3'
+          : 'space-y-1.5'
+      }
+    >
+      <Label
+        id={labelId}
+        htmlFor={id}
+        className={
+          field.control === 'switch' ? 'min-w-0 flex-1 cursor-pointer leading-normal' : undefined
+        }
+      >
         {text.fieldLabel(field)}
       </Label>
       <PropertyControl

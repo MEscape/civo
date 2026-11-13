@@ -4,12 +4,12 @@ import type { AppResultAsync } from '@lib/result';
 
 import { pageLimitExceeded } from '../../domain/errors/builder-errors';
 import { parseWebsiteId } from '../../domain/models/ids';
-import { MAX_RELEASE_PAGES } from '../list-limits';
-import { toReleasePageView } from '../page-view-mappers';
+import { MAX_RELEASE_PAGES } from '../builder-limits';
+import { toReleasePageView } from '../builder-view-mappers';
 
 import type { ReleasePage } from '../../domain/models/release-page';
-import type { ReleasePageView } from '../contracts/page-views';
-import type { PageReaderDependencies } from '../page-dependencies';
+import type { PageReaderDependencies } from '../builder-dependencies';
+import type { ReleasePageView } from '../contracts/release-page-views';
 
 export type ListPagesForReleaseError =
   ValidationAppError | ConflictAppError | InfrastructureAppError;

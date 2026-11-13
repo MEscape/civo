@@ -17,6 +17,7 @@ export const BUILDER_RATE_LIMITS = {
     id: 'builder.save-page',
     limit: 600,
     windowSeconds: SECONDS_PER_MINUTE,
+    // @fail-open a refused save would lose the editor's work, and the actor is already authenticated and authorized
     onBackendFailure: 'allow',
   },
   /** The canvas re-renders on every debounced edit, so a person dragging a component asks often. */
@@ -24,6 +25,7 @@ export const BUILDER_RATE_LIMITS = {
     id: 'builder.render-draft',
     limit: 240,
     windowSeconds: SECONDS_PER_MINUTE,
+    // @fail-open a refused render only leaves the canvas stale, and the actor is already authenticated and authorized
     onBackendFailure: 'allow',
   },
 } as const satisfies Record<string, RateLimitPolicy>;

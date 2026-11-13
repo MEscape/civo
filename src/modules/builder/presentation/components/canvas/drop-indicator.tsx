@@ -4,10 +4,15 @@ export interface DropIndicatorProps {
   readonly rect: IndicatorRect | null;
 }
 
+/**
+ * A restrained insertion line for before/after, and a filled, dashed highlight for dropping
+ * inside a container: both intentionally distinct from the selection and hover outlines, so a
+ * person never confuses "this is selected" with "this is where your drag will land".
+ */
 const VARIANT_CLASS = {
-  before: 'civo-drop-indicator--line',
-  after: 'civo-drop-indicator--line',
-  inside: 'civo-drop-indicator--inside',
+  before: 'bg-accent ring-1 ring-accent/40',
+  after: 'bg-accent ring-1 ring-accent/40',
+  inside: 'bg-accent/10 outline-2 -outline-offset-2 outline-dashed outline-accent',
 } as const satisfies Record<IndicatorRect['position'], string>;
 
 /**
@@ -22,7 +27,7 @@ export function DropIndicator({ rect }: DropIndicatorProps) {
   return (
     <div
       aria-hidden="true"
-      className={`civo-drop-indicator ${VARIANT_CLASS[rect.position]}`}
+      className={`pointer-events-none absolute z-20 rounded-sm ${VARIANT_CLASS[rect.position]}`}
       style={{
         top: rect.top,
         left: rect.left,

@@ -119,7 +119,8 @@
       "dataset": {
         "placeholder": "Beispieldaten (kein Datensatz)",
         "unavailable": "Kontext fehlt.",
-        "option": "{name} ({source})"
+        "option": "{name} ({source})",
+        "truncated": "Es wird nur ein Teil der passenden Datensätze angezeigt. Ein fehlender Datensatz kann außerhalb dieser Liste liegen."
       },
       "datasets": {
         "empty": "Noch keine passenden Datensätze.",
@@ -135,7 +136,16 @@
         "add": "Eintrag hinzufügen",
         "remove": "Eintrag {number} entfernen",
         "limit": "Diese Liste umfasst höchstens {max} Einträge."
-      }
+      },
+      "booking": {
+        "allServices": "Alle Leistungen",
+        "allCategories": "Alle Kategorien",
+        "serviceOption": "{name} ({category})",
+        "staleService": "Gespeicherter Service (nicht mehr buchbar)",
+        "staleCategory": "{value} (von keinem Service genutzt)"
+      },
+      "visibleHint": "Diese Komponente wird auf der Seite angezeigt.",
+      "hiddenHint": "Auf der Seite ausgeblendet. Die Einstellungen bleiben erhalten."
     },
     "pages": {
       "list": {
@@ -143,19 +153,19 @@
         "description": "Die Seiten dieser Website. Öffnen Sie eine, um sie zu bearbeiten.",
         "label": "Seiten dieser Website",
         "empty": "Noch keine Seiten",
-        "emptyDescription": "Legen Sie unten die erste Seite an.",
+        "emptyDescription": "Diese Website hat noch keine Seiten.",
         "homePage": "Startseite",
-        "savedAt": "{when} · Version {version}",
         "createTitle": "Seite anlegen",
-        "pagination": {
-          "nav": "Seiten der Seitenliste"
-        },
         "columns": {
           "page": "Seite",
-          "saved": "Zuletzt gespeichert"
+          "saved": "Zuletzt gespeichert",
+          "actions": "Aktionen"
         },
         "count": "{count, plural, one {# Seite} other {# Seiten}}",
-        "edit": "{title} bearbeiten"
+        "version": "Version {version}",
+        "open": "Öffnen",
+        "paginationNav": "Seiten der Seitenliste",
+        "emptyCreateDescription": "Legen Sie die erste Seite an. Sie öffnet sich danach im Editor."
       },
       "createForm": {
         "title": "Titel",
@@ -164,7 +174,24 @@
         "pathPlaceholder": "ueber-uns",
         "pathHint": "Kleinbuchstaben, Ziffern, Bindestriche und Schrägstriche. Leer lassen für die Startseite.",
         "submit": "Seite anlegen",
-        "submitting": "Wird angelegt…"
+        "submitting": "Wird angelegt…",
+        "steps": {
+          "page": "Seite",
+          "review": "Prüfen"
+        },
+        "next": "Weiter: {step}",
+        "afterCreate": "Die Seite wird leer angelegt und im Editor geöffnet. Besucher sehen sie erst nach dem nächsten Veröffentlichen."
+      },
+      "create": {
+        "title": "Seite anlegen",
+        "description": "Titel und Adresse der neuen Seite festlegen.",
+        "breadcrumb": "Navigationspfad",
+        "leave": {
+          "title": "Ohne Anlegen verlassen?",
+          "description": "Ihre Angaben zur neuen Seite gehen verloren, wenn Sie die Seite verlassen.",
+          "confirm": "Angaben verwerfen",
+          "stay": "Weiter ausfüllen"
+        }
       }
     },
     "leave": {
@@ -186,6 +213,11 @@
       "palette": "Hinzufügen",
       "canvas": "Seite",
       "properties": "Einstellungen"
+    },
+    "websiteOverview": {
+      "title": "Seiten",
+      "latest": "Zuletzt geändert",
+      "empty": "Noch keine Seite. Legen Sie die erste im Editor an."
     }
   }
 }

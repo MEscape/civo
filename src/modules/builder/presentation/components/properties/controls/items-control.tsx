@@ -1,12 +1,12 @@
 import { useId } from 'react';
 
+import { Close } from '@components/icons/icons';
 import { Button } from '@components/ui/button';
-import { Close } from '@components/ui/icons';
 import { Input, Label, Textarea } from '@components/ui/input';
 
 import { useTranslations } from '@i18n/client';
 
-import { isJsonRecord } from '@lib/utils';
+import { isJsonRecord, removeAt, replaceAt } from '@lib/utils';
 import type { JsonValue } from '@lib/utils';
 
 import { useComponentText } from '../../../hooks/use-component-text';
@@ -97,7 +97,7 @@ export function ItemsControl({ labelId, field, value, onChange, onCommit }: Cont
                     size="icon-sm"
                     aria-label={t('properties.items.remove', { number })}
                     onClick={() => {
-                      replace(entries.filter((_, position) => position !== index));
+                      replace(removeAt(entries, index));
                       onCommit();
                     }}
                   >
@@ -110,11 +110,7 @@ export function ItemsControl({ labelId, field, value, onChange, onCommit }: Cont
                     itemField={itemField}
                     value={entry[itemField.key]}
                     onChange={(next) => {
-                      replace(
-                        entries.map((current, position) =>
-                          position === index ? { ...current, [itemField.key]: next } : current,
-                        ),
-                      );
+                      replace(replaceAt(entries, index, { ...entry, [itemField.key]: next }));
                     }}
                     onCommit={onCommit}
                   />

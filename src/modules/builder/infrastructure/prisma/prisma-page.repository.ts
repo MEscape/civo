@@ -1,7 +1,7 @@
 import type { TenantId } from '@modules/auth';
 
 import type { Clock } from '@lib/clock';
-import { db, createPersistenceFailures, dateToInstant } from '@lib/db';
+import { db, createPersistenceFailures } from '@lib/db';
 import type {
   ConflictAppError,
   InfrastructureAppError,
@@ -22,14 +22,11 @@ import {
   websiteNotFound,
 } from '../../domain/errors/builder-errors';
 import { toPageId } from '../../domain/models/ids';
-import { INITIAL_PAGE_VERSION, PAGE_REVISION_LIMIT } from '../../domain/models/page';
-import { serializePageConfig } from '../../domain/models/page-config';
+import { insertPage, writeRevision } from '../transactions/page-writes';
 
 import {
   PAGE_CONFIG_SELECT,
   PAGE_SUMMARY_SELECT,
-  PUBLISHED_STATUS,
-  SAVED_REVISION_SELECT,
   toCreatedPage,
   toNullablePage,
   toPageListItem,
@@ -63,7 +60,7 @@ const persistenceLogger = logger.withContext({ module: MODULE });
 /**
  * Pages with only the newest revision's JSON: never the whole history.
  *
- * @tenant-scope builder Every caller pins it to a tenant or a website before it runs.
+ * @owner-scope builder Every caller pins it to a tenant or a website before it runs.
  */
 const pagesWithLatestConfig = () =>
   db.orm.public.Page.select(...PAGE_SUMMARY_SELECT).include('configs', (configs) =>
@@ -208,35 +205,7 @@ export class PrismaPageRepository implements PageRepository {
     const { tenantId, draft } = input;
 
     return fromThrowableAsync(
-      () =>
-        db.transaction(async (tx) => {
-          // Resolved by (id, tenantId): another tenant's website is simply "not found".
-          const website = await tx.orm.public.Website.where({
-            id: draft.websiteId,
-            tenantId,
-          })
-            .select('id')
-            .first();
-          if (website === null) {
-            return null;
-          }
-
-          const page = await tx.orm.public.Page.select(...PAGE_SUMMARY_SELECT).create({
-            tenantId,
-            websiteId: draft.websiteId,
-            path: draft.path,
-            title: draft.title,
-            version: INITIAL_PAGE_VERSION,
-          });
-          // @tenant-scope child The revision of the page created just above, under the same tenant.
-          await tx.orm.public.PageConfig.create({
-            pageId: page.id,
-            version: INITIAL_PAGE_VERSION,
-            content: serializePageConfig(draft.config),
-            status: PUBLISHED_STATUS,
-          });
-          return page;
-        }),
+      () => insertPage(tenantId, draft),
       failures.orConflict('create', pagePathTaken),
     )
       .andThen(failures.requireRow(websiteNotFound))
@@ -244,41 +213,10 @@ export class PrismaPageRepository implements PageRepository {
   }
 
   saveConfig(input: SavePageConfigInput): AppResultAsync<SavedRevision, SaveConfigError> {
-    const { id, tenantId, config, expectedVersion } = input;
-    const nextVersion = expectedVersion + 1;
+    const { id, tenantId } = input;
 
     return fromThrowableAsync(
-      () =>
-        db.transaction(async (tx) => {
-          // The version in `where` is the compare-and-swap: a stale editor matches no row.
-          const revision = await tx.orm.public.Page.where({
-            id,
-            tenantId,
-            version: expectedVersion,
-          })
-            .select(...SAVED_REVISION_SELECT)
-            .update({
-              version: nextVersion,
-              updatedAt: dateToInstant(this.clock.now()),
-            });
-          if (revision === null) {
-            return null;
-          }
-
-          // @tenant-scope child The revision of the page updated just above, which is pinned to the tenant.
-          await tx.orm.public.PageConfig.create({
-            pageId: id,
-            version: nextVersion,
-            content: serializePageConfig(config),
-            status: PUBLISHED_STATUS,
-          });
-          // Revisions are contiguous, so this keeps exactly the newest PAGE_REVISION_LIMIT.
-          // @tenant-scope child The older revisions of the page updated above.
-          await tx.orm.public.PageConfig.where({ pageId: id })
-            .where((revisionRow) => revisionRow.version.lte(nextVersion - PAGE_REVISION_LIMIT))
-            .deleteAndCount();
-          return revision;
-        }),
+      () => writeRevision({ ...input, savedAt: this.clock.now() }),
       failures.infraOnly('saveConfig'),
     )
       .andThen((revision) =>

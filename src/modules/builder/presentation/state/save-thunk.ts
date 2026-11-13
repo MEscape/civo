@@ -22,6 +22,7 @@ export function saveDraft(): BuilderThunk<Promise<void>> {
 
     try {
       const result = await savePageConfig({
+        websiteId: state.document.websiteId,
         pageId: state.document.pageId,
         expectedVersion: state.document.version,
         config: { type: 'page', children: sentChildren },

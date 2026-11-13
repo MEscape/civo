@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { toActionResult } from '@lib/result';
 import type { ActionResult } from '@lib/result';
 
-import { builderQueries } from '../../composition';
+import { getBuilderQueries } from '../../composition';
 import { parseBuilderInput } from '../schemas/parse-builder-input';
 import { renderDraftPageSchema } from '../schemas/render-draft-page-schema';
 
@@ -17,7 +17,7 @@ import { renderDraftPageSchema } from '../schemas/render-draft-page-schema';
  */
 export async function renderDraftPageAction(input: unknown): Promise<ActionResult<ReactNode>> {
   const result = await parseBuilderInput(renderDraftPageSchema, input).asyncAndThen((query) =>
-    builderQueries.renderDraftPage.execute(query),
+    getBuilderQueries().renderDraftPage.execute(query),
   );
 
   return toActionResult(result);

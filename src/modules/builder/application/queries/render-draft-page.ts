@@ -1,16 +1,17 @@
 import type { AppResultAsync } from '@lib/result';
 
 import { parsePageConfig } from '../../domain/models/page-config';
-import { loadAuthorizedPageSummary } from '../load-authorized-page';
 import { BUILDER_RATE_LIMITS } from '../rate-limits';
+import { findPageSummary } from '../services/find-page';
 import { withinActorLimit } from '../services/within-actor-limit';
 
-import type { RenderDraftPageInput } from '../contracts/page-views';
-import type { LoadPageSummaryError } from '../load-authorized-page';
-import type { RenderDraftPageDependencies } from '../page-dependencies';
+import type { BuilderAccessError } from '../../domain/ports/builder-access.port';
+import type { RenderDraftPageDependencies } from '../builder-dependencies';
+import type { RenderDraftPageInput } from '../contracts/page-inputs';
+import type { FindPageSummaryError } from '../services/find-page';
 import type { ActorLimitError } from '../services/within-actor-limit';
 
-export type RenderDraftPageError = LoadPageSummaryError | ActorLimitError;
+export type RenderDraftPageError = BuilderAccessError | FindPageSummaryError | ActorLimitError;
 
 /**
  * Renders an unsaved draft for the editor canvas and the component preview.
@@ -27,13 +28,16 @@ export class RenderDraftPage<TOutput> {
   constructor(private readonly deps: RenderDraftPageDependencies<TOutput>) {}
 
   execute(input: RenderDraftPageInput): AppResultAsync<TOutput, RenderDraftPageError> {
-    return loadAuthorizedPageSummary(this.deps, input.pageId, 'page.update')
+    return this.deps.access
+      .authorizeWebsite('page.update', input.websiteId)
       .andThen(withinActorLimit(this.deps, BUILDER_RATE_LIMITS.renderDraft))
-      .andThen(({ page }) =>
+      .andThen((scope) => findPageSummary(this.deps.pages, scope, input.pageId))
+      .andThen((page) =>
         parsePageConfig(input.config).map((config) =>
           this.deps.renderer.render({
             websiteId: page.websiteId,
             children: config.children,
+            isPreview: input.isPreview === true,
           }),
         ),
       );

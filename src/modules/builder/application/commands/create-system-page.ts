@@ -8,10 +8,11 @@ import type { AppResultAsync } from '@lib/result';
 
 import { createSystemPageDraft } from '../../domain/models/page';
 import { checkComposition } from '../../domain/rules/page-save-checks';
-import { toPageSummaryView } from '../page-view-mappers';
+import { toPageSummaryView } from '../builder-view-mappers';
 
-import type { CreateSystemPageInput, PageSummaryView } from '../contracts/page-views';
-import type { SystemPageDependencies } from '../page-dependencies';
+import type { SystemPageDependencies } from '../builder-dependencies';
+import type { CreateSystemPageInput } from '../contracts/page-inputs';
+import type { PageSummaryView } from '../contracts/page-views';
 
 /**
  * `validation` here means the blueprint was rejected: a template that

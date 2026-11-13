@@ -14,6 +14,7 @@ export const selectChildren = (state: BuilderRootState) => state.document.histor
 export const selectSelectedNodeId = (state: BuilderRootState) =>
   state.document.history.present.selectedNodeId;
 export const selectPageId = (state: BuilderRootState) => state.document.pageId;
+export const selectWebsiteId = (state: BuilderRootState) => state.document.websiteId;
 
 const selectHistory = (state: BuilderRootState) => state.document.history;
 

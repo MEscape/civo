@@ -119,7 +119,8 @@
       "dataset": {
         "placeholder": "Sample data (no dataset)",
         "unavailable": "Context missing.",
-        "option": "{name} ({source})"
+        "option": "{name} ({source})",
+        "truncated": "Only some compatible datasets are shown. A missing dataset may be outside this list."
       },
       "datasets": {
         "empty": "No compatible datasets yet.",
@@ -135,7 +136,16 @@
         "add": "Add entry",
         "remove": "Remove entry {number}",
         "limit": "This list holds at most {max} entries."
-      }
+      },
+      "booking": {
+        "allServices": "All services",
+        "allCategories": "All categories",
+        "serviceOption": "{name} ({category})",
+        "staleService": "Saved service (no longer bookable)",
+        "staleCategory": "{value} (used by no service)"
+      },
+      "visibleHint": "This component is shown on the page.",
+      "hiddenHint": "Hidden on the page. Its settings are kept."
     },
     "pages": {
       "list": {
@@ -143,19 +153,19 @@
         "description": "The pages of this website. Open one to edit it.",
         "label": "Pages of this website",
         "empty": "No pages yet",
-        "emptyDescription": "Create the first page below.",
+        "emptyDescription": "This website has no pages yet.",
         "homePage": "Home page",
-        "savedAt": "{when} · version {version}",
         "createTitle": "Create a page",
-        "pagination": {
-          "nav": "Pages of the page list"
-        },
         "columns": {
           "page": "Page",
-          "saved": "Last saved"
+          "saved": "Last saved",
+          "actions": "Actions"
         },
         "count": "{count, plural, one {# page} other {# pages}}",
-        "edit": "Edit {title}"
+        "version": "Version {version}",
+        "open": "Open",
+        "paginationNav": "Pages of the page list",
+        "emptyCreateDescription": "Create the first page. It then opens in the editor."
       },
       "createForm": {
         "title": "Title",
@@ -164,7 +174,24 @@
         "pathPlaceholder": "about-us",
         "pathHint": "Lowercase letters, digits, hyphens and slashes. Leave empty for the home page.",
         "submit": "Create page",
-        "submitting": "Creating…"
+        "submitting": "Creating…",
+        "steps": {
+          "page": "Page",
+          "review": "Review"
+        },
+        "next": "Next: {step}",
+        "afterCreate": "The page is created empty and opened in the editor. Visitors see it only after the next publication."
+      },
+      "create": {
+        "title": "Create page",
+        "description": "Set the title and address of the new page.",
+        "breadcrumb": "Breadcrumb",
+        "leave": {
+          "title": "Leave without creating?",
+          "description": "Your entries for the new page are lost if you leave this page.",
+          "confirm": "Discard entries",
+          "stay": "Keep filling in"
+        }
       }
     },
     "leave": {
@@ -186,6 +213,11 @@
       "palette": "Add",
       "canvas": "Page",
       "properties": "Settings"
+    },
+    "websiteOverview": {
+      "title": "Pages",
+      "latest": "Latest changes",
+      "empty": "No page yet. Create the first one in the editor."
     }
   }
 }

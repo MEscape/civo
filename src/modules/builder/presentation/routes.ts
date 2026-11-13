@@ -10,8 +10,10 @@ export const builderRoutes = {
    * that layout shows (whether the editor differs from the live site), so saving
    * marks it stale.
    */
-  websiteLayout: '/websites/[websiteId]',
+  websiteLayout: '/[locale]/(protected)/websites/[websiteId]',
   pages: (websiteId: string) => `/websites/${websiteId}/builder`,
+  /** The "new page" wizard; a static segment, so it wins over `[pageId]`. */
+  create: (websiteId: string) => `/websites/${websiteId}/builder/new`,
   editor: (websiteId: string, pageId: string) => `/websites/${websiteId}/builder/${pageId}`,
   /** The editor with one component selected and scrolled to, e.g. from "used on" links. */
   component: (websiteId: string, pageId: string, nodeId: string) =>

@@ -7,7 +7,7 @@ import { createNodeFromBlueprint } from '../../application/contracts/editor-mode
 import { buildPreviewBlueprint, readPreviewSample } from '../properties/preview-blueprint';
 import { requestDraftRender } from '../render/request-draft-render';
 import { useBuilderSelector } from '../state/builder-hooks';
-import { selectPageId } from '../state/builder-selectors';
+import { selectPageId, selectWebsiteId } from '../state/builder-selectors';
 import { useBuilderSession } from '../state/builder-session-context';
 
 const HOVER_INTENT_MS = 300;
@@ -37,6 +37,7 @@ const LOADING: PreviewState = { node: null, isLoading: true, errorCode: null };
  * a request per row.
  */
 export function useComponentPreview(componentType: string | null): PreviewState {
+  const websiteId = useBuilderSelector(selectWebsiteId);
   const pageId = useBuilderSelector(selectPageId);
   const { catalog } = useBuilderSession();
   const messages = useMessages();
@@ -72,7 +73,7 @@ export function useComponentPreview(componentType: string | null): PreviewState 
 
       createNodeFromBlueprint(blueprint, PREVIEW_ID_SEED).match(
         (node) => {
-          void requestDraftRender(pageId, [node]).then((outcome) => {
+          void requestDraftRender({ websiteId, pageId }, [node]).then((outcome) => {
             remember(outcome.ok ? { node: outcome.node } : { errorCode: outcome.errorCode });
           });
         },
@@ -86,7 +87,7 @@ export function useComponentPreview(componentType: string | null): PreviewState 
       isCurrent = false;
       clearTimeout(timeout);
     };
-  }, [componentType, needsFetch, pageId, catalog, messages]);
+  }, [componentType, needsFetch, websiteId, pageId, catalog, messages]);
 
   if (componentType === null) {
     return IDLE;

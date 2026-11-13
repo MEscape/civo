@@ -1,5 +1,5 @@
+import { Eye, Pencil } from '@components/icons/icons';
 import { Button } from '@components/ui/button';
-import { Eye, Pencil } from '@components/ui/icons';
 
 import { Link } from '@i18n';
 

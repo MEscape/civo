@@ -46,6 +46,7 @@ function renderPalette() {
           catalog: CATALOG,
           datasetOptions: {},
           categoryOptions: { byDataset: {}, sampleByKind: {} },
+          bookingChoices: { services: [], categories: [] },
           discard: vi.fn(),
         }}
       >

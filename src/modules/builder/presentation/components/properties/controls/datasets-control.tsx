@@ -1,19 +1,10 @@
-import { CheckboxField } from '@components/shared/checkbox-field';
+import { CheckboxField } from '@components/shared/field';
 
 import { useTranslations } from '@i18n/client';
 
-import { useBuilderSession } from '../../../state/builder-session-context';
+import { useDatasetsControl } from '../../../hooks/use-datasets-control';
 
 import type { ControlProps } from './control-props';
-import type { DatasetOptionDto } from '../../../dto/dataset-options-dto';
-
-const NO_OPTIONS: readonly DatasetOptionDto[] = [];
-
-function selectedIds(value: ControlProps['value']): readonly string[] {
-  return Array.isArray(value)
-    ? value.filter((entry): entry is string => typeof entry === 'string')
-    : [];
-}
 
 /**
  * Further datasets of the component's kind, read together with its primary
@@ -21,21 +12,9 @@ function selectedIds(value: ControlProps['value']): readonly string[] {
  * loaded on the server for this page's own website, like the primary
  * dataset's. An empty selection clears the prop.
  */
-export function DatasetsControl({
-  id,
-  labelId,
-  field,
-  value,
-  nodeProps,
-  onChange,
-  onCommit,
-}: ControlProps) {
+export function DatasetsControl({ id, labelId, ...control }: ControlProps) {
   const t = useTranslations('builder');
-  const { datasetOptions } = useBuilderSession();
-  const kind = field.canonicalKind;
-  const selected = selectedIds(value);
-  const primaryId = nodeProps['datasetId'];
-  const max = field.bounds?.max ?? selected.length;
+  const { kind, choices, selected, max, isFull, toggle } = useDatasetsControl(control);
 
   if (kind === null) {
     return (
@@ -44,23 +23,9 @@ export function DatasetsControl({
       </p>
     );
   }
-
-  const options =
-    (Object.hasOwn(datasetOptions, kind) ? datasetOptions[kind] : undefined) ?? NO_OPTIONS;
-  const choices = options.filter((option) => option.id !== primaryId);
   if (choices.length === 0) {
     return <p className="text-xs text-copy-muted">{t('properties.datasets.empty')}</p>;
   }
-
-  function handleToggle(datasetId: string, isChecked: boolean): void {
-    const next = isChecked
-      ? [...selected, datasetId]
-      : selected.filter((existing) => existing !== datasetId);
-    onChange(next.length === 0 ? undefined : next);
-    onCommit();
-  }
-
-  const isFull = selected.length >= max;
 
   return (
     <div id={id} role="group" aria-labelledby={labelId} className="space-y-2">
@@ -74,7 +39,7 @@ export function DatasetsControl({
             checked={isChecked}
             disabled={!isChecked && isFull}
             onChange={(event) => {
-              handleToggle(option.id, event.target.checked);
+              toggle(option.id, event.target.checked);
             }}
           />
         );

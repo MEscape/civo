@@ -1,6 +1,6 @@
 import { cn } from '@lib/utils';
 
-import type { PageListItemDto } from '../dto/page-dto';
+import type { PageListItemDto } from '../../dto/page-dto';
 
 type OutlineBlock = NonNullable<PageListItemDto['outline']>[number];
 

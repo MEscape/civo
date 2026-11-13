@@ -9,9 +9,9 @@ import { useComponentText } from '../../hooks/use-component-text';
 import { MESSAGE_PARAMS, messageKeyForCode } from '../../messages/message-keys';
 import { useBuilderSession } from '../../state/builder-session-context';
 import { CanvasThemeScope } from '../canvas/canvas-theme-scope';
+import { RenderSkeleton } from '../canvas/render-skeleton';
 
 import type { ThemeStyle } from '../canvas/canvas-theme-scope';
-import './component-preview-popover.css';
 
 const PREVIEW_SCALE = 0.4;
 const POPOVER_HEIGHT_PX = 250;
@@ -58,35 +58,30 @@ export function ComponentPreviewPopover({
   return createPortal(
     <div
       aria-hidden="true"
-      className="civo-preview-popover"
+      className="pointer-events-none fixed z-30 flex h-62.5 w-90 flex-col overflow-hidden rounded-token border border-border bg-surface shadow-lg"
       style={{
         top: popoverTop(anchorRect),
         left: anchorRect.right + ANCHOR_GAP_PX,
       }}
     >
-      <div className="civo-preview-popover__header">
-        <div className="civo-preview-popover__label">{text.componentLabel(descriptor.type)}</div>
+      <div className="flex-none border-b border-border px-3.5 py-2.5">
+        <div className="text-xs font-semibold text-copy">
+          {text.componentLabel(descriptor.type)}
+        </div>
         {description !== null && (
-          <div className="civo-preview-popover__description">{description}</div>
+          <div className="mt-0.5 text-xs leading-snug text-copy-muted">{description}</div>
         )}
       </div>
-      <div className="civo-preview-popover__stage">
-        <Suspense
-          fallback={<div className="civo-preview-popover__status">{t('preview.rendering')}</div>}
-        >
-          {isLoading && (
-            <div className="civo-preview-popover__status">{t('preview.rendering')}</div>
-          )}
+      <div className="flex-1 overflow-hidden bg-canvas">
+        <Suspense fallback={<RenderSkeleton isCompact label={t('preview.rendering')} />}>
+          {isLoading && <RenderSkeleton isCompact label={t('preview.rendering')} />}
           {errorCode !== null && (
-            <div className="civo-preview-popover__status text-danger">
+            <div className="flex h-full min-h-40 items-center justify-center p-6 text-center text-xs text-danger">
               {t(messageKeyForCode(errorCode), MESSAGE_PARAMS)}
             </div>
           )}
           {node !== null && (
-            <div
-              className="civo-preview-popover__scale"
-              style={{ transform: `scale(${PREVIEW_SCALE})` }}
-            >
+            <div className="w-225 origin-top-left" style={{ transform: `scale(${PREVIEW_SCALE})` }}>
               <CanvasThemeScope themeStyle={themeStyle}>{node}</CanvasThemeScope>
             </div>
           )}

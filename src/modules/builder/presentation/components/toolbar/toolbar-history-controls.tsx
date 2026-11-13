@@ -1,4 +1,4 @@
-import { Redo2, Undo2 } from '@components/ui/icons';
+import { Redo2, Undo2 } from '@components/icons/icons';
 
 import { useTranslations } from '@i18n/client';
 

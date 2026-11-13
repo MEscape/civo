@@ -32,7 +32,7 @@ export function CanvasOverlay({
       : rects.get(hoveredNodeId);
 
   return (
-    <div className="civo-canvas-overlay">
+    <div className="pointer-events-none absolute inset-0 z-10">
       {hoveredNodeId !== null && hoveredRect !== undefined && (
         <NodeOutline variant="hover" nodes={nodes} nodeId={hoveredNodeId} rect={hoveredRect} />
       )}

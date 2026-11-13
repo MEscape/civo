@@ -43,12 +43,8 @@ export {
   APPEND_INDEX,
   createNodeFromBlueprint,
   duplicateNode,
-  findNode,
-  flattenNodes,
-  getAncestors,
   insertNewComponent,
   insertNode,
-  locateNode,
   moveNode,
   nextSelectionAfterRemoval,
   removeNode,
@@ -58,8 +54,8 @@ export {
 export type {
   DuplicatedNode,
   InsertedComponent,
-  FlatNode,
-  NodeLocation,
   NodeOperationError,
   Placement,
 } from '../../domain/tree/tree-operations';
+export { findNode, flattenNodes, getAncestors, locateNode } from '../../domain/tree/tree-queries';
+export type { FlatNode, NodeLocation } from '../../domain/tree/tree-queries';

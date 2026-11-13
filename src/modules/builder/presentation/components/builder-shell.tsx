@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 
-import { ConfirmDialog } from '@components/shared/confirm-dialog';
+import { ConfirmDialog } from '@components/shared/dialog';
 
 import { useBeforeUnloadGuard } from '@hooks/use-before-unload-guard';
 import { useUnsavedNavigationGuard } from '@hooks/use-unsaved-navigation-guard';
@@ -38,7 +38,11 @@ export interface BuilderShellProps {
   readonly links: EditorLinks;
 }
 
-const PANEL = 'overflow-y-auto bg-surface lg:shrink-0';
+/**
+ * Each scrolling panel is also a containing block: a visually hidden control inside it (a switch's
+ * input) is positioned against the panel, not the page, so it can never make the page itself scroll.
+ */
+const PANEL = 'relative overflow-y-auto bg-surface lg:shrink-0';
 
 /** Below `lg` only the active area is drawn, full width; from `lg` all three stand side by side. */
 function shownOn(panel: BuilderPanel, active: BuilderPanel): string {
@@ -69,7 +73,7 @@ export function BuilderShell({ pageTitle, themeStyle, links }: BuilderShellProps
       <EditNotice />
 
       {mode === 'preview' ? (
-        <div className="flex-1 overflow-y-auto bg-canvas">
+        <div className="relative flex-1 overflow-y-auto bg-canvas">
           <PreviewCanvas themeStyle={themeStyle} />
         </div>
       ) : (
@@ -95,7 +99,7 @@ export function BuilderShell({ pageTitle, themeStyle, links }: BuilderShellProps
           <section
             aria-label={t('canvas.label')}
             className={cn(
-              'min-w-0 overflow-y-auto bg-canvas p-3 sm:p-6 lg:block lg:flex-1',
+              'relative min-w-0 overflow-y-auto bg-canvas p-3 sm:p-6 lg:block lg:flex-1',
               panel === 'canvas' ? 'flex-1' : 'hidden',
             )}
           >

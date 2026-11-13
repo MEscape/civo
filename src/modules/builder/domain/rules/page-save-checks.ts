@@ -11,12 +11,12 @@ import {
   structureChangeNotPermitted,
 } from '../errors/builder-errors';
 import { VISIBILITY_PROP_KEY } from '../models/page-node';
-import { flattenNodes } from '../tree/tree-operations';
+import { flattenNodes } from '../tree/tree-queries';
 
 import type { ComponentCatalog } from '../models/component-catalog';
 import type { PageConfig } from '../models/page-config';
 import type { PageNode } from '../models/page-node';
-import type { FlatNode } from '../tree/tree-operations';
+import type { FlatNode } from '../tree/tree-queries';
 
 /*
  * What a SAVE may contain. The client UI hides what an editor may not do,

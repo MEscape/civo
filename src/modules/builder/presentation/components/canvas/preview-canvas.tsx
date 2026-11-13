@@ -6,6 +6,7 @@ import { selectChildren, selectViewport } from '../../state/builder-selectors';
 import { ErrorMessage } from '../feedback/error-message';
 
 import { CanvasThemeScope } from './canvas-theme-scope';
+import { RenderSkeleton } from './render-skeleton';
 import { ViewportFrame } from './viewport-frame';
 
 import type { ThemeStyle } from './canvas-theme-scope';
@@ -15,15 +16,15 @@ export interface PreviewCanvasProps {
 }
 
 /**
- * Preview mode: the same server-rendered draft as the canvas and the public
- * site, at a controlled width, with none of the editor chrome (no outlines,
- * handles or selection).
+ * Preview mode: the draft rendered the way a release would publish it (live
+ * data, no sample content, hidden blocks left out), at a controlled width,
+ * with none of the editor chrome (no outlines, handles or selection).
  */
 export function PreviewCanvas({ themeStyle }: PreviewCanvasProps) {
   const t = useTranslations('builder');
   const nodes = useBuilderSelector(selectChildren);
   const viewport = useBuilderSelector(selectViewport);
-  const { node, isRendering, errorCode } = useCanvasRender(nodes);
+  const { node, isRendering, errorCode } = useCanvasRender(nodes, 'preview');
 
   if (nodes.length === 0) {
     return (
@@ -35,13 +36,14 @@ export function PreviewCanvas({ themeStyle }: PreviewCanvasProps) {
 
   return (
     <ViewportFrame viewport={viewport}>
-      <CanvasThemeScope themeStyle={themeStyle} className="min-h-dvh shadow-2xl ring-1 ring-border">
-        {node}
-      </CanvasThemeScope>
-      {isRendering && node === null && (
-        <p role="status" className="mt-4 text-center text-sm text-copy-muted">
-          {t('preview.rendering')}
-        </p>
+      {isRendering && node === null && <RenderSkeleton label={t('preview.rendering')} />}
+      {(node !== null || !isRendering) && (
+        <CanvasThemeScope
+          themeStyle={themeStyle}
+          className="min-h-dvh shadow-2xl ring-1 ring-border"
+        >
+          {node}
+        </CanvasThemeScope>
       )}
       {errorCode !== null && <ErrorMessage code={errorCode} className="mt-4 text-center text-sm" />}
     </ViewportFrame>

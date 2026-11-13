@@ -23,6 +23,8 @@ import type { DocumentHistory, PageConfig } from '../../application/contracts/ed
 import type { UnknownAction } from '@reduxjs/toolkit';
 
 export interface DocumentState {
+  /** The website the page belongs to: every save and render names it, and the server authorizes it. */
+  readonly websiteId: string;
   readonly pageId: string;
   /** The revision the editor holds: sent back as `expectedVersion` on the next save. */
   readonly version: number;
@@ -31,10 +33,12 @@ export interface DocumentState {
 
 export function createDocumentState(page: {
   readonly id: string;
+  readonly websiteId: string;
   readonly version: number;
   readonly config: PageConfig;
 }): DocumentState {
   return {
+    websiteId: page.websiteId,
     pageId: page.id,
     version: page.version,
     history: createHistory(page.config.children),
@@ -43,6 +47,7 @@ export function createDocumentState(page: {
 
 const EMPTY_DOCUMENT_STATE = createDocumentState({
   id: '',
+  websiteId: '',
   version: 0,
   config: { type: 'page', children: [] },
 });

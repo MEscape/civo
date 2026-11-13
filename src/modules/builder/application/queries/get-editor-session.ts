@@ -1,12 +1,13 @@
 import type { AppResultAsync } from '@lib/result';
 
-import { loadAuthorizedPage } from '../load-authorized-page';
-import { toEditorSessionView } from '../page-view-mappers';
+import { toEditorSessionView } from '../builder-view-mappers';
+import { findPage } from '../services/find-page';
 import { mayRestructure } from '../services/may-restructure';
 
+import type { BuilderAccessError } from '../../domain/ports/builder-access.port';
+import type { BuilderDependencies } from '../builder-dependencies';
 import type { EditorSessionView } from '../contracts/page-views';
-import type { LoadPageError } from '../load-authorized-page';
-import type { PageDependencies } from '../page-dependencies';
+import type { FindPageError } from '../services/find-page';
 
 /**
  * Starts an editing session. Requires `page.update`, not `page.read`: a
@@ -15,15 +16,21 @@ import type { PageDependencies } from '../page-dependencies';
  * told what it may do by a prop.
  */
 export class GetEditorSession {
-  constructor(private readonly deps: PageDependencies) {}
+  constructor(private readonly deps: BuilderDependencies) {}
 
-  execute(pageId: string): AppResultAsync<EditorSessionView, LoadPageError> {
-    return loadAuthorizedPage(this.deps, pageId, 'page.update').map(({ actor, page }) =>
-      toEditorSessionView({
-        page,
-        canRestructure: mayRestructure(actor),
-        catalog: this.deps.components,
-      }),
-    );
+  execute(
+    websiteId: string,
+    pageId: string,
+  ): AppResultAsync<EditorSessionView, BuilderAccessError | FindPageError> {
+    const { access, pages, components } = this.deps;
+
+    return access
+      .authorizeWebsite('page.update', websiteId)
+      .andThen((scope) => findPage(pages, scope, pageId))
+      .andThen((page) =>
+        mayRestructure(access, websiteId).map((canRestructure) =>
+          toEditorSessionView({ page, canRestructure, catalog: components }),
+        ),
+      );
   }
 }

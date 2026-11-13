@@ -8,14 +8,21 @@ import { useBuilderSession } from '../../state/builder-session-context';
 
 import type { PageNode, PageNodeId, Rect } from '../../../application/contracts/editor-model';
 
+const OUTLINE_BASE =
+  'pointer-events-none absolute rounded-sm transition-[top,left,width,height] duration-75 motion-reduce:transition-none';
+
 const OUTLINE_CLASS = {
-  hover: 'civo-canvas-outline civo-canvas-outline--hover',
-  selected: 'civo-canvas-outline civo-canvas-outline--selected',
+  hover: `${OUTLINE_BASE} outline-1 outline-secondary`,
+  selected: `${OUTLINE_BASE} outline-2 outline-accent`,
 } as const;
 
+const LABEL_BASE =
+  'absolute -top-6 left-0 flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 text-xs font-medium whitespace-nowrap text-accent-foreground';
+
+/** A hover label lets clicks pass through to select the node; the selected one carries its actions. */
 const LABEL_CLASS = {
-  hover: 'civo-canvas-label civo-canvas-label--hover',
-  selected: 'civo-canvas-label',
+  hover: `${LABEL_BASE} pointer-events-none bg-secondary opacity-80`,
+  selected: `${LABEL_BASE} pointer-events-auto bg-accent`,
 } as const;
 
 export interface NodeOutlineProps {

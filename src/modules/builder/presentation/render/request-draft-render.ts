@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { renderDraftPageAction } from '../actions/render-draft-page-action';
 import { CLIENT_ERROR_CODES } from '../messages/message-keys';
 
-import type { PageConfigInput } from '../../application/contracts/page-views';
+import type { PageConfigInput } from '../../application/contracts/page-inputs';
 
 export type DraftRenderOutcome =
   | { readonly ok: true; readonly node: ReactNode }
@@ -15,13 +15,17 @@ export type DraftRenderOutcome =
  * lives once. The element tree travels through the RSC payload.
  */
 export async function requestDraftRender(
-  pageId: string,
+  page: { readonly websiteId: string; readonly pageId: string },
+
   children: PageConfigInput['children'],
+  /** `preview` draws the page as visitors will see it; the default is the editing canvas. */
+  view: 'canvas' | 'preview' = 'canvas',
 ): Promise<DraftRenderOutcome> {
   try {
     const result = await renderDraftPageAction({
-      pageId,
+      ...page,
       config: { type: 'page', children },
+      ...(view === 'preview' ? { isPreview: true } : {}),
     });
     return result.ok
       ? { ok: true, node: result.data }

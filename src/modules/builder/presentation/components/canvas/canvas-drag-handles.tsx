@@ -1,4 +1,5 @@
-import { GripVertical } from '@components/ui/icons';
+// @ui-plain button editor chrome: a gesture surface (pointer and keyboard drag) with its own focus ring and hit area, which Button would change
+import { GripVertical } from '@components/icons/icons';
 
 import { useTranslations } from '@i18n/client';
 
@@ -9,6 +10,13 @@ import type { PageNode, PageNodeId, Rect } from '../../../application/contracts/
 import type { CanvasDnd } from '../../hooks/use-canvas-dnd';
 
 const HANDLE_OFFSET_PX = 4;
+
+/** Invisible until focused or picked up, so only keyboard users see the grips. */
+const HANDLE_CLASSES = [
+  'pointer-events-auto absolute z-15 flex size-5 cursor-grab items-center justify-center rounded-sm border border-transparent bg-transparent p-0 text-copy-muted opacity-0',
+  'focus-visible:border-border focus-visible:bg-surface focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent',
+  'aria-pressed:cursor-grabbing aria-pressed:bg-accent aria-pressed:text-accent-foreground aria-pressed:opacity-100',
+].join(' ');
 
 export interface CanvasDragHandlesProps {
   readonly nodes: readonly PageNode[];
@@ -47,7 +55,7 @@ export function CanvasDragHandles({ nodes, rects, dnd }: CanvasDragHandlesProps)
             onKeyDown={(event) => {
               dnd.handleGripKeyDown(node.id, event);
             }}
-            className="civo-drag-handle"
+            className={HANDLE_CLASSES}
             style={{
               top: rect.top + HANDLE_OFFSET_PX,
               left: rect.left + HANDLE_OFFSET_PX,

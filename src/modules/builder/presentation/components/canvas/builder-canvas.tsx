@@ -21,12 +21,12 @@ import { ErrorMessage } from '../feedback/error-message';
 import { CanvasEmptyState } from './canvas-empty-state';
 import { CanvasOverlay } from './canvas-overlay';
 import { CanvasThemeScope } from './canvas-theme-scope';
+import { RenderSkeleton } from './render-skeleton';
 import { ViewportFrame } from './viewport-frame';
 
 import type { ThemeStyle } from './canvas-theme-scope';
 import type { PageNodeId } from '../../../application/contracts/editor-model';
 import type { CanvasDnd } from '../../hooks/use-canvas-dnd';
-import './builder-canvas.css';
 
 export interface BuilderCanvasProps {
   readonly themeStyle: ThemeStyle;
@@ -102,6 +102,17 @@ function useRevealLinkedSelection(
   }, [containerRef, rendered, requested, selectedNodeId]);
 }
 
+/**
+ * The rendered content is the platform components' own markup, so the editor reaches every node
+ * it marks (`data-civo-node-id`) from here, scoped to this container: nothing can leak into or
+ * be affected by the real component styles the overlay sits on top of.
+ */
+const NODE_CLASSES = [
+  'relative select-none',
+  '[&_[data-civo-node-id]]:relative [&_[data-civo-node-id]]:cursor-pointer [&_[data-civo-node-id]]:select-none',
+  '[&_[data-civo-node-id]]:-outline-offset-1 [&_[data-civo-node-id]]:transition-[outline-color] [&_[data-civo-node-id]]:duration-100 motion-reduce:[&_[data-civo-node-id]]:transition-none',
+].join(' ');
+
 export function BuilderCanvas({ themeStyle, containerRef, dnd }: BuilderCanvasProps) {
   const t = useTranslations('builder');
   const dispatch = useBuilderDispatch();
@@ -117,17 +128,19 @@ export function BuilderCanvas({ themeStyle, containerRef, dnd }: BuilderCanvasPr
 
   return (
     <ViewportFrame viewport={viewport}>
-      <div className="civo-canvas rounded-token border border-border bg-canvas">
+      <div className="relative rounded-token border border-border bg-canvas">
         <div
           ref={containerRef}
-          className="civo-canvas-content"
+          className={NODE_CLASSES}
           // The selection handlers below swallow every click, so links here never leave the editor.
           data-navigation-guard-ignore=""
           {...selection}
         >
-          {nodes.length === 0 ? (
-            <CanvasEmptyState />
-          ) : (
+          {nodes.length === 0 && <CanvasEmptyState />}
+          {nodes.length > 0 && isRendering && node === null && (
+            <RenderSkeleton label={t('canvas.rendering')} />
+          )}
+          {nodes.length > 0 && (node !== null || !isRendering) && (
             <CanvasThemeScope themeStyle={themeStyle}>{node}</CanvasThemeScope>
           )}
         </div>
@@ -140,11 +153,6 @@ export function BuilderCanvas({ themeStyle, containerRef, dnd }: BuilderCanvasPr
         />
       </div>
 
-      {isRendering && nodes.length > 0 && node === null && (
-        <p role="status" className="mt-3 text-center text-xs text-copy-muted">
-          {t('canvas.rendering')}
-        </p>
-      )}
       {errorCode !== null && <ErrorMessage code={errorCode} className="mt-3 text-center" />}
     </ViewportFrame>
   );

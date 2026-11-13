@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { findBookingPagePath } from '@modules/builder/application/services/find-booking-page';
 import { createComponentCatalog } from '@modules/builder/domain/models/component-catalog';
 import type { ComponentDescriptor } from '@modules/builder/domain/models/component-descriptor';
 import type { PageConfig } from '@modules/builder/domain/models/page-config';
 import { checkComposition } from '@modules/builder/domain/rules/page-save-checks';
 import { insertNewComponent } from '@modules/builder/domain/tree/tree-operations';
-
-import { findBookingPagePath } from '@/app/_lib/booking-page';
 
 const descriptor = (type: string, isSingleton: boolean) =>
   ({

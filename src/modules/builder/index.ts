@@ -5,27 +5,24 @@
  * code through `composition.ts` and must never end up in a client bundle.
  */
 
-/** Server-only queries for Server Components. Mutations are reachable through Server Actions only. */
-export { builderQueries } from './composition';
+/** Server-only helpers for Server Components. Mutations are reachable through Server Actions only. */
+export { getBuilderQueries, loadEditorSession } from './composition';
 
 /** Module-to-module entry points for trusted callers: they have no actor, see `composition.ts`. */
 export {
   createSystemPage,
   listPagesForRelease,
   datasetUsesInStoredPage,
+  savedMapIdsInStoredPage,
+  findBookingPagePath,
   restoreStoredPageConfig,
   savePageDraft,
 } from './composition';
 
-export { CreatePageForm } from './presentation/components/create-page-form';
-export { PageList } from './presentation/components/page-list';
-export { toPageListItemDto, toPageSummaryDto } from './presentation/dto/page-dto';
-export { BuilderSessionProvider } from './presentation/components/builder-session-provider';
-export { BuilderShell } from './presentation/components/builder-shell';
-export { BuilderSkeleton } from './presentation/components/builder-skeleton';
-export { toEditorSessionDto } from './presentation/dto/editor-session-dto';
-export { collectCategoryTypes, collectDatasetTypes } from './presentation/properties/dataset-types';
-export { toDatasetOptionsByType } from './presentation/dto/dataset-options-dto';
+export { BuilderPagesAdministration } from './presentation/components/pages/builder-pages-administration';
+export { CreatePageWizard } from './presentation/components/pages/create-page-wizard';
+export { BuilderEditor } from './presentation/components/builder-editor';
+export { builderRoutes } from './presentation/routes';
 
 export { HOME_PAGE_PATH } from './application/contracts/builder-constraints';
 
@@ -36,10 +33,14 @@ export type { CreateSystemPageError } from './application/commands/create-system
 
 export type {
   CreateSystemPageInput,
-  PageConfigView,
   PageNodeInput,
-  PageSummaryView,
-  ReleasePageView,
   SavePageConfigInput,
+} from './application/contracts/page-inputs';
+export type {
+  PageConfigView,
+  PageSummaryView,
   SavedRevisionView,
 } from './application/contracts/page-views';
+export type { ReleasePageView } from './application/contracts/release-page-views';
+export type { MapPageUseView, MapUsageView } from './application/contracts/map-usage-views';
+export { PagesOverviewTile } from './presentation/components/pages/pages-overview-tile';

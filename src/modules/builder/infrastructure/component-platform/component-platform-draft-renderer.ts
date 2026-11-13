@@ -15,7 +15,9 @@ export type RenderPageNodesFn = (
 /**
  * Renders drafts through the platform's real pipeline, so the canvas, the
  * preview and the public site share one renderer. `draft` mode marks every
- * rendered node with `data-civo-node-id` for hit testing and drag and drop.
+ * rendered node with `data-civo-node-id` for hit testing and drag and drop
+ * and may show labelled sample data; the preview renders in `published` mode,
+ * so it shows what a release would publish, with live data and no editing marks.
  * The element tree travels to the client through the RSC payload.
  * Unregistered types render the platform's placeholder, which is why a
  * stored page with a removed component can still be opened and repaired.
@@ -29,10 +31,13 @@ export class ComponentPlatformDraftRenderer implements DraftPageRenderer<ReactNo
   render(input: {
     readonly websiteId: WebsiteId;
     readonly children: readonly PageNode[];
+    readonly isPreview?: boolean | undefined;
   }): ReactNode {
-    return this.renderNodes(input.children, {
-      mode: 'draft',
-      websiteId: input.websiteId,
-    });
+    return this.renderNodes(
+      input.children,
+      input.isPreview === true
+        ? { mode: 'published', websiteId: input.websiteId, isPreview: true }
+        : { mode: 'draft', websiteId: input.websiteId },
+    );
   }
 }

@@ -1,13 +1,13 @@
 import { serializePageConfig } from '../domain/models/page-config';
-import { collectNodeTypes } from '../domain/tree/tree-operations';
+import { collectNodeTypes } from '../domain/tree/tree-queries';
 
 import type {
   EditorSessionView,
   PageSummaryView,
   PageView,
-  ReleasePageView,
   SavedRevisionView,
 } from './contracts/page-views';
+import type { ReleasePageView } from './contracts/release-page-views';
 import type { ComponentCatalog } from '../domain/models/component-catalog';
 import type { Page, PageSummary } from '../domain/models/page';
 import type { SavedRevision } from '../domain/models/page-revision';

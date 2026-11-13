@@ -5,9 +5,10 @@ import { assertNever } from '@lib/utils';
 
 import { pageNodeNotFound } from '../errors/builder-errors';
 
-import { childrenOf, findNode, flattenNodes, isInSubtree, locateNode } from './tree-operations';
+import { childrenOf, findNode, flattenNodes, isInSubtree, locateNode } from './tree-queries';
 
-import type { FlatNode, Placement } from './tree-operations';
+import type { Placement } from './tree-operations';
+import type { FlatNode } from './tree-queries';
 import type { NestingPolicy } from '../models/component-catalog';
 import type { PageNodeId } from '../models/ids';
 import type { PageNode } from '../models/page-node';

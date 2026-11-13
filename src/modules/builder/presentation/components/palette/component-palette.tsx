@@ -1,3 +1,4 @@
+// @ui-plain button editor chrome: a gesture surface (pointer and keyboard drag) with its own focus ring and hit area, which Button would change
 import { useState } from 'react';
 
 import { COMPONENT_CATEGORIES } from '@modules/component-platform/client';

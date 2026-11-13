@@ -6,7 +6,7 @@ import {
   PAGE_TREE_LIMITS,
 } from '../../application/contracts/builder-constraints';
 
-import type { PageNodeInput } from '../../application/contracts/page-views';
+import type { PageNodeInput } from '../../application/contracts/page-inputs';
 
 type ChildrenSchema = z.ZodType<readonly PageNodeInput[] | undefined>;
 

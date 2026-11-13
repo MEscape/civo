@@ -1,3 +1,5 @@
+import { clamp } from '@lib/utils';
+
 import type { ComponentCatalog } from './component-catalog';
 import type { PageConfig } from './page-config';
 
@@ -23,7 +25,7 @@ export function outlineOf(config: PageConfig, catalog: ComponentCatalog): readon
   return config.children.slice(0, MAX_OUTLINE_BLOCKS).map((node) => {
     const category = catalog.describe(node.type)?.category;
     if (category === 'layout') {
-      const columns = Math.min(Math.max(node.children.length, 1), MAX_OUTLINE_COLUMNS);
+      const columns = clamp(node.children.length, 1, MAX_OUTLINE_COLUMNS);
       return { shape: 'layout', columns };
     }
     return { shape: category === 'content' ? 'text' : 'widget', columns: 1 };

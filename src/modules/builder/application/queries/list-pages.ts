@@ -1,41 +1,37 @@
-import type { AuthorizationError } from '@modules/auth';
-
-import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
+import type { InfrastructureAppError } from '@lib/errors';
 import { loadClampedPage, resolvePageRequest } from '@lib/pagination';
 import type { Page as Slice } from '@lib/pagination';
 import type { AppResultAsync } from '@lib/result';
 
 import { parseWebsiteId } from '../../domain/models/ids';
 import { outlineOf } from '../../domain/models/page-outline';
-import { PAGE_LIST_LIMITS } from '../list-limits';
-import { toPageSummaryView } from '../page-view-mappers';
+import { PAGE_LIST_LIMITS } from '../builder-limits';
+import { toPageSummaryView } from '../builder-view-mappers';
 
-import type { ListPagesInput, PageListItemView } from '../contracts/page-views';
-import type { ListPagesDependencies } from '../page-dependencies';
+import type { BuilderAccessError } from '../../domain/ports/builder-access.port';
+import type { ListPagesDependencies } from '../builder-dependencies';
+import type { ListPagesInput } from '../contracts/page-inputs';
+import type { PageListItemView } from '../contracts/page-views';
 
 /**
- * One page of a website's pages within the actor's own tenant. A website of
- * another tenant yields an empty list, the same as a website without pages,
- * so the result discloses nothing about foreign ids. A page past the end
- * answers the last one.
+ * One page of the pages of the website the request names, which the actor must be
+ * allowed to read: another website is refused, not listed as empty. A page past
+ * the end answers the last one.
  */
 export class ListPages {
   constructor(private readonly deps: ListPagesDependencies) {}
 
   execute(
     input: ListPagesInput,
-  ): AppResultAsync<
-    Slice<PageListItemView>,
-    AuthorizationError | ValidationAppError | InfrastructureAppError
-  > {
+  ): AppResultAsync<Slice<PageListItemView>, BuilderAccessError | InfrastructureAppError> {
     const requested = resolvePageRequest(input, PAGE_LIST_LIMITS);
 
-    return this.deps.authorization
-      .requireInTenant('page.read')
-      .andThen((actor) =>
+    return this.deps.access
+      .authorizeWebsite('page.read', input.websiteId)
+      .andThen((scope) =>
         parseWebsiteId(input.websiteId).asyncAndThen((websiteId) =>
           loadClampedPage(requested, (request) =>
-            this.deps.pages.listByWebsite(websiteId, actor.tenantId, request),
+            this.deps.pages.listByWebsite(websiteId, scope.tenantId, request),
           ),
         ),
       )

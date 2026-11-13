@@ -6,6 +6,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { PropFieldDescriptor } from '@modules/builder/application/contracts/builder-constraints';
 import { createComponentCatalog } from '@modules/builder/application/contracts/editor-model';
+import { BookingCategoryControl } from '@modules/builder/presentation/components/properties/controls/booking-category-control';
+import { BookingServiceControl } from '@modules/builder/presentation/components/properties/controls/booking-service-control';
 import { CategoryControl } from '@modules/builder/presentation/components/properties/controls/category-control';
 import { ColumnsControl } from '@modules/builder/presentation/components/properties/controls/columns-control';
 import type { ControlProps } from '@modules/builder/presentation/components/properties/controls/control-props';
@@ -56,6 +58,14 @@ const SESSION: BuilderSession = {
   categoryOptions: {
     byDataset: { 'ds-1': ['Nord'], 'ds-2': ['Süd', 'Mitte'] },
     sampleByKind: { WasteCollectionEntry: ['Bezirk A'] },
+  },
+  bookingChoices: {
+    services: [
+      { id: 'svc-id', name: 'Personalausweis', category: 'Ausweise' },
+      { id: 'svc-move', name: 'Wohnsitz anmelden', category: 'Meldewesen' },
+      { id: 'svc-free', name: 'Beratung', category: null },
+    ],
+    categories: ['Ausweise', 'Meldewesen'],
   },
   discard: vi.fn(),
 };
@@ -200,6 +210,71 @@ describe('DatasetsControl', () => {
     );
 
     expect(screen.getByText('No compatible datasets yet.')).toBeInTheDocument();
+  });
+});
+
+describe('the booking component controls', () => {
+  function open() {
+    fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+    return screen.findByRole('listbox');
+  }
+  const texts = (options: HTMLElement[]) => options.map((option) => option.textContent);
+
+  it('offers every running service with its category, and "all services" first', async () => {
+    renderControl(
+      <BookingServiceControl {...controlProps({ field: field({ control: 'booking-service' }) })} />,
+    );
+
+    expect(screen.getByRole('combobox')).toHaveTextContent('All services');
+    expect(texts(within(await open()).getAllByRole('option'))).toEqual([
+      'All services',
+      'Personalausweis (Ausweise)',
+      'Wohnsitz anmelden (Meldewesen)',
+      'Beratung',
+    ]);
+  });
+
+  it('offers only the services of the chosen category', async () => {
+    renderControl(
+      <BookingServiceControl
+        {...controlProps({
+          field: field({ control: 'booking-service' }),
+          nodeProps: { category: 'Meldewesen' },
+        })}
+      />,
+    );
+
+    expect(texts(within(await open()).getAllByRole('option'))).toEqual([
+      'All services',
+      'Wohnsitz anmelden (Meldewesen)',
+    ]);
+  });
+
+  it('keeps a stored service that no longer runs visible and marked', () => {
+    renderControl(
+      <BookingServiceControl
+        {...controlProps({ field: field({ control: 'booking-service' }), value: 'svc-gone' })}
+      />,
+    );
+
+    expect(screen.getByRole('combobox')).toHaveTextContent('Saved service (no longer bookable)');
+  });
+
+  it('stores the chosen category, and clears it with "all categories"', async () => {
+    const onChange = vi.fn();
+    renderControl(
+      <BookingCategoryControl
+        {...controlProps({
+          field: field({ control: 'booking-category' }),
+          value: 'Ausweise',
+          onChange,
+        })}
+      />,
+    );
+
+    fireEvent.click(within(await open()).getByRole('option', { name: 'All categories' }));
+
+    expect(onChange).toHaveBeenCalledWith(undefined);
   });
 });
 

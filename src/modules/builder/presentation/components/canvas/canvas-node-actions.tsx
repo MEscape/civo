@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronUp, Copy, Trash2 } from '@components/ui/icons';
+// @ui-plain button editor chrome: a gesture surface (pointer and keyboard drag) with its own focus ring and hit area, which Button would change
+import { ChevronDown, ChevronUp, Copy, Trash2 } from '@components/icons/icons';
 
 import { useTranslations } from '@i18n/client';
 

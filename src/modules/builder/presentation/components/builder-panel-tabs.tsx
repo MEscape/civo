@@ -1,7 +1,7 @@
 'use client';
 
+import { Eye, PanelLeft, PanelRight } from '@components/icons/icons';
 import { Button } from '@components/ui/button';
-import { Eye, PanelLeft, PanelRight } from '@components/ui/icons';
 
 import { useTranslations } from '@i18n/client';
 

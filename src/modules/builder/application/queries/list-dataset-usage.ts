@@ -1,47 +1,40 @@
-import type { AuthorizationError, TenantId } from '@modules/auth';
-
-import type { InfrastructureAppError, ValidationAppError } from '@lib/errors';
-import type { PageRequest } from '@lib/pagination';
-import { okAsync } from '@lib/result';
+import type { InfrastructureAppError } from '@lib/errors';
 import type { AppResultAsync } from '@lib/result';
 
 import { parseWebsiteId } from '../../domain/models/ids';
 import { componentsAwaitingDataOf, datasetUsesOf } from '../../domain/models/page-dataset-usage';
-import { MAX_RELEASE_PAGES, PAGE_LIST_LIMITS } from '../list-limits';
+import { readWebsitePages } from '../services/read-website-pages';
 
-import type { WebsiteId } from '../../domain/models/ids';
-import type { PageListItem } from '../../domain/models/page';
+import type { BuilderAccessError } from '../../domain/ports/builder-access.port';
+import type { ListPagesDependencies } from '../builder-dependencies';
 import type {
   ComponentAwaitingDataView,
   DatasetPageUseView,
   DatasetUsageView,
-} from '../contracts/page-views';
-import type { ListPagesDependencies } from '../page-dependencies';
+} from '../contracts/dataset-usage-views';
 
 /**
  * Which pages use which dataset, and which components still wait for one,
  * for the data sources screen: it tells a dataset that is ready from one that
  * is also on a page, and where a new one could go. Reads the website's
  * pages in the tenant-scoped slices the page list uses, up to the release
- * bound; a website past it is answered from its first pages.
+ * bound; a website past it is answered from its first pages and says so
+ * (`isTruncated`), so the screen can warn instead of presenting it as complete.
  */
 export class ListDatasetUsage {
   constructor(private readonly deps: ListPagesDependencies) {}
 
   execute(
     websiteId: string,
-  ): AppResultAsync<
-    DatasetUsageView,
-    AuthorizationError | ValidationAppError | InfrastructureAppError
-  > {
-    return this.deps.authorization
-      .requireInTenant('page.read')
-      .andThen((actor) =>
+  ): AppResultAsync<DatasetUsageView, BuilderAccessError | InfrastructureAppError> {
+    return this.deps.access
+      .authorizeWebsite('page.read', websiteId)
+      .andThen((scope) =>
         parseWebsiteId(websiteId).asyncAndThen((id) =>
-          this.readFrom({ websiteId: id, tenantId: actor.tenantId }),
+          readWebsitePages(this.deps.pages, { websiteId: id, tenantId: scope.tenantId }),
         ),
       )
-      .map((pages) => {
+      .map(({ pages, isTruncated }) => {
         const usage: Record<string, DatasetPageUseView[]> = {};
         const awaiting: ComponentAwaitingDataView[] = [];
         for (const page of pages) {
@@ -62,24 +55,7 @@ export class ListDatasetUsage {
             (usage[datasetId] ??= []).push({ pageId: page.id, title: page.title, components });
           }
         }
-        return { byDataset: usage, awaiting };
-      });
-  }
-
-  /** Every page, one slice after the other, never more than the release bound. */
-  private readFrom(
-    scope: { readonly websiteId: WebsiteId; readonly tenantId: TenantId },
-    request: PageRequest = { page: 1, pageSize: PAGE_LIST_LIMITS.maxPageSize },
-    read: readonly PageListItem[] = [],
-  ): AppResultAsync<readonly PageListItem[], InfrastructureAppError> {
-    return this.deps.pages
-      .listByWebsite(scope.websiteId, scope.tenantId, request)
-      .andThen((slice) => {
-        const all = [...read, ...slice.items];
-        const isLast = slice.page >= slice.pageCount || all.length >= MAX_RELEASE_PAGES;
-        return isLast
-          ? okAsync(all)
-          : this.readFrom(scope, { ...request, page: request.page + 1 }, all);
+        return { byDataset: usage, awaiting, isTruncated };
       });
   }
 }

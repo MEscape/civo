@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { RefObject } from 'react';
 
 import { createCanvasDragController } from '../dnd/canvas-drag-controller';
@@ -36,6 +36,7 @@ export function useCanvasDnd(containerRef: RefObject<HTMLElement | null>): Canva
     textRef.current = text;
   }, [text]);
 
+  // eslint-disable-next-line react-hooks/refs -- the controller is built once and reads the refs only when an event calls its getters, never during render
   const [controller] = useState(() =>
     createCanvasDragController({
       getContainer: () => containerRef.current,
@@ -48,11 +49,12 @@ export function useCanvasDnd(containerRef: RefObject<HTMLElement | null>): Canva
       },
     }),
   );
-  const state = useSyncExternalStore(
-    controller.subscribe,
-    controller.getSnapshot,
-    controller.getSnapshot,
+  const subscribe = useCallback(
+    (onChange: () => void) => controller.subscribe(onChange),
+    [controller],
   );
+  const getSnapshot = useCallback(() => controller.getSnapshot(), [controller]);
+  const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   // `mode` is a dependency on purpose: leaving and re-entering preview mounts a new canvas element.
   useEffect(() => {
