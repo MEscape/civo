@@ -42,7 +42,7 @@ jobs:
       image: ${{ steps.name.outputs.repository }}@${{ steps.build.outputs.digest }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
