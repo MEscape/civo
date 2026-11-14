@@ -75,7 +75,7 @@ jobs:
       NEON_AUTH_DATABASE: ${{ vars.NEON_AUTH_DATABASE || 'civo_auth' }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
